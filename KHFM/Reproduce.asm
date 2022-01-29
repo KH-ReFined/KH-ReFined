@@ -37,3 +37,10 @@ VERSION 0.0:
     @ 0x3DA258 => "/config1525.dat" to "/config_kh1.dat"
 VERSION 0.1:
     @ 0x3DA458 => "/config1525.dat" to "/config_kh1.dat"
+
+-> Voice Channel Mute
+
+VERSION 0.0:
+    @ 0x3D4CBC => [CD CC CC 3D] to [00 00 00 00]
+VERSION 0.1:
+    @ 0x3D4EBC => [CD CC CC 3D] to [00 00 00 00]
