@@ -1,6 +1,6 @@
 /*
 =================================================
-      KINGDOM HEARTS - RE:FIXED FOR 1 FM!
+     KINGDOM HEARTS - RE:FIXED COMMON FILE
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER MIT. GIVE CREDIT WHERE IT'S DUE! 
 =================================================
@@ -23,8 +23,13 @@ namespace ReFixed
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesWritten);
         
-        public static T Read<T>(long Address) where T : struct
+        public static T Read<T>(ulong Address, bool Absolute = false) where T : struct
         {
+            IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
+
+            if (Absolute)
+                _address = (IntPtr)(Address)
+
             var _dynoMethod = new DynamicMethod("SizeOfType", typeof(int), new Type[] { });
             ILGenerator _ilGen = _dynoMethod.GetILGenerator();
 
@@ -36,7 +41,7 @@ namespace ReFixed
             var _outArray = new byte[_outSize];
             int _outRead = 0;
 
-            ReadProcessMemory(Variables.GameHandle, (IntPtr)(Variables.GameAddress + Address), _outArray, _outSize, ref _outRead);
+                ReadProcessMemory(Variables.GameHandle, _address, _outArray, _outSize, ref _outRead);
 
             var _gcHandle = GCHandle.Alloc(_outArray, GCHandleType.Pinned);
             var _retData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), typeof(T));
@@ -46,29 +51,44 @@ namespace ReFixed
             return _retData;
         }
 
-        public static void Write<T>(long Address, T Value) where T : struct
+        public static void Write<T>(ulong Address, T Value, bool Absolute = false) where T : struct
         {
+            IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
+
+            if (Absolute)
+                _address = (IntPtr)(Address)
+
 			var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }) .Invoke(null, new object[] { Value });
             int _inWrite = 0;
 
-            WriteProcessMemory(Variables.GameHandle, (IntPtr)(Variables.GameAddress + Address), _inArray, _inArray.Length, ref _inWrite);
+            WriteProcessMemory(Variables.GameHandle, _address, _inArray, _inArray.Length, ref _inWrite);
         }
 
-        public static byte[] ReadArray(long Address, int Length)
+        public static byte[] ReadArray(ulong Address, int Length, bool Absolute = false)
         {
+            IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
+
+            if (Absolute)
+                _address = (IntPtr)(Address)
+
             var _outArray = new byte[Length];
             int _outRead = 0;
 
-            ReadProcessMemory(Variables.GameHandle, (IntPtr)(Variables.GameAddress + Address), _outArray, Length, ref _outRead);
+            ReadProcessMemory(Variables.GameHandle, _address, _outArray, Length, ref _outRead);
 
             return _outArray;
         }
 
-        public static void WriteArray(long Address, byte[] Value)
+        public static void WriteArray(ulong Address, byte[] Value)
         {
+            IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
+
+            if (Absolute)
+                _address = (IntPtr)(Address)
+
             int _inWrite = 0;
 
-            WriteProcessMemory(Variables.GameHandle, (IntPtr)(Variables.GameAddress + Address), Value, Value.Length, ref _inWrite);
+            WriteProcessMemory(Variables.GameHandle, _address, Value, Value.Length, ref _inWrite);
         }
     }
 }
