@@ -27,30 +27,43 @@ namespace AxaFormBase
 		public static CancellationToken MainToken;
 		public static Task MainTask;
 
+		public static float ResolutionDiv; 
+
 		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
 		{
-			if (BaseSimpleForm.theInstance == null)
-			{
-				new BaseSimpleForm(_app, title);
-			}
+			if (theInstance == null)
+				new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v0.50]");
 
 			CancelSource = new CancellationTokenSource();
 			MainToken = BaseSimpleForm.CancelSource.Token;
 
 			Variables.GameProcess = Process.GetCurrentProcess();
 			Variables.GameHandle = Variables.GameProcess.Handle;
-			Variables.GameAddress = Variables.GameProcess.MainModule.BaseAddress.ToInt64() + Variables.BaseAddress;
+			Variables.GameAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64() + Variables.BaseAddress;
 
 			MainTask = Task.Factory.StartNew(delegate()
 			{
 				while (!MainToken.IsCancellationRequested)
 				{
+					Rectangle _windRect = Screen.FromControl(BaseSimpleForm.theInstance).Bounds;
+
+					if (_windRect.Bottom == theInstance.Height && _windRect.Right == theInstance.Width)
+					{
+						float _divisorValue = (float)theInstance.Width / (float)theInstance.Height;
+
+						if (_divisorValue != ResolutionDiv)
+						{
+							ResolutionDiv = _divisorValue;
+							Functions.OverrideAspect(_divisorValue);
+						}
+					}
+
 					Functions.Execute();
 				}
 
 			}, MainToken);
 
-			return BaseSimpleForm.theInstance;
+			return theInstance;
 		}
 	}
 }

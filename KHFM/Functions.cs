@@ -20,14 +20,14 @@ namespace ReFixed
 
 		    if (Hypervisor.Read<byte>(Variables.FovTextAddresses[1]) != 0x30)
 		    {
-			for (int i = 0; i < Variables.FovTextOffsets.Length; i++)
-			    Hypervisor.Write<ushort>(Variables.FovTextAddresses[0] + (0x02 * i), Variables.FovTextOffsets[i]);
+				for (uint i = 0; i < Variables.FovTextOffsets.Length; i++)
+					Hypervisor.Write<ushort>(Variables.FovTextAddresses[0] + (0x02 * i), Variables.FovTextOffsets[i]);
 
-			for (int i = 0; i < Variables.CamTextOffsets.Length; i++)
-			    Hypervisor.Write<ushort>(Variables.CamTextAddresses[0] + (0x02 * i), Variables.CamTextOffsets[i]);
+				for (uint i = 0; i < Variables.CamTextOffsets.Length; i++)
+					Hypervisor.Write<ushort>(Variables.CamTextAddresses[0] + (0x02 * i), Variables.CamTextOffsets[i]);
 
-			Hypervisor.WriteArray(Variables.FovTextAddresses[1], Variables.FovTextArray);
-			Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextArray);
+				Hypervisor.WriteArray(Variables.FovTextAddresses[1], Variables.FovTextArray);
+				Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextArray);
 		    }
 		}
 
@@ -43,7 +43,7 @@ namespace ReFixed
 
 			    if (_fovFirst != 400F)
 			    {
-				for (int i = 0; i < Variables.FovAddresses.Length; i++)
+				for (uint i = 0; i < Variables.FovAddresses.Length; i++)
 				    Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovClassic[i]);
 			    }
 
@@ -63,6 +63,33 @@ namespace ReFixed
 			    break;
 			}
 		    }
+		}
+
+		public static void OverrideAspect(float InputValue)
+		{
+			float _floatValue = 9F;
+
+			switch (InputValue)
+			{
+				case 3.5F:
+					_floatValue = 4.5F;
+					break;
+				case 2.3F:
+					_floatValue = 6.75F;
+					break;
+				case 1.7F:
+					_floatValue = 9F;
+					break;
+				case 1.6F:
+					_floatValue = 10F;
+					break;
+				case 1.3F:
+					_floatValue = 12F;
+					break;
+			}
+
+			Hypervisor.UnlockBlock(0x10F2E);
+			Hypervisor.Write<float>(0x10F2E, _floatValue);
 		}
 
 		public static void Execute()

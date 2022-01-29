@@ -17,18 +17,21 @@ namespace ReFixed
 {
 	public static class Hypervisor
 	{
-        [DllImport("kernel32.dll")]
-        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesRead);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, int dwSize, uint flNewProtect, ref int lpflOldProtect);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesWritten);
-        
+
+        [DllImport("kernel32.dll")]
+        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesRead);
+
         public static T Read<T>(ulong Address, bool Absolute = false) where T : struct
         {
             IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
 
             if (Absolute)
-                _address = (IntPtr)(Address)
+                _address = (IntPtr)(Address);
 
             var _dynoMethod = new DynamicMethod("SizeOfType", typeof(int), new Type[] { });
             ILGenerator _ilGen = _dynoMethod.GetILGenerator();
@@ -56,7 +59,7 @@ namespace ReFixed
             IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
 
             if (Absolute)
-                _address = (IntPtr)(Address)
+                _address = (IntPtr)(Address);
 
 			var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }) .Invoke(null, new object[] { Value });
             int _inWrite = 0;
@@ -69,7 +72,7 @@ namespace ReFixed
             IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
 
             if (Absolute)
-                _address = (IntPtr)(Address)
+                _address = (IntPtr)(Address);
 
             var _outArray = new byte[Length];
             int _outRead = 0;
@@ -79,16 +82,27 @@ namespace ReFixed
             return _outArray;
         }
 
-        public static void WriteArray(ulong Address, byte[] Value)
+        public static void WriteArray(ulong Address, byte[] Value, bool Absolute = false)
         {
             IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
 
             if (Absolute)
-                _address = (IntPtr)(Address)
+                _address = (IntPtr)(Address);
 
             int _inWrite = 0;
 
             WriteProcessMemory(Variables.GameHandle, _address, Value, Value.Length, ref _inWrite);
+        }
+
+        public static void UnlockBlock(ulong Address, bool Absolute = false)
+        {
+			IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
+
+            if (Absolute)
+                _address = (IntPtr)(Address);
+
+            int _oldProtect = 0;
+            VirtualProtectEx(Variables.GameHandle, _address, 0x100, 0x40, ref _oldProtect);
         }
     }
 }

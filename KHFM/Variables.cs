@@ -16,13 +16,13 @@ namespace ReFixed
 	{
         public static Process GameProcess;
         public static IntPtr GameHandle;
-        public static long GameAddress;
+        public static ulong GameAddress;
 
-		public static long BaseAddress = 0x3A0606;
-		public static long FovSwitchAddress = 0x2A5B7DA;
+		public static ulong BaseAddress = 0x3A0606;
+		public static ulong FovSwitchAddress = 0x2A5B7DA;
 
-		public static long[] FovTextAddresses = new long[] { 0x2A76F66, 0x2A78F86 };
-		public static long[] CamTextAddresses = new long[] { 0x2A76F6E, 0x2A79D4D };
+		public static ulong[] FovTextAddresses = new ulong[] { 0x2A76F66, 0x2A78F86 };
+		public static ulong[] CamTextAddresses = new ulong[] { 0x2A76F6E, 0x2A79D4D };
 
 		public static ushort[] FovTextOffsets = new ushort[] { 0x1EBA, 0x1EC8, 0x1ED0, 0x1ED9 };
 		public static ushort[] CamTextOffsets = new ushort[] { 0x2C88, 0x2C8F };
@@ -30,7 +30,7 @@ namespace ReFixed
 		public static float[] FovClassic = new float[] { 400, -50, -100, 350, 300, 300, 300, 300 };
 		public static float[] FovEnhanced = new float[] { 600, 0, -150, 600, 600, 600, 600, 600 };
 
-        public static long[] FovAddresses = new long[] 
+        public static ulong[] FovAddresses = new ulong[] 
         { 
             0x2194066, 0x2194072, 0x219406E, 
             0x0163352, 0x0163372, 0x0163392, 0x01633B2,
