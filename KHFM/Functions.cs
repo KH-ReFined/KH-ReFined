@@ -92,10 +92,40 @@ namespace ReFixed
 			Hypervisor.Write<float>(0x10F2E, _floatValue);
 		}
 
+		public static void OverrideMP()
+		{
+			var _catchMagic = Hypervisor.Read<byte>(Variables.SoraMagicAddress);
+
+			switch (_catchMagic)
+			{
+				case 0:
+					Hypervisor.Write<byte>(Variables.SoraMPAddress, 0x00);
+					break;
+				default:
+					if (Hypervisor.Read<byte>(Variables.SoraMPAddress) == 0x00)
+						Hypervisor.Write<byte>(Variables.SoraMPAddress, 0x01);
+					break;
+			}
+		}
+
+		public static void SeekReset()
+		{
+			var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
+
+			if ((_inputRead & 0x01) == 0x01 && (_inputRead & 0x08) == 0x08)
+			{
+				Hypervisor.Write<byte>(Variables.ResetAddresses[0], 0x02);
+				Hypervisor.Write<byte>(Variables.ResetAddresses[1], 0x01);
+				Hypervisor.Write<byte>(Variables.ResetAddresses[2], 0x01);
+			}
+		}
+
 		public static void Execute()
 		{
 		    OverrideText();
 		    OverrideFov();
+			OverrideMP();
+			SeekReset();
 		}
 	}
 }

@@ -61,10 +61,28 @@ namespace ReFixed
             if (Absolute)
                 _address = (IntPtr)(Address);
 
-			var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }) .Invoke(null, new object[] { Value });
+            var _dynoMethod = new DynamicMethod("SizeOfType", typeof(int), new Type[] { });
+            ILGenerator _ilGen = _dynoMethod.GetILGenerator();
+
+            _ilGen.Emit(OpCodes.Sizeof, typeof(T));
+            _ilGen.Emit(OpCodes.Ret);
+
+            var _inSize = (int)_dynoMethod.Invoke(null, null);
             int _inWrite = 0;
 
-            WriteProcessMemory(Variables.GameHandle, _address, _inArray, _inArray.Length, ref _inWrite);
+            if (_inSize > 1)
+            {
+                var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }) .Invoke(null, new object[] { Value });
+
+                WriteProcessMemory(Variables.GameHandle, _address, _inArray, _inArray.Length, ref _inWrite);
+            }
+
+            else
+            {
+                var _inArray = new byte[] { Value as Byte };
+                WriteProcessMemory(Variables.GameHandle, _address, _inArray, _inArray.Length, ref _inWrite);
+
+            }
         }
 
         public static byte[] ReadArray(ulong Address, int Length, bool Absolute = false)

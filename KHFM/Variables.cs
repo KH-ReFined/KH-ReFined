@@ -21,6 +21,13 @@ namespace ReFixed
 		public static ulong BaseAddress = 0x3A0606;
 		public static ulong FovSwitchAddress = 0x2A5B7DA;
 
+		public static ulong InputAddress = 0x1F9CA2E;
+
+		public static ulong SoraMPAddress = 0x246E512;
+		public static ulong SoraMagicAddress = 0x2A4543E;
+		
+		public static ulong[] ResetAddresses = new ulong[] { 0x1F480D6, 0x1F480DA, 0x1F9BC3A };
+
 		public static ulong[] FovTextAddresses = new ulong[] { 0x2A76F66, 0x2A78F86 };
 		public static ulong[] CamTextAddresses = new ulong[] { 0x2A76F6E, 0x2A79D4D };
 
