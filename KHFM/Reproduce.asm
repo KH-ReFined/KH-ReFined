@@ -21,8 +21,8 @@ VERSION 0.0:
     @ 0x1752AC => [0F 94 C0 C3] to [0F 9E C0 C3]
     @ 0x17A0F3 => [74 10] to [7E 10]
 VERSION 0.1:
-    @ 0x175452 => [0F 94 C0 C3] to [0F 9E C0 C3]
-    @ 0x17A2A0 => [74 10] to [7E 10]
+    @ 0x17545C => [0F 94 C0 C3] to [0F 9E C0 C3]
+    @ 0x17A2A3 => [74 10] to [7E 10]
 
 -> Examine and Open Chest Mid-Battle
 
