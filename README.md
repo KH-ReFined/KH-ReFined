@@ -30,4 +30,4 @@ _(Features presented with the suffix of [E] are bugfixes, while those with [I] a
 
 ## Download
 
-Compiling... Coming very soon!
+Releases tab has all the downloads.
