@@ -14,6 +14,7 @@ _(Features presented with the suffix of [E] are bugfixes, while those with [I] a
 - Disable the framelimiter in cutscenes. [E]
 - The config for the game is now named "config_kh1.dat" so that any changes do not affect other games. [I]
 - Fix an issue with the cutscenes, preventing pause and skipping whilst they have a fade effect. [E]
+- Fixes the Title Screen option on the Save Menu so it actually returns to the Title Screen instead of crashing the game. [E]
 - Add a feature that allows soft resetting upon pressing START+SELECT. [I]
 - Adds in a toggle to the Config menu which toggles between KH1 and KH2 style Field of View. [I]
 - Opening Chests and Examining Objects can now be done in battle. [E]
