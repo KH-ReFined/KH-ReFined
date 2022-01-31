@@ -37,31 +37,31 @@ namespace ReFixed
 
 		    switch(_fovToggle)
 		    {
-			case 0:
-			{
-			    var _fovFirst = Hypervisor.Read<float>(Variables.FovAddresses[0]);
+				case 0:
+				{
+					var _fovFirst = Hypervisor.Read<float>(Variables.FovAddresses[0]);
 
-			    if (_fovFirst != 400F)
-			    {
-				for (uint i = 0; i < Variables.FovAddresses.Length; i++)
-				    Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovClassic[i]);
-			    }
+					if (_fovFirst != 400F)
+					{
+					for (uint i = 0; i < Variables.FovAddresses.Length; i++)
+						Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovClassic[i]);
+					}
 
-			    break;
-			}
+					break;
+				}
 
-			case 1:
-			{
-			    var _fovFirst = Hypervisor.Read<float>(Variables.FovAddresses[0]);
+				case 1:
+				{
+					var _fovFirst = Hypervisor.Read<float>(Variables.FovAddresses[0]);
 
-			    if (_fovFirst != 600F)
-			    {
-				for (int i = 0; i < Variables.FovAddresses.Length; i++)
-				    Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovEnhanced[i]);
-			    }
+					if (_fovFirst != 600F)
+					{
+					for (int i = 0; i < Variables.FovAddresses.Length; i++)
+						Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovEnhanced[i]);
+					}
 
-			    break;
-			}
+					break;
+				}
 		    }
 		}
 
