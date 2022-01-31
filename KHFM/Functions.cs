@@ -112,7 +112,13 @@ namespace ReFixed
 		{
 			var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
-			if ((_inputRead & 0x01) == 0x01 && (_inputRead & 0x08) == 0x08)
+			var _selectRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect);
+			var _amountRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect + 0x044);
+
+			var _buttonRead = (_inputRead & 0x01) == 0x01 && (_inputRead & 0x08) == 0x08;
+			var _saveMenuRead = (_selectRead == _amountRead - 0x01) && (_inputRead & 0x4000) == 0x4000;
+			
+			if (_buttonRead || _saveMenuRead)
 			{
 				Hypervisor.Write<byte>(Variables.ResetAddresses[0], 0x02);
 				Hypervisor.Write<byte>(Variables.ResetAddresses[1], 0x01);

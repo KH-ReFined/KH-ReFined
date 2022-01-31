@@ -26,6 +26,7 @@ namespace ReFixed
 		public static ulong SoraMPAddress = 0x246E512;
 		public static ulong SoraMagicAddress = 0x2A4543E;
 		
+		public static ulong SaveMenuSelect = 0x2A7C552; 
 		public static ulong[] ResetAddresses = new ulong[] { 0x1F480D6, 0x1F480DA, 0x1F9BC3A };
 
 		public static ulong[] FovTextAddresses = new ulong[] { 0x2A76F66, 0x2A78F86 };
