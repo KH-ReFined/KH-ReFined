@@ -45,6 +45,7 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 - Denhonator for his work on Soft Reset and Volume Mute.
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
+- TopazTK for everything else.
 
 ## Download
 
