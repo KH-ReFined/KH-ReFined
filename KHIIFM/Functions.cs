@@ -42,7 +42,7 @@ namespace ReFixed
 
                     // Set to 0x01 if it's going up, set to 0x02 if it's going down.
                     // TODO: Change from R2/L2 to R2+DirectionPad
-                    var _inputCheck = (_inputRead & 0x01) == 0x01 ? 0x01 : (_inputRead & 0x02) == 0x02 ? 0x02 : 0x00;
+                    var _inputCheck = (_inputRead & 0x1001) == 0x1001 ? 0x01 : (_inputRead & 0x4001) == 0x4001 ? 0x02 : 0x00;
 
                     // If debounce is not active, and input is proper:
                     if (!Variables.Debounce && _inputCheck != 0x00)
@@ -54,15 +54,13 @@ namespace ReFixed
                         var _magicPointer = (0x02 * _magicIndex);
                         var _magicBounds = _magicPointer + (_inputCheck == 0x01 ? -0x02 : 0x02);
 
-                        // Fetch the subject magic first.
+                        // Fetch the subject magic and the switchee.
                         var _subjectMagic = Hypervisor.Read<ushort>(Variables.MagicAddresses[1] + (ulong)_magicPointer);
+						var _targetMagic = _magicBounds >= 0 ? Hypervisor.Read<ushort>(Variables.MagicAddresses[1] + (ulong)_magicBounds) : (ushort)0x0000;
 
                         // If the move would be in bounds, and if the switchee is not "nothing":
                         if (_targetMagic != 0x0000)
                         {
-                            // Fetch the target magic.
-                            var _targetMagic = _magicBounds >= 0 ? Hypervisor.Read<ushort>(Variables.MagicAddresses[1] + (ulong)_magicBounds) : (ushort)0x0000;
-
                             // Make the switch
                             Hypervisor.Write<ushort>(Variables.MagicAddresses[1] + (ulong)_magicPointer, _targetMagic);
                             Hypervisor.Write<ushort>(Variables.MagicAddresses[1] + (ulong)_magicBounds, _subjectMagic);

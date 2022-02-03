@@ -15,6 +15,8 @@ namespace ReFixed
 {
 	public partial class Variables
 	{
+		public const int Version = 0;
+
         public static Process GameProcess;
         public static IntPtr GameHandle;
         public static ulong GameAddress;
@@ -24,22 +26,24 @@ namespace ReFixed
 
 		public static bool Debounce = false;
 
-		public static ulong BaseAddress = 0x56454E;
-		public static ulong InputAddress = 0x01ACF3B;
-		public static ulong VibrationAddress = 0x55A15E;
+		public static ulong BaseAddress = Version == 0x00 ? 0x56450E : 0x56454E;
+		public static ulong InputAddress = 0x1ACF7B;
+		public static ulong VibrationAddress = 0x55A19E;
 
-		public static ulong[] ConfigTextAddresses = new ulong[] { 0x2565A19, 0x2565C54 };
-		public static ulong[] TitleTextAddresses = new ulong[] { 0x256E0CA, 0x256E0E5, 0x256E0EC, 0x256E112, 0x256E255 };
+		public static ulong[] ConfigTextAddresses = new ulong[] { 0x2565A59, 0x2565C94 };
+		public static ulong[] TitleTextAddresses = new ulong[] { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
 
-		public static ulong TitleBackAddress = 0x553ECC;
+		public static ulong TitleBackAddress = 0x553F0C;
 
-		public static ulong TitleFlagAddress = 0x1B0216;
-		public static ulong TitleButtonAddress = 0x255BE8E;
+		public static ulong TitleFlagAddress = 0x1B0256;
+		public static ulong TitleButtonAddress = 0x255BECE;
+
+		public static ulong LoadAddress = 0x453B82;
 
 		public static ulong RoomAddress = 0x1B086A;
-		public static ulong StoryFlagAddress = 0x4447F2;
-		public static ulong DifficultyAddress = 0x444FBA;
-		public static ulong InventoryFlagAddress = 0x444EC0;
+		public static ulong StoryFlagAddress = 0x444832;
+		public static ulong DifficultyAddress = 0x444FFA;
+		public static ulong InventoryFlagAddress = 0x444F00;
 
 		public static byte[] StoryFlagArray = new byte[]
 		{
@@ -56,6 +60,6 @@ namespace ReFixed
 			"Roxas' Story"
 		};
 
-		public static ulong[] MagicAddresses = new ulong[] { 0x24AA28A, 0x24AA2FA, 0x24A98AE };
+		public static ulong[] MagicAddresses = new ulong[] { 0x24AA2CA, 0x24AA33A, 0x24A98DE };
 	}
 }
