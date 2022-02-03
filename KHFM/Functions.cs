@@ -16,8 +16,6 @@ namespace ReFixed
 	{
 		public static void OverrideText()
 		{
-		    // Config Text
-
 		    if (Hypervisor.Read<byte>(Variables.FovTextAddresses[1]) != 0x30)
 		    {
 				for (uint i = 0; i < Variables.FovTextOffsets.Length; i++)
@@ -26,8 +24,8 @@ namespace ReFixed
 				for (uint i = 0; i < Variables.CamTextOffsets.Length; i++)
 					Hypervisor.Write<ushort>(Variables.CamTextAddresses[0] + (0x02 * i), Variables.CamTextOffsets[i]);
 
-				Hypervisor.WriteArray(Variables.FovTextAddresses[1], Variables.FovTextArray);
-				Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextArray);
+				Hypervisor.WriteArray(Variables.FovTextAddresses[1], Variables.FovTextString.ToKHSCII());
+				Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextArray.ToKHSCII());
 		    }
 		}
 
