@@ -10,31 +10,34 @@ Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
 
 _(Features presented with the suffix of [E] are bug or error fixes, while those with [I] are improvements.)_
 
-### Kingdom Hearts 1
+### All Games
 - Disable the framelimiter in cutscenes. [E]
-- The config for the game is now named "config_kh1.dat" so that any changes do not affect other games. [I]
-- Fix an issue with the cutscenes, preventing pause and skipping whilst they have a fade effect. [E]
-- Fix the Title Screen option on the Save Menu so it actually returns to the Title Screen instead of crashing the game. [E]
-- Add a feature that allows soft resetting upon pressing START+SELECT. [I]
-- Add in a toggle to the Config menu which toggles between KH1 and KH2 style Field of View. [I]
-- Opening Chests and Examining Objects can now be done in battle. [E]
-- The MP Bar will not be present until Sora learns a spell. [I]
-- The aspect ratio will now be adjusted upon entering Fullscreen. (4:3, 16:9, 16:10, 29:9, and 32:9) [I]
 - Voice channels will now be muted when set to "1". [I]
+- An RPC Engine is now present for Discord Activities. [I]
+- Add a feature that allows soft resetting upon pressing START+SELECT. [I]
+- The config for the game is now named "config_xxx.dat" so that any changes do not affect other games. [I]
+
+### Kingdom Hearts 1
+- The MP Bar will not be present until Sora learns a spell. [I]
+- Opening Chests and Examining Objects can now be done in battle. [E]
+- Add in a toggle to the Config menu which toggles between KH1 and KH2 style Field of View. [I]
+- Fix an issue with the cutscenes, preventing pause and skipping whilst they have a fade effect. [E]
+- The aspect ratio will now be adjusted upon entering Fullscreen. (4:3, 16:9, 16:10, 29:9, and 32:9) [I]
+- Fix the Title Screen option on the Save Menu so it actually returns to the Title Screen instead of crashing the game. [E]
 
 ### Kingdom Hearts 2
 - Fix an issue with 60FPS and disable the framelimiter in cutscenes. [E]
-- The "Kingdom Hearts I" Command Menu will now show a Command Menu that is actually imitating the KH1 style. [E]
+- When beginning a new game, there is now an opiton to skip Roxas' Story. [I]
 - In the Shortcuts Menu, Limit Form's Limits are now where they are supposed to be. [E]
 - Limit Form's Limits now have their actual names instead of the poorly translated ones. [E]
-- The player is able to reorganize the Magic menu to their liking with R2 to shift down and L2 to shift up. [I],
-- An RPC Engine is now present for Discord Activities. [I]
-- Add a feature that allows soft resetting upon pressing START+SELECT. [I]
-- When beginning a new game, there is now an opiton to skip Roxas' Story. [I]
-- The config for the game is now named "config_kh2.dat" so that any changes do not affect other games. [I]
-- Voice channels will now be muted when set to "1". [I]
+- The player is able to reorganize the Magic menu to their liking with R2 to shift down and L2 to shift up. [I]
+- The "Kingdom Hearts I" Command Menu will now show a Command Menu that is actually imitating the KH1 style. [E]
 
 ## Credits
+
+### All Games
+- Tevolo for the icons used in Discord Rich Presence.
+- Stickman Sham for the idea that led to Magic Reorganization in KH2FM.
 
 ### Kingdom Hearts 1
 - Denhonator for his work on Soft Reset, Cutscene Skip, and Volume Mute.
