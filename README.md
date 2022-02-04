@@ -26,7 +26,7 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 - Fix the Title Screen option on the Save Menu so it actually returns to the Title Screen instead of crashing the game. [E]
 
 ### Kingdom Hearts 2
-- Fix an issue with 60FPS and disable the framelimiter in cutscenes. [E]
+- Fix an issue with 60FPS being locked on certain situations. [E]
 - When beginning a new game, there is now an opiton to skip Roxas' Story. [I]
 - In the Shortcuts Menu, Limit Form's Limits are now where they are supposed to be. [E]
 - Limit Form's Limits now have their actual names instead of the poorly translated ones. [E]
@@ -44,7 +44,7 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 - KSX for his work on the MP Bar, and Field of View.
 - TopazTK for everything else.
 
-## Kingdom Hearts 2
+### Kingdom Hearts 2
 - Denhonator for his work on Soft Reset and Volume Mute.
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
