@@ -58,8 +58,8 @@ namespace ReFixed
                     },
                     new Button()
                     { 
-                        Label = "Icons by Tevelo", 
-                        Url = "https://github.com/Tevelo" 
+                        Label = "Icons by Televo", 
+                        Url = "https://github.com/Televo" 
                     } 
                 }
             });

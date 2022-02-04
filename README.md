@@ -36,7 +36,7 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 ## Credits
 
 ### All Games
-- Tevolo for the icons used in Discord Rich Presence.
+- Televo for the icons used in Discord Rich Presence.
 - Stickman Sham for the idea that led to Magic Reorganization in KH2FM.
 
 ### Kingdom Hearts 1

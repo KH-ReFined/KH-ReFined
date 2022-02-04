@@ -60,10 +60,15 @@ namespace ReFixed
                 
                 Buttons = new Button[] 
                 { 
-                    new Button()
+					new Button()
                     { 
                         Label = "Powered by Re:Fixed", 
                         Url = "https://github.com/TopazTK/KH-ReFixed" 
+                    },
+                    new Button()
+                    { 
+                        Label = "Icons by Televo", 
+                        Url = "https://github.com/Televo" 
                     } 
                 }
             });
