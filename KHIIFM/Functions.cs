@@ -107,6 +107,12 @@ namespace ReFixed
 
         public static void HandleTutorialSkip()
         {            
+            // Calculate shits.
+            var _healthAddress = Version == 0x00 ? 0x445017 : 0x445056;
+            var _abilityAddress = Version == 0x00 ? 0x445066 : 0x4450A6;
+            var _flagAddress = Version == 0x00 ? 0x4447F2 : 0x444832;
+            var _compAddress = Version == 0x00 ? 0x446222 : 0x446262;
+
             var _skipBool = !Variables.SkipRoxas && !Variables.SkipComplete;
 
             if (IsTitle() && !_skipBool)
@@ -145,8 +151,8 @@ namespace ReFixed
 			        Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, 0x01);
 			        Hypervisor.Write<uint>(Variables.RoomAddress + 0x08, 0x01);
 
-                    Hypervisor.Write<uint>(0x4447F2, 0x1FF00001);
-                    Hypervisor.Write<uint>(0x4447F6, 0x00000000);
+                    Hypervisor.Write<uint>(_flagAddress, 0x1FF00001);
+                    Hypervisor.Write<uint>(_flagAddress + 0x04, 0x00000000);
                 }
 
                 if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A)
@@ -160,23 +166,23 @@ namespace ReFixed
 
                     if (_diffRead == 0x03) 
                     {
-                        Hypervisor.Write<byte>(0x445017, 0x18);
-                        Hypervisor.Write<byte>(0x445018, 0x18);
-                        Hypervisor.WriteArray(0x445066, new byte[] { 0x89, 0x01, 0x88, 0x01, 0xA5, 0x01, 0x94, 0x01, 0x97, 0x01, 0x97, 0x01, 0x95, 0x01, 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
+                        Hypervisor.Write<byte>(_healthAddress, 0x18);
+                        Hypervisor.Write<byte>(_healthAddress + 0x01, 0x18);
+                        Hypervisor.WriteArray(_abilityAddress, new byte[] { 0x89, 0x01, 0x88, 0x01, 0xA5, 0x01, 0x94, 0x01, 0x97, 0x01, 0x97, 0x01, 0x95, 0x01, 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
                     }
 
                     else
                     {
-                        Hypervisor.Write<byte>(0x445017, 0x1E);
-                        Hypervisor.Write<byte>(0x445018, 0x1E);
-                        Hypervisor.WriteArray(0x445066, new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
+                        Hypervisor.Write<byte>(_healthAddress, 0x1E);
+                        Hypervisor.Write<byte>(_healthAddress + 0x01, 0x1E);
+                        Hypervisor.WriteArray(_abilityAddress, new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
                     }
                     
-                    Hypervisor.Write<byte>(0x446222, 0x04);
+                    Hypervisor.Write<byte>(_compAddress, 0x04);
                     
-                    Hypervisor.Write<byte>(0x44622A, 0x06);
-                    Hypervisor.Write<byte>(0x44622C, 0x40);
-                    Hypervisor.Write<byte>(0x44622F, 0x02);
+                    Hypervisor.Write<byte>(_compAddress + 0x08, 0x06);
+                    Hypervisor.Write<byte>(_compAddress + 0x0A, 0x40);
+                    Hypervisor.Write<byte>(_compAddress + 0x0D, 0x02);
 
                     Variables.SkipRoxas = false;
                     Variables.SkipComplete = true;
@@ -191,6 +197,22 @@ namespace ReFixed
             if ((_inputRead & 0x0800) == 0x0800 && (_inputRead & 0x0100) == 0x0100)
                 Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
         }
+
+        /*
+            So you may be asking:
+            "Topaz, why the fuck is this not an ASM Overwrite, and is an IL Hack?"
+
+            Well you see, KH2 took a lazy approach for limiting the cutscenes to 30FPS.
+            They just enable the framelimiter for the **whole game* instead of just limitting
+            the cutscene like KH1 does. So if I overwrite that function in ASM, it will
+            completely disable the 30FPS function. That is a big no-no since some do use it.
+
+            So, this is the best solution to this problem. Just write a function to NOP
+            that instruction whilst in 60FPS or above, but recover it once 30FPS is selected.
+
+            These solutions will also pave the way to fixing the L2+Pad input problem of Magic Sort.
+            But I can't be bothered to work on that *right away* so just wait for the next update.
+        */
 
         public static void OverrideLimiter()
         {
@@ -221,25 +243,80 @@ namespace ReFixed
 
         public static void OverrideText()
         {
-            var _textCheck = Hypervisor.Read<byte>(Variables.TitleTextAddresses[1]);
+            #region Roxas Story Option
+                var _roxasCheck = Hypervisor.Read<byte>(Variables.TitleTextAddresses[1]);
 
-            if (_textCheck != 0x46)
+                if (_roxasCheck != 0x46)
+                {
+                    var _buttOffset = Hypervisor.Read<uint>(Variables.TitleButtonAddress);
+                    Hypervisor.Write<uint>(Variables.TitleButtonAddress, _buttOffset + 0x01);
+
+                    for (int i = 0; i < Variables.TitleStrings.Length; i++)
+                        Hypervisor.WriteArray(Variables.TitleTextAddresses[i], Variables.TitleStrings[i].ToKHSCII());
+                }
+            #endregion
+
+            #region Limit Text
+                var _raveText = "Rave{0x00}End";
+                var _arsCheck = Hypervisor.Read<byte>(Variables.LimitAddresses[0]);
+
+                var _secAccumilator = 0;
+
+                if (_arsCheck != 0x2E)
+                {
+                    for (int i = 0; i < Variables.LimitAddresses.Length; i += 2)
+                    {
+                        // Write the text.
+                        Hypervisor.WriteArray(Variables.LimitAddresses[i], Variables.LimitStrings[_secAccumilator].ToKHSCII());
+                        Hypervisor.WriteArray(Variables.LimitAddresses[i + 1], Variables.LimitStrings[_secAccumilator].ToKHSCII());
+                        
+                        // Increase the accumilator for the text array.
+                        _secAccumilator++;
+                    }
+                }
+
+                // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
+                Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
+                Hypervisor.Write<uint>(0x255D006, 0x01B434);
+                Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
+
+                // Write the RCs text.
+                Hypervisor.WriteArray(0x2572571, _raveText.ToKHSCII());
+            #endregion
+        }
+
+        public static void OverrideShortcuts()
+        {
+            var _confirmRead = Hypervisor.Read<byte>(Variables.ConfirmAddress);
+
+            Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
+
+            if (_confirmRead == 0x00)
             {
-                var _buttOffset = Hypervisor.Read<uint>(Variables.TitleButtonAddress);
-                Hypervisor.Write<uint>(Variables.TitleButtonAddress, _buttOffset + 0x01);
-
-                for (int i = 0; i < Variables.TitleStrings.Count; i++)
-                    Hypervisor.WriteArray(Variables.TitleTextAddresses[i], Variables.TitleStrings[i].ToKHSCII());
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02BA);
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
             }
+
+            else
+            {
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
+            }
+
+            Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x02, 0x02BD);
+            Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x04, 0x02C0);
         }
 
         public static void Execute()
         {
             SeekReset();
-            OverrideText();
+            HandleTutorialSkip();
+
             OverrideLimiter();
             HandleMagicSort();
-            HandleTutorialSkip();
+
+            OverrideText();
+            OverrideShortcuts();
         }
     }
 }
