@@ -7,8 +7,11 @@
 */
 
 using System;
+using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+
+using DiscordRPC;
 
 namespace ReFixed
 {
@@ -20,6 +23,50 @@ namespace ReFixed
             var _titleCheck = Hypervisor.Read<uint>(Variables.TitleFlagAddress);
 
             return _roomCheck == 0x00FFFFFF || _roomCheck == 0x00000101 || _titleCheck == 0x01;
+        }
+
+        public static void ProcessRPC()
+        {
+            var _healthValue = Hypervisor.Read<byte>(0x024BC74A);
+            var _magicValue = Hypervisor.Read<byte>(0x024BC8CA);
+            var _levelValue = Hypervisor.Read<byte>(0x00445061);
+            var _formValue = Hypervisor.Read<byte>(0x00446086);
+
+            var _stringState = string.Format("Level {0} | Form: {1}", _levelValue, Variables.FormText.ElementAtOrDefault(_formValue));
+            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
+
+            var _worldID = Hypervisor.Read<byte>(Variables.RoomAddress);
+            var _battleFlag = Hypervisor.Read<byte>(0x024AA5B6);
+
+            var _timeValue = Math.Floor(Hypervisor.Read<int>(0x00444FA6) / 60F);
+            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
+            var _timeHours = Math.Floor(_timeValue / 3600F);
+
+            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+
+            var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
+
+            Variables.RichClient.SetPresence(new RichPresence()
+            {
+                Details = _stringDetail,
+                State = _stringState,
+                Assets = new Assets()
+                {
+                    LargeImageKey = Variables.WorldImages.ElementAtOrDefault(_worldID),
+                    LargeImageText = _timeText,
+                    SmallImageKey = Variables.BattleImages.ElementAtOrDefault(_battleFlag),
+                    SmallImageText = Variables.ModeText.ElementAtOrDefault(_diffValue)
+                },
+                
+                Buttons = new Button[] 
+                { 
+                    new Button()
+                    { 
+                        Label = "Powered by Re:Fixed", 
+                        Url = "https://github.com/TopazTK/KH-ReFixed" 
+                    } 
+                }
+            });
         }
 
         public static void HandleMagicSort()
@@ -107,12 +154,6 @@ namespace ReFixed
 
         public static void HandleTutorialSkip()
         {            
-            // Calculate shits.
-            var _healthAddress = Version == 0x00 ? 0x445017 : 0x445056;
-            var _abilityAddress = Version == 0x00 ? 0x445066 : 0x4450A6;
-            var _flagAddress = Version == 0x00 ? 0x4447F2 : 0x444832;
-            var _compAddress = Version == 0x00 ? 0x446222 : 0x446262;
-
             var _skipBool = !Variables.SkipRoxas && !Variables.SkipComplete;
 
             if (IsTitle() && !_skipBool)
@@ -151,8 +192,8 @@ namespace ReFixed
 			        Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, 0x01);
 			        Hypervisor.Write<uint>(Variables.RoomAddress + 0x08, 0x01);
 
-                    Hypervisor.Write<uint>(_flagAddress, 0x1FF00001);
-                    Hypervisor.Write<uint>(_flagAddress + 0x04, 0x00000000);
+                    Hypervisor.Write<uint>(0x444832, 0x1FF00001);
+                    Hypervisor.Write<uint>(0x444832 + 0x04, 0x00000000);
                 }
 
                 if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A)
@@ -166,23 +207,23 @@ namespace ReFixed
 
                     if (_diffRead == 0x03) 
                     {
-                        Hypervisor.Write<byte>(_healthAddress, 0x18);
-                        Hypervisor.Write<byte>(_healthAddress + 0x01, 0x18);
-                        Hypervisor.WriteArray(_abilityAddress, new byte[] { 0x89, 0x01, 0x88, 0x01, 0xA5, 0x01, 0x94, 0x01, 0x97, 0x01, 0x97, 0x01, 0x95, 0x01, 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
+                        Hypervisor.Write<byte>(0x445056, 0x18);
+                        Hypervisor.Write<byte>(0x445056 + 0x01, 0x18);
+                        Hypervisor.WriteArray(0x4450A6, new byte[] { 0x89, 0x01, 0x88, 0x01, 0xA5, 0x01, 0x94, 0x01, 0x97, 0x01, 0x97, 0x01, 0x95, 0x01, 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
                     }
 
                     else
                     {
-                        Hypervisor.Write<byte>(_healthAddress, 0x1E);
-                        Hypervisor.Write<byte>(_healthAddress + 0x01, 0x1E);
-                        Hypervisor.WriteArray(_abilityAddress, new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
+                        Hypervisor.Write<byte>(0x445056, 0x1E);
+                        Hypervisor.Write<byte>(0x445056 + 0x01, 0x1E);
+                        Hypervisor.WriteArray(0x4450A6, new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 });
                     }
                     
-                    Hypervisor.Write<byte>(_compAddress, 0x04);
+                    Hypervisor.Write<byte>(0x446262, 0x04);
                     
-                    Hypervisor.Write<byte>(_compAddress + 0x08, 0x06);
-                    Hypervisor.Write<byte>(_compAddress + 0x0A, 0x40);
-                    Hypervisor.Write<byte>(_compAddress + 0x0D, 0x02);
+                    Hypervisor.Write<byte>(0x446262 + 0x08, 0x06);
+                    Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
+                    Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
 
                     Variables.SkipRoxas = false;
                     Variables.SkipComplete = true;
@@ -223,17 +264,18 @@ namespace ReFixed
             var _framerateRead = Hypervisor.Read<byte>(Variables.FramerateAddress);
             var _instructionRead = Hypervisor.Read<byte>(_instructionAddress, true);
 
-            // Unlock the memory page with the instruction.
-            Hypervisor.UnlockBlock(_instructionAddress, true);
-
             // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
             if (_framerateRead == 0x00 && _instructionRead == 0x90)
+            {
+                Hypervisor.UnlockBlock(_instructionAddress, true);
                 Hypervisor.WriteArray(_instructionAddress, Variables.LimiterInstruction, true);
+            }
             
             // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
             else if (_framerateRead != 0x00 && _instructionRead != 0x90)
             {
                 // NOP the instruction.
+                Hypervisor.UnlockBlock(_instructionAddress, true);
                 Hypervisor.WriteArray(_instructionAddress, Variables.LimiterRemoved, true);
 
                 // Set the current limiter to be off.
@@ -273,38 +315,37 @@ namespace ReFixed
                         // Increase the accumilator for the text array.
                         _secAccumilator++;
                     }
+
+                    // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
+                    Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
+                    Hypervisor.Write<uint>(0x255D006, 0x01B434);
+                    Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
+
+                    // Write the RCs text.
+                    Hypervisor.WriteArray(0x2572571, _raveText.ToKHSCII());
                 }
-
-                // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
-                Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
-                Hypervisor.Write<uint>(0x255D006, 0x01B434);
-                Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
-
-                // Write the RCs text.
-                Hypervisor.WriteArray(0x2572571, _raveText.ToKHSCII());
             #endregion
         }
 
         public static void OverrideShortcuts()
         {
             var _confirmRead = Hypervisor.Read<byte>(Variables.ConfirmAddress);
+            var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
 
-            Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
 
-            if (_confirmRead == 0x00)
+            if (_confirmRead == 0x00 && _shortRead != 0x02BA)
             {
+                Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02BA);
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
             }
 
-            else
+            else if (_shortRead != 0x02AB)
             {
+                Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
             }
-
-            Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x02, 0x02BD);
-            Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x04, 0x02C0);
         }
 
         public static void Execute()
@@ -317,6 +358,8 @@ namespace ReFixed
 
             OverrideText();
             OverrideShortcuts();
+
+            ProcessRPC();
         }
     }
 }

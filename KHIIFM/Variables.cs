@@ -11,12 +11,22 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+using DiscordRPC;
+
 namespace ReFixed
 {
 	public partial class Variables
 	{
 		// Set to 0x01 if playing on v0.1
-		public const int Version = 0x01;
+		public const int Version = 0x00;
+
+		public static DiscordRpcClient RichClient = new DiscordRpcClient("833511404274974740");
+
+		public static string[] BattleImages = new string[] { "safe", "mob", "boss" };
+        public static string[] WorldImages = new string[] { "", "", "tt", "", "hb", "bb", "he", "al", "mu", "po", "lk", "lm", "dc", "wi", "nm", "wm", "ca", "tr", "eh" };
+
+		public static string[] FormText = new string[] { "None", "Valor", "Wisdom", "Limit", "Master", "Final", "Anti" };
+        public static string[] ModeText = new string[] { "Beginner Mode", "Standard Mode", "Proud Mode", "Critical Mode" };
 
         public static Process GameProcess;
         public static IntPtr GameHandle;
@@ -34,7 +44,7 @@ namespace ReFixed
 
 		public static ulong ConfirmAddress = Version == 0x00 ? 0x365550 : 0x365520;
 		public static ulong FramerateAddress = Version == 0x00 ? 0x36553C : 0x36550C;
-		
+
 		public static ulong LimiterAddress = 0x553EBA;
 		
 		public static ulong InstructionAddress = Version == 0x00 ? 0x152160 : 0x152220;
@@ -52,7 +62,7 @@ namespace ReFixed
 		public static bool RoomLoad = false;
 		public static ulong LoadAddress = 0x453B82;
 
-		public static ulong RoomAddress = 0x1B086A;
+		public static ulong RoomAddress = Version == 0x00 ? 0x1B08AA : 0x1B086A;
 		public static ulong StoryFlagAddress = 0x444832;
 		public static ulong DifficultyAddress = 0x444FFA;
 		public static ulong InventoryFlagAddress = 0x444F00;

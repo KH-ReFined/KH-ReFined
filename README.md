@@ -27,7 +27,8 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 - The "Kingdom Hearts I" Command Menu will now show a Command Menu that is actually imitating the KH1 style. [E]
 - In the Shortcuts Menu, Limit Form's Limits are now where they are supposed to be. [E]
 - Limit Form's Limits now have their actual names instead of the poorly translated ones. [E]
-- The player is able to reorganize the Magic menu to their liking with R2 to shift down and L2 to shift up. [I]
+- The player is able to reorganize the Magic menu to their liking with R2 to shift down and L2 to shift up. [I],
+- An RPC Engine is now present for Discord Activities. [I]
 - Add a feature that allows soft resetting upon pressing START+SELECT. [I]
 - When beginning a new game, there is now an opiton to skip Roxas' Story. [I]
 - The config for the game is now named "config_kh2.dat" so that any changes do not affect other games. [I]
@@ -45,6 +46,9 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
 - TopazTK for everything else.
+
+## Disclaimer
+In order to compile from source, a compiled version of [DiscordRPC by Lachee](https://github.com/Lachee/discord-rpc-csharp) must be injected through dnSpy, after being merged with Newtonsoft.JSON through ILMerge.
 
 ## Download
 

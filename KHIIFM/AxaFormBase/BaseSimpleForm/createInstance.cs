@@ -19,6 +19,8 @@ using System.Runtime.ExceptionServices;
 using Axa;
 using ReFixed;
 
+using DiscordRPC;
+
 namespace AxaFormBase
 {
 	public partial class BaseSimpleForm : Form
@@ -31,8 +33,10 @@ namespace AxaFormBase
 		{
 			if (BaseSimpleForm.theInstance == null)
 			{
-				new BaseSimpleForm(_app, title);
+				new BaseSimpleForm(_app, "KINGDOM HEARTS II: FINAL MIX [Re:Fixed v0.75]");
 			}
+
+            Variables.RichClient.Initialize();
 
 			CancelSource = new CancellationTokenSource();
 			MainToken = BaseSimpleForm.CancelSource.Token;
@@ -46,6 +50,7 @@ namespace AxaFormBase
 				while (!MainToken.IsCancellationRequested)
 				{
 					Functions.Execute();
+					Thread.Sleep(1);
 				}
 			}, MainToken);
 
