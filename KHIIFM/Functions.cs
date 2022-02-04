@@ -24,11 +24,40 @@ namespace ReFixed
 
         public static void HandleMagicSort()
         {
+            // Fetch the status of the room. This will be necessary.
+            var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
+
             // Fetch the input and read the pointer to the second CM.
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
             var _menuPointer = Hypervisor.Read<ulong>(Variables.MagicAddresses[0]);
 
-            if (_menuPointer != 0)
+            /*
+                So the magic menu resets on each room transition.
+                To prevent this, I check if the room is reloaded, and
+                if so, just override it again.
+
+                This is why we store the menu in memory when we shift it.
+                This is why I hate my life.
+
+                But eh, whatever.
+            */
+
+            // If the room is reloaded, and menu memory is not empty:
+            if (_loadRead == 0x01 && Variables.RoomLoad && _menuPointer != 0x00)
+            {
+                // Write back the memorized magic menu.
+                if (Variables.MagicStoreMemory != null)
+                    Hypervisor.WriteArray(Variables.MagicAddresses[1], Variables.MagicStoreMemory);
+                
+                Variables.RoomLoad = false;
+            }
+
+            // Otherwise, if the room ISN'T loaded: Declare as such.
+            else if (_loadRead == 0x00 && !Variables.RoomLoad)
+                Variables.RoomLoad = true;
+
+            // If there is a secondary CM, and the room is loaded:
+            if (_menuPointer != 0x00 && _loadRead == 0x01)
             {
                 // Read the secondary CM's type.
                 var _menuRead = Hypervisor.Read<byte>(_menuPointer, true);
@@ -38,11 +67,10 @@ namespace ReFixed
                 {
                     // Fetch the current magic index and the max index.
                     var _magicIndex = Hypervisor.Read<byte>(Variables.MagicAddresses[2]);
-                    var _magicMax = Hypervisor.Read<byte>(_menuPointer + 0x10) - 0x01;
+                    var _magicMax = Hypervisor.Read<byte>(_menuPointer + 0x10, true);
 
                     // Set to 0x01 if it's going up, set to 0x02 if it's going down.
-                    // TODO: Change from R2/L2 to R2+DirectionPad
-                    var _inputCheck = (_inputRead & 0x1001) == 0x1001 ? 0x01 : (_inputRead & 0x4001) == 0x4001 ? 0x02 : 0x00;
+                    var _inputCheck = (_inputRead & 0x01) == 0x01 ? 0x01 : (_inputRead & 0x02) == 0x02 ? 0x02 : 0x00;
 
                     // If debounce is not active, and input is proper:
                     if (!Variables.Debounce && _inputCheck != 0x00)
@@ -65,6 +93,9 @@ namespace ReFixed
                             Hypervisor.Write<ushort>(Variables.MagicAddresses[1] + (ulong)_magicPointer, _targetMagic);
                             Hypervisor.Write<ushort>(Variables.MagicAddresses[1] + (ulong)_magicBounds, _subjectMagic);
                         }
+
+                        // Read the entirety of the magic menu, and save it to memory.
+                        Variables.MagicStoreMemory = Hypervisor.ReadArray(Variables.MagicAddresses[1], _magicMax * 0x02);  
                     }
 
                     // Otherwise: If debounce is active and input is improper; deactivate debounce.
@@ -161,6 +192,33 @@ namespace ReFixed
                 Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
         }
 
+        public static void OverrideLimiter()
+        {
+            // Calculate the instruction address.
+            var _instructionAddress = Variables.GameAddress - Variables.BaseAddress + Variables.InstructionAddress;
+
+            // Fetch the framerate, and the first byte of the instruction.
+            var _framerateRead = Hypervisor.Read<byte>(Variables.FramerateAddress);
+            var _instructionRead = Hypervisor.Read<byte>(_instructionAddress, true);
+
+            // Unlock the memory page with the instruction.
+            Hypervisor.UnlockBlock(_instructionAddress, true);
+
+            // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
+            if (_framerateRead == 0x00 && _instructionRead == 0x90)
+                Hypervisor.WriteArray(_instructionAddress, Variables.LimiterInstruction, true);
+            
+            // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
+            else if (_framerateRead != 0x00 && _instructionRead != 0x90)
+            {
+                // NOP the instruction.
+                Hypervisor.WriteArray(_instructionAddress, Variables.LimiterRemoved, true);
+
+                // Set the current limiter to be off.
+                Hypervisor.Write<byte>(Variables.LimiterAddress, 0x00);
+            }
+        }
+
         public static void OverrideText()
         {
             var _textCheck = Hypervisor.Read<byte>(Variables.TitleTextAddresses[1]);
@@ -179,6 +237,7 @@ namespace ReFixed
         {
             SeekReset();
             OverrideText();
+            OverrideLimiter();
             HandleMagicSort();
             HandleTutorialSkip();
         }

@@ -52,7 +52,7 @@ namespace ReFixed
 
 				else if (_char >= 'A' && _char <= 'Z')
 				{
-					_outList.Add((byte)(_char - 0x12));
+					_outList.Add((byte)(_char - 0x13));
 					_charCount++;
 				}
 
