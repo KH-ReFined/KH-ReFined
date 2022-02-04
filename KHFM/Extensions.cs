@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace ReFixed
 {
-    public partial class Extensions
+    public static class Extensions
     {
         public static byte[] ToKHSCII(this string inText)
 		{

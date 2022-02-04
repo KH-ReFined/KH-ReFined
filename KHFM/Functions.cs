@@ -7,13 +7,64 @@
 */
 
 using System;
+using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+
+using DiscordRPC;
 
 namespace ReFixed
 {
 	public static class Functions
 	{
+        public static void ProcessRPC()
+        {
+            var _healthValue = Hypervisor.Read<byte>(0x029B8CC6);
+            var _magicValue = Hypervisor.Read<byte>(0x029B8CCE);
+            var _levelValue = Hypervisor.Read<byte>(0x02A453CE);
+			var _diffValue = Hypervisor.Read<byte>(0x02A5B7F6);
+
+            var _stringState = string.Format("Level {0} | {1} Mode", _levelValue, Variables.ModeText.ElementAtOrDefault(_diffValue));
+            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
+
+            var _worldID = Hypervisor.Read<byte>(0x01F9C4D6);
+			var _gummiCheck = Hypervisor.Read<byte>(0x00163C17);
+            var _battleFlag = Hypervisor.Read<byte>(0x024C3352);
+
+            var _timeValue = Math.Floor(Hypervisor.Read<int>(0x01F9BC4E) / 60F);
+            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
+            var _timeHours = Math.Floor(_timeValue / 3600F);
+
+            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+
+            Variables.RichClient.SetPresence(new RichPresence()
+            {
+                Details = _stringDetail,
+                State = _stringState,
+                Assets = new Assets()
+                {
+                    LargeImageKey = _gummiCheck == 0 ? Variables.WorldImages.ElementAtOrDefault(_worldID) : "wm",
+                    LargeImageText = _timeText,
+                    SmallImageKey = _battleFlag % 2 == 0 ? "safe" : "battle",
+                    SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
+                },
+                
+                Buttons = new Button[] 
+                { 
+					new Button()
+                    { 
+                        Label = "Powered by Re:Fixed", 
+                        Url = "https://github.com/TopazTK/KH-ReFixed" 
+                    },
+                    new Button()
+                    { 
+                        Label = "Icons by Tevelo", 
+                        Url = "https://github.com/Tevelo" 
+                    } 
+                }
+            });
+        }
+
 		public static void OverrideText()
 		{
 		    if (Hypervisor.Read<byte>(Variables.FovTextAddresses[1]) != 0x30)
@@ -25,7 +76,7 @@ namespace ReFixed
 					Hypervisor.Write<ushort>(Variables.CamTextAddresses[0] + (0x02 * i), Variables.CamTextOffsets[i]);
 
 				Hypervisor.WriteArray(Variables.FovTextAddresses[1], Variables.FovTextString.ToKHSCII());
-				Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextArray.ToKHSCII());
+				Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextString.ToKHSCII());
 		    }
 		}
 
@@ -126,10 +177,13 @@ namespace ReFixed
 
 		public static void Execute()
 		{
-		    OverrideText();
-		    OverrideFov();
-			OverrideMP();
 			SeekReset();
+			OverrideFov();
+			
+		    OverrideText();
+		    OverrideMP();
+
+			ProcessRPC();
 		}
 	}
 }
