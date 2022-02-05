@@ -37,7 +37,6 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 
 ### All Games
 - Televo for the icons used in Discord Rich Presence.
-- Stickman Sham for the idea that led to Magic Reorganization in KH2FM.
 
 ### Kingdom Hearts 1
 - Denhonator for his work on Soft Reset, Cutscene Skip, and Volume Mute.
@@ -45,6 +44,7 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 - TopazTK for everything else.
 
 ### Kingdom Hearts 2
+- Stickman Sham for the idea that led to Magic Reorganization.
 - Denhonator for his work on Soft Reset and Volume Mute.
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
