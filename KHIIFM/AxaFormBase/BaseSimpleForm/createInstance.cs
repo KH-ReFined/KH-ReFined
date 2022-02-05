@@ -43,7 +43,8 @@ namespace AxaFormBase
 
 			Variables.GameProcess = Process.GetCurrentProcess();
 			Variables.GameHandle = Variables.GameProcess.Handle;
-			Variables.GameAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64() + Variables.BaseAddress;
+			Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
+			Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
 
 			MainTask = Task.Factory.StartNew(delegate()
 			{

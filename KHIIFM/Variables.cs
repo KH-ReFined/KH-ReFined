@@ -30,7 +30,9 @@ namespace ReFixed
 
         public static Process GameProcess;
         public static IntPtr GameHandle;
+
         public static ulong GameAddress;
+		public static ulong ExeAddress;
 
 		public static bool SkipRoxas = false;
 		public static bool SkipComplete = false;
@@ -39,7 +41,7 @@ namespace ReFixed
 
 		public static ulong BaseAddress = Version == 0x00 ? 0x56450E : 0x56454E;
 
-		public static ulong InputAddress = Version == 0x00 ? 0x1ACF7B : 0x1ACF7B - 0x40;
+		public static ulong InputAddress = Version == 0x00 ? 0x1ACF7B : 0x1ACF3B;
 		public static ulong VibrationAddress = 0x55A19E;
 
 		public static ulong ConfirmAddress = Version == 0x00 ? 0x365550 : 0x365520;
@@ -77,6 +79,24 @@ namespace ReFixed
 			0x257257C, 0x2571C0D,
 			0x2572565, 0x2571B80,
 			0x2572534, 0x2571D03
+		};
+
+		public static ulong[] SelectAddresses = new ulong[]
+		{
+			0x3AEC01,
+			0x3AECE5,
+			0x3AED8C,
+			0x3AED0D,
+			0x3AED5C
+		};
+
+		public static byte[][] SelectInstructions = new byte[][]
+		{
+			new byte[] { 0x89, 0x4B, 0x74 },
+			new byte[] { 0x89, 0x53, 0x74 },
+			new byte[] { 0x89, 0x7B, 0x74 },
+			new byte[] { 0x89, 0x4B, 0x74 },
+			new byte[] { 0x89, 0x43, 0x74 }
 		};
 
 		public static byte[] StoryFlagArray = new byte[]

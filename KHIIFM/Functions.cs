@@ -122,7 +122,26 @@ namespace ReFixed
                     var _magicMax = Hypervisor.Read<byte>(_menuPointer + 0x10, true);
 
                     // Set to 0x01 if it's going up, set to 0x02 if it's going down.
-                    var _inputCheck = (_inputRead & 0x01) == 0x01 ? 0x01 : (_inputRead & 0x02) == 0x02 ? 0x02 : 0x00;
+                    var _inputCheck = (_inputRead & 0x01001) == 0x1001 ? 0x01 : (_inputRead & 0x4001) == 0x4001 ? 0x02 : 0x00;
+                    var _triggerCheck = (_inputRead & 0x01) == 0x01;
+
+					// Read the instruction.
+					var _insCheck = Hypervisor.Read<byte>(Variables.ExeAddress + Variables.SelectAddresses[0], true);
+
+                    // If L2 is being held down:
+                    if (_triggerCheck && _insCheck != 0x90)
+                    {
+                        // NOP out command selection, so it does not interfere with our input.
+                        for (int _ins = 0; _ins < Variables.SelectAddresses.Length; _ins++)
+                            Hypervisor.WriteArray(Variables.ExeAddress + Variables.SelectAddresses[_ins], new byte[] { 0x90, 0x90, 0x90 }, true);
+                    }
+
+                    else if (!_triggerCheck && _insCheck == 0x90)
+                    {
+                        // Revert the NOP'd instructions.
+                        for (int _ins = 0; _ins < Variables.SelectAddresses.Length; _ins++)
+                            Hypervisor.WriteArray(Variables.ExeAddress + Variables.SelectAddresses[_ins], Variables.SelectInstructions[_ins], true);
+                    }
 
                     // If debounce is not active, and input is proper:
                     if (!Variables.Debounce && _inputCheck != 0x00)
@@ -145,6 +164,10 @@ namespace ReFixed
                             Hypervisor.Write<ushort>(Variables.MagicAddresses[1] + (ulong)_magicPointer, _targetMagic);
                             Hypervisor.Write<ushort>(Variables.MagicAddresses[1] + (ulong)_magicBounds, _subjectMagic);
                         }
+
+                        // Move the magic index.
+                        Hypervisor.Write<int>(Variables.MagicAddresses[2], _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01));
+                        Hypervisor.Write<ushort>(Variables.MagicAddresses[2] + 0x04, _subjectMagic);
 
                         // Read the entirety of the magic menu, and save it to memory.
                         Variables.MagicStoreMemory = Hypervisor.ReadArray(Variables.MagicAddresses[1], _magicMax * 0x02);  
@@ -263,7 +286,7 @@ namespace ReFixed
         public static void OverrideLimiter()
         {
             // Calculate the instruction address.
-            var _instructionAddress = Variables.GameAddress - Variables.BaseAddress + Variables.InstructionAddress;
+            var _instructionAddress = Variables.ExeAddress + Variables.InstructionAddress;
 
             // Fetch the framerate, and the first byte of the instruction.
             var _framerateRead = Hypervisor.Read<byte>(Variables.FramerateAddress);
