@@ -1,6 +1,12 @@
 # Kingdom Hearts - Re:Fixed
 
-## Why?
+## Download
+
+Get the latest release by clicking the button below.
+
+[![KH-ReFixed](https://img.shields.io/badge/KH--ReFixed-Download-blue.svg)](https://github.com/TopazTK/KH-ReFixed/releases)
+
+## Purpose
 
 Because these PC ports of Kingdom Hearts deserve much better than what we got.  This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
   
@@ -8,30 +14,46 @@ Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
 
 ## Features
 
-_(Features presented with the suffix of [E] are bug or error fixes, while those with [I] are improvements.)_
+_Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_
 
 ### All Games
-- Disable the framelimiter in cutscenes. [E]
-- Voice channels will now be muted when set to "1". [I]
-- An RPC Engine is now present for Discord Activities. [I]
-- Add a feature that allows soft resetting upon pressing START+SELECT. [I]
-- The config for the game is now named "config_xxx.dat" so that any changes do not affect other games. [I]
+
+| Error/Bug Fix | Enhancement | Description |
+|---------------|-------------|-------------|
+| :heavy_check_mark: | - | Disable cutscene framelimiter [[1]](#reference) |
+| - | :heavy_check_mark: | Voice channels will now be muted when set to "1" in the PC settings menu |
+| - | :heavy_check_mark: | An RPC Engine is now present for use with Discord |
+| - | :heavy_check_mark: | Press START + SELECT to soft reset |
+| - | :heavy_check_mark: | Creates a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis |
 
 ### Kingdom Hearts 1
-- The MP Bar will not be present until Sora learns a spell. [I]
-- Opening Chests and Examining Objects can now be done in battle. [E]
-- Add in a toggle to the Config menu which toggles between KH1 and KH2 style Field of View. [I]
-- Fix an issue with the cutscenes, preventing pause and skipping whilst they have a fade effect. [E]
-- The aspect ratio will now be adjusted upon entering Fullscreen. (4:3, 16:9, 16:10, 29:9, and 32:9) [I]
-- Fix the Title Screen option on the Save Menu so it actually returns to the Title Screen instead of crashing the game. [E]
 
-### Kingdom Hearts 2
-- Fix an issue with 60FPS being locked on certain situations. [E]
-- When beginning a new game, there is now an opiton to skip Roxas' Story. [I]
-- In the Shortcuts Menu, Limit Form's Limits are now where they are supposed to be. [E]
-- Limit Form's Limits now have their actual names instead of the poorly translated ones. [E]
-- The player is able to reorganize the Magic menu to their liking with R2 to shift down and L2 to shift up. [I]
-- The "Kingdom Hearts I" Command Menu will now show a Command Menu that is actually imitating the KH1 style. [E]
+| Error/Bug Fix | Enhancement | Description |
+|---------|-------------|-------------|
+| :heavy_check_mark: | - | The player can now open chests and examine objects while in combat |
+| :heavy_check_mark: | - | Fixes an issue with cutscenes, preventing pausing + skipping during a fade effect |
+| :heavy_check_mark: | - | Fix the `Title Screen` option in the save menu so it no longer crashes the game |
+| - | :heavy_check_mark: | MP bar will no longer be present until Sora learns his first magic [[2]](#reference) | 
+| - | :heavy_check_mark: | Add a toggle in the `Config` menu to switch between original and a KH2-like improved field of view |
+| - | :heavy_check_mark: | Autodetect the correct screen aspect ratio when in fullscreen |
+
+### Kingdom Hearts II
+
+| Error/Bug Fix | Enhancement | Description |
+|---------|-------------|-------------|
+| :heavy_check_mark: | - | Fix an issue with 60fps being locked in certain scenarios | 
+| :heavy_check_mark: | - | Corrects an issue with Limit Form's shortcuts being misplaced when O/B is used to confirm |
+| :heavy_check_mark: | - | Corrects Limit Form's Limit names so that they are more accurately translated [[3]](#reference) |
+| - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game.
+| - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence |
+| - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking [[4]](#reference) | 
+
+#### Reference
+
+1. Cutscenes will by default lock the game to 30fps. This alleviates that.
+2. As soon as the player picks their Dream Weapon, Sora has MP, despite having no magic. This fix will now make said MP bar invisible until the player learns their first magic spell. (Usually Fire.)
+3. In the HD remaster of KH2FM, the localization team changed the translation of certain attacks to contrast with their usual translations from Japanese. E.g. Ragnarok -> Infinity.
+4. In KH3, the player can reorganize their magic menu. This feature is neat, so now it's in KH2. To do this, highlight your magic command and press R2/RT to shift down and L2/LT to shift up.
 
 ## Credits
 
@@ -53,6 +75,3 @@ _(Features presented with the suffix of [E] are bug or error fixes, while those 
 ## Disclaimer
 In order to compile from source, a compiled version of [DiscordRPC by Lachee](https://github.com/Lachee/discord-rpc-csharp) must be injected through dnSpy, after being merged with Newtonsoft.JSON through ILMerge.
 
-## Download
-
-Releases tab has all the downloads.
