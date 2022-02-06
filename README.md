@@ -37,7 +37,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | - | :heavy_check_mark: | Add a toggle in the `Config` menu to switch between original and a KH2-like improved field of view |
 | - | :heavy_check_mark: | Autodetect the correct screen aspect ratio when in fullscreen |
 
-### Kingdom Hearts II
+### Kingdom Hearts 2
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
