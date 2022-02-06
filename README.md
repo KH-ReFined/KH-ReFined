@@ -81,6 +81,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 - TopazTK for everything else.
 
 ### Kingdom Hearts - Birth by Sleep
+- Denhonator for his work on Volume Mute.
 - TopazTK for everything so far.
 
 ## Disclaimer
