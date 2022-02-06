@@ -1,5 +1,9 @@
 # Kingdom Hearts - Re:Fixed
 
+## Game Status
+
+You can see which games are supported, and which patches are live below:
+  
 [![Kingdom Hearts I](https://img.shields.io/badge/Kingdom%20Hearts%20I-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH1)  
 [![Kingdom Hearts II](https://img.shields.io/badge/Kingdom%20Hearts%20II-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH2)  
 ![Chain of Memories](https://img.shields.io/badge/Chain%20of%20Memories-Not%20Present!-red)  
