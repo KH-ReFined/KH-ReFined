@@ -7,7 +7,7 @@ Get the latest release by clicking the button below.
 [![KH-ReFixed](https://img.shields.io/badge/KH--ReFixed-Download-blue.svg)](https://github.com/TopazTK/KH-ReFixed/releases)
 ## Purpose
 
-Because these PC ports of Kingdom Hearts deserve much better than what we got.  This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
+This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
   
 Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
 
