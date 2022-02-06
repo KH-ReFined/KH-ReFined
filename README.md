@@ -1,15 +1,5 @@
 # Kingdom Hearts - Re:Fixed
 
-## Game Status
-
-You can see which games are supported, and which patches are live below:
-  
-[![Kingdom Hearts I](https://img.shields.io/badge/Kingdom%20Hearts%20I-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH1)  
-[![Kingdom Hearts II](https://img.shields.io/badge/Kingdom%20Hearts%20II-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH2)  
-![Chain of Memories](https://img.shields.io/badge/Chain%20of%20Memories-Not%20Present!-red)  
-[![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Work%20in%20Progress!-yellow)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
-![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Not%20Present!-red)  
-
 ## Download
 
 Get the latest release by clicking the button below.
@@ -20,6 +10,16 @@ Get the latest release by clicking the button below.
 Because these PC ports of Kingdom Hearts deserve much better than what we got.  This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
   
 Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
+
+## Game Status
+
+You can see which games are supported, and which patches are live below:
+  
+[![Kingdom Hearts I](https://img.shields.io/badge/Kingdom%20Hearts%20I-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH1)  
+[![Kingdom Hearts II](https://img.shields.io/badge/Kingdom%20Hearts%20II-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH2)  
+![Chain of Memories](https://img.shields.io/badge/Chain%20of%20Memories-Not%20Present!-red)  
+[![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Work%20in%20Progress!-yellow)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
+![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Not%20Present!-red)  
 
 ## Features
 
