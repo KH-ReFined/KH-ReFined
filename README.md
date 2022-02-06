@@ -67,21 +67,20 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 
 ### All Games
 - Televo for the icons used in Discord Rich Presence.
+- Denhonator for his work on Soft Reset and Volume Mute.
 
 ### Kingdom Hearts 1
-- Denhonator for his work on Soft Reset, Cutscene Skip, and Volume Mute.
+- Denhonator for his work on Cutscene Skip.
 - KSX for his work on the MP Bar, and Field of View.
 - TopazTK for everything else.
 
 ### Kingdom Hearts 2
 - Stickman Sham for the idea that led to Magic Reorganization.
-- Denhonator for his work on Soft Reset and Volume Mute.
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
 - TopazTK for everything else.
 
 ### Kingdom Hearts - Birth by Sleep
-- Denhonator for his work on Volume Mute.
 - TopazTK for everything so far.
 
 ## Disclaimer
