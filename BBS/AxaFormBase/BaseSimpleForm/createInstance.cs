@@ -19,6 +19,8 @@ using System.Runtime.ExceptionServices;
 using Axa;
 using ReFixed;
 
+using DiscordRPC;
+
 namespace AxaFormBase
 {
 	public partial class BaseSimpleForm : Form
@@ -33,6 +35,8 @@ namespace AxaFormBase
 		{
 			if (theInstance == null)
 				new BaseSimpleForm(_app, "KINGDOM HEARTS - BIRTH BY SLEEP: FINAL MIX [Re:Fixed v1.00]");
+
+			Variables.RichClient.Initialize();
 
 			CancelSource = new CancellationTokenSource();
 			MainToken = BaseSimpleForm.CancelSource.Token;

@@ -10,12 +10,16 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+using DiscordRPC;
+
 namespace ReFixed
 {
 	public partial class Variables
 	{
+		public static DiscordRpcClient RichClient = new DiscordRpcClient("939407076747272203");
+
 	    public static string[] ModeText = new string[] { "Beginner", "Standard", "Proud", "Critical" };
-        public static string[] WorldImages = new string[] { "ex", "sw", "ci", "sb", "tt", "hb", "", "he", "st", "di", "nl", "dc", "eh", "", "ar", "ar", "wm", "po", "dw"};
+        public static string[] WorldImages = new string[] { "", "ex", "sw", "ci", "sb", "tt", "hb", "dw", "he", "st", "di", "nl", "dc", "eh", "", "ar", "ar", "wm", "po" };
 
         public static string[] CharText = 
 		{

@@ -87,6 +87,7 @@ namespace ReFixed.Forms
                 this.Controls.Add(this.labelInfo);
                 this.Controls.Add(this.labelTask);
                 this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+                this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.eventKeyDown);
                 this.Name = "InputText";
                 this.Text = "Rename Finisher";
                 this.ResumeLayout(false);
@@ -117,7 +118,7 @@ namespace ReFixed.Forms
 
         private void eventSubmit(object sender, EventArgs e)
         {
-            if (inputBox.Text.Length > 0)
+            if (FinisherName.Length > 0)
             {
                 DialogResult = DialogResult.OK;
                 Close();
@@ -134,6 +135,15 @@ namespace ReFixed.Forms
         {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+        private void eventKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter && FinisherName.Length > 0x00)
+            {
+                DialogResult = DialogResult.OK;
+                Close();
+            }
         }
     }
 }
