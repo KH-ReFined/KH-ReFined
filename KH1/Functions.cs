@@ -37,32 +37,65 @@ namespace ReFixed
 
             var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
 
-            Variables.RichClient.SetPresence(new RichPresence()
-            {
-                Details = _stringDetail,
-                State = _stringState,
-                Assets = new Assets()
-                {
-                    LargeImageKey = _gummiCheck == 0 ? Variables.WorldImages.ElementAtOrDefault(_worldID) : "wm",
-                    LargeImageText = _timeText,
-                    SmallImageKey = _battleFlag % 2 == 0 ? "safe" : "battle",
-                    SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
-                },
-                
-                Buttons = new Button[] 
-                { 
-					new Button()
-                    { 
-                        Label = "Powered by Re:Fixed", 
-                        Url = "https://github.com/TopazTK/KH-ReFixed" 
-                    },
-                    new Button()
-                    { 
-                        Label = "Icons by Televo", 
-                        Url = "https://github.com/Televo" 
-                    } 
-                }
-            });
+			if (_worldID != 0xFF)
+			{
+				Variables.RichClient.SetPresence(new RichPresence()
+				{
+					Details = _stringDetail,
+					State = _stringState,
+					Assets = new Assets()
+					{
+						LargeImageKey = _gummiCheck == 0 ? Variables.WorldImages.ElementAtOrDefault(_worldID) : "wm",
+						LargeImageText = _timeText,
+						SmallImageKey = _battleFlag % 2 == 0 ? "safe" : "battle",
+						SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
+					},
+					
+					Buttons = new Button[] 
+					{ 
+						new Button()
+						{ 
+							Label = "Powered by Re:Fixed", 
+							Url = "https://github.com/TopazTK/KH-ReFixed" 
+						},
+						new Button()
+						{ 
+							Label = "Icons by Televo", 
+							Url = "https://github.com/Televo" 
+						} 
+					}
+				});
+			}
+
+			else
+			{				
+				Variables.RichClient.SetPresence(new RichPresence()
+				{
+					Details = "On the Title Screen",
+					State = null,
+					
+					Assets = new Assets()
+					{
+						LargeImageKey = "title",
+						SmallImageKey = null,
+						SmallImageText = null
+					},
+					
+					Buttons = new DiscordRPC.Button[] 
+					{ 
+						new DiscordRPC.Button()
+						{ 
+							Label = "Powered by Re:Fixed", 
+							Url = "https://github.com/TopazTK/KH-ReFixed" 
+						},
+						new DiscordRPC.Button()
+						{ 
+							Label = "Icons by Televo", 
+							Url = "https://github.com/Televo" 
+						} 
+					}
+				});
+			}
         }
 
 		public static void OverrideText()

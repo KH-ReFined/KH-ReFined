@@ -20,9 +20,10 @@ namespace ReFixed
         public static bool IsTitle()
         {
             var _roomCheck = Hypervisor.Read<uint>(Variables.RoomAddress);
+            var _softCheck = Hypervisor.Read<uint>(Variables.TitleBackAddress);
             var _titleCheck = Hypervisor.Read<uint>(Variables.TitleFlagAddress);
 
-            return _roomCheck == 0x00FFFFFF || _roomCheck == 0x00000101 || _titleCheck == 0x01;
+            return _roomCheck == 0x00FFFFFF || _roomCheck == 0x00000101 || _titleCheck == 0x01 || _softCheck == 0x01;
         }
 
         public static void ProcessRPC()
@@ -46,32 +47,65 @@ namespace ReFixed
 
             var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
 
-            Variables.RichClient.SetPresence(new RichPresence()
+            if (!IsTitle())
             {
-                Details = _stringDetail,
-                State = _stringState,
-                Assets = new Assets()
+                Variables.RichClient.SetPresence(new RichPresence()
                 {
-                    LargeImageKey = Variables.WorldImages.ElementAtOrDefault(_worldID),
-                    LargeImageText = _timeText,
-                    SmallImageKey = Variables.BattleImages.ElementAtOrDefault(_battleFlag),
-                    SmallImageText = Variables.ModeText.ElementAtOrDefault(_diffValue)
-                },
-                
-                Buttons = new Button[] 
-                { 
-					new Button()
-                    { 
-                        Label = "Powered by Re:Fixed", 
-                        Url = "https://github.com/TopazTK/KH-ReFixed" 
+                    Details = _stringDetail,
+                    State = _stringState,
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = Variables.WorldImages.ElementAtOrDefault(_worldID),
+                        LargeImageText = _timeText,
+                        SmallImageKey = Variables.BattleImages.ElementAtOrDefault(_battleFlag),
+                        SmallImageText = Variables.ModeText.ElementAtOrDefault(_diffValue)
                     },
-                    new Button()
+                    
+                    Buttons = new Button[] 
                     { 
-                        Label = "Icons by Tevelo", 
-                        Url = "https://github.com/Tevelo" 
-                    } 
-                }
-            });
+                        new Button()
+                        { 
+                            Label = "Powered by Re:Fixed", 
+                            Url = "https://github.com/TopazTK/KH-ReFixed" 
+                        },
+                        new Button()
+                        { 
+                            Label = "Icons by Tevelo", 
+                            Url = "https://github.com/Tevelo" 
+                        } 
+                    }
+                });
+            }
+
+            else
+            {
+                Variables.RichClient.SetPresence(new RichPresence()
+				{
+					Details = "On the Title Screen",
+					State = null,
+					
+					Assets = new Assets()
+					{
+						LargeImageKey = "title",
+						SmallImageKey = null,
+						SmallImageText = null
+					},
+					
+					Buttons = new DiscordRPC.Button[] 
+					{ 
+						new DiscordRPC.Button()
+						{ 
+							Label = "Powered by Re:Fixed", 
+							Url = "https://github.com/TopazTK/KH-ReFixed" 
+						},
+						new DiscordRPC.Button()
+						{ 
+							Label = "Icons by Televo", 
+							Url = "https://github.com/Televo" 
+						} 
+					}
+				});
+            }
         }
 
         public static void HandleMagicSort()
@@ -279,8 +313,7 @@ namespace ReFixed
             So, this is the best solution to this problem. Just write a function to NOP
             that instruction whilst in 60FPS or above, but recover it once 30FPS is selected.
 
-            These solutions will also pave the way to fixing the L2+Pad input problem of Magic Sort.
-            But I can't be bothered to work on that *right away* so just wait for the next update.
+            These solutions have also paved the way to fixing the L2+Pad input problem of Magic Sort.
         */
 
         public static void OverrideLimiter()
