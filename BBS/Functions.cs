@@ -169,9 +169,44 @@ namespace ReFixed
 			}
 		}
 
+		/*
+    		"Same sort of shit as KH2?"
+
+			Same sort of shit as KH2, yes.
+        */
+
+        public static void OverrideLimiter()
+        {
+            // Calculate the instruction address.
+            var _instructionAddress = Variables.ExeAddress + Variables.InstructionAddress;
+
+            // Fetch the framerate, and the first byte of the instruction.
+            var _framerateRead = Hypervisor.Read<byte>(Variables.FramerateAddress);
+            var _instructionRead = Hypervisor.Read<byte>(_instructionAddress, true);
+
+            // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
+            if (_framerateRead == 0x00 && _instructionRead == 0x90)
+            {
+                Hypervisor.UnlockBlock(_instructionAddress, true);
+                Hypervisor.WriteArray(_instructionAddress, Variables.LimiterInstruction, true);
+            }
+            
+            // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
+            else if (_framerateRead != 0x00 && _instructionRead != 0x90)
+            {
+                // NOP the instruction.
+                Hypervisor.UnlockBlock(_instructionAddress, true);
+                Hypervisor.WriteArray(_instructionAddress, Variables.LimiterRemoved, true);
+
+                // Set the current limiter to be off.
+                Hypervisor.Write<byte>(Variables.LimiterAddress, 0x00);
+            }
+        }
+
 		public static void Execute()
 		{
 			RenameFinisher();
+			OverrideLimiter();
 
 			ProcessRPC();
 		}
