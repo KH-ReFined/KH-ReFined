@@ -75,7 +75,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 ## Credits
 
 ### All Games
-- Televo for the icons used in Discord Rich Presence.
+- Televo for the icons used in Discord Rich Presence and the Executables.
 - Denhonator for his work on Soft Reset and Volume Mute.
 
 ### Kingdom Hearts 1
