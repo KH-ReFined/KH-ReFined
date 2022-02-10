@@ -71,7 +71,7 @@ namespace ReFixed
                         new Button()
                         { 
                             Label = "Icons by Tevelo", 
-                            Url = "https://github.com/Tevelo" 
+                            Url = "https://github.com/Televo/kingdom-hearts-recollection" 
                         } 
                     }
                 });

@@ -67,7 +67,7 @@ namespace ReFixed
 						new DiscordRPC.Button()
 						{ 
 							Label = "Icons by Televo", 
-							Url = "https://github.com/Televo" 
+							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
 						} 
 					}
 				});
