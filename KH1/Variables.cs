@@ -1,9 +1,9 @@
 /*
-=================================================
+===================================================
       KINGDOM HEARTS - RE:FIXED FOR 1 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
- LICENSED UNDER MIT. GIVE CREDIT WHERE IT'S DUE! 
-=================================================
+ LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
+===================================================
 */
 
 using System;
