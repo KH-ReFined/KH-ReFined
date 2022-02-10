@@ -169,6 +169,16 @@ namespace ReFixed
 			}
 		}
 
+		// Y'all I found the byte by accident, fml.
+
+		public static void SeekReset()
+        {
+            var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
+
+            if ((_inputRead & 0x0008) == 0x0008 && (_inputRead & 0x0001) == 0x0001)
+                Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
+        }
+
 		/*
     		"Same sort of shit as KH2?"
 
@@ -205,6 +215,8 @@ namespace ReFixed
 
 		public static void Execute()
 		{
+			SeekReset();
+			
 			RenameFinisher();
 			OverrideLimiter();
 
