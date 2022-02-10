@@ -42,9 +42,10 @@ namespace ReFixed
 		public static ulong InputAddress = 0x20EA64;
 		public static ulong NameAddress = 0x10994128;
 		public static ulong FinisherAddress = 0x109A3334;
-		public static ulong FramerateAddress = 0x10ADCEA6;
 
-		public static ulong InstructionAddress = 0xE2009;
+		public static ulong LimiterAddress = 0x863210;
+		public static ulong FramerateAddress = 0x10ADCEA6;
+		public static ulong InstructionAddress = 0x254EDC;
 
 		public static ulong BaseAddress = 0x60E334;
 
