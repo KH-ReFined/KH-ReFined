@@ -23,8 +23,8 @@ You can see which games are supported, and which patches are live below:
 
 ## Support
 If you wish to support this project, consider becoming a Patron.  
+  
 [![Patreon](https://img.shields.io/endpoint?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%2F%3Fusername%3Dtopaztk%26type%3Dpatrons)](https://www.patreon.com/topaztk)
-
 
 ## Features
 
