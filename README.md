@@ -72,6 +72,10 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 4. In KH3, the player can reorganize their magic menu. This feature is neat, so now it's in KH2. To do this, highlight your magic command and press R2/RT to shift down and L2/LT to shift up.
 5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Triangle, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
 
+## Support
+If you wish to support this project, consider becoming a Patron.
+[![Patreon](https://img.shields.io/endpoint?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%2F%3Fusername%3Dtopaztk%26type%3Dpatrons)](https://www.patreon.com/topaztk)
+
 ## Credits
 
 ### All Games
