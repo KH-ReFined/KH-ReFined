@@ -10,6 +10,8 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+using DiscordRPC;
+
 namespace ReFixed
 {
 	public partial class Variables
