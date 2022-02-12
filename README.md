@@ -74,7 +74,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 1. Cutscenes will by default lock the game to 30fps. This alleviates that.
 2. As soon as the player picks their Dream Weapon, Sora has MP, despite having no magic. This fix will now make said MP bar invisible until the player learns their first magic spell. (Usually Fire.)
 3. In the HD remaster of KH2FM, the localization team changed the translation of certain attacks to contrast with their usual translations from Japanese. E.g. Ragnarok -> Infinity.
-4. In KH3, the player can reorganize their magic menu. This feature is neat, so now it's in KH2. To do this, highlight your magic command and press R2/RT to shift down and L2/LT to shift up.
+4. In KH3, the player can reorganize their magic menu. This feature is neat, so now it's in KH2. To do this, highlight your magic command and press L2/LT+DPAD to shift around.
 5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Triangle, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
 
 ## Credits
