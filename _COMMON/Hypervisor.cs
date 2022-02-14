@@ -8,6 +8,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Diagnostics;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
@@ -121,7 +122,7 @@ namespace ReFixed
 
             var _length = 0;
 
-            while (Read<byte>(_address + _length, Absolute) != 0x00)
+            while (Read<byte>((ulong)(_address + _length), Absolute) != 0x00)
                 _length++;
 
             var _outArray = new byte[_length];

@@ -411,12 +411,6 @@ namespace ReFixed
             }
         }
 
-        /*
-            Here is the funciton to handle making the Autosave.
-            Be warned -- I do not know if this'll actually be any good.
-            But we shall see after I write the thing.
-        */
-
         public static void CreateAutosave()
         {
             // Prepare the pointers.
@@ -439,9 +433,6 @@ namespace ReFixed
 
             var _saveInfoStartRAM = _pointerSecond + 0x168;
             var _saveDataStartRAM = _pointerSecond + 0x19630;
-
-            Console.WriteLine(_saveInfoStartRAM.ToString("X16"));
-            Console.WriteLine(_saveDataStartRAM.ToString("X16"));
 
             var _saveInfoStartFILE = 0x1C8;
             var _saveDataStartFILE = 0x19690;
@@ -470,9 +461,6 @@ namespace ReFixed
                 // Fetch the address for the save info.
                 var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
                 var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
-
-                Console.WriteLine(_saveInfoAddrRAM.ToString("X16"));
-                Console.WriteLine(_saveDataAddrRAM.ToString("X16"));
 
                 // Write out the save information.
                 Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
