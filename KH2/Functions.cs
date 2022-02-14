@@ -544,7 +544,7 @@ namespace ReFixed
 
                 else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
                 {
-                    if (Variables.SaveIterator == 2)
+                    if (Variables.SaveIterator == 3)
                     {
                         CreateAutosave();
                         Variables.SaveIterator = 0;

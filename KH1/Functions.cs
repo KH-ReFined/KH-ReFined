@@ -369,6 +369,7 @@ namespace ReFixed
 
 		public static void HandleAutosave()
         {
+			var _fadeCheck = Hypervisor.Read<byte>(0x138DB2);
             var _battleRead = Hypervisor.Read<byte>(0x024C3352);
 			var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
 
@@ -376,7 +377,7 @@ namespace ReFixed
             var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
 
             // If not in the title screen, nor in a battle, and the room is loaded:
-            if (_titleCheck > 0x02 && _battleRead == 0x00)
+            if (_titleCheck > 0x02 && _battleRead == 0x00 && _fadeCheck == 0x80)
             {
                 // If the past WorldID is not equal to the current WorldID:
                 if (Variables.SaveWorld != _worldCheck)
@@ -385,9 +386,9 @@ namespace ReFixed
                     Variables.SaveIterator = 0;
                 }
 
-                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 1)
                 {
-                    if (Variables.SaveIterator == 2)
+                    if (Variables.SaveIterator == 3)
                     {
                         CreateAutosave();
                         Variables.SaveIterator = 0;
