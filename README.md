@@ -36,6 +36,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 |---------------|-------------|-------------|
 | :heavy_check_mark: | - | Disable cutscene framelimiter [[1]](#reference) |
 | - | :heavy_check_mark: | Voice channels will now be muted when set to "1" in the PC settings menu |
+| - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99 |
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord |
 | - | :heavy_check_mark: | Press START + SELECT to soft reset |
 | - | :heavy_check_mark: | Creates a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis |
@@ -67,7 +68,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
 | :heavy_check_mark: | - | Fix an issue with 30fps being forced when talking to people | 
-| :heavy_check_mark: | - | Add back the ability to rename finishers. [[5]](#reference) |
+| :heavy_check_mark: | - | Add back the ability to rename finishers [[5]](#reference) |
 
 #### Reference
 
