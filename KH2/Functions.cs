@@ -7,6 +7,8 @@
 */
 
 using System;
+using System.IO;
+using System.Text;
 using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -298,7 +300,9 @@ namespace ReFixed
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
             if ((_inputRead & 0x0800) == 0x0800 && (_inputRead & 0x0100) == 0x0100)
-                Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
+                CreateAutosave();
+
+                // Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
         }
 
         /*
@@ -423,7 +427,7 @@ namespace ReFixed
 
             // Prepare the strings.
             var _saveName = "BISLPM-66675FM-98";
-            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\KHIIFM.png";
+            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM.png";
 
             // Calculate the Unix Date.
             var _currDate = DateTime.Now;
@@ -435,8 +439,12 @@ namespace ReFixed
             var _saveInfoLength = 0x158;
             var _saveDataLength = 0x10FC0;
 
-            var _saveInfoStartRAM = Hypervisor.Read<ulong>(_pointerSecond, true) + 0x168;
-            var _saveDataStartRAM = Hypervisor.Read<ulong>(_pointerSecond, true) + 0x19630;
+            var _saveInfoStartRAM = _pointerSecond + 0x168;
+            var _saveDataStartRAM = _pointerSecond + 0x19630;
+
+            Console.WriteLine(_saveInfoStartRAM.ToString("X16"));
+            Console.WriteLine(_saveDataStartRAM.ToString("X16"));
+
             var _saveInfoStartFILE = 0x1C8;
             var _saveDataStartFILE = 0x19690;
 
@@ -444,7 +452,7 @@ namespace ReFixed
             var _saveData = Hypervisor.ReadArray(Variables.SaveAddress, _saveDataLength);
 
             // Seek out the physical slot of the save to make.
-            while (Hypervisor.Read<byte>(_saveInfoStart + _saveInfoLength * _saveSlot, true) != 0x00)
+            while (Hypervisor.Read<byte>(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), true) != 0x00)
                 _saveSlot++;
 
             // Calculate the checksums.
@@ -456,28 +464,31 @@ namespace ReFixed
 
             #region RAM Save
                 // Fetch the address for the save info.
-                var _saveInfoAddr = _saveInfoStartRAM + _saveInfoLength * _saveSlot;
-                var _saveDataAddr = _saveDataStartRAM + _saveDataLength * _saveSlot;
+                var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
+                var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
+
+                Console.WriteLine(_saveInfoAddrRAM.ToString("X16"));
+                Console.WriteLine(_saveDataAddrRAM.ToString("X16"));
 
                 // Write out the save information.
-                Hypervisor.Write<string>(_saveInfoAddr, _saveName, true);
+                Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
 
                 // Write the date in which the save was made.
-                Hypervisor.Write<ulong>(_saveInfoAddr + 0x40, _writeDate, true);
-                Hypervisor.Write<ulong>(_saveInfoAddr + 0x48, _writeDate, true);
+                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x40, _writeDate, true);
+                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x48, _writeDate, true);
 
                 // Write the length of the save.
-                Hypervisor.Write<uint>(_saveInfoAddr + 0x50, _saveDataLength, true);
+                Hypervisor.Write<int>(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
 
                 // Write the header.
-                Hypervisor.Write<string>(_saveDataAddr, "KH2J", true);
-                Hypervisor.Write<uint>(_saveDataAddr + 0x04, 0x3A, true);
+                Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.Default.GetBytes("KH2J"), true);
+                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x04, 0x3A, true);
 
                 // Write the checksum.
-                Hypervisor.Write<uint>(_saveDataAddr + 0x08, _checkData, true);
+                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x08, _checkData, true);
 
                 // Write, the save.
-                Hypervisor.WriteArray(_saveDataAddr + 0x0C, _dataArray, true);
+                Hypervisor.WriteArray(_saveDataAddrRAM + 0x0C, _dataArray, true);
             #endregion
             
             #region File Save
@@ -487,7 +498,7 @@ namespace ReFixed
                 var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
                 
                 // Create the writer.
-                using (var _stream = new FileStream(_savPath, FileMode.Open))
+                using (var _stream = new FileStream(_savePath, FileMode.Open))
                 using (var _write = new BinaryWriter(_stream))
                 {
                     // Write out the save information.

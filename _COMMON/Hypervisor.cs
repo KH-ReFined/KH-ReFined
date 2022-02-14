@@ -121,7 +121,7 @@ namespace ReFixed
 
             var _length = 0;
 
-            while (Read<byte>(_address + _length) != 0x00)
+            while (Read<byte>(_address + _length, Absolute) != 0x00)
                 _length++;
 
             var _outArray = new byte[_length];

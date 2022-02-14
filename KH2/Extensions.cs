@@ -88,17 +88,17 @@ namespace ReFixed
 			return _outList.ToArray();
 		}
 
-		private static uint CalculateCRC32(byte[] data, int offset, uint checksum)
+		public static uint CalculateCRC32(byte[] data, int offset, uint checksum)
 		{
 			uint[] array = GetCRC32Table(0x4C11DB7).Take(0x100).ToArray();
 			
 			for (var i = 0; i < offset; i++)
-                checksum = crc_table[(checksum >> 24) ^ data[i]] ^ (checksum << 8);
+                checksum = array[(checksum >> 24) ^ data[i]] ^ (checksum << 8);
 
             return checksum ^ uint.MaxValue;
 		}
 
-		private static IEnumerable<uint> GetCRC32Table(int polynomial)
+		public static IEnumerable<uint> GetCRC32Table(int polynomial)
         {
             for (var x = 0; ; x++)
             {
