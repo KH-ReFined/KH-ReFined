@@ -77,6 +77,10 @@ namespace ReFixed
 		public static ulong InformationPointer = 0x25A5972;
 		public static ulong SaveAddress = 0x442B62;
 
+		public static byte SaveIterator;
+		public static byte SaveWorld;
+		public static byte SaveRoom;
+
 		public static ulong[] LimitAddresses = new ulong[]
 		{
 			0x257257C, 0x2571C0D,

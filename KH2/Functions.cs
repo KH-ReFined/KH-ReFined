@@ -300,9 +300,7 @@ namespace ReFixed
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
             if ((_inputRead & 0x0800) == 0x0800 && (_inputRead & 0x0100) == 0x0100)
-                CreateAutosave();
-
-                // Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
+                Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
         }
 
         /*
@@ -451,9 +449,15 @@ namespace ReFixed
             // Read the save from RAM.
             var _saveData = Hypervisor.ReadArray(Variables.SaveAddress, _saveDataLength);
 
+            // Read the save slot.
+            var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+
             // Seek out the physical slot of the save to make.
-            while (Hypervisor.Read<byte>(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), true) != 0x00)
+            while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM-98"))
+            {
                 _saveSlot++;
+                _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+            }
 
             // Calculate the checksums.
             var _magicArray = _saveData.Take(0x08).ToArray();
@@ -503,7 +507,7 @@ namespace ReFixed
                 {
                     // Write out the save information.
                     _stream.Position = _saveInfoAddr;
-                    _write.Write(_saveName);
+                    _write.Write(Encoding.Default.GetBytes(_saveName));
 
                     // The date in which the save was made.
                     _stream.Position = _saveInfoAddr + 0x40;
@@ -517,7 +521,7 @@ namespace ReFixed
                     
                     // Write the header.
                     _stream.Position = _saveDataAddr;
-                    _write.Write("KH2J");
+                    _write.Write(Encoding.Default.GetBytes("KH2J"));
                     _stream.Position = _saveDataAddr + 0x04;
                     _write.Write(0x3A);
 
@@ -532,8 +536,45 @@ namespace ReFixed
             #endregion
         }
 
+        public static void HandleAutosave()
+        {
+            var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
+            var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
+
+            var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
+            var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
+
+            // If not in the title screen, nor in a battle, and the room is loaded:
+            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            {
+                // If the past WorldID is not equal to the current WorldID:
+                if (Variables.SaveWorld != _worldCheck)
+                { 
+                    CreateAutosave();
+                    Variables.SaveIterator = 0;
+                }
+
+                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                {
+                    if (Variables.SaveIterator == 2)
+                    {
+                        CreateAutosave();
+                        Variables.SaveIterator = 0;
+                    }
+
+                    else
+                        Variables.SaveIterator++;
+                }
+
+                Variables.SaveWorld = _worldCheck;
+                Variables.SaveRoom = _roomCheck;
+            }
+        }
+
         public static void Execute()
         {
+            HandleAutosave();
+
             SeekReset();
             HandleTutorialSkip();
 
