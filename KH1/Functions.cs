@@ -204,9 +204,8 @@ namespace ReFixed
 			
 			if (_buttonRead || _saveMenuRead)
 			{
-				Hypervisor.Write<byte>(Variables.ResetAddresses[0], 0x02);
+				Hypervisor.Write<byte>(Variables.ResetAddresses[0], 0x01);
 				Hypervisor.Write<byte>(Variables.ResetAddresses[1], 0x01);
-				Hypervisor.Write<byte>(Variables.ResetAddresses[2], 0x01);
 			}
 		}
 
@@ -371,12 +370,13 @@ namespace ReFixed
 		public static void HandleAutosave()
         {
             var _battleRead = Hypervisor.Read<byte>(0x024C3352);
+			var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
 
             var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
             var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
 
             // If not in the title screen, nor in a battle, and the room is loaded:
-            if (_worldCheck != 0xFF && _battleRead == 0x00)
+            if (_titleCheck > 0x02 && _battleRead == 0x00)
             {
                 // If the past WorldID is not equal to the current WorldID:
                 if (Variables.SaveWorld != _worldCheck)
