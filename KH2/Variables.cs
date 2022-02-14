@@ -88,7 +88,20 @@ namespace ReFixed
 			0x2572534, 0x2571D03
 		};
 
-		public static ulong[] SelectAddresses = new ulong[]
+		public static ulong[] SelectAddresses = Version == 0x00 ? 
+		
+		new ulong[]
+		{
+			0x3AEAC1,
+			0x3AEBA5,
+			0x3AEC4C,
+			0x3AEBCD,
+			0x3AEC1C
+		}
+
+		: 
+		
+		new ulong[]
 		{
 			0x3AEC01,
 			0x3AECE5,

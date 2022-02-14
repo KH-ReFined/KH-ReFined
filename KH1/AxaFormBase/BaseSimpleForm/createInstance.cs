@@ -34,6 +34,7 @@ namespace AxaFormBase
 			if (theInstance == null)
 				new BaseSimpleForm(_app, "KINGDOM HEARTS: FINAL MIX [Re:Fixed v1.25]");
 
+
 			Variables.RichClient.Initialize();
 
 			CancelSource = new CancellationTokenSource();

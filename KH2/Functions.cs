@@ -95,15 +95,15 @@ namespace ReFixed
 					
 					Buttons = new DiscordRPC.Button[] 
 					{ 
-						new DiscordRPC.Button()
+						new Button()
 						{ 
-							Label = "Powered by Re:Fixed", 
+							Label = "== Powered by Re:Fixed ==", 
 							Url = "https://github.com/TopazTK/KH-ReFixed" 
 						},
-						new DiscordRPC.Button()
+						new Button()
 						{ 
-							Label = "Icons by Televo", 
-							Url = "https://github.com/Televo" 
+							Label = "== Icons by Televo ==", 
+							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
 						} 
 					}
 				});
