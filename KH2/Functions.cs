@@ -7,6 +7,8 @@
 */
 
 using System;
+using System.IO;
+using System.Text;
 using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -306,7 +308,7 @@ namespace ReFixed
             "Topaz, why the fuck is this not an ASM Overwrite, and is an IL Hack?"
 
             Well you see, KH2 took a lazy approach for limiting the cutscenes to 30FPS.
-            They just enable the framelimiter for the **whole game* instead of just limitting
+            They just enable the framelimiter for the *whole game* instead of just limitting
             the cutscene like KH1 does. So if I overwrite that function in ASM, it will
             completely disable the 30FPS function. That is a big no-no since some do use it.
 
@@ -409,8 +411,158 @@ namespace ReFixed
             }
         }
 
+        public static void CreateAutosave()
+        {
+            // Prepare the pointers.
+            var _pointerBase = Hypervisor.Read<ulong>(Variables.InformationPointer);
+            var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
+
+            // Prepare the strings.
+            var _saveName = "BISLPM-66675FM-98";
+            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM.png";
+
+            // Calculate the Unix Date.
+            var _currDate = DateTime.Now;
+            var _unix = new DateTime(1970, 1, 1);
+            var _writeDate = Convert.ToUInt64((_currDate - _unix).TotalSeconds);
+
+            // Prepare the variables for Save Info.
+            var _saveSlot = 0;
+            var _saveInfoLength = 0x158;
+            var _saveDataLength = 0x10FC0;
+
+            var _saveInfoStartRAM = _pointerSecond + 0x168;
+            var _saveDataStartRAM = _pointerSecond + 0x19630;
+
+            var _saveInfoStartFILE = 0x1C8;
+            var _saveDataStartFILE = 0x19690;
+
+            // Read the save from RAM.
+            var _saveData = Hypervisor.ReadArray(Variables.SaveAddress, _saveDataLength);
+
+            // Read the save slot.
+            var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+
+            // Seek out the physical slot of the save to make.
+            while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM-98"))
+            {
+                _saveSlot++;
+                _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+            }
+
+            // Calculate the checksums.
+            var _magicArray = _saveData.Take(0x08).ToArray();
+            var _dataArray = _saveData.Skip(0x0C).ToArray();
+
+            var _checkMagic = Extensions.CalculateCRC32(_magicArray, 8, uint.MaxValue);
+            var _checkData = Extensions.CalculateCRC32(_dataArray, _dataArray.Length, _checkMagic ^ uint.MaxValue);
+
+            #region RAM Save
+                // Fetch the address for the save info.
+                var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
+                var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
+
+                // Write out the save information.
+                Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
+
+                // Write the date in which the save was made.
+                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x40, _writeDate, true);
+                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x48, _writeDate, true);
+
+                // Write the length of the save.
+                Hypervisor.Write<int>(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
+
+                // Write the header.
+                Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.Default.GetBytes("KH2J"), true);
+                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x04, 0x3A, true);
+
+                // Write the checksum.
+                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x08, _checkData, true);
+
+                // Write, the save.
+                Hypervisor.WriteArray(_saveDataAddrRAM + 0x0C, _dataArray, true);
+            #endregion
+            
+            #region File Save
+
+                // Fetch the address for the save info.
+                var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
+                var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
+                
+                // Create the writer.
+                using (var _stream = new FileStream(_savePath, FileMode.Open))
+                using (var _write = new BinaryWriter(_stream))
+                {
+                    // Write out the save information.
+                    _stream.Position = _saveInfoAddr;
+                    _write.Write(Encoding.Default.GetBytes(_saveName));
+
+                    // The date in which the save was made.
+                    _stream.Position = _saveInfoAddr + 0x40;
+                    _write.Write(_writeDate);
+                    _stream.Position = _saveInfoAddr + 0x48;
+                    _write.Write(_writeDate);
+
+                    // The length of the save.
+                    _stream.Position = _saveInfoAddr + 0x50;
+                    _write.Write(_saveDataLength);
+                    
+                    // Write the header.
+                    _stream.Position = _saveDataAddr;
+                    _write.Write(Encoding.Default.GetBytes("KH2J"));
+                    _stream.Position = _saveDataAddr + 0x04;
+                    _write.Write(0x3A);
+
+                    // Write the checksum.
+                    _stream.Position = _saveDataAddr + 0x08;
+                    _write.Write(_checkData);
+
+                    // Write, the save.
+                    _stream.Position = _saveDataAddr + 0x0C;
+                    _write.Write(_dataArray);
+                }
+            #endregion
+        }
+
+        public static void HandleAutosave()
+        {
+            var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
+            var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
+
+            var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
+            var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
+
+            // If not in the title screen, nor in a battle, and the room is loaded:
+            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            {
+                // If the past WorldID is not equal to the current WorldID:
+                if (Variables.SaveWorld != _worldCheck)
+                { 
+                    CreateAutosave();
+                    Variables.SaveIterator = 0;
+                }
+
+                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                {
+                    if (Variables.SaveIterator == 3)
+                    {
+                        CreateAutosave();
+                        Variables.SaveIterator = 0;
+                    }
+
+                    else
+                        Variables.SaveIterator++;
+                }
+
+                Variables.SaveWorld = _worldCheck;
+                Variables.SaveRoom = _roomCheck;
+            }
+        }
+
         public static void Execute()
         {
+            HandleAutosave();
+
             SeekReset();
             HandleTutorialSkip();
 

@@ -33,8 +33,8 @@ namespace AxaFormBase
 		{
 			if (BaseSimpleForm.theInstance == null)
 			{
-				new BaseSimpleForm(_app, "KINGDOM HEARTS II: FINAL MIX [Re:Fixed v1.00]");
-			}
+				new BaseSimpleForm(_app, "KINGDOM HEARTS II: FINAL MIX [Re:Fixed v1.25]");
+
 
             Variables.RichClient.Initialize();
 

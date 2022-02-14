@@ -32,7 +32,8 @@ namespace AxaFormBase
 		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
 		{
 			if (theInstance == null)
-				new BaseSimpleForm(_app, "KINGDOM HEARTS: FINAL MIX [Re:Fixed v1.00]");
+				new BaseSimpleForm(_app, "KINGDOM HEARTS: FINAL MIX [Re:Fixed v1.25]");
+
 
 			Variables.RichClient.Initialize();
 
@@ -41,7 +42,8 @@ namespace AxaFormBase
 
 			Variables.GameProcess = Process.GetCurrentProcess();
 			Variables.GameHandle = Variables.GameProcess.Handle;
-			Variables.GameAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64() + Variables.BaseAddress;
+			Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
+			Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
 
 			MainTask = Task.Factory.StartNew(delegate()
 			{
