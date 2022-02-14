@@ -244,9 +244,6 @@ namespace ReFixed
             // Read the save from RAM.
             var _saveData = Hypervisor.ReadArray(Variables.SaveAddress, _saveDataLength);
 
-			// Read the System Descriptor from RAM.
-            var _descData = Hypervisor.ReadArray(Variables.DescAddress, 0x40);
-
             // Read the save slot.
             var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)((_saveInfoLength * 2) * _saveSlot), 0x11, true);
 
@@ -297,7 +294,7 @@ namespace ReFixed
 
 				// Write the Magic Values for the descriptor.
                 Hypervisor.WriteArray(_saveDataAddrRAM + (ulong)_saveDataLength, Encoding.Default.GetBytes("KHSQ"), true);
-				Hypervisor.WriteArray(_saveDataAddrRAM + (ulong)(_saveDataLength + 0x04), 0x1317F14, true);
+				Hypervisor.Write<uint>(_saveDataAddrRAM + (ulong)(_saveDataLength + 0x04), 0x1317F14, true);
 
 				// Write the actual descriptor data.
 				Hypervisor.Write<byte>(_saveDataAddrRAM + (ulong)(_saveDataLength + 0x08), _levelRead, true);
@@ -313,7 +310,7 @@ namespace ReFixed
 
                 // Fetch the address for the save info.
                 var _saveInfoAddr = _saveInfoStartFILE + (_saveInfoLength * 2) * (_saveSlot - 0x01);
-                var _saveDataAddr = _saveDataStartFILE + (_saveDataLength * 2) * (_saveSlot - 0x01);
+                var _saveDataAddr = _saveDataStartFILE + (_saveDataLength * 2) * _saveSlot;
                 
                 // Create the writer.
                 using (var _stream = new FileStream(_savePath, FileMode.Open))
