@@ -112,6 +112,26 @@ namespace ReFixed
             WriteProcessMemory(Variables.GameHandle, _address, Value, Value.Length, ref _inWrite);
         }
 
+        public static string ReadTerminate(ulong Address, bool Absolute = false)
+        {
+            IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
+
+            if (Absolute)
+                _address = (IntPtr)(Address);
+
+            var _length = 0;
+
+            while (Read<byte>(_address + _length) != 0x00)
+                _length++;
+
+            var _outArray = new byte[_length];
+            int _outRead = 0;
+
+            ReadProcessMemory(Variables.GameHandle, _address, _outArray, _length, ref _outRead);
+
+            return Encoding.Default.GetString(_outArray);
+        }
+
         public static void UnlockBlock(ulong Address, bool Absolute = false)
         {
 			IntPtr _address = (IntPtr)(Variables.GameAddress + Address);

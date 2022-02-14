@@ -306,7 +306,7 @@ namespace ReFixed
             "Topaz, why the fuck is this not an ASM Overwrite, and is an IL Hack?"
 
             Well you see, KH2 took a lazy approach for limiting the cutscenes to 30FPS.
-            They just enable the framelimiter for the **whole game* instead of just limitting
+            They just enable the framelimiter for the *whole game* instead of just limitting
             the cutscene like KH1 does. So if I overwrite that function in ASM, it will
             completely disable the 30FPS function. That is a big no-no since some do use it.
 
@@ -407,6 +407,118 @@ namespace ReFixed
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
             }
+        }
+
+        /*
+            Here is the funciton to handle making the Autosave.
+            Be warned -- I do not know if this'll actually be any good.
+            But we shall see after I write the thing.
+        */
+
+        public static void CreateAutosave()
+        {
+            // Prepare the pointers.
+            var _pointerBase = Hypervisor.Read<ulong>(Variables.InformationPointer);
+            var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
+
+            // Prepare the strings.
+            var _saveName = "BISLPM-66675FM-98";
+            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\KHIIFM.png";
+
+            // Calculate the Unix Date.
+            var _currDate = DateTime.Now;
+            var _unix = new DateTime(1970, 1, 1);
+            var _writeDate = Convert.ToUInt64((_currDate - _unix).TotalSeconds);
+
+            // Prepare the variables for Save Info.
+            var _saveSlot = 0;
+            var _saveInfoLength = 0x158;
+            var _saveDataLength = 0x10FC0;
+
+            var _saveInfoStartRAM = Hypervisor.Read<ulong>(_pointerSecond, true) + 0x168;
+            var _saveDataStartRAM = Hypervisor.Read<ulong>(_pointerSecond, true) + 0x19630;
+            var _saveInfoStartFILE = 0x1C8;
+            var _saveDataStartFILE = 0x19690;
+
+            // Read the save from RAM.
+            var _saveData = Hypervisor.ReadArray(Variables.SaveAddress, _saveDataLength);
+
+            // Seek out the physical slot of the save to make.
+            while (Hypervisor.Read<byte>(_saveInfoStart + _saveInfoLength * _saveSlot, true) != 0x00)
+                _saveSlot++;
+
+            // Calculate the checksums.
+            var _magicArray = _saveData.Take(0x08).ToArray();
+            var _dataArray = _saveData.Skip(0x0C).ToArray();
+
+            var _checkMagic = Extensions.CalculateCRC32(_magicArray, 8, uint.MaxValue);
+            var _checkData = Extensions.CalculateCRC32(_dataArray, _dataArray.Length, _checkMagic ^ uint.MaxValue);
+
+            #region RAM Save
+                // Fetch the address for the save info.
+                var _saveInfoAddr = _saveInfoStartRAM + _saveInfoLength * _saveSlot;
+                var _saveDataAddr = _saveDataStartRAM + _saveDataLength * _saveSlot;
+
+                // Write out the save information.
+                Hypervisor.Write<string>(_saveInfoAddr, _saveName, true);
+
+                // Write the date in which the save was made.
+                Hypervisor.Write<ulong>(_saveInfoAddr + 0x40, _writeDate, true);
+                Hypervisor.Write<ulong>(_saveInfoAddr + 0x48, _writeDate, true);
+
+                // Write the length of the save.
+                Hypervisor.Write<uint>(_saveInfoAddr + 0x50, _saveDataLength, true);
+
+                // Write the header.
+                Hypervisor.Write<string>(_saveDataAddr, "KH2J", true);
+                Hypervisor.Write<uint>(_saveDataAddr + 0x04, 0x3A, true);
+
+                // Write the checksum.
+                Hypervisor.Write<uint>(_saveDataAddr + 0x08, _checkData, true);
+
+                // Write, the save.
+                Hypervisor.WriteArray(_saveDataAddr + 0x0C, _dataArray, true);
+            #endregion
+            
+            #region File Save
+
+                // Fetch the address for the save info.
+                var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
+                var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
+                
+                // Create the writer.
+                using (var _stream = new FileStream(_savPath, FileMode.Open))
+                using (var _write = new BinaryWriter(_stream))
+                {
+                    // Write out the save information.
+                    _stream.Position = _saveInfoAddr;
+                    _write.Write(_saveName);
+
+                    // The date in which the save was made.
+                    _stream.Position = _saveInfoAddr + 0x40;
+                    _write.Write(_writeDate);
+                    _stream.Position = _saveInfoAddr + 0x48;
+                    _write.Write(_writeDate);
+
+                    // The length of the save.
+                    _stream.Position = _saveInfoAddr + 0x50;
+                    _write.Write(_saveDataLength);
+                    
+                    // Write the header.
+                    _stream.Position = _saveDataAddr;
+                    _write.Write("KH2J");
+                    _stream.Position = _saveDataAddr + 0x04;
+                    _write.Write(0x3A);
+
+                    // Write the checksum.
+                    _stream.Position = _saveDataAddr + 0x08;
+                    _write.Write(_checkData);
+
+                    // Write, the save.
+                    _stream.Position = _saveDataAddr + 0x0C;
+                    _write.Write(_dataArray);
+                }
+            #endregion
         }
 
         public static void Execute()

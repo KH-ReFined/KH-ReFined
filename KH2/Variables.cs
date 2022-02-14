@@ -75,6 +75,7 @@ namespace ReFixed
 		public static byte[] LimiterRemoved = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
 		public static ulong InformationPointer = 0x25A5972;
+		public static ulong SaveAddress = 0x442B62;
 
 		public static ulong[] LimitAddresses = new ulong[]
 		{
