@@ -49,6 +49,15 @@ namespace ReFixed
 
 		public static ulong BaseAddress = 0x60E334;
 
+		public static ulong InformationPointer = 0x109A387C;
+		public static ulong SaveAddress = 0x1098E9BC;
+		public static ulong WorldAddress = 0x1098E9D0;
+		public static ulong BattleAddress = 0x1098CF94;
+
+		public static byte SaveIterator;
+		public static byte SaveWorld;
+		public static byte SaveRoom;
+
 		public static byte[] LimiterInstruction = new byte[] { 0x44, 0x89, 0x15, 0x00, 0x12, 0x78, 0x00 };
 		public static byte[] LimiterRemoved = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 	}

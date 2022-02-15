@@ -7,6 +7,7 @@
 */
 
 using System;
+using System.IO;
 using System.Text;
 using System.Linq;
 using System.Diagnostics;
@@ -24,6 +25,14 @@ namespace ReFixed
 {
 	public static class Functions
 	{
+        public static bool IsTitle()
+        {
+            var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
+			var _roomID = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
+
+            return _worldID == 0xFF || _roomID == 0xFF || _worldID == 0x00;
+        }
+
 		/* 
 			BBS is bullshit, we need to work with pointers for a lot
 			of the stuff we will be doing here.
@@ -40,9 +49,9 @@ namespace ReFixed
             var _stringDetail = string.Format("Level {0} | {1} Mode", _levelValue, Variables.ModeText.ElementAtOrDefault(_diffValue));
             var _stringState = string.Format("Character: {0}", Variables.CharText.ElementAtOrDefault(_charValue));
 
-            var _worldID = Hypervisor.Read<byte>(0x206D6C);
-			var _roomID = Hypervisor.Read<byte>(0x206D6D);
-            var _battleFlag = Hypervisor.Read<byte>(0x1098CF94);
+            var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
+			var _roomID = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
+            var _battleFlag = Hypervisor.Read<byte>(Variables.BattleAddress);
 
 			if (_worldID != 0xFF && _roomID != 0xFF)
 			{
@@ -175,8 +184,11 @@ namespace ReFixed
         {
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
-            if ((_inputRead & 0x0008) == 0x0008 && (_inputRead & 0x0001) == 0x0001)
+            if ((_inputRead & 0x0008) == 0x0008 && (_inputRead & 0x0001) == 0x0001 && !IsTitle())
+            {
                 Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
+                Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
+            }
         }
 
 		/*
@@ -213,8 +225,161 @@ namespace ReFixed
             }
         }
 
+		public static void CreateAutosave()
+        {
+            // Prepare the pointers.
+            var _pointerBase = Hypervisor.Read<ulong>(Variables.InformationPointer);
+            var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
+
+            // Prepare the strings.
+            var _saveName = "XB1-BBS-99";
+            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHBbSFM.png";
+
+            // Calculate the Unix Date.
+            var _currDate = DateTime.Now;
+            var _unix = new DateTime(1970, 1, 1);
+            var _writeDate = Convert.ToUInt64((_currDate - _unix).TotalSeconds);
+
+            // Prepare the variables for Save Info.
+            var _saveSlot = 0;
+            var _saveInfoLength = 0x158;
+            var _saveDataLength = 0x13C00;
+
+            var _saveInfoStartRAM = _pointerSecond + 0x168;
+            var _saveDataStartRAM = _pointerSecond + 0x1C270;
+
+            var _saveInfoStartFILE = 0x1C8;
+            var _saveDataStartFILE = 0x1C2D0;
+
+            // Read the save from RAM.
+            var _saveData = Hypervisor.ReadArray(Variables.SaveAddress, 0x11E50);
+
+            // Read the save slot.
+            var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+
+            // Seek out the physical slot of the save to make.
+            while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("BBS-99"))
+            {
+                _saveSlot++;
+                _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+            }
+
+            // Calculate the checksums.
+            var _checkData = Extensions.CalculateCRC32(new MemoryStream(_saveData));
+
+            #region RAM Save
+                // Fetch the address for the save info.
+                var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
+                var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
+
+                // Write out the save information.
+                Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
+
+                // Write the date in which the save was made.
+                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x40, _writeDate, true);
+                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x48, _writeDate, true);
+
+                // Write the length of the save.
+                Hypervisor.Write<int>(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
+
+                // Write the header.
+                Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.Default.GetBytes("BBSD"), true);
+                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x04, 0x1D, true);
+
+				// Write the size.
+				Hypervisor.Write<int>(_saveDataAddrRAM + 0x08, 0x12000, true);
+
+                // Write the checksum.
+                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x0C, _checkData, true);
+
+                // Write, the save.
+                Hypervisor.WriteArray(_saveDataAddrRAM + 0x10, _saveData.Skip(0x10).ToArray(), true);
+            #endregion
+            
+            #region File Save
+
+                // Fetch the address for the save info.
+                var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
+                var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
+                
+                // Create the writer.
+                using (var _stream = new FileStream(_savePath, FileMode.Open))
+                using (var _write = new BinaryWriter(_stream))
+                {
+                    // Write out the save information.
+                    _stream.Position = _saveInfoAddr;
+                    _write.Write(Encoding.Default.GetBytes(_saveName));
+
+                    // The date in which the save was made.
+                    _stream.Position = _saveInfoAddr + 0x40;
+                    _write.Write(_writeDate);
+                    _stream.Position = _saveInfoAddr + 0x48;
+                    _write.Write(_writeDate);
+
+                    // The length of the save.
+                    _stream.Position = _saveInfoAddr + 0x50;
+                    _write.Write(0x12000);
+                    
+                    // Write the header.
+                    _stream.Position = _saveDataAddr;
+                    _write.Write(Encoding.Default.GetBytes("BBSD"));
+                    _stream.Position = _saveDataAddr + 0x04;
+                    _write.Write(0x1D);
+
+                    // Write the size.
+                    _stream.Position = _saveDataAddr + 0x08;
+                    _write.Write(0x11E50);
+
+					// Write the checksum.
+                    _stream.Position = _saveDataAddr + 0x0C;
+                    _write.Write(_checkData);
+
+                    // Write, the save.
+                    _stream.Position = _saveDataAddr + 0x10;
+                    _write.Write(_saveData.Skip(0x10).ToArray());
+                }
+            #endregion
+        }
+
+        public static void HandleAutosave()
+        {
+            var _battleRead = Hypervisor.Read<byte>(Variables.BattleAddress);
+            var _loadRead = Hypervisor.Read<byte>(0x20D2AC);
+
+            var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
+            var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
+
+            // If not in the title screen, nor in a battle, and the room is loaded:
+            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            {
+                // If the past WorldID is not equal to the current WorldID:
+                if (Variables.SaveWorld != _worldCheck)
+                { 
+                    CreateAutosave();
+                    Variables.SaveIterator = 0;
+                }
+
+                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                {
+                    if (Variables.SaveIterator == 3)
+                    {
+                        CreateAutosave();
+                        Variables.SaveIterator = 0;
+                    }
+
+                    else
+                        Variables.SaveIterator++;
+                }
+
+                Variables.SaveWorld = _worldCheck;
+                Variables.SaveRoom = _roomCheck;
+            }
+        }
+
 		public static void Execute()
 		{
+            HandleAutosave();
+            
 			SeekReset();
 			
 			RenameFinisher();
