@@ -82,7 +82,8 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 
 ### All Games
 - Televo for the icons used in Discord Rich Presence and the Executables.
-- Denhonator for his work on Soft Reset and Volume Mute.
+- Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.
+- Xeeynamo for the functions used to calculate the Save Checksum.
 
 ### Kingdom Hearts 1
 - Denhonator for his work on Cutscene Skip.
