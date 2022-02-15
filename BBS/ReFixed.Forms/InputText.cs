@@ -61,6 +61,7 @@ namespace ReFixed.Forms
                 this.inputBox.Name = "inputBox";
                 this.inputBox.Size = new System.Drawing.Size(269, 23);
                 this.inputBox.TabIndex = 2;
+				this.inputBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.eventKeyDown);
 
                 this.buttonCancel.Location = new System.Drawing.Point(150, 80);
                 this.buttonCancel.Name = "buttonCancel";

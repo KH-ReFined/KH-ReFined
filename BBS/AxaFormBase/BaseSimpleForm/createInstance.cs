@@ -34,7 +34,7 @@ namespace AxaFormBase
 		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
 		{
 			if (theInstance == null)
-				new BaseSimpleForm(_app, "KINGDOM HEARTS - BIRTH BY SLEEP: FINAL MIX [Re:Fixed v1.25]");
+				new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v1.25]");
 
 			Variables.RichClient.Initialize();
 
