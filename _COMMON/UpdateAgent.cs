@@ -50,7 +50,7 @@ namespace ReFixed
             if (_latestNumber > _version)
             {
                 var _boxMessage = "A new version of Re:Fixed has been detected!\n" +
-                                  "(Current: v{0}, Latest: v{1})\n\n" +
+                                  "[Current: v{0}, Latest: v{1}]\n\n" +
                                   "Do you wish to update the game?";  
 
                 var _boxTitle = "Re:Fixed Updater";  
