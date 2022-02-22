@@ -299,7 +299,7 @@ namespace ReFixed
         {
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
-            if ((_inputRead & 0x0800) == 0x0800 && (_inputRead & 0x0100) == 0x0100)
+            if (_inputRead == 0x0C09)
                 Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
         }
 
