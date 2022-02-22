@@ -34,7 +34,7 @@ namespace AxaFormBase
 			UpdateAgent.UpdateCheck();
 			
 			if (theInstance == null)
-				new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v1.25]");
+				new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v1.50]");
 
 
 			Variables.RichClient.Initialize();

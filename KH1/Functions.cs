@@ -102,51 +102,8 @@ namespace ReFixed
 
 		public static void OverrideText()
 		{
-		    if (Hypervisor.Read<byte>(Variables.FovTextAddresses[1]) != 0x30)
-		    {
-				for (uint i = 0; i < Variables.FovTextOffsets.Length; i++)
-					Hypervisor.Write<ushort>(Variables.FovTextAddresses[0] + (0x02 * i), Variables.FovTextOffsets[i]);
-
-				for (uint i = 0; i < Variables.CamTextOffsets.Length; i++)
-					Hypervisor.Write<ushort>(Variables.CamTextAddresses[0] + (0x02 * i), Variables.CamTextOffsets[i]);
-
-				Hypervisor.WriteArray(Variables.FovTextAddresses[1], Variables.FovTextString.ToKHSCII());
-				Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextString.ToKHSCII());
-		    }
-		}
-
-		public static void OverrideFov()
-		{
-		    var _fovToggle = Hypervisor.Read<int>(Variables.FovSwitchAddress);
-
-		    switch(_fovToggle)
-		    {
-				case 0:
-				{
-					var _fovFirst = Hypervisor.Read<float>(Variables.FovAddresses[0]);
-
-					if (_fovFirst != 400F)
-					{
-					for (uint i = 0; i < Variables.FovAddresses.Length; i++)
-						Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovClassic[i]);
-					}
-
-					break;
-				}
-
-				case 1:
-				{
-					var _fovFirst = Hypervisor.Read<float>(Variables.FovAddresses[0]);
-
-					if (_fovFirst != 600F)
-					{
-					for (int i = 0; i < Variables.FovAddresses.Length; i++)
-						Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovEnhanced[i]);
-					}
-
-					break;
-				}
-		    }
+		    if (Hypervisor.Read<byte>(Variables.SaveTextAddress) != 0x2B)
+				Hypervisor.WriteArray(Variables.SaveTextAddress, Variables.SaveTextString.ToKHSCII());
 		}
 
 		public static void OverrideAspect(float InputValue)
@@ -368,39 +325,44 @@ namespace ReFixed
         }
 
 		public static void HandleAutosave()
-        {
-			var _fadeCheck = Hypervisor.Read<byte>(0x138DB2);
-            var _battleRead = Hypervisor.Read<byte>(0x024C3352);
-			var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
+        {		    
+			var _saveToggle = Hypervisor.Read<int>(Variables.VibrationAddress);
 
-            var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
-            var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
+		    if (_saveToggle == 0x00)
+		    {
+				var _fadeCheck = Hypervisor.Read<byte>(0x138DB2);
+				var _battleRead = Hypervisor.Read<byte>(0x024C3352);
+				var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
 
-            // If not in the title screen, nor in a battle, and the room is loaded:
-            if (_titleCheck > 0x02 && _battleRead == 0x00 && _fadeCheck == 0x80)
-            {
-                // If the past WorldID is not equal to the current WorldID:
-                if (Variables.SaveWorld != _worldCheck)
-                { 
-                    CreateAutosave();
-                    Variables.SaveIterator = 0;
-                }
+				var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
+				var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
 
-                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 1)
-                {
-                    if (Variables.SaveIterator == 3)
-                    {
-                        CreateAutosave();
-                        Variables.SaveIterator = 0;
-                    }
+				// If not in the title screen, nor in a battle, and the room is loaded:
+				if (_titleCheck > 0x02 && _battleRead == 0x00 && _fadeCheck == 0x80)
+				{
+					// If the past WorldID is not equal to the current WorldID:
+					if (Variables.SaveWorld != _worldCheck)
+					{ 
+						CreateAutosave();
+						Variables.SaveIterator = 0;
+					}
 
-                    else
-                        Variables.SaveIterator++;
-                }
+					else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 1)
+					{
+						if (Variables.SaveIterator == 3)
+						{
+							CreateAutosave();
+							Variables.SaveIterator = 0;
+						}
 
-                Variables.SaveWorld = _worldCheck;
-                Variables.SaveRoom = _roomCheck;
-            }
+						else
+							Variables.SaveIterator++;
+					}
+
+					Variables.SaveWorld = _worldCheck;
+					Variables.SaveRoom = _roomCheck;
+				}
+			}
         }
 
 		public static void Execute()
@@ -408,7 +370,6 @@ namespace ReFixed
 			HandleAutosave();
 
 			SeekReset();
-			OverrideFov();
 			
 		    OverrideText();
 		    OverrideMP();
