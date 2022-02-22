@@ -190,7 +190,7 @@ namespace ReFixed
             if ((_inputRead & 0x0008) == 0x0008 && (_inputRead & 0x0001) == 0x0001 && !IsTitle())
             {
                 Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
-                Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
+                Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x00);
             }
         }
 
