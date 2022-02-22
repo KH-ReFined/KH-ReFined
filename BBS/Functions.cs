@@ -123,7 +123,7 @@ namespace ReFixed
 			if (_statusPointer > 0 || _commandPointer > 0)
 			{
 				// Fetch the Finisher Menu pointer.
-				var _finishPointer = _statusPointer > 0 ? Hypervisor.Read<ulong>(_statusPointer + 0xC8, true) : Hypervisor.Read<ulong>(_statusPointer + 0xF0, true); 
+				var _finishPointer = _statusPointer > 0 ? Hypervisor.Read<ulong>(_statusPointer + 0xC8, true) : Hypervisor.Read<ulong>(_commandPointer + 0xF0, true); 
 
 				// If the Finisher Menu is open, and it's pointer fetched:
 				if (_finishPointer > 0)

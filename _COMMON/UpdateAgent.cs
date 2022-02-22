@@ -113,7 +113,7 @@ namespace ReFixed
 
                             File.Delete(_downPath);
                             Process.Start(_exePath);
-                            Environment.Exit(0);
+                            System.Environment.Exit(0);
                         }
                     }
                 }
