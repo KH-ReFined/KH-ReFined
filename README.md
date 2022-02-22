@@ -103,7 +103,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 
 ## Third Party Libraries
 
-[DiscordRPC by Lachee](https://github.com/Lachee/discord-rpc-csharp)
-[DotNetZip by DinoChiesa](https://github.com/DinoChiesa/DotNetZip)
+[DiscordRPC by Lachee](https://github.com/Lachee/discord-rpc-csharp)  
+[DotNetZip by DinoChiesa](https://github.com/DinoChiesa/DotNetZip)  
 [Octokit.NET by GitHub](https://github.com/octokit/octokit.net)
 
