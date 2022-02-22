@@ -31,6 +31,8 @@ namespace AxaFormBase
 
 		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
 		{
+			UpdateAgent.UpdateCheck();
+			
 			if (theInstance == null)
 				new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v1.25]");
 
