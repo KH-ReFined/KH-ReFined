@@ -116,13 +116,14 @@ namespace ReFixed
 		public static void RenameFinisher()
 		{
 			// Fetch the Status Menu pointer.
-			var _menuPointer = Hypervisor.Read<ulong>(Variables.FinisherAddress);
+			var _statusPointer = Hypervisor.Read<ulong>(Variables.StatusAddress);
+            var _commandPointer = Hypervisor.Read<ulong>(Variables.CommandAddress);
 
 			// If the Status Menu is open, and it's pointer fetched:
-			if (_menuPointer > 0)
+			if (_statusPointer > 0 || _commandPointer > 0)
 			{
 				// Fetch the Finisher Menu pointer.
-				var _finishPointer = Hypervisor.Read<ulong>(_menuPointer + 0xC8, true);
+				var _finishPointer = _statusPointer > 0 ? Hypervisor.Read<ulong>(_statusPointer + 0xC8, true) : Hypervisor.Read<ulong>(_statusPointer + 0xF0, true); 
 
 				// If the Finisher Menu is open, and it's pointer fetched:
 				if (_finishPointer > 0)
@@ -130,7 +131,9 @@ namespace ReFixed
 					// Read the input, and the finisher that is currently selected.
 					// "Selected" means "Hovering", not "Active".
 					var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
-					var _selectedFinisher = Hypervisor.Read<byte>(_finishPointer + 0x8E, true);
+
+					var _selectedFinisher = _statusPointer > 0 ? Hypervisor.Read<byte>(_finishPointer + 0x8E, true) : Hypervisor.Read<ulong>(_finishPointer + 0xD8, true);
+                    _selectedFinisher = _statusPointer > 0 ? _selectedFinisher : Hypervisor.Read<byte>(_selectedFinisher + 0x8E, true);
 
 					// If the debounce is not active, and Triangle is pressed:
 					if ((_inputRead & 0x1000) == 0x1000 && !Variables.Debounce)

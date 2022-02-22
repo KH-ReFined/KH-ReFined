@@ -41,7 +41,8 @@ namespace ReFixed
 
 		public static readonly ulong InputAddress = 0x20EA64;
 		public static readonly ulong NameAddress = 0x10994128;
-		public static readonly ulong FinisherAddress = 0x109A3334;
+		public static readonly ulong StatusAddress = 0x109A3334;
+		public static readonly ulong CommandAddress = 0x109A333C;
 
 		public static readonly ulong LimiterAddress = 0x254EDC;
 		public static readonly ulong InstructionAddress = 0xE2009;
