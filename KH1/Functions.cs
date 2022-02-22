@@ -19,6 +19,15 @@ namespace ReFixed
 {
 	public static class Functions
 	{
+		public static bool IsTitle()
+        {
+            var _levelValue = Hypervisor.Read<byte>(Variables.LevelAddress);
+            var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
+			var _roomID = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
+
+            return _worldID == 0xFF || _roomID == 0xFF || _worldID == 0x00 || _levelValue == 0;
+        }
+
         public static void ProcessRPC()
         {
             var _healthValue = Hypervisor.Read<byte>(0x029B8CC6);
@@ -39,7 +48,7 @@ namespace ReFixed
 
             var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
 
-			if (_worldID != 0xFF)
+			if (!IsTitle())
 			{
 				Variables.RichClient.SetPresence(new RichPresence()
 				{
@@ -156,7 +165,7 @@ namespace ReFixed
 			var _selectRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect);
 			var _amountRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect + 0x044);
 
-			var _buttonRead = (_inputRead & 0x01) == 0x01 && (_inputRead & 0x08) == 0x08;
+			var _buttonRead = _inputRead == 0x0C09;
 			var _saveMenuRead = (_selectRead == _amountRead - 0x01) && (_inputRead & 0x4000) == 0x4000;
 			
 			if (_buttonRead || _saveMenuRead)
