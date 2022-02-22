@@ -53,6 +53,8 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | :heavy_check_mark: | - | Fix an issue with cutscenes, preventing pausing + skipping during a fade effect. |
 | :heavy_check_mark: | - | Fix the `Title Screen` option in the save menu so it no longer crashes the game. |
 | - | :heavy_check_mark: | Autodetect the correct screen aspect ratio when in fullscreen. |
+| - | :heavy_check_mark: | ??? |
+
 
 ### Kingdom Hearts 2
 
