@@ -27,10 +27,11 @@ namespace ReFixed
 	{
         public static bool IsTitle()
         {
+            var _levelValue = Hypervisor.Read<byte>(0x1098D02D);
             var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
 			var _roomID = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
 
-            return _worldID == 0xFF || _roomID == 0xFF || _worldID == 0x00;
+            return _worldID == 0xFF || _roomID == 0xFF || _worldID == 0x00 || _levelValue == 0;
         }
 
 		/* 
@@ -53,7 +54,7 @@ namespace ReFixed
 			var _roomID = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
             var _battleFlag = Hypervisor.Read<byte>(Variables.BattleAddress);
 
-			if (_worldID != 0xFF && _roomID != 0xFF)
+			if (!IsTitle())
 			{
 				Variables.RichClient.SetPresence(new RichPresence()
 				{
@@ -187,7 +188,7 @@ namespace ReFixed
         {
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
-            if ((_inputRead & 0x0008) == 0x0008 && (_inputRead & 0x0001) == 0x0001 && !IsTitle())
+            if (_inputRead == 0x0C09 && !IsTitle())
             {
                 Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
                 Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x00);

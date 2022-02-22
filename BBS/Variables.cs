@@ -39,6 +39,8 @@ namespace ReFixed
 
 		public static bool Debounce = false;
 
+		public static readonly ulong BaseAddress = 0x60E334;
+
 		public static readonly ulong InputAddress = 0x20EA64;
 		public static readonly ulong NameAddress = 0x10994128;
 		public static readonly ulong StatusAddress = 0x109A3334;
@@ -47,8 +49,6 @@ namespace ReFixed
 		public static readonly ulong LimiterAddress = 0x254EDC;
 		public static readonly ulong InstructionAddress = 0xE2009;
 		public static readonly ulong FramerateAddress = 0x10ADCEA6;
-
-		public static readonly ulong BaseAddress = 0x60E334;
 
 		public static readonly ulong InformationPointer = 0x109A387C;
 		public static readonly ulong SaveAddress = 0x1098E9BC;
