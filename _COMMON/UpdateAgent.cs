@@ -132,7 +132,7 @@ namespace ReFixed
 
                 var _boxFormat = String.Format(_boxMessage, _version.ToString("0.00"), _latestNumber.ToString("0.00"));
 
-                var _boxResult = MessageBox.Show(_boxFormat, _boxTitle, _boxButtons, MessageBoxIcon.Error);  
+                MessageBox.Show(_boxFormat, _boxTitle, _boxButtons, MessageBoxIcon.Error);  
             }
         }
 

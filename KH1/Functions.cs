@@ -17,9 +17,8 @@ using DiscordRPC;
 
 namespace ReFixed
 {
-	public static class Functions
+	public class Functions
 	{
-
 		public static bool IsTitle()
         {
             var _levelValue = Hypervisor.Read<byte>(Variables.LevelAddress);
@@ -51,25 +50,25 @@ namespace ReFixed
 
 			var _rpcButtons = new DiscordRPC.Button[] 
 			{ 
-				new Button()
+				new Button
 				{ 
 					Label = "== Powered by Re:Fixed ==", 
 					Url = "https://github.com/TopazTK/KH-ReFixed" 
 				},
-				new Button()
+				new Button
 				{ 
 					Label = "== Icons by Televo ==", 
 					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
 				} 
-			}
+			};
 
 			if (!IsTitle())
 			{
-				Variables.RichClient.SetPresence(new RichPresence()
+				Variables.RichClient.SetPresence(new RichPresence
 				{
 					Details = _stringDetail,
 					State = _stringState,
-					Assets = new Assets()
+					Assets = new Assets
 					{
 						LargeImageKey = _gummiCheck == 0 ? Variables.WorldImages.ElementAtOrDefault(_worldID) : "wm",
 						LargeImageText = _timeText,
@@ -83,12 +82,12 @@ namespace ReFixed
 
 			else
 			{				
-				Variables.RichClient.SetPresence(new RichPresence()
+				Variables.RichClient.SetPresence(new RichPresence
 				{
 					Details = "On the Title Screen",
 					State = null,
 					
-					Assets = new Assets()
+					Assets = new Assets
 					{
 						LargeImageKey = "title",
 						SmallImageKey = null,

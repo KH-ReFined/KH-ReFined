@@ -14,7 +14,7 @@ using DiscordRPC;
 
 namespace ReFixed
 {
-	public partial class Variables
+	public class Variables
 	{
 		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("939407076747272203");
 

@@ -15,10 +15,10 @@ using DiscordRPC;
 
 namespace ReFixed
 {
-	public partial class Variables
+	public class Variables
 	{
 		// Set to 0x01 if playing on v0.1
-		public const int Version = 0x00;
+		public static readonly int Version = 0x00;
 
 		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("833511404274974740");
 
