@@ -216,7 +216,7 @@ namespace ReFixed
                 Variables.SkipComplete = false;
             }
 
-            var _vibRead = Hypervisor.Read<byte>(Variables.VibrationAddress);
+            var _vibRead = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
             var _diffRead = Hypervisor.Read<byte>(Variables.DifficultyAddress);
 
             if (_skipBool && !IsTitle())
@@ -229,7 +229,7 @@ namespace ReFixed
                     case 0x00:
                         Variables.SkipRoxas = true;
                         Variables.SkipComplete = false;
-                        Hypervisor.Write<byte>(Variables.VibrationAddress, 0x01);
+                        Hypervisor.Write<ushort>(Variables.ConfigAddress, (ushort)(_vibRead + 0x01));
                         break;
                 }
             }
@@ -526,9 +526,9 @@ namespace ReFixed
 
         public static void HandleAutosave()
         {
-            var _toggleCheck = Hypervisor.Read<byte>(Variables.VibrationAddress);
+            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress);
 
-            if (_toggleCheck == 0x01)
+            if ((_toggleCheck & 0x01) == 0x01)
             {
                 var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
                 var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);

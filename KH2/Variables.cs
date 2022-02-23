@@ -42,7 +42,7 @@ namespace ReFixed
 		public static readonly ulong BaseAddress = Version == 0x00 ? (ulong)0x56450E : (ulong)0x56454E;
 
 		public static readonly ulong InputAddress = Version == 0x00 ? (ulong)0x1ACF7B : (ulong)0x1ACF3B;
-		public static readonly ulong VibrationAddress = 0x55A19E;
+		public static readonly ulong ConfigAddress = 0x446D06;
 
 		public static readonly ulong ConfirmAddress = Version == 0x00 ? (ulong)0x365550 : (ulong)0x365520;
 		public static readonly ulong FramerateAddress = Version == 0x00 ? (ulong)0x36553C : (ulong)0x36550C;
