@@ -235,11 +235,11 @@ namespace ReFixed
                 {
                     case 0x01:
                         Variables.SkipComplete = true;
-                        Hypervisor.Write<byte>(Variables.VibrationAddress, 0);
                         break;
                     case 0x00:
                         Variables.SkipRoxas = true;
                         Variables.SkipComplete = false;
+                        Hypervisor.Write<byte>(Variables.VibrationAddress, 0x01);
                         break;
                 }
             }
@@ -299,7 +299,7 @@ namespace ReFixed
         {
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
-            if (_inputRead == 0x0C09)
+            if (_inputRead == 0x090C)
                 Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
         }
 
@@ -386,6 +386,16 @@ namespace ReFixed
 
                     // Write the RCs text.
                     Hypervisor.WriteArray(0x2572571, _raveText.ToKHSCII());
+                }
+            #endregion
+        
+            #region Auto-Save Toggle
+                var _toggleCheck = Hypervisor.Read<byte>(Variables.SaveTextAddresses[1]);
+
+                if (_toggleCheck != 0x2E)
+                {
+                    for (int i = 0; i < Variables.SaveStrings.Length; i++)
+                        Hypervisor.WriteArray(Variables.SaveTextAddresses[i], Variables.SaveStrings[i].ToKHSCII());
                 }
             #endregion
         }
@@ -526,36 +536,41 @@ namespace ReFixed
 
         public static void HandleAutosave()
         {
-            var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
-            var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
+            var _toggleCheck = Hypervisor.Read<byte>(Variables.VibrationAddress);
 
-            var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
-            var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
-
-            // If not in the title screen, nor in a battle, and the room is loaded:
-            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            if (_toggleCheck == 0x01)
             {
-                // If the past WorldID is not equal to the current WorldID:
-                if (Variables.SaveWorld != _worldCheck)
-                { 
-                    CreateAutosave();
-                    Variables.SaveIterator = 0;
-                }
+                var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
+                var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
 
-                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
+                var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
+
+                // If not in the title screen, nor in a battle, and the room is loaded:
+                if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
                 {
-                    if (Variables.SaveIterator == 3)
-                    {
+                    // If the past WorldID is not equal to the current WorldID:
+                    if (Variables.SaveWorld != _worldCheck)
+                    { 
                         CreateAutosave();
                         Variables.SaveIterator = 0;
                     }
 
-                    else
-                        Variables.SaveIterator++;
-                }
+                    else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                    {
+                        if (Variables.SaveIterator == 3)
+                        {
+                            CreateAutosave();
+                            Variables.SaveIterator = 0;
+                        }
 
-                Variables.SaveWorld = _worldCheck;
-                Variables.SaveRoom = _roomCheck;
+                        else
+                            Variables.SaveIterator++;
+                    }
+
+                    Variables.SaveWorld = _worldCheck;
+                    Variables.SaveRoom = _roomCheck;
+                }
             }
         }
 

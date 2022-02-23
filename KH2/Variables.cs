@@ -22,11 +22,11 @@ namespace ReFixed
 
 		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("833511404274974740");
 
-		public static readonly string[] BattleImages = new string[] { "safe", "mob", "boss" };
-        public static readonly string[] WorldImages = new string[] { "", "", "tt", "", "hb", "bb", "he", "al", "mu", "po", "lk", "lm", "dc", "wi", "nm", "wm", "ca", "tr", "eh" };
+		public static readonly string[] BattleImages = { "safe", "mob", "boss" };
+        public static readonly string[] WorldImages = { "", "", "tt", "", "hb", "bb", "he", "al", "mu", "po", "lk", "lm", "dc", "wi", "nm", "wm", "ca", "tr", "eh" };
 
-		public static readonly string[] FormText = new string[] { "None", "Valor", "Wisdom", "Limit", "Master", "Final", "Anti" };
-        public static readonly string[] ModeText = new string[] { "Beginner Mode", "Standard Mode", "Proud Mode", "Critical Mode" };
+		public static readonly string[] FormText = { "None", "Valor", "Wisdom", "Limit", "Master", "Final", "Anti" };
+        public static readonly string[] ModeText = { "Beginner Mode", "Standard Mode", "Proud Mode", "Critical Mode" };
 
         public static Process GameProcess;
         public static IntPtr GameHandle;
@@ -51,8 +51,9 @@ namespace ReFixed
 		
 		public static readonly ulong InstructionAddress = Version == 0x00 ? 0x152160 : 0x152220;
 
-		public static readonly ulong[] ConfigTextAddresses = new ulong[] { 0x2565A59, 0x2565C94 };
-		public static readonly ulong[] TitleTextAddresses = new ulong[] { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
+		public static readonly ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
+		public static readonly ulong[] SaveTextAddresses = { 0x2565A59, 0x2565C9B, 0x2565CC2 };
+		public static readonly ulong[] TitleTextAddresses = { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
 
 		public static readonly ulong TitleBackAddress = 0x553F0C;
 
@@ -72,7 +73,7 @@ namespace ReFixed
 		public static readonly ulong ShortcutStartAddress = Version == 0x00 ? 0x630AA : 0x6306A;
 
 		public static readonly byte[] LimiterInstruction = Version == 0x00 ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 } : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
-		public static readonly byte[] LimiterRemoved = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+		public static readonly byte[] LimiterRemoved = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
 		public static readonly ulong InformationPointer = 0x25A5972;
 		public static readonly ulong SaveAddress = 0x442B62;
@@ -81,7 +82,7 @@ namespace ReFixed
 		public static byte SaveWorld;
 		public static byte SaveRoom;
 
-		public static readonly ulong[] LimitAddresses = new ulong[]
+		public static readonly ulong[] LimitAddresses =
 		{
 			0x257257C, 0x2571C0D,
 			0x2572565, 0x2571B80,
@@ -110,7 +111,7 @@ namespace ReFixed
 			0x3AED5C
 		};
 
-		public static readonly byte[][] SelectInstructions = new byte[][]
+		public static readonly byte[][] SelectInstructions =
 		{
 			new byte[] { 0x89, 0x4B, 0x74 },
 			new byte[] { 0x89, 0x53, 0x74 },
@@ -119,13 +120,13 @@ namespace ReFixed
 			new byte[] { 0x89, 0x43, 0x74 }
 		};
 
-		public static readonly byte[] StoryFlagArray = new byte[]
+		public static readonly byte[] StoryFlagArray =
 		{
 			0x01, 0x00, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 
 			0xFF, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0, 0x05, 0x08, 0x01, 0x00, 0x00, 0x81
 		};
 
-		public static readonly string[] TitleStrings = new string[]
+		public static readonly string[] TitleStrings =
 		{
 			"Play Roxas' Story?",
 			"YES{0x00}NO",
@@ -134,11 +135,18 @@ namespace ReFixed
 			"Roxas' Story"
 		};
 
-		public static readonly string[] LimitStrings = new string[]
+		public static readonly string[] LimitStrings =
 		{
 			"Ars Arcanum",
 			"Sonic Blade",
 			"Ragnarok"
+		};
+
+		public static readonly string[] SaveStrings =
+		{
+			"Auto-Save",
+			"Autosave functionality.",
+			"Autosave functionality."
 		};
 
 		public static readonly ulong[] MagicAddresses = new ulong[] { 0x24AA2CA, 0x24AA33A, 0x24A98EE };
