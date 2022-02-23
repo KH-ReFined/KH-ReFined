@@ -18,8 +18,8 @@ namespace ReFixed
 	{
 		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("939407076747272203");
 
-	    public static readonly string[] ModeText = new string[] { "Beginner", "Standard", "Proud", "Critical" };
-        public static readonly string[] WorldImages = new string[] { "", "ex", "sw", "ci", "sb", "tt", "hb", "dw", "he", "st", "di", "nl", "dc", "eh", "", "ar", "ar", "wm", "po" };
+	    public static readonly string[] ModeText = { "Beginner", "Standard", "Proud", "Critical" };
+        public static readonly string[] WorldImages = { "", "ex", "sw", "ci", "sb", "tt", "hb", "dw", "he", "st", "di", "nl", "dc", "eh", "", "ar", "ar", "wm", "po" };
 
         public static readonly string[] CharText = 
 		{
@@ -30,6 +30,26 @@ namespace ReFixed
 			"Ventus", "Aqua", "Terra", 
 			"Ventus", "Aqua", "Terra"
 		};
+
+		public static readonly string[] SettingsText = 
+		{
+			"Auto-Save", 
+			"On\u0000", 
+			"Off\u0000", 
+			"Auto-Save", 
+			"Auto-Save"
+		};
+
+		public static readonly ulong[] SettingsOffsets = 
+		{
+			0x00,
+			0x84,
+			0x7A,
+			0x1140,
+			0x115C
+		};
+
+		public static readonly ulong SettingsPointer = 0x896C7BC;
 
         public static Process GameProcess;
         public static IntPtr GameHandle;
@@ -44,6 +64,7 @@ namespace ReFixed
 		public static readonly ulong InputAddress = 0x20EA64;
 		public static readonly ulong NameAddress = 0x10994128;
 		public static readonly ulong StatusAddress = 0x109A3334;
+		public static readonly ulong VibrationAddress = 0x1FDB54;
 		public static readonly ulong CommandAddress = 0x109A333C;
 
 		public static readonly ulong LimiterAddress = 0x254EDC;

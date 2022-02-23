@@ -229,6 +229,22 @@ namespace ReFixed
             }
         }
 
+        public static void OverrideText()
+        {
+            var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
+            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA8, true);
+
+            var _baseAddress = Hypervisor.Read<ulong>(_secondaryPointer + 0xAEE, true); 
+
+            var _charRead = Hypervisor.Read<char>(_baseAddress, true);
+
+            if (_charRead == 0x56)
+            {
+                for (int i = 0; i < Variables.SettingsOffsets.Length; i++)
+                    Hypervisor.WriteArray(_baseAddress + Variables.SettingsOffsets[i], Encoding.ASCII.GetBytes(Variables.SettingsText[i]), true);
+            }
+        }
+
 		public static void CreateAutosave()
         {
             // Prepare the pointers.
@@ -347,36 +363,41 @@ namespace ReFixed
 
         public static void HandleAutosave()
         {
-            var _battleRead = Hypervisor.Read<byte>(Variables.BattleAddress);
-            var _loadRead = Hypervisor.Read<byte>(0x20D2AC);
+            var _vibrationRead = Hypervisor.Read<byte>(Variables.VibrationAddress);
 
-            var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
-            var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
-
-            // If not in the title screen, nor in a battle, and the room is loaded:
-            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            if (_vibrationRead == 0x01)
             {
-                // If the past WorldID is not equal to the current WorldID:
-                if (Variables.SaveWorld != _worldCheck)
-                { 
-                    CreateAutosave();
-                    Variables.SaveIterator = 0;
-                }
+                var _battleRead = Hypervisor.Read<byte>(Variables.BattleAddress);
+                var _loadRead = Hypervisor.Read<byte>(0x20D2AC);
 
-                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
+                var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
+
+                // If not in the title screen, nor in a battle, and the room is loaded:
+                if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
                 {
-                    if (Variables.SaveIterator == 3)
-                    {
+                    // If the past WorldID is not equal to the current WorldID:
+                    if (Variables.SaveWorld != _worldCheck)
+                    { 
                         CreateAutosave();
                         Variables.SaveIterator = 0;
                     }
 
-                    else
-                        Variables.SaveIterator++;
-                }
+                    else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                    {
+                        if (Variables.SaveIterator == 3)
+                        {
+                            CreateAutosave();
+                            Variables.SaveIterator = 0;
+                        }
 
-                Variables.SaveWorld = _worldCheck;
-                Variables.SaveRoom = _roomCheck;
+                        else
+                            Variables.SaveIterator++;
+                    }
+
+                    Variables.SaveWorld = _worldCheck;
+                    Variables.SaveRoom = _roomCheck;
+                }
             }
         }
 
@@ -388,6 +409,7 @@ namespace ReFixed
 			
 			RenameFinisher();
 			OverrideLimiter();
+            OverrideText();
 
 			ProcessRPC();
 		}
