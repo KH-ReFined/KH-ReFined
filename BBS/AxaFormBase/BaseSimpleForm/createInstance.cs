@@ -29,8 +29,6 @@ namespace AxaFormBase
 		public static CancellationToken MainToken;
 		public static Task MainTask;
 
-		public static float ResolutionDiv; 
-
 		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
 		{
 			UpdateAgent.UpdateCheck();

@@ -55,12 +55,12 @@ namespace ReFixed
 
             var _rpcButtons = new DiscordRPC.Button[] 
 			{ 
-				new Button
+				new DiscordRPC.Button
 				{ 
 					Label = "== Powered by Re:Fixed ==", 
 					Url = "https://github.com/TopazTK/KH-ReFixed" 
 				},
-				new Button
+				new DiscordRPC.Button
 				{ 
 					Label = "== Icons by Televo ==", 
 					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
@@ -80,7 +80,7 @@ namespace ReFixed
 						SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
 					},
 					
-					Buttons = _rpcButtons;
+					Buttons = _rpcButtons
 				});
 			}
 
@@ -98,7 +98,7 @@ namespace ReFixed
 						SmallImageText = null
 					},
 					
-					Buttons = _rpcButtons;
+					Buttons = _rpcButtons
 				});
 			}
         }

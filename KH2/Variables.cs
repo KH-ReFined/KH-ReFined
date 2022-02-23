@@ -39,17 +39,17 @@ namespace ReFixed
 
 		public static bool Debounce;
 
-		public static readonly ulong BaseAddress = Version == 0x00 ? 0x56450E : 0x56454E;
+		public static readonly ulong BaseAddress = Version == 0x00 ? (ulong)0x56450E : (ulong)0x56454E;
 
-		public static readonly ulong InputAddress = Version == 0x00 ? 0x1ACF7B : 0x1ACF3B;
+		public static readonly ulong InputAddress = Version == 0x00 ? (ulong)0x1ACF7B : (ulong)0x1ACF3B;
 		public static readonly ulong VibrationAddress = 0x55A19E;
 
-		public static readonly ulong ConfirmAddress = Version == 0x00 ? 0x365550 : 0x365520;
-		public static readonly ulong FramerateAddress = Version == 0x00 ? 0x36553C : 0x36550C;
+		public static readonly ulong ConfirmAddress = Version == 0x00 ? (ulong)0x365550 : (ulong)0x365520;
+		public static readonly ulong FramerateAddress = Version == 0x00 ? (ulong)0x36553C : (ulong)0x36550C;
 
 		public static readonly ulong LimiterAddress = 0x553EBA;
 		
-		public static readonly ulong InstructionAddress = Version == 0x00 ? 0x152160 : 0x152220;
+		public static readonly ulong InstructionAddress = Version == 0x00 ? (ulong)0x152160 : (ulong)0x152220;
 
 		public static readonly ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
 		public static readonly ulong[] SaveTextAddresses = { 0x2565A59, 0x2565C9B, 0x2565CC2 };
@@ -57,7 +57,7 @@ namespace ReFixed
 
 		public static readonly ulong TitleBackAddress = 0x553F0C;
 
-		public static readonly ulong TitleFlagAddress = Version == 0x00 ? 0x1B0256 : 0x1B0246;
+		public static readonly ulong TitleFlagAddress = Version == 0x00 ? (ulong)0x1B0256 : (ulong)0x1B0246;
 		public static readonly ulong TitleButtonAddress = 0x255BECE;
 
 		public static byte[] MagicStoreMemory;
@@ -65,12 +65,12 @@ namespace ReFixed
 		public static bool RoomLoad;
 		public static readonly ulong LoadAddress = 0x453B82;
 
-		public static readonly ulong RoomAddress = Version == 0x00 ? 0x1B08AA : 0x1B086A;
+		public static readonly ulong RoomAddress = Version == 0x00 ? (ulong)0x1B08AA : (ulong)0x1B086A;
 		public static readonly ulong StoryFlagAddress = 0x444832;
 		public static readonly ulong DifficultyAddress = 0x444FFA;
 		public static readonly ulong InventoryFlagAddress = 0x444F00;
 
-		public static readonly ulong ShortcutStartAddress = Version == 0x00 ? 0x630AA : 0x6306A;
+		public static readonly ulong ShortcutStartAddress = Version == 0x00 ? (ulong)0x630AA : (ulong)0x6306A;
 
 		public static readonly byte[] LimiterInstruction = Version == 0x00 ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 } : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
 		public static readonly byte[] LimiterRemoved = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };

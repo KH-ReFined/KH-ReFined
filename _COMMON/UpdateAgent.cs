@@ -130,9 +130,7 @@ namespace ReFixed
                 var _boxTitle = "Re:Fixed Updater";  
                 var _boxButtons = MessageBoxButtons.OK;  
 
-                var _boxFormat = String.Format(_boxMessage, _version.ToString("0.00"), _latestNumber.ToString("0.00"));
-
-                MessageBox.Show(_boxFormat, _boxTitle, _boxButtons, MessageBoxIcon.Error);  
+                MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error);  
             }
         }
 
