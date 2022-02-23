@@ -80,7 +80,7 @@ namespace ReFixed
 
             else
             {
-                var _inArray = new byte[] { (byte)Convert.ChangeType(Value, typeof(byte)) };
+                var _inArray = { (byte)Convert.ChangeType(Value, typeof(byte)) };
                 WriteProcessMemory(Variables.GameHandle, _address, _inArray, _inArray.Length, ref _inWrite);
 
             }

@@ -18,8 +18,8 @@ namespace ReFixed
 	{
 		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("837171155076513834");
 
-	    public static readonly string[] ModeText = new string[] { "Beginner", "Standard", "Proud" };
-        public static readonly string[] WorldImages = new string[] { "", "di", "", "tt", "wl", "tz", "po", "", "al", "lm", "nm", "he", "pn", "nv", "", "hb", "eh" };
+	    public static readonly string[] ModeText = { "Beginner", "Standard", "Proud" };
+        public static readonly string[] WorldImages = { "", "di", "", "tt", "wl", "tz", "po", "", "al", "lm", "nm", "he", "pn", "nv", "", "hb", "eh" };
        
         public static Process GameProcess;
         public static IntPtr GameHandle;

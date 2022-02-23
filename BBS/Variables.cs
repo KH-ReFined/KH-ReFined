@@ -57,7 +57,7 @@ namespace ReFixed
         public static ulong GameAddress;
 		public static ulong ExeAddress;
 
-		public static bool Debounce = false;
+		public static bool Debounce;
 
 		public static readonly ulong BaseAddress = 0x60E334;
 

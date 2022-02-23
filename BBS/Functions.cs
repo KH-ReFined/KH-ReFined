@@ -54,6 +54,20 @@ namespace ReFixed
 			var _roomID = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
             var _battleFlag = Hypervisor.Read<byte>(Variables.BattleAddress);
 
+            var _rpcButtons = new DiscordRPC.Button[] 
+			{ 
+				new Button()
+				{ 
+					Label = "== Powered by Re:Fixed ==", 
+					Url = "https://github.com/TopazTK/KH-ReFixed" 
+				},
+				new Button()
+				{ 
+					Label = "== Icons by Televo ==", 
+					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
+				} 
+			}
+
 			if (!IsTitle())
 			{
 				Variables.RichClient.SetPresence(new RichPresence()
@@ -67,19 +81,7 @@ namespace ReFixed
 						SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
 					},
 					
-					Buttons = new DiscordRPC.Button[] 
-					{ 
-						new DiscordRPC.Button()
-						{ 
-							Label = "== Powered by Re:Fixed ==", 
-							Url = "https://github.com/TopazTK/KH-ReFixed" 
-						},
-						new DiscordRPC.Button()
-						{ 
-							Label = "== Icons by Televo ==", 
-							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-						} 
-					}
+					Buttons = _rpcButtons;
 				});
 			}
 
@@ -97,19 +99,7 @@ namespace ReFixed
 						SmallImageText = null
 					},
 					
-					Buttons = new DiscordRPC.Button[] 
-					{ 
-						new DiscordRPC.Button()
-						{ 
-							Label = "== Powered by Re:Fixed ==", 
-							Url = "https://github.com/TopazTK/KH-ReFixed" 
-						},
-						new DiscordRPC.Button()
-						{ 
-							Label = "== Icons by Televo ==", 
-							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-						} 
-					}
+					Buttons = _rpcButtons;
 				});
 			}
         }

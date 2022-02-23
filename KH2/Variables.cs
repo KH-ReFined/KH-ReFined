@@ -34,10 +34,10 @@ namespace ReFixed
         public static ulong GameAddress;
 		public static ulong ExeAddress;
 
-		public static bool SkipRoxas = false;
-		public static bool SkipComplete = false;
+		public static bool SkipRoxas;
+		public static bool SkipComplete;
 
-		public static bool Debounce = false;
+		public static bool Debounce;
 
 		public static readonly ulong BaseAddress = Version == 0x00 ? 0x56450E : 0x56454E;
 
@@ -60,9 +60,9 @@ namespace ReFixed
 		public static readonly ulong TitleFlagAddress = Version == 0x00 ? 0x1B0256 : 0x1B0246;
 		public static readonly ulong TitleButtonAddress = 0x255BECE;
 
-		public static byte[] MagicStoreMemory = null;
+		public static byte[] MagicStoreMemory;
 
-		public static bool RoomLoad = false;
+		public static bool RoomLoad;
 		public static readonly ulong LoadAddress = 0x453B82;
 
 		public static readonly ulong RoomAddress = Version == 0x00 ? 0x1B08AA : 0x1B086A;

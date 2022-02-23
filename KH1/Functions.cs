@@ -19,6 +19,7 @@ namespace ReFixed
 {
 	public static class Functions
 	{
+
 		public static bool IsTitle()
         {
             var _levelValue = Hypervisor.Read<byte>(Variables.LevelAddress);
@@ -48,6 +49,20 @@ namespace ReFixed
 
             var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
 
+			var _rpcButtons = new DiscordRPC.Button[] 
+			{ 
+				new Button()
+				{ 
+					Label = "== Powered by Re:Fixed ==", 
+					Url = "https://github.com/TopazTK/KH-ReFixed" 
+				},
+				new Button()
+				{ 
+					Label = "== Icons by Televo ==", 
+					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
+				} 
+			}
+
 			if (!IsTitle())
 			{
 				Variables.RichClient.SetPresence(new RichPresence()
@@ -62,19 +77,7 @@ namespace ReFixed
 						SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
 					},
 					
-					Buttons = new Button[] 
-					{ 
-						new Button()
-						{ 
-							Label = "== Powered by Re:Fixed ==", 
-							Url = "https://github.com/TopazTK/KH-ReFixed" 
-						},
-						new Button()
-						{ 
-							Label = "== Icons by Televo ==", 
-							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-						} 
-					}
+					Buttons = _rpcButtons;
 				});
 			}
 
@@ -92,19 +95,7 @@ namespace ReFixed
 						SmallImageText = null
 					},
 					
-					Buttons = new Button[] 
-					{ 
-						new Button()
-						{ 
-							Label = "== Powered by Re:Fixed ==", 
-							Url = "https://github.com/TopazTK/KH-ReFixed" 
-						},
-						new Button()
-						{ 
-							Label = "== Icons by Televo ==", 
-							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-						} 
-					}
+					Buttons = _rpcButtons;
 				});
 			}
         }

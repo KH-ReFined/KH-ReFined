@@ -49,6 +49,20 @@ namespace ReFixed
 
             var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
 
+            var _rpcButtons = new DiscordRPC.Button[] 
+			{ 
+				new Button()
+				{ 
+					Label = "== Powered by Re:Fixed ==", 
+					Url = "https://github.com/TopazTK/KH-ReFixed" 
+				},
+				new Button()
+				{ 
+					Label = "== Icons by Televo ==", 
+					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
+				} 
+			}
+
             if (!IsTitle())
             {
                 Variables.RichClient.SetPresence(new RichPresence()
@@ -63,19 +77,7 @@ namespace ReFixed
                         SmallImageText = Variables.ModeText.ElementAtOrDefault(_diffValue)
                     },
                     
-                    Buttons = new Button[] 
-                    { 
-                        new Button()
-						{ 
-							Label = "== Powered by Re:Fixed ==", 
-							Url = "https://github.com/TopazTK/KH-ReFixed" 
-						},
-						new Button()
-						{ 
-							Label = "== Icons by Televo ==", 
-							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-						} 
-                    }
+                    Buttons = _rpcButtons;
                 });
             }
 
@@ -93,19 +95,7 @@ namespace ReFixed
 						SmallImageText = null
 					},
 					
-					Buttons = new DiscordRPC.Button[] 
-					{ 
-						new Button()
-						{ 
-							Label = "== Powered by Re:Fixed ==", 
-							Url = "https://github.com/TopazTK/KH-ReFixed" 
-						},
-						new Button()
-						{ 
-							Label = "== Icons by Televo ==", 
-							Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-						} 
-					}
+					Buttons = _rpcButtons;
 				});
             }
         }
