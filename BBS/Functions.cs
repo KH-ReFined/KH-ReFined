@@ -233,8 +233,7 @@ namespace ReFixed
         {
             var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
             var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA8, true);
-
-            var _baseAddress = Hypervisor.Read<ulong>(_secondaryPointer + 0xAEE, true); 
+            var _baseAddress = _secondaryPointer + 0xAEE; 
 
             var _charRead = Hypervisor.Read<char>(_baseAddress, true);
 
