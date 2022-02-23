@@ -57,7 +57,7 @@ namespace ReFixed
 
 		public static readonly ulong TitleBackAddress = 0x553F0C;
 
-		public static readonly ulong TitleFlagAddress = Version == 0x00 ? (ulong)0x1B0256 : (ulong)0x1B0246;
+		public static readonly ulong TitleFlagAddress = Version == 0x00 ? (ulong)0x1B0256 : (ulong)0x1B0216;
 		public static readonly ulong TitleButtonAddress = 0x255BECE;
 
 		public static byte[] MagicStoreMemory;
