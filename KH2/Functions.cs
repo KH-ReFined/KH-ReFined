@@ -401,6 +401,9 @@ namespace ReFixed
                     {
                         for (int i = 0; i < Variables.AudioStrings.Length; i++)
                             Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII());
+                    
+                        for (int i = 0; i > Variables.AudioOffsets.Length; i++)
+                            Hypervisor.Write(Variables.AudioOffsetAddresses[i], Variables.AudioOffsets[i]);
                     }
                 }
             #endregion

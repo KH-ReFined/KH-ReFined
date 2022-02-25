@@ -59,8 +59,11 @@ namespace ReFixed
 
 		public static readonly ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
 		public static readonly ulong[] SaveTextAddresses = { 0x2565A59, 0x2565C9B, 0x2565CC2 };
-		public static readonly ulong[] AudioTextAddresses = { 0x2565A59, 0x2565CE1, 0x2565CE9, 0x2565CFA };
+		public static readonly ulong[] AudioTextAddresses = { 0x2565A99, 0x2565D21, 0x2565D29, 0x2565D3A };
 		public static readonly ulong[] TitleTextAddresses = { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
+
+		public static readonly ulong[] AudioOffsets = { 0xEB9F, 0xEBA7, 0xEBB8, 0xEBB8 };
+		public static readonly ulong[] AudioOffsetAddresses = { 0x2559DD6, 0x2559E76, 0x2559DDE, 0x2559DE6 };
 
 		public static readonly ulong TitleBackAddress = 0x553F0C;
 
