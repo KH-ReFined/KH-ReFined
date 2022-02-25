@@ -380,12 +380,28 @@ namespace ReFixed
             #endregion
         
             #region Auto-Save Toggle
-                var _toggleCheck = Hypervisor.Read<byte>(Variables.SaveTextAddresses[1]);
-
-                if (_toggleCheck != 0x2E)
+                if (!Variables.DualAudio)
                 {
-                    for (int i = 0; i < Variables.SaveStrings.Length; i++)
-                        Hypervisor.WriteArray(Variables.SaveTextAddresses[i], Variables.SaveStrings[i].ToKHSCII());
+                    var _toggleCheck = Hypervisor.Read<byte>(Variables.SaveTextAddresses[1]);
+
+                    if (_toggleCheck != 0x2E)
+                    {
+                        for (int i = 0; i < Variables.SaveStrings.Length; i++)
+                            Hypervisor.WriteArray(Variables.SaveTextAddresses[i], Variables.SaveStrings[i].ToKHSCII());
+                    }
+                }
+            #endregion
+
+            #region Dual-Audio Toggle
+                if (Variables.DualAudio)
+                {
+                    var _toggleCheck = Hypervisor.Read<byte>(Variables.AudioTextAddresses[1]);
+
+                    if (_toggleCheck != 0x31)
+                    {
+                        for (int i = 0; i < Variables.AudioStrings.Length; i++)
+                            Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII());
+                    }
                 }
             #endregion
         }
@@ -528,7 +544,7 @@ namespace ReFixed
         {
             var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress);
 
-            if ((_toggleCheck & 0x01) == 0x01)
+            if ((_toggleCheck & 0x01) == 0x01 || Variables.DualAudio)
             {
                 var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
                 var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
@@ -564,9 +580,37 @@ namespace ReFixed
             }
         }
 
+        public static void HandleAudio()
+        {
+            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress);
+
+            if ((_toggleCheck & 0x01) == 0x00)
+            {
+                var _paxBytes = Encoding.ASCII.GetBytes("obj/%s.a.jp");
+                Hypervisor.WriteArray(Variables.PaxFormatterAddress, _paxBytes);
+                Hypervisor.WriteArray(Variables.PaxFormatterAddress + 0x10, _paxBytes);
+
+                var _voiceBytes = Encoding.ASCII.GetBytes("voice/jp/battle");
+                Hypervisor.WriteArray(Variables.VoiceFormatterAddress, _voiceBytes);
+            }
+
+            else
+            {
+                var _paxBytes = Encoding.ASCII.GetBytes("obj/%s.a.us");
+                Hypervisor.WriteArray(Variables.PaxFormatterAddress, _paxBytes);
+                Hypervisor.WriteArray(Variables.PaxFormatterAddress + 0x10, _paxBytes);
+
+                var _voiceBytes = Encoding.ASCII.GetBytes("voice/us/battle");
+                Hypervisor.WriteArray(Variables.VoiceFormatterAddress, _voiceBytes);
+            }
+        }
+
         public static void Execute()
         {
             HandleAutosave();
+
+            if (Variables.DualAudio)
+                HandleAudio();
 
             SeekReset();
             HandleTutorialSkip();
