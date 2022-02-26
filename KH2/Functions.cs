@@ -380,19 +380,10 @@ namespace ReFixed
             #endregion
 
             #region Dual-Audio Toggle
-                var _toggleCheck = Hypervisor.Read<byte>(Variables.AudioTextAddresses[0]);
-                var _offsetCheck = Hypervisor.Read<ushort>(Variables.AudioOffsetAddresses[0]);
-
-                if (_toggleCheck != 0x31)
+                for (int i = 0; i < Variables.AudioStrings.Length; i++)
                 {
-                    for (int i = 0; i < Variables.AudioStrings.Length; i++)
-                        Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII()); 
-                }
-
-                if (_offsetCheck != Variables.AudioOffsets[0])
-                {
-                    for (int i = 0; i > Variables.AudioOffsets.Length; i++)
-                        Hypervisor.Write<ushort>(Variables.AudioOffsetAddresses[i], Variables.AudioOffsets[i]);
+                    Hypervisor.Write<int>(Variables.AudioOffsetAddresses[i], Variables.AudioOffsets[i]);
+                    Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII()); 
                 }
             #endregion
         }
@@ -568,6 +559,9 @@ namespace ReFixed
 
         public static void HandleAudio()
         {
+            Hypervisor.UnlockBlock(Variables.PaxFormatterAddress);
+            Hypervisor.UnlockBlock(Variables.VoiceFormatterAddress);
+
             var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress);
 
             if ((_toggleCheck & 0x01) == 0x00)
