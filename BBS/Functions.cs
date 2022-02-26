@@ -221,15 +221,20 @@ namespace ReFixed
         public static void OverrideText()
         {
             var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
-            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA8, true);
-            var _baseAddress = _secondaryPointer + 0xAEE; 
+            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA0, true);
+            var _baseAddress = _secondaryPointer - 0x09A0; 
+			            
+			var _baseRead = Hypervisor.Read<uint>(_baseAddress, true);
+            var _charRead = Hypervisor.Read<char>(_baseAddress + Variables.SettingsOffsets[0], true);
 
-            var _charRead = Hypervisor.Read<char>(_baseAddress, true);
-
-            if (_charRead == 0x56)
+			if (_baseRead == 0x44544340)
+            if (_charRead != 0x44)
             {
+                Hypervisor.Write<uint>(_baseAddress + 0x630, (uint)Variables.SettingsOffsets[3], true);
+                Hypervisor.Write<uint>(_baseAddress + 0x63C, (uint)Variables.SettingsOffsets[4], true);
+
                 for (int i = 0; i < Variables.SettingsOffsets.Length; i++)
-                    Hypervisor.WriteArray(_baseAddress + Variables.SettingsOffsets[i], Encoding.ASCII.GetBytes(Variables.SettingsText[i]), true);
+                    Hypervisor.WriteArray(_baseAddress + Variables.SettingsOffsets[i], Encoding.GetEncoding(437).GetBytes(Variables.SettingsText[i]), true);
             }
         }
 
