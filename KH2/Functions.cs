@@ -378,33 +378,21 @@ namespace ReFixed
                     Hypervisor.WriteArray(0x2572571, _raveText.ToKHSCII());
                 }
             #endregion
-        
-            #region Auto-Save Toggle
-                if (!Variables.DualAudio)
-                {
-                    var _toggleCheck = Hypervisor.Read<byte>(Variables.SaveTextAddresses[1]);
-
-                    if (_toggleCheck != 0x2E)
-                    {
-                        for (int i = 0; i < Variables.SaveStrings.Length; i++)
-                            Hypervisor.WriteArray(Variables.SaveTextAddresses[i], Variables.SaveStrings[i].ToKHSCII());
-                    }
-                }
-            #endregion
 
             #region Dual-Audio Toggle
-                if (Variables.DualAudio)
-                {
-                    var _toggleCheck = Hypervisor.Read<byte>(Variables.AudioTextAddresses[1]);
+                var _toggleCheck = Hypervisor.Read<byte>(Variables.AudioTextAddresses[0]);
+                var _offsetCheck = Hypervisor.Read<ushort>(Variables.AudioOffsetAddresses[0]);
 
-                    if (_toggleCheck != 0x31)
-                    {
-                        for (int i = 0; i < Variables.AudioStrings.Length; i++)
-                            Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII());
-                    
-                        for (int i = 0; i > Variables.AudioOffsets.Length; i++)
-                            Hypervisor.Write(Variables.AudioOffsetAddresses[i], Variables.AudioOffsets[i]);
-                    }
+                if (_toggleCheck != 0x31)
+                {
+                    for (int i = 0; i < Variables.AudioStrings.Length; i++)
+                        Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII()); 
+                }
+
+                if (_offsetCheck != Variables.AudioOffsets[0])
+                {
+                    for (int i = 0; i > Variables.AudioOffsets.Length; i++)
+                        Hypervisor.Write<ushort>(Variables.AudioOffsetAddresses[i], Variables.AudioOffsets[i]);
                 }
             #endregion
         }
@@ -545,41 +533,36 @@ namespace ReFixed
 
         public static void HandleAutosave()
         {
-            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress);
+            var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
+            var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
 
-            if ((_toggleCheck & 0x01) == 0x01 || Variables.DualAudio)
+            var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
+            var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
+
+            // If not in the title screen, nor in a battle, and the room is loaded:
+            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
             {
-                var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
-                var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
+                // If the past WorldID is not equal to the current WorldID:
+                if (Variables.SaveWorld != _worldCheck)
+                { 
+                    CreateAutosave();
+                    Variables.SaveIterator = 0;
+                }
 
-                var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
-                var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
-
-                // If not in the title screen, nor in a battle, and the room is loaded:
-                if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
                 {
-                    // If the past WorldID is not equal to the current WorldID:
-                    if (Variables.SaveWorld != _worldCheck)
-                    { 
+                    if (Variables.SaveIterator == 3)
+                    {
                         CreateAutosave();
                         Variables.SaveIterator = 0;
                     }
 
-                    else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
-                    {
-                        if (Variables.SaveIterator == 3)
-                        {
-                            CreateAutosave();
-                            Variables.SaveIterator = 0;
-                        }
-
-                        else
-                            Variables.SaveIterator++;
-                    }
-
-                    Variables.SaveWorld = _worldCheck;
-                    Variables.SaveRoom = _roomCheck;
+                    else
+                        Variables.SaveIterator++;
                 }
+
+                Variables.SaveWorld = _worldCheck;
+                Variables.SaveRoom = _roomCheck;
             }
         }
 
@@ -611,9 +594,8 @@ namespace ReFixed
         public static void Execute()
         {
             HandleAutosave();
-
-            if (Variables.DualAudio)
-                HandleAudio();
+            
+            HandleAudio();
 
             SeekReset();
             HandleTutorialSkip();

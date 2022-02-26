@@ -20,9 +20,6 @@ namespace ReFixed
 		// Set to 0x01 if playing on v0.1
 		public static readonly int Version = 0x00;
 
-		// Enable for Dual Audio EXEs
-		public static readonly bool DualAudio = true;
-
 		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("833511404274974740");
 
 		public static readonly string[] BattleImages = { "safe", "mob", "boss" };
@@ -58,12 +55,11 @@ namespace ReFixed
 		public static readonly ulong InstructionAddress = Version == 0x00 ? (ulong)0x152160 : (ulong)0x152220;
 
 		public static readonly ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
-		public static readonly ulong[] SaveTextAddresses = { 0x2565A59, 0x2565C9B, 0x2565CC2 };
-		public static readonly ulong[] AudioTextAddresses = { 0x2565A99, 0x2565D21, 0x2565D29, 0x2565D3A };
 		public static readonly ulong[] TitleTextAddresses = { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
 
-		public static readonly ulong[] AudioOffsets = { 0xEB9F, 0xEBA7, 0xEBB8, 0xEBB8 };
-		public static readonly ulong[] AudioOffsetAddresses = { 0x2559DD6, 0x2559E76, 0x2559DDE, 0x2559DE6 };
+		public static ushort[] AudioOffsets = { 0xEB3F, 0xEB47, 0xEB58, 0xEB58 };
+		public static ulong[] AudioTextAddresses = { 0x2565A59, 0x2565C81, 0x2565C89, 0x2565C9A };
+		public static ulong[] AudioOffsetAddresses = { 0x2559D96, 0x2559E36, 0x2559D9E, 0x2559DA6 };
 
 		public static readonly ulong TitleBackAddress = 0x553F0C;
 
@@ -150,13 +146,6 @@ namespace ReFixed
 			"Ars Arcanum",
 			"Sonic Blade",
 			"Ragnarok"
-		};
-
-		public static readonly string[] SaveStrings =
-		{
-			"Auto-Save",
-			"Autosave functionality.",
-			"Autosave functionality."
 		};
 
 		public static readonly string[] AudioStrings =
