@@ -1,7 +1,5 @@
 # Kingdom Hearts - Re:Fixed
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a1b049081f6d4a9d8d815e51af501d52)](https://www.codacy.com/gh/TopazTK/KH-ReFixed/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TopazTK/KH-ReFixed&amp;utm_campaign=Badge_Grade)
-
 ## Download
 
 Get the latest release by clicking the button below.
