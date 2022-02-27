@@ -11,6 +11,7 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using DiscordRPC;
@@ -391,21 +392,29 @@ namespace ReFixed
         public static void OverrideShortcuts()
         {
             var _confirmRead = Hypervisor.Read<byte>(Variables.ConfirmAddress);
-            var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
+                            Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
 
 
-            if (_confirmRead == 0x00 && _shortRead != 0x02BA)
+            if (_confirmRead == 0x00)
             {
-                Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02BA);
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
+                var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
+
+                if (_shortRead != 0x02BA)
+                {
+                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02BA);
+                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
+                }
             }
 
-            else if (_confirmRead == 0x01 && _shortRead != 0x02AB)
+            else if (_confirmRead == 0x01)
             {
-                Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
+                var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
+
+                if (_shortRead != 0x02AB)
+                {
+                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
+                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
+                }
             }
         }
 
