@@ -53,7 +53,7 @@ namespace AxaFormBase
 				while (!MainToken.IsCancellationRequested)
 				{
 					Functions.Execute();
-					Thread.Sleep(1);
+					Thread.Sleep(5);
 				}
 			}, MainToken);
 

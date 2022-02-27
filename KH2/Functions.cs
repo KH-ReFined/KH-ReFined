@@ -215,6 +215,8 @@ namespace ReFixed
             {
                 Variables.SkipRoxas = false;
                 Variables.SkipComplete = false;
+
+                _skipBool = true;
             }
 
             var _vibRead = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
@@ -230,7 +232,6 @@ namespace ReFixed
                     case 0x00:
                         Variables.SkipRoxas = true;
                         Variables.SkipComplete = false;
-                        Hypervisor.Write<ushort>(Variables.ConfigAddress, (ushort)(_vibRead + 0x01));
                         break;
                 }
             }
@@ -249,6 +250,8 @@ namespace ReFixed
 
                     Hypervisor.Write<uint>(0x444832, 0x1FF00001);
                     Hypervisor.Write<uint>(0x444832 + 0x04, 0x00000000);
+
+                    Hypervisor.Write<ushort>(Variables.ConfigAddress, (ushort)(_vibRead + 0x01));
                 }
 
                 if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A)
@@ -573,9 +576,9 @@ namespace ReFixed
 			Hypervisor.UnlockBlock(Variables.AnbFormatterAddress);
 			Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
 
-            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress);
+            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
 
-            if ((_toggleCheck & 0x01) == 0x00)
+            if (_toggleCheck == 0x00)
             {
                 var _paxBytes = Encoding.ASCII.GetBytes("obj/%s.a.jp");
                 Hypervisor.WriteArray(Variables.PaxFormatterAddress, _paxBytes);
