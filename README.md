@@ -62,7 +62,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | :heavy_check_mark: | - | Correct an issue with Limit Form's shortcuts being misplaced when O/B is used to confirm. |
 | :heavy_check_mark: | - | Correct Limit Form's Limit names so that they are more accurately translated. [[3]](#reference) |
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
-| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. |  
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference)|  
 | - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence. |
 | - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking. [[4]](#reference) | 
 
@@ -71,8 +71,8 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
 | :heavy_check_mark: | - | Fix an issue with 30fps being forced when talking to people. | 
-| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. |  
 | :heavy_check_mark: | - | Add back the ability to rename finishers. [[5]](#reference) |
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference)|  
 
 #### Reference
 
@@ -81,6 +81,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 3. In the HD remaster of KH2, the localization team changed the translation of certain attacks to contrast with their usual translations from Japanese. E.g. Ragnarok -> Infinity. This fix reverts that awful decision. 
 4. In KH3, the player can reorganize their magic menu. This feature is neat, so now it's in KH2. To do this, highlight your magic command and press L2/LT+DPAD to shift around.
 5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Tri/Y, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
+6. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games.
 
 ## Credits
 
@@ -99,6 +100,8 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
 - TopazTK for everything else.
+- CrazyCatz00 for the inspiration that led to Dual-Audio.
+- DA and AntonioDePau for their help with injecting ".a.jp" files for Dual-Audio.
 
 ### Kingdom Hearts - Birth by Sleep
 - TopazTK for everything so far.
