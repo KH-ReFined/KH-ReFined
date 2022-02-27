@@ -20,6 +20,9 @@ namespace ReFixed
 		// Set to 0x01 if playing on v0.1
 		public const int Version = 0x00;
 
+		// Set to true if using Dual Audio
+		public const bool DualAudio = true;
+
 		public static DiscordRpcClient RichClient = new DiscordRpcClient("833511404274974740");
 
 		public static string[] BattleImages = { "safe", "mob", "boss" };
@@ -83,7 +86,8 @@ namespace ReFixed
 		public static ulong[] TitleTextAddresses = { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
 
 		public static ushort[] AudioOffsets = { 0xEB3F, 0xEB47, 0xEB58, 0xEB58 };
-		public static  ulong[] AudioTextAddresses = { 0x2565A59, 0x2565C81, 0x2565C89, 0x2565C9A };
+		public static ulong[] SaveTextAddresses = { 0x2565A59, 0x2565C9B, 0x2565CC2 };
+		public static ulong[] AudioTextAddresses = { 0x2565A59, 0x2565C81, 0x2565C89, 0x2565C9A };
 		public static ulong[] AudioOffsetAddresses = { 0x2559D96, 0x2559E36, 0x2559D9E, 0x2559DA6 };
 
 		public static ulong TitleBackAddress = 0x553F0C;
@@ -171,6 +175,13 @@ namespace ReFixed
 			"Ars Arcanum",
 			"Sonic Blade",
 			"Ragnarok"
+		};
+
+		public static readonly string[] SaveStrings =
+		{
+			"Auto-Save",
+			"Autosave functionality.",
+			"Autosave functionality."
 		};
 
 		public static string[] AudioStrings =
