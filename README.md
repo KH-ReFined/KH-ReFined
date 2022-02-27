@@ -62,6 +62,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | :heavy_check_mark: | - | Correct an issue with Limit Form's shortcuts being misplaced when O/B is used to confirm. |
 | :heavy_check_mark: | - | Correct Limit Form's Limit names so that they are more accurately translated. [[3]](#reference) |
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. |  
 | - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence. |
 | - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking. [[4]](#reference) | 
 
@@ -70,6 +71,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
 | :heavy_check_mark: | - | Fix an issue with 30fps being forced when talking to people. | 
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. |  
 | :heavy_check_mark: | - | Add back the ability to rename finishers. [[5]](#reference) |
 
 #### Reference
