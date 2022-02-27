@@ -93,6 +93,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 - KSX for his work on the MP Bar enhancement.
 - Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.
 - Xeeynamo for the functions used to calculate the Save Checksum.
+- Dekirai for his immense testing.
 
 ### Kingdom Hearts 1
 - Denhonator for his work on Cutscene Skip.
