@@ -38,7 +38,7 @@ namespace ReFixed
                 var _latestNumber = Convert.ToDouble(_latestInfo.TagName.Substring(1));
 
                 if (_latestNumber >= 100)
-                    _latestNumber = Convert.ToDouble(_latestInfo.TagName.Substring(1).Replace(",", "."));
+                    _latestNumber = Convert.ToDouble(_latestInfo.TagName.Substring(1).Replace(".", ","));
 
                 var _latestFile = _latestInfo.Assets[0].BrowserDownloadUrl;
 
