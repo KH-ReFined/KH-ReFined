@@ -579,8 +579,14 @@ namespace ReFixed
                 Hypervisor.WriteArray(Variables.PaxFormatterAddress, _paxBytes);
                 Hypervisor.WriteArray(Variables.PaxFormatterAddress + 0x10, _paxBytes);
 
-                var _voiceBytes = Encoding.ASCII.GetBytes("voice/jp/battle");
-                Hypervisor.WriteArray(Variables.VoiceFormatterAddress, _voiceBytes);
+                var _battleBytes = Encoding.ASCII.GetBytes("voice/jp/battle");
+                Hypervisor.WriteArray(Variables.BattleFormatterAddress, _battleBytes);
+
+                var _anbBytes = Encoding.ASCII.GetBytes("anm/jp/\u0000anm/jp/");
+                Hypervisor.WriteArray(Variables.AnbFormatterAddress, _anbBytes);
+
+                var _eventBytes = Encoding.ASCII.GetBytes("voice/jp/event");
+                Hypervisor.WriteArray(Variables.EventFormatterAddress, _eventBytes);
             }
 
             else
@@ -589,8 +595,14 @@ namespace ReFixed
                 Hypervisor.WriteArray(Variables.PaxFormatterAddress, _paxBytes);
                 Hypervisor.WriteArray(Variables.PaxFormatterAddress + 0x10, _paxBytes);
 
-                var _voiceBytes = Encoding.ASCII.GetBytes("voice/us/battle");
-                Hypervisor.WriteArray(Variables.VoiceFormatterAddress, _voiceBytes);
+                var _battleBytes = Encoding.ASCII.GetBytes("voice/us/battle");
+                Hypervisor.WriteArray(Variables.BattleFormatterAddress, _battleBytes);
+
+                var _anbBytes = Encoding.ASCII.GetBytes("anm/us/\u0000anm/fm/");
+                Hypervisor.WriteArray(Variables.AnbFormatterAddress, _anbBytes);
+
+                var _eventBytes = Encoding.ASCII.GetBytes("voice/us/event");
+                Hypervisor.WriteArray(Variables.EventFormatterAddress, _eventBytes);
             }
         }
 

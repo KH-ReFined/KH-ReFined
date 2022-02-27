@@ -72,9 +72,11 @@ namespace ReFixed
 
 		public static ulong LimiterAddress = 0x553EBA;
 
-		public static ulong PaxFormatterAddress = 0x61FD2;
-		public static ulong VoiceFormatterAddress = 0x5F87A;
-		
+		public static ulong PaxFormatterAddress = Version == 0x00 ? (ulong)0x61FD2 : (ulong)0x61F92;
+		public static ulong BattleFormatterAddress = Version == 0x00 ? (ulong)0x5F87A : (ulong)0x5F83A;
+		public static ulong AnbFormatterAddress = Version == 0x00 ? (ulong)0x52A02 : (ulong)0x529C2;
+		public static ulong EventFormatterAddress = Version == 0x00 ? (ulong)0x52A72 : (ulong)0x52A32;
+
 		public static ulong InstructionAddress = Version == 0x00 ? (ulong)0x152160 : (ulong)0x152220;
 
 		public static ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
