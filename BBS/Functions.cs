@@ -221,15 +221,20 @@ namespace ReFixed
         public static void OverrideText()
         {
             var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
-            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA8, true);
-            var _baseAddress = _secondaryPointer + 0xAEE; 
+            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA0, true);
+            var _baseAddress = _secondaryPointer - 0x09A0; 
+			            
+			var _baseRead = Hypervisor.Read<uint>(_baseAddress, true);
+            var _charRead = Hypervisor.Read<char>(_baseAddress + Variables.SettingsOffsets[0], true);
 
-            var _charRead = Hypervisor.Read<char>(_baseAddress, true);
-
-            if (_charRead == 0x56)
+			if (_baseRead == 0x44544340)
+            if (_charRead != 0x44)
             {
+                Hypervisor.Write<uint>(_baseAddress + 0x630, (uint)Variables.SettingsOffsets[3], true);
+                Hypervisor.Write<uint>(_baseAddress + 0x63C, (uint)Variables.SettingsOffsets[4], true);
+
                 for (int i = 0; i < Variables.SettingsOffsets.Length; i++)
-                    Hypervisor.WriteArray(_baseAddress + Variables.SettingsOffsets[i], Encoding.ASCII.GetBytes(Variables.SettingsText[i]), true);
+                    Hypervisor.WriteArray(_baseAddress + Variables.SettingsOffsets[i], Encoding.GetEncoding(437).GetBytes(Variables.SettingsText[i]), true);
             }
         }
 
@@ -351,48 +356,57 @@ namespace ReFixed
 
         public static void HandleAutosave()
         {
-            var _vibrationRead = Hypervisor.Read<byte>(Variables.VibrationAddress);
+            var _battleRead = Hypervisor.Read<byte>(Variables.BattleAddress);
+            var _loadRead = Hypervisor.Read<byte>(0x20D2AC);
 
-            if (_vibrationRead == 0x01)
+            var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
+            var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
+
+            // If not in the title screen, nor in a battle, and the room is loaded:
+            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
             {
-                var _battleRead = Hypervisor.Read<byte>(Variables.BattleAddress);
-                var _loadRead = Hypervisor.Read<byte>(0x20D2AC);
+                // If the past WorldID is not equal to the current WorldID:
+                if (Variables.SaveWorld != _worldCheck)
+                { 
+                    CreateAutosave();
+                    Variables.SaveIterator = 0;
+                }
 
-                var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
-                var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
-
-                // If not in the title screen, nor in a battle, and the room is loaded:
-                if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
                 {
-                    // If the past WorldID is not equal to the current WorldID:
-                    if (Variables.SaveWorld != _worldCheck)
-                    { 
+                    if (Variables.SaveIterator == 3)
+                    {
                         CreateAutosave();
                         Variables.SaveIterator = 0;
                     }
 
-                    else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
-                    {
-                        if (Variables.SaveIterator == 3)
-                        {
-                            CreateAutosave();
-                            Variables.SaveIterator = 0;
-                        }
-
-                        else
-                            Variables.SaveIterator++;
-                    }
-
-                    Variables.SaveWorld = _worldCheck;
-                    Variables.SaveRoom = _roomCheck;
+                    else
+                        Variables.SaveIterator++;
                 }
+
+                Variables.SaveWorld = _worldCheck;
+                Variables.SaveRoom = _roomCheck;
             }
+        }
+
+        public static void HandleAudio()
+        {
+            Hypervisor.UnlockBlock(0x23394);
+            
+            var _vibrationRead = Hypervisor.Read<byte>(Variables.VibrationAddress);
+
+            if (_vibrationRead == 0x00)
+                Hypervisor.WriteArray(0x23394, Encoding.ASCII.GetBytes("jp"));
+            
+            else
+                Hypervisor.WriteArray(0x23394, Encoding.ASCII.GetBytes("en"));
         }
 
 		public static void Execute()
 		{
             HandleAutosave();
-            
+            HandleAudio();
+
 			SeekReset();
 			
 			RenameFinisher();

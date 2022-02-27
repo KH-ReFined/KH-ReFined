@@ -48,12 +48,18 @@ namespace ReFixed
 		public static readonly ulong FramerateAddress = Version == 0x00 ? (ulong)0x36553C : (ulong)0x36550C;
 
 		public static readonly ulong LimiterAddress = 0x553EBA;
+
+		public static readonly ulong PaxFormatterAddress = 0x61FD2;
+		public static readonly ulong VoiceFormatterAddress = 0x5F87A;
 		
 		public static readonly ulong InstructionAddress = Version == 0x00 ? (ulong)0x152160 : (ulong)0x152220;
 
 		public static readonly ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
-		public static readonly ulong[] SaveTextAddresses = { 0x2565A59, 0x2565C9B, 0x2565CC2 };
 		public static readonly ulong[] TitleTextAddresses = { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
+
+		public static ushort[] AudioOffsets = { 0xEB3F, 0xEB47, 0xEB58, 0xEB58 };
+		public static ulong[] AudioTextAddresses = { 0x2565A59, 0x2565C81, 0x2565C89, 0x2565C9A };
+		public static ulong[] AudioOffsetAddresses = { 0x2559D96, 0x2559E36, 0x2559D9E, 0x2559DA6 };
 
 		public static readonly ulong TitleBackAddress = 0x553F0C;
 
@@ -142,11 +148,12 @@ namespace ReFixed
 			"Ragnarok"
 		};
 
-		public static readonly string[] SaveStrings =
+		public static readonly string[] AudioStrings =
 		{
-			"Auto-Save",
-			"Autosave functionality.",
-			"Autosave functionality."
+			"Dual-Audio",
+			"English",
+			"Japanese",
+			"Switch between English and Japanese speech.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Work in Progress! The world must be\nreloaded for the changes to take effect!){0x03}"
 		};
 
 		public static readonly ulong[] MagicAddresses = new ulong[] { 0x24AA2CA, 0x24AA33A, 0x24A98EE };

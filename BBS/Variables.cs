@@ -33,22 +33,22 @@ namespace ReFixed
 
 		public static readonly string[] SettingsText = 
 		{
-			"Auto-Save", 
-			"On\u0000", 
-			"Off\u0000", 
-			"Auto-Save", 
-			"Auto-Save"
+			"Dual-Audio\x00", 
+			"English\x00", 
+			"Japanese\x00", 
+			"Switch to using English vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00",
+			"Switch to using Japanese vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00"
 		};
 
 		public static readonly ulong[] SettingsOffsets = 
 		{
-			0x00,
-			0x84,
-			0x7A,
-			0x1140,
-			0x115C
+			0x1C0E,
+			0x1C92,
+			0x1C88,
+			0x2330,
+			0x23A1
 		};
-
+		
 		public static readonly ulong SettingsPointer = 0x896C7BC;
 
         public static Process GameProcess;
@@ -84,3 +84,4 @@ namespace ReFixed
 		public static readonly byte[] LimiterRemoved = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 	}
 }
+a1
