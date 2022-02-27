@@ -401,7 +401,7 @@ namespace ReFixed
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
             }
 
-            else if (_shortRead != 0x02AB)
+            else if (_confirmRead == 0x01 && _shortRead != 0x02AB)
             {
                 Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
                 Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
@@ -585,11 +585,85 @@ namespace ReFixed
             }
         }
 
+        public static void OverwriteOBJ(string Input)
+        {
+            for (ulong _formIterator = 0; _formIterator < (ulong)Variables.FormNames.Length; _formIterator++)
+            {
+                var _formatForm = String.Format(Variables.FormNames[_formIterator], Input);
+                var _convertForm = Encoding.ASCII.GetBytes(_formatForm);
+
+                if (_convertForm.Length < 16)
+                {
+                    var _byteList = new List<byte>();
+                    _byteList.AddRange(_convertForm);
+                    _byteList.AddRange(new byte[16 - _convertForm.Length]);
+
+                    _convertForm = _byteList.ToArray();
+                }
+
+                Hypervisor.WriteArray(Variables.ObjentryAddresses[0] + 0x60 * _formIterator, _convertForm);
+            }
+
+            var _limitFormat = String.Format("P_EX100{0}_KH1F", Input);
+            var _limitConvert = Encoding.ASCII.GetBytes(_limitFormat);
+
+            Hypervisor.WriteArray(Variables.ObjentryAddresses[2], _limitConvert);
+
+            for (ulong _friendIterator = 0; _friendIterator < (ulong)Variables.PartyNames.Length; _friendIterator++)
+            {
+                var _formatFriend = String.Format(Variables.PartyNames[_friendIterator], Input);
+                var _convertFriend = Encoding.ASCII.GetBytes(_formatFriend);
+
+                if (_convertFriend.Length < 16)
+                {
+                    var _byteList = new List<byte>();
+                    _byteList.AddRange(_convertFriend);
+                    _byteList.AddRange(new byte[16 - _convertFriend.Length]);
+
+                    _convertFriend = _byteList.ToArray();
+                }
+
+                Hypervisor.WriteArray(Variables.ObjentryAddresses[1] + 0x60 * _friendIterator, _convertFriend);
+            }
+        }
+
+        public static void HandleFestivity()
+        {
+            var _suffixRead = Hypervisor.Read<byte>(Variables.ObjentryAddresses[0] + 0x07);
+            var _dateCurrent = DateTime.Now;
+
+            var _dateHalloweenStart = new DateTime(_dateCurrent.Year, 10, 31);
+            var _dateHalloweenEnd = new DateTime(_dateCurrent.Year, 11, 03);
+
+            var _dateChristmasStart = new DateTime(_dateCurrent.Year, 12, 24);
+            var _dateChristmasEnd = new DateTime(_dateCurrent.Year, 01, 02);
+
+            var _suffixWrite = "";
+
+            if (_dateCurrent > _dateHalloweenStart && 
+                _dateCurrent < _dateHalloweenEnd)
+                _suffixWrite = "_NM";
+
+            else if (_dateCurrent > _dateChristmasStart && 
+                    _dateCurrent > _dateChristmasEnd)
+                _suffixWrite = "_XM";
+
+            else
+                _suffixWrite = "";
+
+            if (_suffixWrite != "" && _suffixRead == 0x00)
+                OverwriteOBJ(_suffixWrite);
+
+            else if (_suffixWrite == "" && _suffixRead != 0x00)
+                OverwriteOBJ(_suffixWrite);
+        }
+
         public static void Execute()
         {
             HandleAutosave();
             
             HandleAudio();
+            HandleFestivity();
 
             SeekReset();
             HandleTutorialSkip();
