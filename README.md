@@ -100,11 +100,12 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 
 ### Kingdom Hearts 2
 - Stickman Sham for the idea that led to Magic Reorganization.
+- CrazyCatz00 for the inspiration that led to Dual-Audio.
+- DA and AntonioDePau for their help with injecting ".a.jp" files for Dual-Audio.
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
 - TopazTK for everything else.
-- CrazyCatz00 for the inspiration that led to Dual-Audio.
-- DA and AntonioDePau for their help with injecting ".a.jp" files for Dual-Audio.
+
 
 ### Kingdom Hearts - Birth by Sleep
 - TopazTK for everything so far.
