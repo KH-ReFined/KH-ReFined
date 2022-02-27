@@ -569,7 +569,9 @@ namespace ReFixed
         public static void HandleAudio()
         {
             Hypervisor.UnlockBlock(Variables.PaxFormatterAddress);
-            Hypervisor.UnlockBlock(Variables.VoiceFormatterAddress);
+            Hypervisor.UnlockBlock(Variables.BattleFormatterAddress);
+			Hypervisor.UnlockBlock(Variables.AnbFormatterAddress);
+			Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
 
             var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress);
 
