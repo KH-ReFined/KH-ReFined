@@ -19,93 +19,61 @@ namespace ReFixed
 {
 	public class Functions
 	{
-		public static bool IsTitle()
-        {
-            var _levelValue = Hypervisor.Read<byte>(Variables.LevelAddress);
-            var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
-			var _roomID = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
+		/*
+            Initialization:
 
-            return _worldID == 0xFF || _roomID == 0xFF || _worldID == 0x00 || _levelValue == 0;
+            Serves only to unlock memory regions for now.
+        */
+        public static void Initialization()
+        {
+			Hypervisor.UnlockBlock(0x10F2E);
+
+            Variables.Initialized = true;
         }
 
-        public static void ProcessRPC()
-        {
-            var _healthValue = Hypervisor.Read<byte>(0x029B8CC6);
-            var _magicValue = Hypervisor.Read<byte>(0x029B8CCE);
-            var _levelValue = Hypervisor.Read<byte>(Variables.LevelAddress);
-			var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
+        /*
+            CheckTitle:
 
-            var _stringState = string.Format("Level {0} | {1} Mode", _levelValue, Variables.ModeText.ElementAtOrDefault(_diffValue));
-            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
+            Checks certain points in RAM to see if the player is in the Title Screen.
+            Returns **true** if so, returns **false** otherwise. 
+        */
+		public static bool CheckTitle() => Hypervisor.Read<byte>(Variables.WorldAddress) == 0xFF || 
+										   Hypervisor.Read<byte>(Variables.WorldAddress + 0x68) == 0xFF || 
+										   Hypervisor.Read<byte>(Variables.WorldAddress) == 0x00 || 
+										   Hypervisor.Read<byte>(Variables.LevelAddress) == 0;
 
-            var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
-			var _gummiCheck = Hypervisor.Read<byte>(0x00163C17);
-            var _battleFlag = Hypervisor.Read<byte>(0x024C3352);
+		/*
+            ResetGame:
 
-            var _timeValue = Math.Floor(Hypervisor.Read<int>(Variables.TimeAddress) / 60F);
-            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
-            var _timeHours = Math.Floor(_timeValue / 3600F);
+            Triggers a soft-reset if the proper input is given.
+            The input is sought in Execute().
 
-            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
-
-			var _rpcButtons = new DiscordRPC.Button[] 
-			{ 
-				new DiscordRPC.Button
-				{ 
-					Label = "== Powered by Re:Fixed ==", 
-					Url = "https://github.com/TopazTK/KH-ReFixed" 
-				},
-				new DiscordRPC.Button
-				{ 
-					Label = "== Icons by Televo ==", 
-					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-				} 
-			};
-
-			if (!IsTitle())
-			{
-				Variables.RichClient.SetPresence(new RichPresence
-				{
-					Details = _stringDetail,
-					State = _stringState,
-					Assets = new Assets
-					{
-						LargeImageKey = _gummiCheck == 0 ? Variables.WorldImages.ElementAtOrDefault(_worldID) : "wm",
-						LargeImageText = _timeText,
-						SmallImageKey = _battleFlag % 2 == 0 ? "safe" : "battle",
-						SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
-					},
-					
-					Buttons = _rpcButtons
-				});
-			}
-
-			else
-			{				
-				Variables.RichClient.SetPresence(new RichPresence
-				{
-					Details = "On the Title Screen",
-					State = null,
-					
-					Assets = new Assets
-					{
-						LargeImageKey = "title",
-						SmallImageKey = null,
-						SmallImageText = null
-					},
-					
-					Buttons = _rpcButtons
-				});
-			}
-        }
-
-		public static void OverrideText()
+            INPUT: L1 + R1 + START + SELECT.
+        */
+        public static void ResetGame()
 		{
-		    if (Hypervisor.Read<byte>(Variables.SaveTextAddress) != 0x2B)
-				Hypervisor.WriteArray(Variables.SaveTextAddress, Variables.SaveTextString.ToKHSCII());
-		}
+			var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
 
-		public static void OverrideAspect(float InputValue)
+			var _selectRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect);
+			var _amountRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect + 0x044);
+
+			var _buttonRead = _inputRead == 0x0C09;
+			var _saveMenuRead = (_selectRead == _amountRead - 0x01) && (_inputRead & 0x4000) == 0x4000;
+			
+			if (_buttonRead || _saveMenuRead)
+			{
+				Hypervisor.Write<byte>(Variables.ResetAddresses[0], 0x01);
+				Hypervisor.Write<byte>(Variables.ResetAddresses[1], 0x01);
+			}
+		}
+		
+		/*
+            AspectCorrection:
+
+            Automatically detect the aspect ratio in Full Screen
+			and accommodate for it.
+        */
+		public static void AspectCorrection(float InputValue)
 		{
 			float _floatValue = 9F;
 
@@ -128,44 +96,16 @@ namespace ReFixed
 					break;
 			}
 
-			Hypervisor.UnlockBlock(0x10F2E);
 			Hypervisor.Write<float>(0x10F2E, _floatValue);
 		}
 
-		public static void OverrideMP()
-		{
-			var _catchMagic = Hypervisor.Read<byte>(Variables.SoraMagicAddress);
+ 		/*
+            GenerateSave:
 
-			switch (_catchMagic)
-			{
-				case 0:
-					Hypervisor.Write<byte>(Variables.SoraMPAddress, 0x00);
-					break;
-				default:
-					if (Hypervisor.Read<byte>(Variables.SoraMPAddress) == 0x00)
-						Hypervisor.Write<byte>(Variables.SoraMPAddress, 0x01);
-					break;
-			}
-		}
-
-		public static void SeekReset()
-		{
-			var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
-
-			var _selectRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect);
-			var _amountRead = Hypervisor.Read<byte>(Variables.SaveMenuSelect + 0x044);
-
-			var _buttonRead = _inputRead == 0x0C09;
-			var _saveMenuRead = (_selectRead == _amountRead - 0x01) && (_inputRead & 0x4000) == 0x4000;
-			
-			if (_buttonRead || _saveMenuRead)
-			{
-				Hypervisor.Write<byte>(Variables.ResetAddresses[0], 0x01);
-				Hypervisor.Write<byte>(Variables.ResetAddresses[1], 0x01);
-			}
-		}
-
-		public static void CreateAutosave()
+            Only to be triggered by AutosaveEngine(), generate and write a save to
+            both RAM and ROM portions, effectively saving the game.
+        */
+		public static void GenerateSave()
         {
             // Prepare the pointers.
             var _pointerBase = Hypervisor.Read<ulong>(Variables.InformationPointer);
@@ -323,57 +263,238 @@ namespace ReFixed
             #endregion
         }
 
-		public static void HandleAutosave()
+        /*
+            AutosaveEngine:
+
+            As the name suggests, handle the logic behind Autosave functionality.
+        */
+		public static void AutosaveEngine()
         {		    
-			var _saveToggle = Hypervisor.Read<int>(Variables.VibrationAddress);
+			var _fadeCheck = Hypervisor.Read<byte>(0x138DB2);
+			var _battleRead = Hypervisor.Read<byte>(0x024C3352);
+			var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
 
-		    if (_saveToggle == 0x00)
-		    {
-				var _fadeCheck = Hypervisor.Read<byte>(0x138DB2);
-				var _battleRead = Hypervisor.Read<byte>(0x024C3352);
-				var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
+			var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
+			var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
 
-				var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
-				var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
+			if (_titleCheck > 0x02 && _battleRead == 0x00 && _fadeCheck == 0x80)
+			{
+				if (Variables.SaveWorld != _worldCheck)
+				{ 
+					GenerateSave();
+					Variables.SaveIterator = 0;
+				}
 
-				// If not in the title screen, nor in a battle, and the room is loaded:
-				if (_titleCheck > 0x02 && _battleRead == 0x00 && _fadeCheck == 0x80)
+				else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 1)
 				{
-					// If the past WorldID is not equal to the current WorldID:
-					if (Variables.SaveWorld != _worldCheck)
-					{ 
-						CreateAutosave();
+					if (Variables.SaveIterator == 3)
+					{
+						GenerateSave();
 						Variables.SaveIterator = 0;
 					}
 
-					else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 1)
-					{
-						if (Variables.SaveIterator == 3)
-						{
-							CreateAutosave();
-							Variables.SaveIterator = 0;
-						}
-
-						else
-							Variables.SaveIterator++;
-					}
-
-					Variables.SaveWorld = _worldCheck;
-					Variables.SaveRoom = _roomCheck;
+					else
+						Variables.SaveIterator++;
 				}
+
+				Variables.SaveWorld = _worldCheck;
+				Variables.SaveRoom = _roomCheck;
 			}
         }
 
-		public static void Execute()
+		/*
+			FieldOfView:
+
+			Toggle between the original and a KH2-esque Field of View.
+			This is detemined by the **Vibration** option at the Camp Menu.
+		*/
+		public static void FieldOfView()
 		{
-			HandleAutosave();
+		    switch(Hypervisor.Read<int>(Variables.VibrationAddress))
+		    {
+				case 0:
+				{
+					if (Hypervisor.Read<float>(Variables.FovAddresses[0]) != 400F)
+						for (uint i = 0; i < Variables.FovAddresses.Length; i++)
+							Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovClassic[i]);
 
-			SeekReset();
-			
-		    OverrideText();
-		    OverrideMP();
+					break;
+				}
 
-			ProcessRPC();
+				case 1:
+				{
+					if (Hypervisor.Read<float>(Variables.FovAddresses[0]) != 600F)
+						for (int i = 0; i < Variables.FovAddresses.Length; i++)
+							Hypervisor.Write<float>(Variables.FovAddresses[i], Variables.FovEnhanced[i]);
+
+					break;
+				}
+		    }
 		}
+
+        /*
+            TextAdjust:
+
+            Overwrite the text in certain portions of the game, to give the illusion that
+            the features given are Square-made, and not some jank being made by a 20-year-old
+            no life :^)
+        */
+        public static void TextAdjust()
+		{
+		    if (Hypervisor.Read<byte>(Variables.FovTextAddresses[1]) != 0x30)
+		    {
+				for (uint i = 0; i < Variables.FovTextOffsets.Length; i++)
+					Hypervisor.Write<ushort>(Variables.FovTextAddresses[0] + (0x02 * i), Variables.FovTextOffsets[i]);
+
+				for (uint i = 0; i < Variables.CamTextOffsets.Length; i++)
+					Hypervisor.Write<ushort>(Variables.CamTextAddresses[0] + (0x02 * i), Variables.CamTextOffsets[i]);
+
+				Hypervisor.WriteArray(Variables.FovTextAddresses[1], Variables.FovTextString.ToKHSCII());
+				Hypervisor.WriteArray(Variables.CamTextAddresses[1], Variables.CamTextString.ToKHSCII());
+		    }
+		}
+
+		/*
+            MagicHide:
+
+            Hides the MP Bar until Sora learns a spell.
+        */
+        public static void MagicHide()
+		{
+			var _catchMagic = Hypervisor.Read<byte>(Variables.SoraMagicAddress);
+
+			switch (_catchMagic)
+			{
+				case 0:
+					Hypervisor.Write<byte>(Variables.SoraMPAddress, 0x00);
+					break;
+				default:
+					if (Hypervisor.Read<byte>(Variables.SoraMPAddress) == 0x00)
+						Hypervisor.Write<byte>(Variables.SoraMPAddress, 0x01);
+					break;
+			}
+		}
+
+		/*
+            DiscordEngine:
+
+            Handle the Discord Rich Presence of Re:Fixed.
+            To be executed on a separate thread.
+        */
+        public static void DiscordEngine()
+        {
+            var _healthValue = Hypervisor.Read<byte>(0x029B8CC6);
+            var _magicValue = Hypervisor.Read<byte>(0x029B8CCE);
+            var _levelValue = Hypervisor.Read<byte>(Variables.LevelAddress);
+			var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
+
+            var _stringState = string.Format("Level {0} | {1} Mode", _levelValue, Variables.ModeText.ElementAtOrDefault(_diffValue));
+            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
+
+            var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
+			var _gummiCheck = Hypervisor.Read<byte>(0x00163C17);
+            var _battleFlag = Hypervisor.Read<byte>(0x024C3352);
+
+            var _timeValue = Math.Floor(Hypervisor.Read<int>(Variables.TimeAddress) / 60F);
+            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
+            var _timeHours = Math.Floor(_timeValue / 3600F);
+
+            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+
+			var _rpcButtons = new DiscordRPC.Button[] 
+			{ 
+				new DiscordRPC.Button
+				{ 
+					Label = "== Powered by Re:Fixed ==", 
+					Url = "https://github.com/TopazTK/KH-ReFixed" 
+				},
+				new DiscordRPC.Button
+				{ 
+					Label = "== Icons by Televo ==", 
+					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
+				} 
+			};
+
+			if (!IsTitle())
+			{
+				Variables.RichClient.SetPresence(new RichPresence
+				{
+					Details = _stringDetail,
+					State = _stringState,
+					Assets = new Assets
+					{
+						LargeImageKey = _gummiCheck == 0 ? Variables.WorldImages.ElementAtOrDefault(_worldID) : "wm",
+						LargeImageText = _timeText,
+						SmallImageKey = _battleFlag % 2 == 0 ? "safe" : "battle",
+						SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
+					},
+					
+					Buttons = _rpcButtons
+				});
+			}
+
+			else
+			{				
+				Variables.RichClient.SetPresence(new RichPresence
+				{
+					Details = "On the Title Screen",
+					State = null,
+					
+					Assets = new Assets
+					{
+						LargeImageKey = "title",
+						SmallImageKey = null,
+						SmallImageText = null
+					},
+					
+					Buttons = _rpcButtons
+				});
+			}
+        }
+
+
+		/*
+            Execute:
+
+            Executes the main logic within Re:Fixed.
+        */
+        public static void Execute()
+        {
+            #region High Priority
+                if (!Variables.Initialized)
+					Initialization();
+
+                if (Hypervisor.Read<ushort>(Variables.InputAddress) == 0x090C)
+					ResetGame();
+
+                AutosaveEngine();
+            #endregion
+
+            #region Mid Priority
+				MagicHide();
+                FieldOfView();
+            #endregion
+
+            #region Low Priority
+                TextAdjust();
+            #endregion
+
+            #region Discord
+                if (Variables.DiscordTask == null)
+                {
+                    Variables.CancelSource = new CancellationTokenSource();
+                    Variables.DiscordToken = Variables.CancelSource.Token;
+
+                    Variables.DiscordTask = Task.Factory.StartNew(delegate()
+                    {
+                        while (!Variables.DiscordToken.IsCancellationRequested)
+                        {
+                            DiscordEngine();
+                            Thread.Sleep(5);
+                        }
+                    }, Variables.DiscordToken);
+                }
+            #endregion
+        }
 	}
 }
