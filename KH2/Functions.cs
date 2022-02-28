@@ -691,6 +691,30 @@ namespace ReFixed
         }
 
         /*
+            MagicHide:
+
+            Hides the MP Bar until Sora learns a spell.
+        */
+        public static void MagicHide()
+        {
+            if (Hypervisor.Read<uint>(Variables.MagicLVAddress) == 0x00000000 && 
+                Hypervisor.Read<ushort>(Variables.MagicLV2Address) == 0x0000)
+            {
+                if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0] != 0x00))
+                {
+                    for (int i = 0; i < Variables.MPSEQDAddresses.Length; i++)
+                        Hypervisor.Write<byte>(Variables.MPSEQDAddresses[i], 0x00);
+                }
+            }
+
+            else if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0] == 0x00))
+            {
+                for (int i = 0; i < Variables.MPSEQDAddresses.Length; i++)
+                    Hypervisor.Write<byte>(Variables.MPSEQDAddresses[i], Variables.MPSEQDValues[i]);
+            }
+        }
+
+        /*
             DiscordEngine:
 
             Handle the Discord Rich Presence of Re:Fixed.
@@ -733,7 +757,7 @@ namespace ReFixed
 
             if (!CheckTitle())
             {
-                Variables.RichClient.SetPresence(new RichPresence
+                Variables.DiscordClient.SetPresence(new RichPresence
                 {
                     Details = _stringDetail,
                     State = _stringState,
@@ -751,7 +775,7 @@ namespace ReFixed
 
             else
             {
-                Variables.RichClient.SetPresence(new RichPresence
+                Variables.DiscordClient.SetPresence(new RichPresence
 				{
 					Details = "On the Title Screen",
 					State = null,
@@ -790,14 +814,32 @@ namespace ReFixed
 					AudioSwap();
 
                 SkipRoxas();
-                FrameOverride();
                 SortMagic();
+                FrameOverride();
             #endregion
 
             #region Low Priority
-                HolidayEngine();
+                MagicHide();
                 TextAdjust();
+                HolidayEngine();
                 LimitOverride();
+            #endregion
+
+            #region Discord
+                if (Variables.DiscordTask == null)
+                {
+                    Variables.CancelSource = new CancellationTokenSource();
+                    Variables.DiscordToken = Variables.CancelSource.Token;
+
+                    Variables.DiscordTask = Task.Factory.StartNew(delegate()
+                    {
+                        while (!Variables.DiscordToken.IsCancellationRequested)
+                        {
+                            DiscordEngine();
+                            Thread.Sleep(5);
+                        }
+                    }, Variables.DiscordToken);
+                }
             #endregion
         }
     }

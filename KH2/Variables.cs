@@ -7,8 +7,10 @@
 */
 
 using System;
+using System.Threading;
 using System.Reflection;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -18,16 +20,20 @@ namespace ReFixed
 {
 	public class Variables
 	{
-		Assembly ExeAssembly = Assembly.GetExecutingAssembly();
-		FileVersionInfo FileInfo = FileVersionInfo.GetVersionInfo(ExeAssembly.Location);
-		String FileVersion = FileInfo.FileVersion;
+		private static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
+		private static FileVersionInfo FileInfo = FileVersionInfo.GetVersionInfo(ExeAssembly.Location);
+		private static String FileVersion = FileInfo.FileVersion;
 
 		// Set to true if using Dual Audio
 		public const bool DualAudio = true;
 
 		public static bool Initialized = false;
 
-		public static DiscordRpcClient RichClient = new DiscordRpcClient("833511404274974740");
+		public static Task DiscordTask;
+		public static CancellationToken DiscordToken;
+		public static CancellationTokenSource CancelSource;
+
+		public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
 
 		public static string[] BattleImages = { "safe", "mob", "boss" };
         public static string[] WorldImages = { "", "", "tt", "", "hb", "bb", "he", "al", "mu", "po", "lk", "lm", "dc", "wi", "nm", "wm", "ca", "tr", "eh" };
@@ -75,6 +81,7 @@ namespace ReFixed
 		};
 
 		public static ulong MagicLVAddress = 0x4460F6;
+		public static ulong MagicLV2Address = 0x446131;
 
         public static Process GameProcess;
         public static IntPtr GameHandle;
