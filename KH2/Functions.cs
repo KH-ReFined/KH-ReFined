@@ -20,88 +20,50 @@ namespace ReFixed
 {
 	public class Functions
 	{
-        public static bool IsTitle()
-        {
-            var _roomCheck = Hypervisor.Read<uint>(Variables.RoomAddress);
-            var _softCheck = Hypervisor.Read<uint>(Variables.TitleBackAddress);
-            var _titleCheck = Hypervisor.Read<uint>(Variables.TitleFlagAddress);
+        /*
+            Initialization:
 
-            return _roomCheck == 0x00FFFFFF || _roomCheck == 0x00000101 || _titleCheck == 0x01 || _softCheck == 0x01;
+            Serves only to unlock memory regions for now.
+        */
+        public static void Initialization()
+        {
+            Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
+            Hypervisor.UnlockBlock(Variables.PaxFormatterAddress);
+            Hypervisor.UnlockBlock(Variables.BattleFormatterAddress);
+			Hypervisor.UnlockBlock(Variables.AnbFormatterAddress);
+			Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
+
+            Variables.Initialized = true;
         }
 
-        public static void ProcessRPC()
-        {
-            var _healthValue = Hypervisor.Read<byte>(0x024BC74A);
-            var _magicValue = Hypervisor.Read<byte>(0x024BC8CA);
-            var _levelValue = Hypervisor.Read<byte>(0x00445061);
-            var _formValue = Hypervisor.Read<byte>(0x00446086);
+        /*
+            CheckTitle:
 
-            var _stringState = string.Format("Level {0} | Form: {1}", _levelValue, Variables.FormText.ElementAtOrDefault(_formValue));
-            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
+            Checks certain points in RAM to see if the player is in the Title Screen.
+            Returns **true** if so, returns **false** otherwise. 
+        */
+        public static bool CheckTitle() => Hypervisor.Read<uint>(Variables.RoomAddress) == 0x00FFFFFF || Hypervisor.Read<uint>(Variables.RoomAddress) == 0x00000101 || 
+                                           Hypervisor.Read<uint>(Variables.TitleFlagAddress) == 0x00000001 || Hypervisor.Read<uint>(Variables.TitleBackAddress) == 0x00000001;
 
-            var _worldID = Hypervisor.Read<byte>(Variables.RoomAddress);
-            var _battleFlag = Hypervisor.Read<byte>(0x024AA5B6);
+        /*
+            ResetGame:
 
-            var _timeValue = Math.Floor(Hypervisor.Read<int>(0x00444FA6) / 60F);
-            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
-            var _timeHours = Math.Floor(_timeValue / 3600F);
+            Triggers a soft-reset if the proper input is given.
+            The input is sought in Execute().
 
-            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+            INPUT: L1 + R1 + START + SELECT.
+        */
+        public static void ResetGame() => Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
 
-            var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
+        /*
+            SortMagic:
 
-            var _rpcButtons = new DiscordRPC.Button[] 
-			{ 
-				new DiscordRPC.Button
-				{ 
-					Label = "== Powered by Re:Fixed ==", 
-					Url = "https://github.com/TopazTK/KH-ReFixed" 
-				},
-				new DiscordRPC.Button
-				{ 
-					Label = "== Icons by Televo ==", 
-					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
-				} 
-			};
+            Shifts the chosen spell in the Magic menu up or down,
+            depending on the input.
 
-            if (!IsTitle())
-            {
-                Variables.RichClient.SetPresence(new RichPresence
-                {
-                    Details = _stringDetail,
-                    State = _stringState,
-                    Assets = new Assets
-                    {
-                        LargeImageKey = Variables.WorldImages.ElementAtOrDefault(_worldID),
-                        LargeImageText = _timeText,
-                        SmallImageKey = Variables.BattleImages.ElementAtOrDefault(_battleFlag),
-                        SmallImageText = Variables.ModeText.ElementAtOrDefault(_diffValue)
-                    },
-                    
-                    Buttons = _rpcButtons
-                });
-            }
-
-            else
-            {
-                Variables.RichClient.SetPresence(new RichPresence
-				{
-					Details = "On the Title Screen",
-					State = null,
-					
-					Assets = new Assets
-					{
-						LargeImageKey = "title",
-						SmallImageKey = null,
-						SmallImageText = null
-					},
-					
-					Buttons = _rpcButtons
-				});
-            }
-        }
-
-        public static void HandleMagicSort()
+            INPUT: L2 + DOWN or L2 + UP.
+        */
+        public static void SortMagic()
         {
             // Fetch the status of the room. This will be necessary.
             var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
@@ -205,13 +167,26 @@ namespace ReFixed
                         Variables.Debounce = false;
                 }
             }
+            
+            else
+            {
+                // Revert the NOP'd instructions.
+                for (int _ins = 0; _ins < Variables.SelectAddresses.Length; _ins++)
+                    Hypervisor.WriteArray(Variables.ExeAddress + Variables.SelectAddresses[_ins], Variables.SelectInstructions[_ins], true);
+            }
         }
 
-        public static void HandleTutorialSkip()
+        /*
+            SkipRoxas:
+
+            Determine whether to skip or go through Roxas' story.
+            This is detemined by the **Vibration** option at the Title Screen.
+        */
+        public static void SkipRoxas()
         {            
             var _skipBool = !Variables.SkipRoxas && !Variables.SkipComplete;
 
-            if (IsTitle() && !_skipBool)
+            if (CheckTitle() && !_skipBool)
             {
                 Variables.SkipRoxas = false;
                 Variables.SkipComplete = false;
@@ -222,7 +197,7 @@ namespace ReFixed
             var _vibRead = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
             var _diffRead = Hypervisor.Read<byte>(Variables.DifficultyAddress);
 
-            if (_skipBool && !IsTitle())
+            if (_skipBool && !CheckTitle())
             {
                 switch (_vibRead)
                 {
@@ -289,15 +264,12 @@ namespace ReFixed
             }
         }
 
-        public static void SeekReset()
-        {
-            var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
-
-            if (_inputRead == 0x090C)
-                Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
-        }
-
         /*
+            FrameOverride:
+
+            Overwrites the frame limiter, and the instruction forcing it, according
+            to the framerate chosen by the player.
+
             So you may be asking:
             "Topaz, why the fuck is this not an ASM Overwrite, and is an IL Hack?"
 
@@ -311,8 +283,7 @@ namespace ReFixed
 
             These solutions have also paved the way to fixing the L2+Pad input problem of Magic Sort.
         */
-
-        public static void OverrideLimiter()
+        public static void FrameOverride()
         {
             // Calculate the instruction address.
             var _instructionAddress = Variables.ExeAddress + Variables.InstructionAddress;
@@ -340,104 +311,76 @@ namespace ReFixed
             }
         }
 
-        public static void OverrideText()
+        /*
+            AudioSwap:
+
+            Enforces English or Japanese Audio depending on player preference.
+            This is detemined by the **Vibration** option at the Camp Menu.
+
+            This function is reliant on a patch.
+        */
+        public static void AudioSwap()
         {
-            #region Roxas Story Option
-                var _roxasCheck = Hypervisor.Read<byte>(Variables.TitleTextAddresses[1]);
+            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
+            var _stringCheck = Hypervisor.ReadTerminate(Variables.PaxFormatterAddress);
 
-                if (_roxasCheck != 0x46)
-                {
-                    var _buttOffset = Hypervisor.Read<uint>(Variables.TitleButtonAddress);
-                    Hypervisor.Write<uint>(Variables.TitleButtonAddress, _buttOffset + 0x01);
+            if (_toggleCheck == 0x00 && _stringCheck != "obj/%s.a.jp")
+            {
+                Hypervisor.WriteString(Variables.PaxFormatterAddress, "obj/%s.a.jp");
+                Hypervisor.WriteString(Variables.PaxFormatterAddress + 0x10, "obj/%s.a.jp");
 
-                    for (int i = 0; i < Variables.TitleStrings.Length; i++)
-                        Hypervisor.WriteArray(Variables.TitleTextAddresses[i], Variables.TitleStrings[i].ToKHSCII());
-                }
-            #endregion
+                Hypervisor.WriteString(Variables.BattleFormatterAddress, "voice/jp/battle");
 
-            #region Limit Text
-                var _raveText = "Rave{0x00}End";
-                var _arsCheck = Hypervisor.Read<byte>(Variables.LimitAddresses[0]);
+                Hypervisor.WriteString(Variables.AnbFormatterAddress, "anm/jp/");
+                Hypervisor.WriteString(Variables.AnbFormatterAddress + 0x08, "anm/jp/");
 
-                var _secAccumilator = 0;
+                Hypervisor.WriteString(Variables.EventFormatterAddress, "voice/jp/event");
+            }
 
-                if (_arsCheck != 0x2E)
-                {
-                    for (int i = 0; i < Variables.LimitAddresses.Length; i += 2)
-                    {
-                        // Write the text.
-                        Hypervisor.WriteArray(Variables.LimitAddresses[i], Variables.LimitStrings[_secAccumilator].ToKHSCII());
-                        Hypervisor.WriteArray(Variables.LimitAddresses[i + 1], Variables.LimitStrings[_secAccumilator].ToKHSCII());
-                        
-                        // Increase the accumilator for the text array.
-                        _secAccumilator++;
-                    }
+            else if (_stringCheck != "obj/%s.a.%s")
+            {
+                Hypervisor.WriteString(Variables.PaxFormatterAddress, "obj/%s.a.%s");
+                Hypervisor.WriteString(Variables.PaxFormatterAddress + 0x10, "obj/%s.a.us");
 
-                    // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
-                    Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
-                    Hypervisor.Write<uint>(0x255D006, 0x01B434);
-                    Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
+                Hypervisor.WriteString(Variables.BattleFormatterAddress, "voice/us/battle");
 
-                    // Write the RCs text.
-                    Hypervisor.WriteArray(0x2572571, _raveText.ToKHSCII());
-                }
-            #endregion
+                Hypervisor.WriteString(Variables.AnbFormatterAddress, "anm/us/");
+                Hypervisor.WriteString(Variables.AnbFormatterAddress + 0x08, "anm/fm/");
 
-            #region Auto-Save Toggle
-                if (!Variables.DualAudio)
-                {
-                    var _toggleCheck = Hypervisor.Read<byte>(Variables.SaveTextAddresses[1]);
-
-                    if (_toggleCheck != 0x2E)
-                    {
-                        for (int i = 0; i < Variables.SaveStrings.Length; i++)
-                            Hypervisor.WriteArray(Variables.SaveTextAddresses[i], Variables.SaveStrings[i].ToKHSCII());
-                    }
-                }
-            #endregion
-
-            #region Dual-Audio Toggle
-                else if (Variables.DualAudio)
-                {
-                    for (int i = 0; i < Variables.AudioStrings.Length; i++)
-                    {
-                        Hypervisor.Write<int>(Variables.AudioOffsetAddresses[i], Variables.AudioOffsets[i]);
-                        Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII()); 
-                    }
-                }
-            #endregion
+                Hypervisor.WriteString(Variables.EventFormatterAddress, "voice/us/event");
+            }
         }
 
-        public static void OverrideShortcuts()
+        /*
+            Limit Override:
+
+            Fixes the misplacement of Limit Form shortcuts.
+        */
+        public static void LimitOverride()
         {
             var _confirmRead = Hypervisor.Read<byte>(Variables.ConfirmAddress);
-                            Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
+            var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
 
-
-            if (_confirmRead == 0x00)
+            if (_confirmRead == 0x00 && _shortRead != 0x02BA)
             {
-                var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
-
-                if (_shortRead != 0x02BA)
-                {
-                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02BA);
-                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
-                }
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02BA);
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
             }
 
-            else if (_confirmRead == 0x01)
+            else if (_confirmRead == 0x01 && _shortRead != 0x02AB)
             {
-                var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
-
-                if (_shortRead != 0x02AB)
-                {
-                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
-                    Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
-                }
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
+                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
             }
         }
 
-        public static void CreateAutosave()
+        /*
+            GenerateSave:
+
+            Only to be triggered by AutosaveEngine(), generate and write a save to
+            both RAM and ROM portions, effectively saving the game.
+        */
+        public static void GenerateSave()
         {
             var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
 
@@ -474,7 +417,7 @@ namespace ReFixed
                 var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
 
                 // Seek out the physical slot of the save to make.
-                while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM-98"))
+                while (_saveSlotRAM[0] != 0x00 && !Encoding.ASCII.GetString(_saveSlotRAM).Contains("66675FM-98"))
                 {
                     _saveSlot++;
                     _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
@@ -503,7 +446,7 @@ namespace ReFixed
                     Hypervisor.Write<int>(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
 
                     // Write the header.
-                    Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.Default.GetBytes("KH2J"), true);
+                    Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.ASCII.GetBytes("KH2J"), true);
                     Hypervisor.Write<uint>(_saveDataAddrRAM + 0x04, 0x3A, true);
 
                     // Write the checksum.
@@ -525,7 +468,7 @@ namespace ReFixed
                     {
                         // Write out the save information.
                         _stream.Position = _saveInfoAddr;
-                        _write.Write(Encoding.Default.GetBytes(_saveName));
+                        _write.Write(Encoding.ASCII.GetBytes(_saveName));
 
                         // The date in which the save was made.
                         _stream.Position = _saveInfoAddr + 0x40;
@@ -539,7 +482,7 @@ namespace ReFixed
                         
                         // Write the header.
                         _stream.Position = _saveDataAddr;
-                        _write.Write(Encoding.Default.GetBytes("KH2J"));
+                        _write.Write(Encoding.ASCII.GetBytes("KH2J"));
                         _stream.Position = _saveDataAddr + 0x04;
                         _write.Write(0x3A);
 
@@ -555,7 +498,12 @@ namespace ReFixed
             }
         }
 
-        public static void HandleAutosave()
+        /*
+            AutosaveEngine:
+
+            As the name suggests, handle the logic behind Autosave functionality.
+        */
+        public static void AutosaveEngine()
         {
             var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
             var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
@@ -563,13 +511,11 @@ namespace ReFixed
             var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
             var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
 
-            // If not in the title screen, nor in a battle, and the room is loaded:
-            if (!IsTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            if (!CheckTitle() && _battleRead == 0x00 && _loadRead == 0x01)
             {
-                // If the past WorldID is not equal to the current WorldID:
                 if (Variables.SaveWorld != _worldCheck)
                 { 
-                    CreateAutosave();
+                    GenerateSave();
                     Variables.SaveIterator = 0;
                 }
 
@@ -577,7 +523,7 @@ namespace ReFixed
                 {
                     if (Variables.SaveIterator == 3)
                     {
-                        CreateAutosave();
+                        GenerateSave();
                         Variables.SaveIterator = 0;
                     }
 
@@ -590,49 +536,83 @@ namespace ReFixed
             }
         }
 
-        public static void HandleAudio()
+        /*
+            TextAdjust:
+
+            Overwrite the text in certain portions of the game, to give the illusion that
+            the features given are Square-made, and not some jank being made by a 20-year-old
+            no life :^)
+        */
+        public static void TextAdjust()
         {
-            Hypervisor.UnlockBlock(Variables.PaxFormatterAddress);
-            Hypervisor.UnlockBlock(Variables.BattleFormatterAddress);
-			Hypervisor.UnlockBlock(Variables.AnbFormatterAddress);
-			Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
+            #region Roxas Story Option
+                if (Hypervisor.Read<byte>(Variables.TitleTextAddresses[1]) != 0x46)
+                {
+                    var _buttOffset = Hypervisor.Read<uint>(Variables.TitleButtonAddress);
+                    Hypervisor.Write<uint>(Variables.TitleButtonAddress, _buttOffset + 0x01);
 
-            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
+                    for (int i = 0; i < Variables.TitleStrings.Length; i++)
+                        Hypervisor.WriteArray(Variables.TitleTextAddresses[i], Variables.TitleStrings[i].ToKHSCII());
+                }
+            #endregion
 
-            if (_toggleCheck == 0x00)
-            {
-                var _paxBytes = Encoding.ASCII.GetBytes("obj/%s.a.jp");
-                Hypervisor.WriteArray(Variables.PaxFormatterAddress, _paxBytes);
-                Hypervisor.WriteArray(Variables.PaxFormatterAddress + 0x10, _paxBytes);
+            #region Limit Text
+                var _secAccumilator = 0;
 
-                var _battleBytes = Encoding.ASCII.GetBytes("voice/jp/battle");
-                Hypervisor.WriteArray(Variables.BattleFormatterAddress, _battleBytes);
+                if ( Hypervisor.Read<byte>(Variables.LimitAddresses[0]) != 0x2E)
+                {
+                    for (int i = 0; i < Variables.LimitAddresses.Length; i += 2)
+                    {
+                        // Write the text.
+                        Hypervisor.WriteArray(Variables.LimitAddresses[i], Variables.LimitStrings[_secAccumilator].ToKHSCII());
+                        Hypervisor.WriteArray(Variables.LimitAddresses[i + 1], Variables.LimitStrings[_secAccumilator].ToKHSCII());
+                        
+                        // Increase the accumilator for the text array.
+                        _secAccumilator++;
+                    }
 
-                var _anbBytes = Encoding.ASCII.GetBytes("anm/jp/\u0000anm/jp/");
-                Hypervisor.WriteArray(Variables.AnbFormatterAddress, _anbBytes);
+                    // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
+                    Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
+                    Hypervisor.Write<uint>(0x255D006, 0x01B434);
+                    Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
 
-                var _eventBytes = Encoding.ASCII.GetBytes("voice/jp/event");
-                Hypervisor.WriteArray(Variables.EventFormatterAddress, _eventBytes);
-            }
+                    // Write the RCs text.
+                    Hypervisor.WriteArray(0x2572571, ("Rave{0x00}End").ToKHSCII());
+                }
+            #endregion
 
-            else
-            {
-                var _paxBytes = Encoding.ASCII.GetBytes("obj/%s.a.us");
-                Hypervisor.WriteArray(Variables.PaxFormatterAddress, _paxBytes);
-                Hypervisor.WriteArray(Variables.PaxFormatterAddress + 0x10, _paxBytes);
+            #region Auto-Save Toggle
+                if (!Variables.DualAudio)
+                {
+                    var _toggleCheck = Hypervisor.Read<byte>(Variables.SaveTextAddresses[1]);
 
-                var _battleBytes = Encoding.ASCII.GetBytes("voice/us/battle");
-                Hypervisor.WriteArray(Variables.BattleFormatterAddress, _battleBytes);
+                    if (_toggleCheck != 0x2E)
+                    {
+                        for (int i = 0; i < Variables.SaveStrings.Length; i++)
+                            Hypervisor.WriteArray(Variables.SaveTextAddresses[i], Variables.SaveStrings[i].ToKHSCII());
+                    }
+                }
+            #endregion
 
-                var _anbBytes = Encoding.ASCII.GetBytes("anm/us/\u0000anm/fm/");
-                Hypervisor.WriteArray(Variables.AnbFormatterAddress, _anbBytes);
-
-                var _eventBytes = Encoding.ASCII.GetBytes("voice/us/event");
-                Hypervisor.WriteArray(Variables.EventFormatterAddress, _eventBytes);
-            }
+            #region Dual-Audio Toggle
+                else if (Variables.DualAudio)
+                {
+                    for (int i = 0; i < Variables.AudioStrings.Length; i++)
+                    {
+                        Hypervisor.Write<int>(Variables.AudioOffsetAddresses[i], Variables.AudioOffsets[i]);
+                        Hypervisor.WriteArray(Variables.AudioTextAddresses[i], Variables.AudioStrings[i].ToKHSCII()); 
+                    }
+                }
+            #endregion
         }
 
-        public static void OverwriteOBJ(string Input)
+        /*
+            ObjentrySwap:
+
+            Only to be triggered by HolidayEngine(), generate and write the
+            suffixes to Sora's and the Party's models, swaping them accordingly.
+        */
+        public static void ObjentrySwap(string Input)
         {
             for (ulong _formIterator = 0; _formIterator < (ulong)Variables.FormNames.Length; _formIterator++)
             {
@@ -674,7 +654,12 @@ namespace ReFixed
             }
         }
 
-        public static void HandleFestivity()
+        /* 
+            HolidayEngine:
+
+            Handle switching to the festive outfits on their respective holidays.
+        */
+        public static void HolidayEngine()
         {
             var _suffixRead = Hypervisor.Read<byte>(Variables.ObjentryAddresses[0] + 0x07);
             var _dateCurrent = DateTime.Now;
@@ -699,31 +684,121 @@ namespace ReFixed
                 _suffixWrite = "";
 
             if (_suffixWrite != "" && _suffixRead == 0x00)
-                OverwriteOBJ(_suffixWrite);
+                ObjentrySwap(_suffixWrite);
 
             else if (_suffixWrite == "" && _suffixRead != 0x00)
-                OverwriteOBJ(_suffixWrite);
+                ObjentrySwap(_suffixWrite);
         }
 
+        /*
+            DiscordEngine:
+
+            Handle the Discord Rich Presence of Re:Fixed.
+            To be executed on a separate thread.
+        */
+        public static void DiscordEngine()
+        {
+            var _healthValue = Hypervisor.Read<byte>(0x024BC74A);
+            var _magicValue = Hypervisor.Read<byte>(0x024BC8CA);
+            var _levelValue = Hypervisor.Read<byte>(0x00445061);
+            var _formValue = Hypervisor.Read<byte>(0x00446086);
+
+            var _stringState = string.Format("Level {0} | Form: {1}", _levelValue, Variables.FormText.ElementAtOrDefault(_formValue));
+            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
+
+            var _worldID = Hypervisor.Read<byte>(Variables.RoomAddress);
+            var _battleFlag = Hypervisor.Read<byte>(0x024AA5B6);
+
+            var _timeValue = Math.Floor(Hypervisor.Read<int>(0x00444FA6) / 60F);
+            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
+            var _timeHours = Math.Floor(_timeValue / 3600F);
+
+            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+
+            var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
+
+            var _rpcButtons = new DiscordRPC.Button[] 
+			{ 
+				new DiscordRPC.Button
+				{ 
+					Label = "== Powered by Re:Fixed ==", 
+					Url = "https://github.com/TopazTK/KH-ReFixed" 
+				},
+				new DiscordRPC.Button
+				{ 
+					Label = "== Icons by Televo ==", 
+					Url = "https://github.com/Televo/kingdom-hearts-recollection" 
+				} 
+			};
+
+            if (!CheckTitle())
+            {
+                Variables.RichClient.SetPresence(new RichPresence
+                {
+                    Details = _stringDetail,
+                    State = _stringState,
+                    Assets = new Assets
+                    {
+                        LargeImageKey = Variables.WorldImages.ElementAtOrDefault(_worldID),
+                        LargeImageText = _timeText,
+                        SmallImageKey = Variables.BattleImages.ElementAtOrDefault(_battleFlag),
+                        SmallImageText = Variables.ModeText.ElementAtOrDefault(_diffValue)
+                    },
+                    
+                    Buttons = _rpcButtons
+                });
+            }
+
+            else
+            {
+                Variables.RichClient.SetPresence(new RichPresence
+				{
+					Details = "On the Title Screen",
+					State = null,
+					
+					Assets = new Assets
+					{
+						LargeImageKey = "title",
+						SmallImageKey = null,
+						SmallImageText = null
+					},
+					
+					Buttons = _rpcButtons
+				});
+            }
+        }
+
+        /*
+            Execute:
+
+            Executes the main logic within Re:Fixed.
+        */
         public static void Execute()
         {
-            HandleAutosave();
-            
-            if (Variables.DualAudio)
-                HandleAudio();
-            
-            HandleFestivity();
+            #region High Priority
+                if (!Variables.Initialized)
+					Initialization();
 
-            SeekReset();
-            HandleTutorialSkip();
+                if (Hypervisor.Read<ushort>(Variables.InputAddress) == 0x090C)
+					ResetGame();
 
-            OverrideLimiter();
-            HandleMagicSort();
+                AutosaveEngine();
+            #endregion
 
-            OverrideText();
-            OverrideShortcuts();
+            #region Mid Priority
+                if (Variables.DualAudio)
+					AudioSwap();
 
-            ProcessRPC();
+                SkipRoxas();
+                FrameOverride();
+                SortMagic();
+            #endregion
+
+            #region Low Priority
+                HolidayEngine();
+                TextAdjust();
+                LimitOverride();
+            #endregion
         }
     }
 }

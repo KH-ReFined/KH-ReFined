@@ -23,6 +23,8 @@ namespace ReFixed
 		// Set to true if using Dual Audio
 		public const bool DualAudio = true;
 
+		public static bool Initialized = false;
+
 		public static DiscordRpcClient RichClient = new DiscordRpcClient("833511404274974740");
 
 		public static string[] BattleImages = { "safe", "mob", "boss" };
@@ -53,6 +55,24 @@ namespace ReFixed
 			0x24BFD72,
 			0x24E7852
 		};
+
+		public static ulong[] MPSEQDAddresses =
+		{
+			0x4A03C6,
+			0x4A0376,
+			0x4A035A,
+			0x4A038A
+		};
+
+		public static byte[] MPSEQDValues =
+		{
+			0x7A,
+			0x78,
+			0x18,
+			0x79
+		};
+
+		public static ulong MagicLVAddress = 0x4460F6;
 
         public static Process GameProcess;
         public static IntPtr GameHandle;

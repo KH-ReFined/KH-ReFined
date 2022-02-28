@@ -82,7 +82,6 @@ namespace ReFixed
             {
                 var _inArray = new byte[] { (byte)Convert.ChangeType(Value, typeof(byte)) };
                 WriteProcessMemory(Variables.GameHandle, _address, _inArray, _inArray.Length, ref _inWrite);
-
             }
         }
 
@@ -131,6 +130,20 @@ namespace ReFixed
             ReadProcessMemory(Variables.GameHandle, _address, _outArray, _length, ref _outRead);
 
             return Encoding.Default.GetString(_outArray);
+        }
+
+        public static void WriteString(ulong Address, string Value, bool Absolute = false)
+        {
+            IntPtr _address = (IntPtr)(Variables.GameAddress + Address);
+
+            if (Absolute)
+                _address = (IntPtr)(Address);
+
+            int _inWrite = 0;
+
+            var _stringArray = Encoding.ASCII.GetBytes(Value);
+
+            WriteProcessMemory(Variables.GameHandle, _address, _stringArray, _stringArray.Length, ref _inWrite);
         }
 
         public static void UnlockBlock(ulong Address, bool Absolute = false)
