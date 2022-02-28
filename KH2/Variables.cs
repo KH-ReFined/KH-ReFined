@@ -7,6 +7,7 @@
 */
 
 using System;
+using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -17,8 +18,9 @@ namespace ReFixed
 {
 	public class Variables
 	{
-		// Set to 0x01 if playing on v0.1
-		public const int Version = 0x00;
+		Assembly ExeAssembly = Assembly.GetExecutingAssembly();
+		FileVersionInfo FileInfo = FileVersionInfo.GetVersionInfo(ExeAssembly.Location);
+		String FileVersion = FileInfo.FileVersion;
 
 		// Set to true if using Dual Audio
 		public const bool DualAudio = true;
@@ -85,22 +87,22 @@ namespace ReFixed
 
 		public static bool Debounce;
 
-		public static ulong BaseAddress = Version == 0x00 ? (ulong)0x56450E : (ulong)0x56454E;
+		public static ulong BaseAddress = FileVersion == "1.0.0.0" ? (ulong)0x56450E : (ulong)0x56454E;
 
-		public static ulong InputAddress = Version == 0x00 ? (ulong)0x1ACF7B : (ulong)0x1ACF3B;
+		public static ulong InputAddress = FileVersion == "1.0.0.0" ? (ulong)0x1ACF7B : (ulong)0x1ACF3B;
 		public static ulong ConfigAddress = 0x446D06;
 
-		public static ulong ConfirmAddress = Version == 0x00 ? (ulong)0x365550 : (ulong)0x365520;
-		public static ulong FramerateAddress = Version == 0x00 ? (ulong)0x36553C : (ulong)0x36550C;
+		public static ulong ConfirmAddress = FileVersion == "1.0.0.0" ? (ulong)0x365550 : (ulong)0x365520;
+		public static ulong FramerateAddress = FileVersion == "1.0.0.0" ? (ulong)0x36553C : (ulong)0x36550C;
 
 		public static ulong LimiterAddress = 0x553EBA;
 
-		public static ulong PaxFormatterAddress = Version == 0x00 ? (ulong)0x61FD2 : (ulong)0x61F92;
-		public static ulong BattleFormatterAddress = Version == 0x00 ? (ulong)0x5F87A : (ulong)0x5F83A;
-		public static ulong AnbFormatterAddress = Version == 0x00 ? (ulong)0x52A02 : (ulong)0x529C2;
-		public static ulong EventFormatterAddress = Version == 0x00 ? (ulong)0x52A72 : (ulong)0x52A32;
+		public static ulong PaxFormatterAddress = FileVersion == "1.0.0.0" ? (ulong)0x61FD2 : (ulong)0x61F92;
+		public static ulong BattleFormatterAddress = FileVersion == "1.0.0.0" ? (ulong)0x5F87A : (ulong)0x5F83A;
+		public static ulong AnbFormatterAddress = FileVersion == "1.0.0.0" ? (ulong)0x52A02 : (ulong)0x529C2;
+		public static ulong EventFormatterAddress = FileVersion == "1.0.0.0" ? (ulong)0x52A72 : (ulong)0x52A32;
 
-		public static ulong InstructionAddress = Version == 0x00 ? (ulong)0x152160 : (ulong)0x152220;
+		public static ulong InstructionAddress = FileVersion == "1.0.0.0" ? (ulong)0x152160 : (ulong)0x152220;
 
 		public static ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
 		public static ulong[] TitleTextAddresses = { 0x256E10A, 0x256E125, 0x256E12C, 0x256E152, 0x256E295 };
@@ -112,7 +114,7 @@ namespace ReFixed
 
 		public static ulong TitleBackAddress = 0x553F0C;
 
-		public static ulong TitleFlagAddress = Version == 0x00 ? (ulong)0x1B0256 : (ulong)0x1B0216;
+		public static ulong TitleFlagAddress = FileVersion == "1.0.0.0" ? (ulong)0x1B0256 : (ulong)0x1B0216;
 		public static ulong TitleButtonAddress = 0x255BECE;
 
 		public static byte[] MagicStoreMemory;
@@ -120,14 +122,14 @@ namespace ReFixed
 		public static bool RoomLoad;
 		public static ulong LoadAddress = 0x453B82;
 
-		public static ulong RoomAddress = Version == 0x00 ? (ulong)0x1B08AA : (ulong)0x1B086A;
+		public static ulong RoomAddress = FileVersion == "1.0.0.0" ? (ulong)0x1B08AA : (ulong)0x1B086A;
 		public static ulong StoryFlagAddress = 0x444832;
 		public static ulong DifficultyAddress = 0x444FFA;
 		public static ulong InventoryFlagAddress = 0x444F00;
 
-		public static ulong ShortcutStartAddress = Version == 0x00 ? (ulong)0x630AA : (ulong)0x6306A;
+		public static ulong ShortcutStartAddress = FileVersion == "1.0.0.0" ? (ulong)0x630AA : (ulong)0x6306A;
 
-		public static byte[] LimiterInstruction = Version == 0x00 ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 } : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
+		public static byte[] LimiterInstruction = FileVersion == "1.0.0.0" ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 } : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
 		public static byte[] LimiterRemoved = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
 		public static ulong InformationPointer = 0x25A5972;
@@ -144,7 +146,7 @@ namespace ReFixed
 			0x2572534, 0x2571D03
 		};
 
-		public static ulong[] SelectAddresses = Version == 0x00 ? 
+		public static ulong[] SelectAddresses = FileVersion == "1.0.0.0" ? 
 		
 		new ulong[]
 		{
