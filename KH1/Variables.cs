@@ -7,7 +7,9 @@
 */
 
 using System;
+using System.Threading;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
 using DiscordRPC;
@@ -16,7 +18,13 @@ namespace ReFixed
 {
 	public class Variables
 	{
-		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("837171155076513834");
+		public static bool Initialized = false;
+
+		public static Task DiscordTask;
+		public static CancellationToken DiscordToken;
+		public static CancellationTokenSource CancelSource;
+
+		public static readonly DiscordRpcClient DiscordClient = new DiscordRpcClient("837171155076513834");
 
 	    public static readonly string[] ModeText = { "Beginner", "Standard", "Proud" };
         public static readonly string[] WorldImages = { "", "di", "", "tt", "wl", "tz", "po", "", "al", "lm", "nm", "he", "pn", "nv", "", "hb", "eh" };

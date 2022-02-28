@@ -10,7 +10,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Linq;
+using System.Threading;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
 using DiscordRPC;
@@ -415,9 +417,9 @@ namespace ReFixed
 				} 
 			};
 
-			if (!IsTitle())
+			if (!CheckTitle())
 			{
-				Variables.RichClient.SetPresence(new RichPresence
+				Variables.DiscordClient.SetPresence(new RichPresence
 				{
 					Details = _stringDetail,
 					State = _stringState,
@@ -435,7 +437,7 @@ namespace ReFixed
 
 			else
 			{				
-				Variables.RichClient.SetPresence(new RichPresence
+				Variables.DiscordClient.SetPresence(new RichPresence
 				{
 					Details = "On the Title Screen",
 					State = null,
@@ -464,9 +466,7 @@ namespace ReFixed
                 if (!Variables.Initialized)
 					Initialization();
 
-                if (Hypervisor.Read<ushort>(Variables.InputAddress) == 0x090C)
-					ResetGame();
-
+				ResetGame();
                 AutosaveEngine();
             #endregion
 
