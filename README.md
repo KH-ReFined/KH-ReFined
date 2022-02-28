@@ -1,10 +1,26 @@
 # Kingdom Hearts - Re:Fixed
 
+## Table of Contents
+
+- [Download](#download)
+	- [Purpose](#purpose)
+	- [Game Status](#game-status) 
+- [Wiki](#wiki)
+- [Support](#support)
+- [Features](#features)
+	- [All Games](#all-games)
+	- [Kingdom Hearts 1](#kingdom-hearts-1)
+	- [Kingdom Hearts 2](#kingdom-hearts-2)
+	- [Kingdom Hearts - Birth by Sleep](#kingdom-hearts---birth-by-sleep)
+- [Credits](#credits)
+- [Third Party Libraries](#third-party-libraries)
+
 ## Download
 
 Get the latest release by clicking the button below.
 
 [![KH-ReFixed](https://img.shields.io/badge/KH--ReFixed-Download-blue.svg)](https://github.com/TopazTK/KH-ReFixed/releases)
+
 ## Purpose
 
 This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
@@ -21,7 +37,7 @@ You can see which games are supported, and which patches are live below:
 [![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
 ![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Not%20Present!-red)  
 
-## Questions and Answers
+## Wiki
 Please refer to the [wiki](https://github.com/TopazTK/KH-ReFixed/wiki) for all of your questions.
 
 ## Support
