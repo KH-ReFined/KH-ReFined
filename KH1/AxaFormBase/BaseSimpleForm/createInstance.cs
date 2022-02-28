@@ -34,8 +34,7 @@ namespace AxaFormBase
 			UpdateAgent.UpdateCheck();
 			
 			if (theInstance == null)
-				new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v1.50]");
-
+				new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.00]");
 
 			Variables.RichClient.Initialize();
 
@@ -60,11 +59,12 @@ namespace AxaFormBase
 						if (_divisorValue != ResolutionDiv)
 						{
 							ResolutionDiv = _divisorValue;
-							Functions.OverrideAspect(_divisorValue);
+							Functions.AspectCorrection(_divisorValue);
 						}
 					}
 
 					Functions.Execute();
+					Thread.Sleep(5);
 				}
 
 			}, MainToken);
