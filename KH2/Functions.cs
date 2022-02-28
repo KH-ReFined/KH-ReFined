@@ -10,7 +10,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Linq;
+using System.Threading;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -700,14 +702,14 @@ namespace ReFixed
             if (Hypervisor.Read<uint>(Variables.MagicLVAddress) == 0x00000000 && 
                 Hypervisor.Read<ushort>(Variables.MagicLV2Address) == 0x0000)
             {
-                if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0] != 0x00))
+                if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0]) != 0x00)
                 {
                     for (int i = 0; i < Variables.MPSEQDAddresses.Length; i++)
                         Hypervisor.Write<byte>(Variables.MPSEQDAddresses[i], 0x00);
                 }
             }
 
-            else if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0] == 0x00))
+            else if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0]) == 0x00)
             {
                 for (int i = 0; i < Variables.MPSEQDAddresses.Length; i++)
                     Hypervisor.Write<byte>(Variables.MPSEQDAddresses[i], Variables.MPSEQDValues[i]);
