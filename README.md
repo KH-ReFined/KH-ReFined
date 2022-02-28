@@ -38,7 +38,7 @@ You can see which games are supported, and which patches are live below:
 ![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Not%20Present!-red)  
 
 ## Wiki
-Please refer to the [wiki](https://github.com/TopazTK/KH-ReFixed/wiki) for all of your questions.
+Please refer to the [wiki](https://github.com/TopazTK/KH-ReFixed/wiki/Main-Wiki-Page) for all of your questions.
 
 ## Support
 If you wish to support this project, consider becoming a Patron.  
