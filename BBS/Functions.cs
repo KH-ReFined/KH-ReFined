@@ -323,36 +323,41 @@ namespace ReFixed
         */
         public static void AutosaveEngine()
         {
-            var _battleRead = Hypervisor.Read<byte>(Variables.BattleAddress);
-            var _loadRead = Hypervisor.Read<byte>(0x20D2AC);
+            var _vibrationRead = Hypervisor.Read<byte>(Variables.VibrationAddress);
 
-            var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
-            var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
-
-            // If not in the title screen, nor in a battle, and the room is loaded:
-            if (!CheckTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            if (_vibrationRead == 0x01 || Variables.DualAudio)
             {
-                // If the past WorldID is not equal to the current WorldID:
-                if (Variables.SaveWorld != _worldCheck)
-                { 
-                    GenerateSave();
-                    Variables.SaveIterator = 0;
-                }
+                var _battleRead = Hypervisor.Read<byte>(Variables.BattleAddress);
+                var _loadRead = Hypervisor.Read<byte>(0x20D2AC);
 
-                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
+                var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x01);
+
+                // If not in the title screen, nor in a battle, and the room is loaded:
+                if (!CheckTitle() && _battleRead == 0x00 && _loadRead == 0x01)
                 {
-                    if (Variables.SaveIterator == 3)
-                    {
+                    // If the past WorldID is not equal to the current WorldID:
+                    if (Variables.SaveWorld != _worldCheck)
+                    { 
                         GenerateSave();
                         Variables.SaveIterator = 0;
                     }
 
-                    else
-                        Variables.SaveIterator++;
-                }
+                    else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                    {
+                        if (Variables.SaveIterator == 3)
+                        {
+                            GenerateSave();
+                            Variables.SaveIterator = 0;
+                        }
 
-                Variables.SaveWorld = _worldCheck;
-                Variables.SaveRoom = _roomCheck;
+                        else
+                            Variables.SaveIterator++;
+                    }
+
+                    Variables.SaveWorld = _worldCheck;
+                    Variables.SaveRoom = _roomCheck;
+                }
             }
         }
 
@@ -365,21 +370,39 @@ namespace ReFixed
         */
         public static void TextAdjust()
         {
-            var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
-            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA0, true);
-            var _baseAddress = _secondaryPointer - 0x09A0; 
-			            
-			var _baseRead = Hypervisor.Read<uint>(_baseAddress, true);
-            var _charRead = Hypervisor.Read<char>(_baseAddress + Variables.SettingsOffsets[0], true);
-
-			if (_baseRead == 0x44544340)
-            if (_charRead != 0x44)
+            if (!Variables.DualAudio)
             {
-                Hypervisor.Write<uint>(_baseAddress + 0x630, (uint)Variables.SettingsOffsets[3], true);
-                Hypervisor.Write<uint>(_baseAddress + 0x63C, (uint)Variables.SettingsOffsets[4], true);
+                var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
+                var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA8, true);
+                var _baseAddress = _secondaryPointer + 0xAEE; 
 
-                for (int i = 0; i < Variables.SettingsOffsets.Length; i++)
-                    Hypervisor.WriteArray(_baseAddress + Variables.SettingsOffsets[i], Encoding.GetEncoding(437).GetBytes(Variables.SettingsText[i]), true);
+                var _charRead = Hypervisor.Read<char>(_baseAddress, true);
+
+                if (_charRead == 0x56)
+                {
+                    for (int i = 0; i < Variables.SaveOffsets.Length; i++)
+                        Hypervisor.WriteArray(_baseAddress + Variables.SaveOffsets[i], Encoding.ASCII.GetBytes(Variables.SaveText[i]), true);
+                }
+            }
+
+            else
+            {
+                var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
+                var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA0, true);
+                var _baseAddress = _secondaryPointer - 0x09A0; 
+                            
+                var _baseRead = Hypervisor.Read<uint>(_baseAddress, true);
+                var _charRead = Hypervisor.Read<char>(_baseAddress + Variables.AudioOffsets[0], true);
+
+                if (_baseRead == 0x44544340)
+                if (_charRead != 0x44)
+                {
+                    Hypervisor.Write<uint>(_baseAddress + 0x630, (uint)Variables.AudioOffsets[3], true);
+                    Hypervisor.Write<uint>(_baseAddress + 0x63C, (uint)Variables.AudioOffsets[4], true);
+
+                    for (int i = 0; i < Variables.AudioOffsets.Length; i++)
+                        Hypervisor.WriteArray(_baseAddress + Variables.AudioOffsets[i], Encoding.GetEncoding(437).GetBytes(Variables.AudioText[i]), true);
+                }
             }
         }
 

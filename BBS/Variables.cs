@@ -16,7 +16,20 @@ namespace ReFixed
 {
 	public class Variables
 	{
-		public static readonly DiscordRpcClient RichClient = new DiscordRpcClient("939407076747272203");
+		private static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
+		private static FileVersionInfo FileInfo = FileVersionInfo.GetVersionInfo(ExeAssembly.Location);
+		private static String FileVersion = FileInfo.FileVersion;
+
+		// Set to true if using Dual Audio
+		public const bool DualAudio = true;
+
+		public static bool Initialized = false;
+		
+		public static Task DiscordTask;
+		public static CancellationToken DiscordToken;
+		public static CancellationTokenSource CancelSource;
+
+		public static readonly DiscordRpcClient DiscordClient = new DiscordRpcClient("939407076747272203");
 
 	    public static readonly string[] ModeText = { "Beginner", "Standard", "Proud", "Critical" };
         public static readonly string[] WorldImages = { "", "ex", "sw", "ci", "sb", "tt", "hb", "dw", "he", "st", "di", "nl", "dc", "eh", "", "ar", "ar", "wm", "po" };
@@ -31,7 +44,7 @@ namespace ReFixed
 			"Ventus", "Aqua", "Terra"
 		};
 
-		public static readonly string[] SettingsText = 
+		public static readonly string[] AudioText = 
 		{
 			"Dual-Audio\x00", 
 			"English\x00", 
@@ -40,13 +53,32 @@ namespace ReFixed
 			"Switch to using Japanese vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00"
 		};
 
-		public static readonly ulong[] SettingsOffsets = 
+		public static readonly ulong[] AudioOffsets = 
 		{
 			0x1C0E,
 			0x1C92,
 			0x1C88,
 			0x2330,
 			0x23A1
+		};
+
+		
+		public static readonly string[] SaveText = 
+		{
+			"Auto-Save", 
+			"On\u0000", 
+			"Off\u0000", 
+			"Auto-Save", 
+			"Auto-Save"
+		};
+
+		public static readonly ulong[] SaveOffsets = 
+		{
+			0x00,
+			0x84,
+			0x7A,
+			0x1140,
+			0x115C
 		};
 		
 		public static readonly ulong SettingsPointer = 0x896C7BC;
