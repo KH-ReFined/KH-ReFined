@@ -215,7 +215,7 @@ namespace ReFixed
 
 		public static string[] AudioStrings =
 		{
-			"Dual-Audio",
+			"Audio Language",
 			"English",
 			"Japanese",
 			"Switch between English and Japanese speech.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Work in Progress! The world must be\nreloaded for the changes to take effect!){0x03}"

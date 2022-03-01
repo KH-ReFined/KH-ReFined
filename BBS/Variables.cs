@@ -49,7 +49,7 @@ namespace ReFixed
 
 		public static readonly string[] AudioText = 
 		{
-			"Dual-Audio\x00", 
+			"Audio Language\x00", 
 			"English\x00", 
 			"Japanese\x00", 
 			"Switch to using English vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00",
