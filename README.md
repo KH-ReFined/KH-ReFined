@@ -47,7 +47,7 @@ If you wish to support this project, consider becoming a Patron.
 
 ## Features
 
-_Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_
+_Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_  
 _The features with a * next to them are not live yet._
 
 ### All Games
