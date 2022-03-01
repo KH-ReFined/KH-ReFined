@@ -140,6 +140,10 @@ namespace ReFixed
             // Read the save slot.
             var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)((_saveInfoLength * 2) * _saveSlot), 0x11, true);
 
+			// If the file does not bear a save; terminate the operation.
+			if (!Encoding.Default.GetString(_saveSlotRAM).Contains("25198"))
+				return;
+
             // Seek out the physical slot of the save to make.
             while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("25198-99"))
             {
@@ -178,7 +182,7 @@ namespace ReFixed
                 Hypervisor.Write<ulong>(_saveInfoAddrRAM + (ulong)(_saveInfoLength + 0x48), _writeDate, true);
 
                 // Write the length of the descriptor.
-				// This shoudl be 0x40, but Team Osaka is STUPID so it's 0x400 instead.
+				// This should be 0x40, but Team Osaka is STUPID so it's 0x400 instead.
 				// No, nothing after the 0x40 bit is utilized.
                 Hypervisor.Write<int>(_saveInfoAddrRAM + (ulong)(_saveInfoLength + 0x50), 0x400, true);
 
@@ -200,7 +204,6 @@ namespace ReFixed
             #endregion
             
             #region File Save
-
                 // Fetch the address for the save info.
                 var _saveInfoAddr = _saveInfoStartFILE + (_saveInfoLength * 2) * (_saveSlot - 0x01);
                 var _saveDataAddr = _saveDataStartFILE + (_saveDataLength * 2) * _saveSlot;

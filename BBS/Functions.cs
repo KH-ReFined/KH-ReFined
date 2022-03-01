@@ -234,6 +234,10 @@ namespace ReFixed
             // Read the save slot.
             var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
 
+            // If the file does not bear a save; terminate the operation.
+            if (!Encoding.Default.GetString(_saveSlotRAM).Contains("BBS"))
+                return;
+
             // Seek out the physical slot of the save to make.
             while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("BBS-99"))
             {
