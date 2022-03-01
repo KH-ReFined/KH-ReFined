@@ -34,7 +34,7 @@ namespace AxaFormBase
 			UpdateAgent.UpdateCheck();
 			
 			if (theInstance == null)
-				new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v1.50]");
+				new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.00]");
 
 			Variables.RichClient.Initialize();
 
@@ -51,6 +51,7 @@ namespace AxaFormBase
 				while (!MainToken.IsCancellationRequested)
 				{
 					Functions.Execute();
+					Thread.Sleep(5);
 				}
 
 			}, MainToken);

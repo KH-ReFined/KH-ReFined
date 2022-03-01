@@ -10,7 +10,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Linq;
+using System.Threading;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -59,7 +61,7 @@ namespace ReFixed
         */
         public static void ResetGame()
         { 
-            if (CheckTitle())
+            if (!CheckTitle())
             {
                 Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
                 Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x00);

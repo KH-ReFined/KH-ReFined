@@ -7,7 +7,10 @@
 */
 
 using System;
+using System.Threading;
+using System.Reflection;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
 using DiscordRPC;
@@ -116,4 +119,3 @@ namespace ReFixed
 		public static readonly byte[] LimiterRemoved = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 	}
 }
-a1
