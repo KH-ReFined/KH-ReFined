@@ -48,6 +48,7 @@ If you wish to support this project, consider becoming a Patron.
 ## Features
 
 _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_
+_The features with a * next to them are not live yet._
 
 ### All Games
 
@@ -55,9 +56,9 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 |---------------|-------------|-------------|
 | :heavy_check_mark: | - | Disable cutscene framelimiter. [[1]](#reference) |
 | - | :heavy_check_mark: | Voice channels will now be muted when set to "1" in the PC settings menu. |
-| - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. This functionality is toggleable. |
+| - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
-| - | :heavy_check_mark: | The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference) | 
+| - | :heavy_check_mark: | The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference) \*| 
 | - | :heavy_check_mark: | Press R1 + L1 + START + SELECT to soft reset. |
 | - | :heavy_check_mark: | Every game has an update agent built-in, so Re:Fixed can keep itself updated. |
 | - | :heavy_check_mark: | Creates a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
@@ -69,6 +70,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | :heavy_check_mark: | - | The player can now open chests and examine objects while in combat. |
 | :heavy_check_mark: | - | Fix an issue with cutscenes, preventing pausing + skipping during a fade effect. |
 | :heavy_check_mark: | - | Fix the `Title Screen` option in the save menu so it no longer crashes the game. |
+| - | :heavy_check_mark: | FAdd a toggle in the Camp Menu to switch between original and a KH2-like improved field of view. \*|
 | - | :heavy_check_mark: | Autodetect the correct screen aspect ratio when in fullscreen. |
 | - | :heavy_check_mark: | ??? |
 
@@ -83,8 +85,8 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
 | - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence. |
 | - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking. [[4]](#reference) | 
-| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference)|  
-| - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) | 
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) \*|  
+| - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) \*| 
 
 
 ### Kingdom Hearts - Birth by Sleep
@@ -93,7 +95,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 |---------|-------------|-------------|
 | :heavy_check_mark: | - | Fix an issue with 30fps being forced when talking to people. | 
 | :heavy_check_mark: | - | Add back the ability to rename finishers. [[5]](#reference) |
-| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference)|  
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) \*|  
 
 #### Reference
 
