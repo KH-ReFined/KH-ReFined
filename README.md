@@ -59,6 +59,7 @@ _The features with a * next to them are not live yet._
 | - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
 | - | :heavy_check_mark: | The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference) \*| 
+| - | :heavy_check_mark: | Abilities can now be toggled with Triangle just like in KH2. \*| 
 | - | :heavy_check_mark: | Press R1 + L1 + START + SELECT to soft reset. |
 | - | :heavy_check_mark: | Every game has an update agent built-in, so Re:Fixed can keep itself updated. |
 | - | :heavy_check_mark: | Creates a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
