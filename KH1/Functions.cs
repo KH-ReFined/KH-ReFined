@@ -21,6 +21,8 @@ namespace ReFixed
 {
 	public class Functions
 	{
+		private static int _usedAP = -1392;
+
 		/*
             Initialization:
 
@@ -66,6 +68,83 @@ namespace ReFixed
 			{
 				Hypervisor.Write<byte>(Variables.ResetAddresses[0], 0x01);
 				Hypervisor.Write<byte>(Variables.ResetAddresses[1], 0x01);
+			}
+		}
+
+		/*
+			AbilityToggle:
+
+			Allows toggling the selected ability on/off if the proper
+			input is given.
+
+			INPUT: Triangle
+
+			NOTE: This is a mess. It works perfectly, no doubt.
+			However, FUCK did this take a lot of effort to make.
+
+			So, PLEASE excuse the dirtiness of the code here.
+		*/
+		public static void AbilityToggle()
+		{
+			var _buttonRead = Hypervisor.Read<ushort>(Variables.InputAddress) == 0x1000;
+
+			var _slotRead = Hypervisor.ReadArray(Variables.PartyStart - 0x01, 0x04);
+			var _toggleRead = Hypervisor.Read<byte>(Variables.AbilityMenuStart);
+
+			var _menuSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x30);
+			var _pageSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x34);
+			var _skillSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x38);
+
+			if (_toggleRead == 0x01)
+			{
+				if (_buttonRead && !Variables.AbilityBool)
+				{
+					var _pointRead = 0x00;
+					var _abilityOffset = Variables.SharedStart + (ulong)(_skillSelect + _pageSelect);
+
+					if (_menuSelect != 0x04 || (_menuSelect == 0x03 && _slotRead[0x03] != 0x00))
+					{
+						_usedAP = 0x00;
+
+						var _currentMember = _menuSelect == 0x00 ? 0x00 : _slotRead[_menuSelect];
+						var _memberOffset = (ulong)(0x74 * _currentMember);
+
+						var _skillTree = Hypervisor.ReadArray(Variables.AbilityStart + _memberOffset, 0x30);
+						byte[] _skillEquip = _skillTree.Where(x => x < 0x80 && x != 0x00).ToArray();
+
+						for (int i = 0; i < _skillEquip.Length; i++)
+							_usedAP += Variables.DictionaryAP[_skillEquip[i]];
+
+						_pointRead = Hypervisor.Read<byte>(Variables.AbilityPointAddress + _memberOffset);
+						_abilityOffset = Variables.AbilityStart + _memberOffset + (ulong)(_skillSelect + _pageSelect);
+					}
+
+					var _readSkill = Hypervisor.Read<byte>(_abilityOffset);
+					var _skillCost = (_readSkill & 0x80) == 0x80 ? Variables.DictionaryAP[(byte)(_readSkill - 0x80)] : Variables.DictionaryAP[_readSkill];
+
+					if ((_readSkill & 0x80) == 0x80 && ((_pointRead - _usedAP - _skillCost) >= 0 || _usedAP == -1392))
+					{
+						Hypervisor.Write<byte>(_abilityOffset, (byte)(_readSkill - 0x80));
+						_usedAP += _skillCost;
+					}
+							
+					else if ((_readSkill & 0x80) == 0x00)
+					{
+						Hypervisor.Write<byte>(_abilityOffset, (byte)(_readSkill + 0x80));
+						_usedAP -= _skillCost;
+					}
+						
+					Variables.AbilityBool = true;
+				}
+
+				if (!_buttonRead && Variables.AbilityBool)
+					Variables.AbilityBool = false;
+			}
+
+			else
+			{
+				Variables.AbilityBool = false;
+				_usedAP = -1392;
 			}
 		}
 		
@@ -476,6 +555,7 @@ namespace ReFixed
             #region Mid Priority
 				MagicHide();
                 FieldOfView();
+				AbilityToggle();
             #endregion
 
             #region Low Priority
