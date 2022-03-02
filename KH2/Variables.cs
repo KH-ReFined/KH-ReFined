@@ -107,6 +107,7 @@ namespace ReFixed
         public static ulong ExeAddress;
 
         public static bool SkipRoxas;
+        public static byte SkipStage;
         public static bool SkipComplete;
 
         public static bool Debounce;

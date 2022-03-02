@@ -231,6 +231,8 @@ namespace ReFixed
                 Variables.SkipRoxas = false;
                 Variables.SkipComplete = false;
 
+                Variables.SkipStage = 0;
+
                 _skipBool = true;
             }
 
@@ -257,7 +259,7 @@ namespace ReFixed
                 var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
                 var _eventCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x04);
 
-                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck != 0x34)
+                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck != 0x34 && Variables.SkipStage == 0)
                 {
                     Hypervisor.Write<uint>(Variables.RoomAddress, 0x322002);
                     Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, 0x01);
@@ -267,9 +269,11 @@ namespace ReFixed
                     Hypervisor.Write<uint>(0x444832 + 0x04, 0x00000000);
 
                     Hypervisor.Write<ushort>(Variables.ConfigAddress, (ushort)(_vibRead + 0x01));
+
+                    Variables.SkipStage = 1;
                 }
 
-                if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A)
+                if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A && Variables.SkipStage == 1)
                 {
                     Hypervisor.Write<uint>(Variables.RoomAddress, 0x001702);
                     Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, (0x02 << 10) + 0x02);
@@ -309,6 +313,7 @@ namespace ReFixed
                             }
                         );
                     }
+
                     else
                     {
                         Hypervisor.Write<byte>(0x445056, 0x1E);
@@ -327,6 +332,7 @@ namespace ReFixed
 
                     Variables.SkipRoxas = false;
                     Variables.SkipComplete = true;
+                    Variables.SkipStage = 2;
                 }
             }
         }
