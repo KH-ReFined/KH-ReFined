@@ -21,55 +21,61 @@ using ReFixed;
 
 namespace AxaFormBase
 {
-	public partial class BaseSimpleForm : Form
-	{
-		public static CancellationTokenSource CancelSource;
-		public static CancellationToken MainToken;
-		public static Task MainTask;
+    public partial class BaseSimpleForm : Form
+    {
+        public static CancellationTokenSource CancelSource;
+        public static CancellationToken MainToken;
+        public static Task MainTask;
 
-		public static float ResolutionDiv; 
+        public static float ResolutionDiv;
 
-		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
-		{
-			UpdateAgent.UpdateCheck();
-			
-			if (theInstance == null)
-				new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.00]");
+        public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
+        {
+            UpdateAgent.UpdateCheck();
 
-			Variables.DiscordClient.Initialize();
+            if (theInstance == null)
+                new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.00]");
 
-			CancelSource = new CancellationTokenSource();
-			MainToken = BaseSimpleForm.CancelSource.Token;
+            Variables.DiscordClient.Initialize();
 
-			Variables.GameProcess = Process.GetCurrentProcess();
-			Variables.GameHandle = Variables.GameProcess.Handle;
-			Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
-			Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
+            CancelSource = new CancellationTokenSource();
+            MainToken = BaseSimpleForm.CancelSource.Token;
 
-			MainTask = Task.Factory.StartNew(delegate()
-			{
-				while (!MainToken.IsCancellationRequested)
-				{
-					Rectangle _windRect = Screen.FromControl(BaseSimpleForm.theInstance).Bounds;
+            Variables.GameProcess = Process.GetCurrentProcess();
+            Variables.GameHandle = Variables.GameProcess.Handle;
+            Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
+            Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
 
-					if (_windRect.Bottom == theInstance.Height && _windRect.Right == theInstance.Width)
-					{
-						float _divisorValue = (float)theInstance.Width / (float)theInstance.Height;
+            MainTask = Task.Factory.StartNew(
+                delegate()
+                {
+                    while (!MainToken.IsCancellationRequested)
+                    {
+                        Rectangle _windRect = Screen.FromControl(BaseSimpleForm.theInstance).Bounds;
 
-						if (_divisorValue != ResolutionDiv)
-						{
-							ResolutionDiv = _divisorValue;
-							Functions.AspectCorrection(_divisorValue);
-						}
-					}
+                        if (
+                            _windRect.Bottom == theInstance.Height
+                            && _windRect.Right == theInstance.Width
+                        )
+                        {
+                            float _divisorValue =
+                                (float)theInstance.Width / (float)theInstance.Height;
 
-					Functions.Execute();
-					Thread.Sleep(5);
-				}
+                            if (_divisorValue != ResolutionDiv)
+                            {
+                                ResolutionDiv = _divisorValue;
+                                Functions.AspectCorrection(_divisorValue);
+                            }
+                        }
 
-			}, MainToken);
+                        Functions.Execute();
+                        Thread.Sleep(5);
+                    }
+                },
+                MainToken
+            );
 
-			return theInstance;
-		}
-	}
+            return theInstance;
+        }
+    }
 }

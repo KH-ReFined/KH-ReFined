@@ -16,10 +16,10 @@ namespace ReFixed
 {
     public static class Extensions
     {
-		public static uint CalculateCRC32(Stream stream)
+        public static uint CalculateCRC32(Stream stream)
         {
             uint checksum = 0;
-            
+
             using (BinaryReader reader = new BinaryReader(stream))
             {
                 reader.BaseStream.Seek(0x10, SeekOrigin.Begin);

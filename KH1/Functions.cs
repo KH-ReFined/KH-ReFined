@@ -74,18 +74,18 @@ namespace ReFixed
         }
 
         /*
-			AbilityToggle:
+            AbilityToggle:
 
-			Allows toggling the selected ability on/off if the proper
-			input is given.
+            Allows toggling the selected ability on/off if the proper
+            input is given.
 
-			INPUT: Triangle
+            INPUT: Triangle
 
-			NOTE: This is a mess. It works perfectly, no doubt.
-			However, FUCK did this take a lot of effort to make.
+            NOTE: This is a mess. It works perfectly, no doubt.
+            However, FUCK did this take a lot of effort to make.
 
-			So, PLEASE excuse the dirtiness of the code here.
-		*/
+            So, PLEASE excuse the dirtiness of the code here.
+        */
         public static void AbilityToggle()
         {
             var _buttonRead = Hypervisor.Read<ushort>(Variables.InputAddress) == 0x1000;
@@ -167,7 +167,7 @@ namespace ReFixed
             AspectCorrection:
 
             Automatically detect the aspect ratio in Full Screen
-			and accommodate for it.
+            and accommodate for it.
         */
         public static void AspectCorrection(float InputValue)
         {
@@ -455,10 +455,10 @@ namespace ReFixed
         }
 
         /*
-			FieldOfView:
+            FieldOfView:
 
-			Toggle between the original and a KH2-esque Field of View.
-			This is detemined by the **Vibration** option at the Camp Menu.
+            Toggle between the original and a KH2-esque Field of View.
+            This is detemined by the **Vibration** option at the Camp Menu.
 		*/
         public static void FieldOfView()
         {

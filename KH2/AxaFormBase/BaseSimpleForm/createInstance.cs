@@ -23,41 +23,44 @@ using DiscordRPC;
 
 namespace AxaFormBase
 {
-	public partial class BaseSimpleForm : Form
-	{
-		public static CancellationTokenSource CancelSource;
-		public static CancellationToken MainToken;
-		public static Task MainTask;
+    public partial class BaseSimpleForm : Form
+    {
+        public static CancellationTokenSource CancelSource;
+        public static CancellationToken MainToken;
+        public static Task MainTask;
 
-		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
-		{
-			UpdateAgent.UpdateCheck();
-			
-			if (BaseSimpleForm.theInstance == null)
-			{
-				new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.00]");
-			}
+        public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
+        {
+            UpdateAgent.UpdateCheck();
+
+            if (BaseSimpleForm.theInstance == null)
+            {
+                new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.00]");
+            }
 
             Variables.DiscordClient.Initialize();
 
-			CancelSource = new CancellationTokenSource();
-			MainToken = BaseSimpleForm.CancelSource.Token;
+            CancelSource = new CancellationTokenSource();
+            MainToken = BaseSimpleForm.CancelSource.Token;
 
-			Variables.GameProcess = Process.GetCurrentProcess();
-			Variables.GameHandle = Variables.GameProcess.Handle;
-			Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
-			Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
+            Variables.GameProcess = Process.GetCurrentProcess();
+            Variables.GameHandle = Variables.GameProcess.Handle;
+            Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
+            Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
 
-			MainTask = Task.Factory.StartNew(delegate()
-			{
-				while (!MainToken.IsCancellationRequested)
-				{
-					Functions.Execute();
-					Thread.Sleep(5);
-				}
-			}, MainToken);
+            MainTask = Task.Factory.StartNew(
+                delegate()
+                {
+                    while (!MainToken.IsCancellationRequested)
+                    {
+                        Functions.Execute();
+                        Thread.Sleep(5);
+                    }
+                },
+                MainToken
+            );
 
-			return BaseSimpleForm.theInstance;
-		}
-	}
+            return BaseSimpleForm.theInstance;
+        }
+    }
 }
