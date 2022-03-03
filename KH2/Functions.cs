@@ -621,8 +621,10 @@ namespace ReFixed
 
                 var _battleRead = Hypervisor.Read<byte>(Variables.BattleFlagAddress);
                 var _cutsceneRead = Hypervisor.Read<byte>(Variables.CutsceneFlagAddress);
+                
+                _loadRead = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
 
-                var _saveableBool = _battleRead == 0x00 && _cutsceneRead == 0x00;
+                var _saveableBool = _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00;
 
                 if (_saveableBool)
                 {
