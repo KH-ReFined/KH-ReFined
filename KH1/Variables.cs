@@ -27,6 +27,9 @@ namespace ReFixed
 
         public static DiscordRpcClient DiscordClient = new DiscordRpcClient("837171155076513834");
 
+        public static SoundPlayer DenySFX = new SoundPlayer(Properties.Resources.sfxDeny);
+        public static SoundPlayer ToggleSFX = new SoundPlayer(Properties.Resources.sfxToggle);
+
         public static string[] ModeText = { "Beginner", "Standard", "Proud" };
         public static string[] WorldImages =
         {

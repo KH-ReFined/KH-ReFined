@@ -26,11 +26,14 @@ namespace ReFixed
         /*
             Initialization:
 
-            Serves only to unlock memory regions for now.
+            Serves to initialize stuffs.
         */
         public static void Initialization()
         {
             Hypervisor.UnlockBlock(0x10F2E);
+
+            DenySFX.Volume = 0.5F;
+            ToggleSFX.Volume = 0.5F;
 
             Variables.Initialized = true;
         }
@@ -143,12 +146,19 @@ namespace ReFixed
                     {
                         Hypervisor.Write<byte>(_abilityOffset, (byte)(_readSkill - 0x80));
                         _usedAP += _skillCost;
+
+                        Variables.ToggleSFX.Play();
                     }
                     else if ((_readSkill & 0x80) == 0x00)
                     {
                         Hypervisor.Write<byte>(_abilityOffset, (byte)(_readSkill + 0x80));
                         _usedAP -= _skillCost;
+
+                        Variables.ToggleSFX.Play();
                     }
+
+                    else
+                        Variables.DenySFX.Play();
 
                     Variables.AbilityBool = true;
                 }

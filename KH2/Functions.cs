@@ -25,7 +25,7 @@ namespace ReFixed
         /*
             Initialization:
 
-            Serves only initialize stuffs.
+            Serves to initialize stuffs.
         */
         public static void Initialization()
         {
