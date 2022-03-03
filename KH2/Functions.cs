@@ -29,13 +29,14 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            Variables.CancelSource = new CancellationTokenSource();
+            Variables.TaskToken = Variables.CancelSource.Token;
+
             Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
             Hypervisor.UnlockBlock(Variables.PaxFormatterAddress);
             Hypervisor.UnlockBlock(Variables.BattleFormatterAddress);
             Hypervisor.UnlockBlock(Variables.AnbFormatterAddress);
             Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
-
-            Variables.SaveSFX.Volume = 0.5F;
 
             Variables.Initialized = true;
         }
@@ -73,7 +74,7 @@ namespace ReFixed
         public static void SortMagic()
         {
             // Fetch the status of the room. This will be necessary.
-            var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
+            var _loadRead = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
 
             // Fetch the input and read the pointer to the second CM.
             var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
@@ -610,35 +611,41 @@ namespace ReFixed
         public static void AutosaveEngine()
         {
             var _loadRead = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
-            var _battleRead = Hypervisor.Read<byte>(Variables.BattleFlagAddress);
-            var _cutsceneRead = Hypervisor.Read<byte>(Variables.CutsceneFlagAddress);
 
             var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
             var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
-
-            var _saveableBool = _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00;
-
-            if (!CheckTitle() && _saveableBool)
+            
+            if (!CheckTitle() && _loadRead == 0x01)
             {
-                if (Variables.SaveWorld != _worldCheck)
-                {
-                    GenerateSave();
-                    Variables.SaveIterator = 0;
-                }
+                Thread.Sleep(100);
 
-                else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                var _battleRead = Hypervisor.Read<byte>(Variables.BattleFlagAddress);
+                var _cutsceneRead = Hypervisor.Read<byte>(Variables.CutsceneFlagAddress);
+
+                var _saveableBool = _battleRead == 0x00 && _cutsceneRead == 0x00;
+
+                if (_saveableBool)
                 {
-                    if (Variables.SaveIterator == 3)
+                    if (Variables.SaveWorld != _worldCheck)
                     {
                         GenerateSave();
                         Variables.SaveIterator = 0;
                     }
-                    else
-                        Variables.SaveIterator++;
-                }
 
-                Variables.SaveWorld = _worldCheck;
-                Variables.SaveRoom = _roomCheck;
+                    else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                    {
+                        if (Variables.SaveIterator == 3)
+                        {
+                            GenerateSave();
+                            Variables.SaveIterator = 0;
+                        }
+                        else
+                            Variables.SaveIterator++;
+                    }
+
+                    Variables.SaveWorld = _worldCheck;
+                    Variables.SaveRoom = _roomCheck;
+                }
             }
         }
 
@@ -946,8 +953,6 @@ namespace ReFixed
 
             if (Hypervisor.Read<ushort>(Variables.InputAddress) == 0x090C)
                 ResetGame();
-
-            AutosaveEngine();
             #endregion
 
             #region Mid Priority
@@ -966,22 +971,34 @@ namespace ReFixed
             LimitOverride();
             #endregion
 
-            #region Discord
+            #region Tasks
+            if (Variables.AutoSaveTask == null)
+            {
+                Variables.AutoSaveTask = Task.Factory.StartNew(
+                    delegate()
+                    {
+                        while (!Variables.TaskToken.IsCancellationRequested)
+                        {
+                            AutosaveEngine();
+                            Thread.Sleep(5);
+                        }
+                    },
+                    Variables.TaskToken
+                );
+            }
+            
             if (Variables.DiscordTask == null)
             {
-                Variables.CancelSource = new CancellationTokenSource();
-                Variables.DiscordToken = Variables.CancelSource.Token;
-
                 Variables.DiscordTask = Task.Factory.StartNew(
                     delegate()
                     {
-                        while (!Variables.DiscordToken.IsCancellationRequested)
+                        while (!Variables.TaskToken.IsCancellationRequested)
                         {
                             DiscordEngine();
                             Thread.Sleep(5);
                         }
                     },
-                    Variables.DiscordToken
+                    Variables.TaskToken
                 );
             }
             #endregion
