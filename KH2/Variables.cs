@@ -7,6 +7,7 @@
 */
 
 using System;
+using System.Media;
 using System.Threading;
 using System.Reflection;
 using System.Diagnostics;
@@ -36,6 +37,8 @@ namespace ReFixed
         public static CancellationTokenSource CancelSource;
 
         public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
+
+        public static SoundPlayer SaveSFX = new SoundPlayer(Properties.Resources.sfxSave);
 
         public static string[] BattleImages = { "safe", "mob", "boss" };
         public static string[] WorldImages =
@@ -162,12 +165,15 @@ namespace ReFixed
         public static byte[] MagicStoreMemory;
 
         public static bool RoomLoad;
-        public static ulong LoadAddress = 0x453B82;
 
         public static ulong RoomAddress =
             FileVersion == "1.0.0.0" ? (ulong)0x1B08AA : (ulong)0x1B086A;
         public static ulong StoryFlagAddress = 0x444832;
+        public static ulong LoadFlagAddress = 0x453B82;
         public static ulong DifficultyAddress = 0x444FFA;
+        public static ulong CutsceneFlagAddress = 
+            FileVersion == "1.0.0.0" ? (ulong)0x1C1C92 : (ulong)0x1C1C52 ;
+        public static ulong BattleFlagAddress = 0x24AA5B6;
         public static ulong InventoryFlagAddress = 0x444F00;
 
         public static ulong ShortcutStartAddress =

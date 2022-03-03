@@ -25,7 +25,7 @@ namespace ReFixed
         /*
             Initialization:
 
-            Serves only to unlock memory regions for now.
+            Serves only initialize stuffs.
         */
         public static void Initialization()
         {
@@ -34,6 +34,8 @@ namespace ReFixed
             Hypervisor.UnlockBlock(Variables.BattleFormatterAddress);
             Hypervisor.UnlockBlock(Variables.AnbFormatterAddress);
             Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
+
+            Variables.SaveSFX.Volume = 0.5F;
 
             Variables.Initialized = true;
         }
@@ -273,66 +275,75 @@ namespace ReFixed
                     Variables.SkipStage = 1;
                 }
 
-                if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A && Variables.SkipStage == 1)
+                if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A)
                 {
-                    Hypervisor.Write<uint>(Variables.RoomAddress, 0x001702);
-                    Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, (0x02 << 10) + 0x02);
-                    Hypervisor.Write<uint>(Variables.RoomAddress + 0x08, 0x02);
-
-                    Hypervisor.Write<byte>(Variables.InventoryFlagAddress, 0x9F);
-                    Hypervisor.WriteArray(Variables.StoryFlagAddress, Variables.StoryFlagArray);
-
-                    if (_diffRead == 0x03)
+                    if (Variables.SkipStage == 1)
                     {
-                        Hypervisor.Write<byte>(0x445056, 0x18);
-                        Hypervisor.Write<byte>(0x445056 + 0x01, 0x18);
-                        Hypervisor.WriteArray(
-                            0x4450A6,
-                            new byte[]
-                            {
-                                0x89,
-                                0x01,
-                                0x88,
-                                0x01,
-                                0xA5,
-                                0x01,
-                                0x94,
-                                0x01,
-                                0x97,
-                                0x01,
-                                0x97,
-                                0x01,
-                                0x95,
-                                0x01,
-                                0x52,
-                                0x00,
-                                0x8A,
-                                0x00,
-                                0x9E,
-                                0x00
-                            }
-                        );
+                        Hypervisor.Write<uint>(Variables.RoomAddress, 0x001702);
+                        Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, (0x02 << 10) + 0x02);
+                        Hypervisor.Write<uint>(Variables.RoomAddress + 0x08, 0x02);
+
+                        Hypervisor.Write<byte>(Variables.InventoryFlagAddress, 0x9F);
+                        Hypervisor.WriteArray(Variables.StoryFlagAddress, Variables.StoryFlagArray);
+
+                        if (_diffRead == 0x03)
+                        {
+                            Hypervisor.Write<byte>(0x445056, 0x18);
+                            Hypervisor.Write<byte>(0x445056 + 0x01, 0x18);
+                            Hypervisor.WriteArray(
+                                0x4450A6,
+                                new byte[]
+                                {
+                                    0x89,
+                                    0x01,
+                                    0x88,
+                                    0x01,
+                                    0xA5,
+                                    0x01,
+                                    0x94,
+                                    0x01,
+                                    0x97,
+                                    0x01,
+                                    0x97,
+                                    0x01,
+                                    0x95,
+                                    0x01,
+                                    0x52,
+                                    0x00,
+                                    0x8A,
+                                    0x00,
+                                    0x9E,
+                                    0x00
+                                }
+                            );
+                        }
+
+                        else
+                        {
+                            Hypervisor.Write<byte>(0x445056, 0x1E);
+                            Hypervisor.Write<byte>(0x445056 + 0x01, 0x1E);
+                            Hypervisor.WriteArray(
+                                0x4450A6,
+                                new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 }
+                            );
+                        }
+
+                        Hypervisor.Write<byte>(0x446262, 0x04);
+
+                        Hypervisor.Write<byte>(0x446262 + 0x08, 0x06);
+                        Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
+                        Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
+
+                        Variables.SkipRoxas = false;
+                        Variables.SkipComplete = true;
+                        Variables.SkipStage = 2;
                     }
 
                     else
                     {
-                        Hypervisor.Write<byte>(0x445056, 0x1E);
-                        Hypervisor.Write<byte>(0x445056 + 0x01, 0x1E);
-                        Hypervisor.WriteArray(
-                            0x4450A6,
-                            new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 }
-                        );
+                        Variables.SkipRoxas = false;
+                        Variables.SkipComplete = true;
                     }
-
-                    Hypervisor.Write<byte>(0x446262, 0x04);
-
-                    Hypervisor.Write<byte>(0x446262 + 0x08, 0x06);
-                    Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
-                    Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
-
-                    Variables.SkipRoxas = false;
-                    Variables.SkipComplete = true;
-                    Variables.SkipStage = 2;
                 }
             }
         }
@@ -585,6 +596,9 @@ namespace ReFixed
                     _write.Write(_dataArray);
                 }
                 #endregion
+            
+                // Play a sound, dictating that the save was a success!
+                Variables.SaveSFX.Play();
             }
         }
 
@@ -595,19 +609,23 @@ namespace ReFixed
         */
         public static void AutosaveEngine()
         {
-            var _battleRead = Hypervisor.Read<byte>(0x24AA5B6);
-            var _loadRead = Hypervisor.Read<byte>(Variables.LoadAddress);
+            var _loadRead = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
+            var _battleRead = Hypervisor.Read<byte>(Variables.BattleFlagAddress);
+            var _cutsceneRead = Hypervisor.Read<byte>(Variables.CutsceneFlagAddress);
 
             var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
             var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
 
-            if (!CheckTitle() && _battleRead == 0x00 && _loadRead == 0x01)
+            var _saveableBool = _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00;
+
+            if (!CheckTitle() && _saveableBool)
             {
                 if (Variables.SaveWorld != _worldCheck)
                 {
                     GenerateSave();
                     Variables.SaveIterator = 0;
                 }
+
                 else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
                 {
                     if (Variables.SaveIterator == 3)
