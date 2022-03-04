@@ -7,7 +7,9 @@
 */
 
 using System;
+using System.Media;
 using System.Threading;
+using System.Reflection;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -19,6 +21,8 @@ namespace ReFixed
 {
     public class Variables
     {
+        private static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
+
         public static bool Initialized = false;
 
         public static Task DiscordTask;
@@ -27,8 +31,8 @@ namespace ReFixed
 
         public static DiscordRpcClient DiscordClient = new DiscordRpcClient("837171155076513834");
 
-        public static SoundPlayer DenySFX = new SoundPlayer(Properties.Resources.sfxDeny);
-        public static SoundPlayer ToggleSFX = new SoundPlayer(Properties.Resources.sfxToggle);
+        public static SoundPlayer DenySFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxDeny.wav"));
+        public static SoundPlayer ToggleSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxToggle.wav"));
 
         public static string[] ModeText = { "Beginner", "Standard", "Proud" };
         public static string[] WorldImages =
@@ -95,7 +99,7 @@ namespace ReFixed
         public static ulong SharedStart = 0x2A45963;
         public static ulong AbilityStart = 0x2A4540E;
         public static ulong AbilityMenuStart = 0x2AF8BD2;
-        public static ulong AbilityPointAddress = 0x2A453D3;
+        public static ulong AbilityPointAddress = 0x2AF031E;
 
         // Look, I know this is dumb but what can I do.
         public static Dictionary<byte, byte> DictionaryAP = new Dictionary<byte, byte>()
@@ -124,12 +128,12 @@ namespace ReFixed
             { 0x16, 0x01 },
             { 0x17, 0x03 },
             { 0x18, 0x03 },
-            { 0x19, 0x02 },
+            { 0x19, 0x05 },
             { 0x1A, 0x01 },
             { 0x1B, 0x02 },
             { 0x1C, 0x02 },
             { 0x1D, 0x01 },
-            { 0x1E, 0x02 },
+            { 0x1E, 0x01 },
             { 0x1F, 0x02 },
             { 0x20, 0x03 },
             { 0x21, 0x02 },

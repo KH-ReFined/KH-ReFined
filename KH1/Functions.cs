@@ -32,9 +32,6 @@ namespace ReFixed
         {
             Hypervisor.UnlockBlock(0x10F2E);
 
-            DenySFX.Volume = 0.5F;
-            ToggleSFX.Volume = 0.5F;
-
             Variables.Initialized = true;
         }
 
@@ -114,6 +111,7 @@ namespace ReFixed
 
                         var _currentMember = _menuSelect == 0x00 ? 0x00 : _slotRead[_menuSelect];
                         var _memberOffset = (ulong)(0x74 * _currentMember);
+                        var _apOffset = (ulong)(0x100 * _currentMember);
 
                         var _skillTree = Hypervisor.ReadArray(
                             Variables.AbilityStart + _memberOffset,
@@ -125,7 +123,7 @@ namespace ReFixed
                             _usedAP += Variables.DictionaryAP[_skillEquip[i]];
 
                         _pointRead = Hypervisor.Read<byte>(
-                            Variables.AbilityPointAddress + _memberOffset
+                            Variables.AbilityPointAddress + _apOffset
                         );
                         _abilityOffset =
                             Variables.AbilityStart

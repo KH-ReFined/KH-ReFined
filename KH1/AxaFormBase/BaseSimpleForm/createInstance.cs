@@ -34,7 +34,7 @@ namespace AxaFormBase
             UpdateAgent.UpdateCheck();
 
             if (theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.00]");
+                new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.10]");
 
             Variables.DiscordClient.Initialize();
 
