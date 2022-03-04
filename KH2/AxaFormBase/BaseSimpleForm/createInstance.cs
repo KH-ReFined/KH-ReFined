@@ -47,9 +47,7 @@ namespace AxaFormBase
             }
 
             if (BaseSimpleForm.theInstance == null)
-            {
                 new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.10]");
-            }
 
             Variables.DiscordClient.Initialize();
 
