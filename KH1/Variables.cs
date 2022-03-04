@@ -178,6 +178,8 @@ namespace ReFixed
         public static ulong SaveAddress = 0x2A5BFCA;
 
         public static ulong LevelAddress = 0x02A453CE;
+        public static ulong LoadFlagAddress = 0x2B6DFD7;
+        public static ulong CutsceneFlagAddress = 0x1FF3EDE;
         public static ulong DifficultyAddress = 0x02A5B7F6;
         public static ulong WorldAddress = 0x01F9C4D6;
         public static ulong TimeAddress = 0x01F9BC4E;

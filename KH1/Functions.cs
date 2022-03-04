@@ -102,6 +102,9 @@ namespace ReFixed
             var _pageSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x34);
             var _skillSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x40);
 
+            if (_toggleRead == 0x01 && _menuCheck == 0x01)
+                Hypervisor.Write<byte>(Variables.AbilityMenuStart, 0x00);
+
             if (_toggleRead == 0x01 && _menuCheck == 0x00)
             {
                 if (_buttonRead && !Variables.AbilityBool)
@@ -442,14 +445,15 @@ namespace ReFixed
         */
         public static void AutosaveEngine()
         {
-            var _fadeCheck = Hypervisor.Read<byte>(0x138DB2);
             var _battleRead = Hypervisor.Read<byte>(0x024C3352);
             var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
 
             var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
+            var _loadCheck = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
             var _roomCheck = Hypervisor.Read<byte>(Variables.WorldAddress + 0x68);
+            var _cutsceneCheck = Hypervisor.Read<byte>(Variables.CutsceneFlagAddress);
 
-            if (_titleCheck > 0x02 && _battleRead == 0x00 && _fadeCheck == 0x80)
+            if (_titleCheck > 0x02 && _battleRead == 0x00 && _loadCheck == 0x01 && _cutsceneCheck == 0x00)
             {
                 if (Variables.SaveWorld != _worldCheck)
                 {
