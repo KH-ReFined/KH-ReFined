@@ -26,11 +26,13 @@ namespace ReFixed
         public static bool Initialized = false;
 
         public static Task DiscordTask;
-        public static CancellationToken DiscordToken;
+        public static Task AutoSaveTask;
+        public static CancellationToken TaskToken;
         public static CancellationTokenSource CancelSource;
 
         public static DiscordRpcClient DiscordClient = new DiscordRpcClient("837171155076513834");
 
+        public static SoundPlayer SaveSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxSave.wav"));
         public static SoundPlayer DenySFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxDeny.wav"));
         public static SoundPlayer ToggleSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxToggle.wav"));
 

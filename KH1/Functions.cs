@@ -30,6 +30,9 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            Variables.CancelSource = new CancellationTokenSource();
+            Variables.TaskToken = Variables.CancelSource.Token;
+
             Hypervisor.UnlockBlock(0x10F2E);
 
             Variables.Initialized = true;
@@ -95,7 +98,7 @@ namespace ReFixed
 
             var _menuSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x30);
             var _pageSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x34);
-            var _skillSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x38);
+            var _skillSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x40);
 
             if (_toggleRead == 0x01)
             {
@@ -105,9 +108,10 @@ namespace ReFixed
                     var _abilityOffset =
                         Variables.SharedStart + (ulong)(_skillSelect + _pageSelect);
 
-                    if (_menuSelect != 0x04 || (_menuSelect == 0x03 && _slotRead[0x03] != 0x00))
+                    if (_menuSelect != 0x04 && _slotRead[_menuSelect] != 0xFF)
                     {
                         _usedAP = 0x00;
+                        _skillSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x38);
 
                         var _currentMember = _menuSelect == 0x00 ? 0x00 : _slotRead[_menuSelect];
                         var _memberOffset = (ulong)(0x74 * _currentMember);
@@ -423,6 +427,9 @@ namespace ReFixed
                 _write.Write(_roomRead);
             }
             #endregion
+
+            // Play a sound, dictating that the save was a success!
+            Variables.SaveSFX.Play();
         }
 
         /*
@@ -652,7 +659,6 @@ namespace ReFixed
                 Initialization();
 
             ResetGame();
-            AutosaveEngine();
             #endregion
 
             #region Mid Priority
@@ -665,22 +671,34 @@ namespace ReFixed
             TextAdjust();
             #endregion
 
-            #region Discord
+            #region Tasks
+            if (Variables.AutoSaveTask == null)
+            {
+                Variables.AutoSaveTask = Task.Factory.StartNew(
+                    delegate()
+                    {
+                        while (!Variables.TaskToken.IsCancellationRequested)
+                        {
+                            AutosaveEngine();
+                            Thread.Sleep(5);
+                        }
+                    },
+                    Variables.TaskToken
+                );
+            }
+            
             if (Variables.DiscordTask == null)
             {
-                Variables.CancelSource = new CancellationTokenSource();
-                Variables.DiscordToken = Variables.CancelSource.Token;
-
                 Variables.DiscordTask = Task.Factory.StartNew(
                     delegate()
                     {
-                        while (!Variables.DiscordToken.IsCancellationRequested)
+                        while (!Variables.TaskToken.IsCancellationRequested)
                         {
                             DiscordEngine();
                             Thread.Sleep(5);
                         }
                     },
-                    Variables.DiscordToken
+                    Variables.TaskToken
                 );
             }
             #endregion
