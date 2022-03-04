@@ -106,7 +106,7 @@ namespace ReFixed
                 {
                     var _pointRead = 0x00;
                     var _abilityOffset =
-                        Variables.SharedStart + (ulong)(_skillSelect + _pageSelect);
+                        Variables.SharedStart + (ulong)(_skillSelect);
 
                     if (_menuSelect != 0x04 && _slotRead[_menuSelect] != 0xFF)
                     {
@@ -664,6 +664,9 @@ namespace ReFixed
             #region Mid Priority
             MagicHide();
             FieldOfView();
+
+            if (Hypervisor.Read<byte>(Variables.GameRunningFlag) == 0x00 &&
+                Hypervisor.Read<byte>(0x00163C17) == 0x00)
             AbilityToggle();
             #endregion
 

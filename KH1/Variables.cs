@@ -68,6 +68,7 @@ namespace ReFixed
         public static ulong VibrationAddress = 0x2A5B7DA;
 
         public static ulong InputAddress = 0x1F9CA2E;
+        public static ulong GameRunningFlag = 0x1F2516E;
 
         public static ulong SoraMPAddress = 0x246E512;
         public static ulong SoraMagicAddress = 0x2A4543E;
