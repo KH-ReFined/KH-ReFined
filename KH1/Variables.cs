@@ -168,7 +168,7 @@ namespace ReFixed
         };
 
         public static ulong InformationPointer = 0x2B379CA;
-        public static ulong SaveAddress = 0x2A5BFCA;
+        public static ulong SaveAddress = 0x2A453CA;
 
         public static ulong LevelAddress = 0x02A453CE;
         public static ulong DifficultyAddress = 0x02A5B7F6;
