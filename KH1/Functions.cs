@@ -94,13 +94,15 @@ namespace ReFixed
             var _buttonRead = Hypervisor.Read<ushort>(Variables.InputAddress) == 0x1000;
 
             var _slotRead = Hypervisor.ReadArray(Variables.PartyStart - 0x01, 0x04);
+
+            var _menuCheck = Hypervisor.Read<byte>(Variables.GameRunningFlag);
             var _toggleRead = Hypervisor.Read<byte>(Variables.AbilityMenuStart);
 
             var _menuSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x30);
             var _pageSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x34);
             var _skillSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x40);
 
-            if (_toggleRead == 0x01)
+            if (_toggleRead == 0x01 && _menuCheck == 0x00)
             {
                 if (_buttonRead && !Variables.AbilityBool)
                 {
@@ -168,6 +170,7 @@ namespace ReFixed
                 if (!_buttonRead && Variables.AbilityBool)
                     Variables.AbilityBool = false;
             }
+
             else
             {
                 Variables.AbilityBool = false;
@@ -664,9 +667,6 @@ namespace ReFixed
             #region Mid Priority
             MagicHide();
             FieldOfView();
-
-            if (Hypervisor.Read<byte>(Variables.GameRunningFlag) == 0x00 &&
-                Hypervisor.Read<byte>(0x00163C17) == 0x00)
             AbilityToggle();
             #endregion
 
