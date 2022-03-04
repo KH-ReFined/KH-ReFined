@@ -21,8 +21,6 @@ namespace ReFixed
 {
     public class Functions
     {
-        private static int _usedAP = -1392;
-
         /*
             Initialization:
 
@@ -33,7 +31,7 @@ namespace ReFixed
             Variables.CancelSource = new CancellationTokenSource();
             Variables.TaskToken = Variables.CancelSource.Token;
 
-            Hypervisor.UnlockBlock(0x10F2E);
+            Hypervisor.UnlockBlock(Variables.VPHeightAddress);
 
             Variables.Initialized = true;
         }
@@ -115,7 +113,7 @@ namespace ReFixed
 
                     if (_menuSelect != 0x04 && _slotRead[_menuSelect] != 0xFF)
                     {
-                        _usedAP = 0x00;
+                        Variables.UsedPoints = 0x00;
                         _skillSelect = Hypervisor.Read<byte>(Variables.AbilityMenuStart + 0x38);
 
                         var _currentMember = _menuSelect == 0x00 ? 0x00 : _slotRead[_menuSelect];
@@ -129,7 +127,7 @@ namespace ReFixed
                         byte[] _skillEquip = _skillTree.Where(x => x < 0x80 && x != 0x00).ToArray();
 
                         for (int i = 0; i < _skillEquip.Length; i++)
-                            _usedAP += Variables.DictionaryAP[_skillEquip[i]];
+                            Variables.UsedPoints += Variables.DictionaryAP[_skillEquip[i]];
 
                         _pointRead = Hypervisor.Read<byte>(
                             Variables.AbilityPointAddress + _apOffset
@@ -148,18 +146,18 @@ namespace ReFixed
 
                     if (
                         (_readSkill & 0x80) == 0x80
-                        && ((_pointRead - _usedAP - _skillCost) >= 0 || _usedAP == -1392)
+                        && ((_pointRead - Variables.UsedPoints - _skillCost) >= 0 || Variables.UsedPoints == -1392)
                     )
                     {
                         Hypervisor.Write<byte>(_abilityOffset, (byte)(_readSkill - 0x80));
-                        _usedAP += _skillCost;
+                        Variables.UsedPoints += _skillCost;
 
                         Variables.ToggleSFX.Play();
                     }
                     else if ((_readSkill & 0x80) == 0x00)
                     {
                         Hypervisor.Write<byte>(_abilityOffset, (byte)(_readSkill + 0x80));
-                        _usedAP -= _skillCost;
+                        Variables.UsedPoints -= _skillCost;
 
                         Variables.ToggleSFX.Play();
                     }
@@ -177,7 +175,7 @@ namespace ReFixed
             else
             {
                 Variables.AbilityBool = false;
-                _usedAP = -1392;
+                Variables.UsedPoints = -1392;
             }
         }
 
@@ -210,7 +208,7 @@ namespace ReFixed
                     break;
             }
 
-            Hypervisor.Write<float>(0x10F2E, _floatValue);
+            Hypervisor.Write<float>(Variables.VPHeightAddress, _floatValue);
         }
 
         /*
@@ -445,7 +443,7 @@ namespace ReFixed
         */
         public static void AutosaveEngine()
         {
-            var _battleRead = Hypervisor.Read<byte>(0x024C3352);
+            var _battleRead = Hypervisor.Read<byte>(Variables.BattleFlagAddress);
             var _titleCheck = Hypervisor.Read<byte>(Variables.ResetAddresses[1]);
 
             var _worldCheck = Hypervisor.Read<byte>(Variables.WorldAddress);
@@ -575,21 +573,11 @@ namespace ReFixed
         */
         public static void DiscordEngine()
         {
-            var _healthValue = Hypervisor.Read<byte>(0x029B8CC6);
-            var _magicValue = Hypervisor.Read<byte>(0x029B8CCE);
-            var _levelValue = Hypervisor.Read<byte>(Variables.LevelAddress);
-            var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
-
             var _stringState = string.Format(
                 "Level {0} | {1} Mode",
-                _levelValue,
-                Variables.ModeText.ElementAtOrDefault(_diffValue)
+                Hypervisor.Read<byte>(Variables.LevelAddress),
+                Variables.ModeText.ElementAtOrDefault(Hypervisor.Read<byte>(Variables.DifficultyAddress))
             );
-            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
-
-            var _worldID = Hypervisor.Read<byte>(Variables.WorldAddress);
-            var _gummiCheck = Hypervisor.Read<byte>(0x00163C17);
-            var _battleFlag = Hypervisor.Read<byte>(0x024C3352);
 
             var _timeValue = Math.Floor(Hypervisor.Read<int>(Variables.TimeAddress) / 60F);
             var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
@@ -599,6 +587,8 @@ namespace ReFixed
                 "In-Game Time: {0}",
                 string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00"))
             );
+
+            var _stringDetail = string.Format("HP: {0} | MP: {1}", Hypervisor.Read<byte>(Variables.SoraStatStart), Hypervisor.Read<byte>(Variables.SoraStatStart + 0x08));
 
             var _rpcButtons = new DiscordRPC.Button[]
             {
@@ -624,12 +614,12 @@ namespace ReFixed
                         Assets = new Assets
                         {
                             LargeImageKey =
-                                _gummiCheck == 0
-                                    ? Variables.WorldImages.ElementAtOrDefault(_worldID)
+                                Hypervisor.Read<byte>(Variables.GummiFlagAddress) == 0
+                                    ? Variables.WorldImages.ElementAtOrDefault(Hypervisor.Read<byte>(Variables.WorldAddress))
                                     : "wm",
                             LargeImageText = _timeText,
-                            SmallImageKey = _battleFlag % 2 == 0 ? "safe" : "battle",
-                            SmallImageText = _battleFlag % 2 == 0 ? "Safe" : "In Battle"
+                            SmallImageKey = Hypervisor.Read<byte>(Variables.BattleFlagAddress) % 2 == 0 ? "safe" : "battle",
+                            SmallImageText = Hypervisor.Read<byte>(Variables.BattleFlagAddress) % 2 == 0 ? "Safe" : "In Battle"
                         },
                         Buttons = _rpcButtons
                     }

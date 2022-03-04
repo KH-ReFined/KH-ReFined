@@ -98,6 +98,7 @@ namespace ReFixed
         };
 
         public static bool AbilityBool = false;
+        public static long UsedPoints = -1392;
         public static ulong PartyStart = 0x2A45859;
         public static ulong SharedStart = 0x2A45963;
         public static ulong AbilityStart = 0x2A4540E;
@@ -174,16 +175,21 @@ namespace ReFixed
             { 0x41, 0x03 }
         };
 
-        public static ulong InformationPointer = 0x2B379CA;
         public static ulong SaveAddress = 0x2A5BFCA;
+        public static ulong InformationPointer = 0x2B379CA;
 
-        public static ulong LevelAddress = 0x02A453CE;
-        public static ulong LoadFlagAddress = 0x2B6DFD7;
-        public static ulong CutsceneFlagAddress = 0x1FF3EDE;
-        public static ulong DifficultyAddress = 0x02A5B7F6;
-        public static ulong WorldAddress = 0x01F9C4D6;
         public static ulong TimeAddress = 0x01F9BC4E;
         public static ulong MunnyAddress = 0x2A5B7E6;
+        public static ulong LevelAddress = 0x02A453CE;
+        public static ulong WorldAddress = 0x01F9C4D6;
+        public static ulong SoraStatStart = 0x029B8CC6;
+        public static ulong LoadFlagAddress = 0x2B6DFD7;
+        public static ulong GummiFlagAddress = 0x00163C17;
+        public static ulong BattleFlagAddress = 0x024C3352;
+        public static ulong DifficultyAddress = 0x02A5B7F6;
+        public static ulong CutsceneFlagAddress = 0x1FF3EDE;
+
+        public static ulong VPHeightAddress = 0x10F2E;
 
         public static byte SaveIterator;
         public static byte SaveWorld;
