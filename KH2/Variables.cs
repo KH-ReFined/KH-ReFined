@@ -139,8 +139,11 @@ namespace ReFixed
         public static ulong EventFormatterAddress =
             !FileVersion.Contains("8") ? (ulong)0x52A72 : (ulong)0x52A32;
 
-        public static ulong InstructionAddress =
+        public static ulong LimiterInstructionAddress =
             !FileVersion.Contains("8") ? (ulong)0x152160 : (ulong)0x152220;
+
+        public static ulong MusicInstructionAddress =
+            !FileVersion.Contains("8") ? (ulong)0x3A8C92 : (ulong)0x3A8DD2;
 
         public static ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
         public static ulong[] TitleTextAddresses =
@@ -184,7 +187,8 @@ namespace ReFixed
             !FileVersion.Contains("8")
                 ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 }
                 : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
-        public static byte[] LimiterRemoved = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+        public static byte[] InstructionRemoved = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
         public static ulong InformationPointer = 0x25A5972;
         public static ulong SaveAddress = 0x442B62;
