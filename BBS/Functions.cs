@@ -34,6 +34,9 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            Variables.CancelSource = new CancellationTokenSource();
+            Variables.TaskToken = Variables.CancelSource.Token;
+
             Hypervisor.UnlockBlock(0x023394);
 
             Variables.Initialized = true;
@@ -339,6 +342,8 @@ namespace ReFixed
                 _write.Write(_saveData.Skip(0x10).ToArray());
             }
             #endregion
+
+            Variables.SaveSFX.Play();
         }
 
         /*
@@ -411,6 +416,7 @@ namespace ReFixed
                         );
                 }
             }
+            
             else
             {
                 var _basePointer = Hypervisor.Read<ulong>(Variables.SettingsPointer);
@@ -535,8 +541,6 @@ namespace ReFixed
 
             if (Hypervisor.Read<ushort>(Variables.InputAddress) == 0x0C09)
                 ResetGame();
-
-            AutosaveEngine();
             #endregion
 
             #region Mid Priority
@@ -551,22 +555,34 @@ namespace ReFixed
             TextAdjust();
             #endregion
 
-            #region Discord
+            #region Tasks
+            if (Variables.AutoSaveTask == null)
+            {
+                Variables.AutoSaveTask = Task.Factory.StartNew(
+                    delegate()
+                    {
+                        while (!Variables.TaskToken.IsCancellationRequested)
+                        {
+                            AutosaveEngine();
+                            Thread.Sleep(5);
+                        }
+                    },
+                    Variables.TaskToken
+                );
+            }
+
             if (Variables.DiscordTask == null)
             {
-                Variables.CancelSource = new CancellationTokenSource();
-                Variables.DiscordToken = Variables.CancelSource.Token;
-
                 Variables.DiscordTask = Task.Factory.StartNew(
                     delegate()
                     {
-                        while (!Variables.DiscordToken.IsCancellationRequested)
+                        while (!Variables.TaskToken.IsCancellationRequested)
                         {
                             DiscordEngine();
                             Thread.Sleep(5);
                         }
                     },
-                    Variables.DiscordToken
+                    Variables.TaskToken
                 );
             }
             #endregion

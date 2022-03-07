@@ -7,6 +7,7 @@
 */
 
 using System;
+using System.IO;
 using System.Drawing;
 using System.Threading;
 using System.Diagnostics;
@@ -36,20 +37,20 @@ namespace AxaFormBase
 			if (File.Exists("DBGHELP.dll") || File.Exists("DINPUT8.dll") || File.Exists("LuaBackend.dll"))
             {
                 var _boxMessage = "Re:Fixed detected the presence of LuaBackend! Unfortunately,\n" +
-                                  "LuaBackend does not support Re:Fixed. Please use LuaFrontend!\n"
+                                  "LuaBackend does not support Re:Fixed. Please use LuaFrontend!\n" +
                                   "The game cannot start until LuaBackendHook is removed.";  
 
                 var _boxTitle = "LuaBackend Detected!";  
                 var _boxButtons = MessageBoxButtons.OK;  
 
                 MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error); 
-				Environment.Exit(-1);
+				System.Environment.Exit(-1);
             }
 			
 			if (theInstance == null)
 				new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.10]");
 
-			Variables.RichClient.Initialize();
+			Variables.DiscordClient.Initialize();
 
 			CancelSource = new CancellationTokenSource();
 			MainToken = BaseSimpleForm.CancelSource.Token;

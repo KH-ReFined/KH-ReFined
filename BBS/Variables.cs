@@ -7,6 +7,7 @@
 */
 
 using System;
+using System.Media;
 using System.Threading;
 using System.Reflection;
 using System.Diagnostics;
@@ -31,12 +32,15 @@ namespace ReFixed
         public static bool Initialized = false;
 
         public static Task DiscordTask;
-        public static CancellationToken DiscordToken;
+        public static Task AutoSaveTask;
+        public static CancellationToken TaskToken;
         public static CancellationTokenSource CancelSource;
 
         public static readonly DiscordRpcClient DiscordClient = new DiscordRpcClient(
             "939407076747272203"
         );
+
+        public static SoundPlayer SaveSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxSave.wav"));
 
         public static readonly string[] ModeText = { "Beginner", "Standard", "Proud", "Critical" };
         public static readonly string[] WorldImages =
