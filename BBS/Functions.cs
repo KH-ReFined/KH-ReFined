@@ -64,10 +64,10 @@ namespace ReFixed
         */
         public static void ResetGame()
         {
-            if (!CheckTitle())
+            if (!CheckTitle() && !Variables.Debounce)
             {
                 Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x01);
-                Hypervisor.Write<byte>(Variables.LimiterAddress + 0x0C, 0x00);
+                Variables.Debounce = true;
             }
         }
 
@@ -541,6 +541,9 @@ namespace ReFixed
 
             if (Hypervisor.Read<ushort>(Variables.InputAddress) == 0x0C09)
                 ResetGame();
+
+            else
+                Variables.Debounce = false;
             #endregion
 
             #region Mid Priority
