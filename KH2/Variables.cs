@@ -117,33 +117,33 @@ namespace ReFixed
         public static bool Debounce;
 
         public static ulong BaseAddress =
-            !FileVersion.Contains("8") ? (ulong)0x56450E : (ulong)0x56454E;
+            FileVersion == "1.0.0.0" ? (ulong)0x56450E : (ulong)0x56454E;
 
         public static ulong InputAddress =
-            !FileVersion.Contains("8") ? (ulong)0x1ACF7B : (ulong)0x1ACF3B;
+            FileVersion == "1.0.0.0" ? (ulong)0x1ACF7B : (ulong)0x1ACF3B;
         public static ulong ConfigAddress = 0x446D06;
 
         public static ulong ConfirmAddress =
-            !FileVersion.Contains("8") ? (ulong)0x365550 : (ulong)0x365520;
+            FileVersion == "1.0.0.0" ? (ulong)0x365550 : (ulong)0x365520;
         public static ulong FramerateAddress =
-            !FileVersion.Contains("8") ? (ulong)0x36553C : (ulong)0x36550C;
+            FileVersion == "1.0.0.0" ? (ulong)0x36553C : (ulong)0x36550C;
 
         public static ulong LimiterAddress = 0x553EBA;
 
         public static ulong PaxFormatterAddress =
-            !FileVersion.Contains("8") ? (ulong)0x61FD2 : (ulong)0x61F92;
+            FileVersion == "1.0.0.0" ? (ulong)0x61FD2 : (ulong)0x61F92;
         public static ulong BattleFormatterAddress =
-            !FileVersion.Contains("8") ? (ulong)0x5F87A : (ulong)0x5F83A;
+            FileVersion == "1.0.0.0" ? (ulong)0x5F87A : (ulong)0x5F83A;
         public static ulong AnbFormatterAddress =
-            !FileVersion.Contains("8") ? (ulong)0x52A02 : (ulong)0x529C2;
+            FileVersion == "1.0.0.0" ? (ulong)0x52A02 : (ulong)0x529C2;
         public static ulong EventFormatterAddress =
-            !FileVersion.Contains("8") ? (ulong)0x52A72 : (ulong)0x52A32;
+            FileVersion == "1.0.0.0" ? (ulong)0x52A72 : (ulong)0x52A32;
 
         public static ulong LimiterInstructionAddress =
-            !FileVersion.Contains("8") ? (ulong)0x152160 : (ulong)0x152220;
+            FileVersion == "1.0.0.0" ? (ulong)0x152160 : (ulong)0x152220;
 
         public static ulong MusicInstructionAddress =
-            !FileVersion.Contains("8") ? (ulong)0x3A8C92 : (ulong)0x3A8DD2;
+            FileVersion == "1.0.0.0" ? (ulong)0x3A8C92 : (ulong)0x3A8DD2;
 
         public static ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
         public static ulong[] TitleTextAddresses =
@@ -163,7 +163,7 @@ namespace ReFixed
         public static ulong TitleBackAddress = 0x553F0C;
 
         public static ulong TitleFlagAddress =
-            !FileVersion.Contains("8") ? (ulong)0x1B0256 : (ulong)0x1B0216;
+            FileVersion == "1.0.0.0" ? (ulong)0x1B0256 : (ulong)0x1B0216;
         public static ulong TitleButtonAddress = 0x255BECE;
 
         public static byte[] MagicStoreMemory;
@@ -171,20 +171,20 @@ namespace ReFixed
         public static bool RoomLoad;
 
         public static ulong RoomAddress =
-            !FileVersion.Contains("8") ? (ulong)0x1B08AA : (ulong)0x1B086A;
+            FileVersion == "1.0.0.0" ? (ulong)0x1B08AA : (ulong)0x1B086A;
         public static ulong StoryFlagAddress = 0x444832;
         public static ulong LoadFlagAddress = 0x453B82;
         public static ulong DifficultyAddress = 0x444FFA;
         public static ulong CutsceneFlagAddress = 
-            !FileVersion.Contains("8") ? (ulong)0x1C1C92 : (ulong)0x1C1C52 ;
+            FileVersion == "1.0.0.0" ? (ulong)0x1C1C92 : (ulong)0x1C1C52 ;
         public static ulong BattleFlagAddress = 0x24AA5B6;
         public static ulong InventoryFlagAddress = 0x444F00;
 
         public static ulong ShortcutStartAddress =
-            !FileVersion.Contains("8") ? (ulong)0x630AA : (ulong)0x6306A;
+            FileVersion == "1.0.0.0" ? (ulong)0x630AA : (ulong)0x6306A;
 
         public static byte[] LimiterInstruction =
-            !FileVersion.Contains("8")
+            FileVersion == "1.0.0.0"
                 ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 }
                 : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
 
@@ -208,7 +208,7 @@ namespace ReFixed
         };
 
         public static ulong[] SelectAddresses =
-            !FileVersion.Contains("8")
+            FileVersion == "1.0.0.0"
                 ? new ulong[] { 0x3AEAC1, 0x3AEBA5, 0x3AEC4C, 0x3AEBCD, 0x3AEC1C }
                 : new ulong[] { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
 
