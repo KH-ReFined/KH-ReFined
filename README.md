@@ -12,6 +12,9 @@
 	- [Kingdom Hearts 1](#kingdom-hearts-1)
 	- [Kingdom Hearts 2](#kingdom-hearts-2)
 	- [Kingdom Hearts - Birth by Sleep](#kingdom-hearts---birth-by-sleep)
+- [Installation](#installation)
+	- [without Dual Audio](#without-dual-audio)
+	- [with Dual Audio](#with-dual-audio)
 - [Credits](#credits)
 - [Third Party Libraries](#third-party-libraries)
 
@@ -107,6 +110,21 @@ _The features with a * next to them are not live yet._
 5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Tri/Y, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
 6. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games.
 7. The party will wear their Halloween costumes in the days between October 31st and November 2nd (inclusive). Whilst they wear their Christmas costumes in the days between December 24th and January 1st (also inclusive).
+
+## Installation
+
+### Without Dual Audio
+- Drag the EXE of your choice (v1.0.0.0 or v1.0.0.8) unto the game directory. [v1.0.1.0 or v1.0.1.8 for KH1 if you want Battle Chests]
+- Rename the dragged EXE to the name of the original ones (Ex. "KINGDOM HEARTS FINAL MIX" for KH1)
+- Tada! You have installed it.
+
+### With Dual Audio
+- Drag the EXE of your choice (v1.0.1.0 or v1.0.1.8) unto the game directory.
+- Rename the dragged EXE to the name of the original ones (Ex. "KINGDOM HEARTS II FINAL MIX" for KH2)
+- Download the patch in https://bit.ly/DualAudioBBS for BBS, the one in https://bit.ly/DualAudioKH2 for KH2.  	
+- Download KHPCPatchManager v1.2.0 or higher from https://github.com/AntonioDePau/KHPCPatchManager/releases.
+- Patch both the games with the patches you downloaded. Instructions are at: https://github.com/AntonioDePau/KHPCPatchManager/blob/main/README.md
+- Done! You now have Re:Fixed with Dual Audio!
 
 ## Credits
 
