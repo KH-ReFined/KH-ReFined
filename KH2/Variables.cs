@@ -257,30 +257,97 @@ namespace ReFixed
             0x81
         };
 
-        public static string[] TitleStrings =
-        {
-            "Play Roxas' Story?",
-            "YES{0x00}NO",
-            "Play through Roxas' Story normally.",
-            "                Skip Roxas' Story entirely.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(You will miss important story elements if you do!)",
-            "Roxas' Story"
+        // ORDER: EN, JP, DE, ES, FR, IT
+        public static string[][] RoxasStrings =
+        {   
+            new string[]
+            {
+                "Play Roxas' Story?",
+                "YES{0x00}NO",
+                "Play through Roxas' Story normally.",
+                "                Skip Roxas' Story entirely.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(You will miss important story elements if you do!)",
+                "Roxas' Story"
+            },
+
+            new string[] {},
+
+            new string[] 
+            {
+                "Möchtest du Roxas' Geschichte spielen?",
+                "JA{0x00}NEIN",
+                "Spiele ganz normal durch Roxas' Geschichte.",
+                "                Überspringe Roxas' Geschichte komplett.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(Dadurch werden wichtige Story-Elemente übersprungen!)",
+                "Roxas' Geschichte"
+            },
+
+            new string[] 
+            {
+                "¿Quieres jugar la historia de Roxas?",
+                "SÍ{0x00}NO",
+                "Juega la historia completa.",
+                "                Saltar historia de Roxas.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(¡Te perderás elementos importantes de la historia si lo haces!)",
+                "Historia de Roxas"
+            },
         };
 
-        public static string[] LimitStrings = { "Ars Arcanum", "Sonic Blade", "Ragnarok" };
-
-        public static readonly string[] SaveStrings =
+        public static readonly string[][] SaveStrings =
         {
-            "Auto-Save",
-            "Autosave functionality.",
-            "Autosave functionality."
+            new string[]
+            {
+                "Auto-Save",
+                "Autosave functionality.",
+                "Autosave functionality."
+            },
+
+            new string[] {},
+
+            new string[] 
+            {
+                "Auto-Speichern",
+                "Auto-Speicherfunktionalität.",
+                "Auto-Speicherfunktionalität."
+            },
+
+            new string[] 
+            {
+                "Auto-Guardado",
+                "Función de autoguardado.",
+                "Función de autoguardado."
+            },
         };
 
-        public static string[] AudioStrings =
+        public static string[][] AudioStrings =
         {
-            "Audio Language",
-            "English",
-            "Japanese",
-            "Switch between English and Japanese speech.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Work in Progress! The world must be\nreloaded for the changes to take effect!){0x03}"
+            new string[]
+            {
+                "Audio Language",
+                "English",
+                "Japanese",
+                "Switch between English and Japanese speech.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Work in Progress! The world must be\nreloaded for the changes to take effect!){0x03}"
+            },
+
+            new string[] {},
+
+            new string[] 
+            {
+                "Audio-Sprachausgabe",
+                "Englisch",
+                "Japanisch",
+                "Wechsle zwischen der Englischen und Japanischen Sprachausgabe.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Work in Progress! Die Welt muss neu\ngeladen werden, bevor die Effekte in Kraft treten!){0x03}"
+            },
+
+            new string[] 
+            {
+                "Idioma de las Voces",
+                "Inglés",
+                "Japonés",
+                "Cambia entre las voces en Inglés y Japonés.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(¡Prototipo! ¡El mundo necesita volver a\ncargarse para que surjan los cambios!){0x03}"
+            },
+        };
+
+        public static string[] LimitStrings = 
+        { 
+            "Ars Arcanum", "Sonic Blade", "Ragnarok" 
         };
 
         public static ulong[] MagicAddresses = new ulong[] { 0x24AA2CA, 0x24AA33A, 0x24A98EE };

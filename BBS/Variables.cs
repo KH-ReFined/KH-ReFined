@@ -86,24 +86,76 @@ namespace ReFixed
             "Terra"
         };
 
-        public static readonly string[] AudioText =
+        public static readonly string[][] AudioText =
         {
-            "Audio Language\x00",
-            "English\x00",
-            "Japanese\x00",
-            "Switch to using English vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00",
-            "Switch to using Japanese vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00"
+            new string[]
+            {
+                "Audio Language\x00",
+                "English\x00",
+                "Japanese\x00",
+                "Switch to using English vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00",
+                "Switch to using Japanese vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00"
+            },
+
+            new string[] 
+            {
+
+            },
+
+            new string[] 
+            {
+                "Audio-Sprachausgabe\x00",
+                "Englisch\x00",
+                "Japanisch\x00",
+                "Wechsle in die englische Sprachausgabe.\x0A\u2219\x59(Work in Progress! Aktiviere einen signifikanten Ladevorgang,\x000Adamit die Änderungen in Kraft treten.)\x00",
+                "Wechsle in die japanische Sprachausgabe.\x0A\u2219\x59(Work in Progress! Aktiviere einen signifikanten Ladevorgang,\x000Adamit die Änderungen in Kraft treten.)\x00"
+            },
+
+            new string[] 
+            {
+                "Idioma de las Voces\x00",
+                "Español\x00",
+                "Japonés\x00",
+                "Cambia el texto a Español.\x0A\u2219\x59(¡Prototipo! ¡Se necesitan cargar múltiples elementos\x000Apara que surjan los cambios!)\x00",
+                "Cambia el texto a Japonés.\x0A\u2219\x59(¡Prototipo! ¡Se necesitan cargar múltiples elementos\x000Apara que surjan los cambios!)\x00"
+            }
         };
 
         public static readonly ulong[] AudioOffsets = { 0x1C0E, 0x1C92, 0x1C88, 0x2330, 0x23A1 };
 
-        public static readonly string[] SaveText =
+        public static readonly string[][] SaveText =
         {
-            "Auto-Save",
-            "On\u0000",
-            "Off\u0000",
-            "Auto-Save",
-            "Auto-Save"
+            new string[]
+            {
+                "Auto-Save",
+                "On\u0000",
+                "Off\u0000",
+                "Auto-Save",
+                "Auto-Save"
+            },
+
+            new string[]
+            {
+
+            },
+
+            new string[]
+            {
+                "Auto-Speichern",
+                "On\u0000",
+                "Off\u0000",
+                "Auto-Speichern",
+                "Auto-Speichern"
+            },
+            
+            new string[] 
+            {
+                "Auto-Guardado",
+                "Activado\u0000",
+                "Desactivado\u0000",
+                "Auto-Guardado",
+                "Auto-Guardado"
+            }
         };
 
         public static readonly ulong[] SaveOffsets = { 0x00, 0x84, 0x7A, 0x1140, 0x115C };
