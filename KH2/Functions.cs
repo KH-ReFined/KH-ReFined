@@ -673,33 +673,36 @@ namespace ReFixed
             #endregion
 
             #region Limit Text
-            var _secAccumilator = 0;
-
-            if (Hypervisor.Read<byte>(Variables.LimitAddresses[0]) != 0x2E)
+            if (Variables.Language == 0x00)
             {
-                for (int i = 0; i < Variables.LimitAddresses.Length; i += 2)
+                var _secAccumilator = 0;
+
+                if (Hypervisor.Read<byte>(Variables.LimitAddresses[0]) != 0x2E)
                 {
-                    // Write the text.
-                    Hypervisor.WriteArray(
-                        Variables.LimitAddresses[i],
-                        Variables.LimitStrings[_secAccumilator].ToKHSCII()
-                    );
-                    Hypervisor.WriteArray(
-                        Variables.LimitAddresses[i + 1],
-                        Variables.LimitStrings[_secAccumilator].ToKHSCII()
-                    );
+                    for (int i = 0; i < Variables.LimitAddresses.Length; i += 2)
+                    {
+                        // Write the text.
+                        Hypervisor.WriteArray(
+                            Variables.LimitAddresses[i],
+                            Variables.LimitStrings[_secAccumilator].ToKHSCII()
+                        );
+                        Hypervisor.WriteArray(
+                            Variables.LimitAddresses[i + 1],
+                            Variables.LimitStrings[_secAccumilator].ToKHSCII()
+                        );
 
-                    // Increase the accumilator for the text array.
-                    _secAccumilator++;
+                        // Increase the accumilator for the text array.
+                        _secAccumilator++;
+                    }
+
+                    // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
+                    Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
+                    Hypervisor.Write<uint>(0x255D006, 0x01B434);
+                    Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
+
+                    // Write the RCs text.
+                    Hypervisor.WriteArray(0x2572571, ("Rave{0x00}End").ToKHSCII());
                 }
-
-                // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
-                Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
-                Hypervisor.Write<uint>(0x255D006, 0x01B434);
-                Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
-
-                // Write the RCs text.
-                Hypervisor.WriteArray(0x2572571, ("Rave{0x00}End").ToKHSCII());
             }
             #endregion
 

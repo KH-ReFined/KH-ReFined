@@ -115,6 +115,7 @@ namespace ReFixed
         public static bool SkipComplete;
 
         public static bool Debounce;
+        public static byte Language;
 
         public static ulong BaseAddress =
             FileVersion == "1.0.0.0" ? (ulong)0x56450E : (ulong)0x56454E;
@@ -146,13 +147,60 @@ namespace ReFixed
             FileVersion == "1.0.0.0" ? (ulong)0x3A8C92 : (ulong)0x3A8DD2;
 
         public static ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
-        public static ulong[] TitleTextAddresses =
+
+        public static ulong[][] TitleTextAddresses =
         {
-            0x256E10A,
-            0x256E125,
-            0x256E12C,
-            0x256E152,
-            0x256E295
+            new ulong[]
+            {
+                0x256E10A,
+                0x256E125,
+                0x256E12C,
+                0x256E152,
+                0x256E295
+            },
+
+            new ulong[]
+            {
+            },
+
+            new ulong[]
+            {
+                0x256FE98,
+                0x256FEBF,
+                0x256FEC7,
+                0x256FEF3,
+                0x2570065
+            }
+        };
+
+        public static ulong[][] TitleOffsets =
+        {
+            null,
+            null,
+            new ulong[]
+            {
+                0x018D56,
+                0x018D7D,
+                0x018D80,
+                0x018D85,
+                0x018DB6,
+                0x018D7D
+            }
+        };
+
+        public static ulong[][] TitleOffsetAddresses =
+        {
+            null,
+            null,
+            new ulong[]
+            {
+                0x255BE96,
+                0x255BE9E,
+                0x255BEA6,
+                0x255BEAE,
+                0x255BEB6,
+                0x255BF1E
+            }
         };
 
         public static ushort[] AudioOffsets = { 0xEB3F, 0xEB47, 0xEB58, 0xEB58 };
