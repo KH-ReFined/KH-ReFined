@@ -39,7 +39,32 @@ namespace ReFixed
             Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
             Hypervisor.UnlockBlock(Variables.ExeAddress + Variables.LimiterInstructionAddress, true);
 
+            Variables.Language = CheckLanguage();
             Variables.Initialized = true;
+        }
+
+        /*
+            CheckLanguage:
+
+            Checks the BAR file to know what the current language is.
+            Does not work with mods that modify the length of the BAR file.
+        */
+        public static byte CheckLanguage()
+        {
+            var _length = Hypervisor.Read<int>(Variables.BARAddress + 0x1C);
+
+            while(_length == 0x00) 
+            {
+                _length = Hypervisor.Read<int>(Variables.BARAddress + 0x1C);
+            }
+
+            switch (_length)
+            {
+                default:
+                    return 0x00;
+                case 0x02054F:
+                    return 0x02;
+            }
         }
 
         /*
@@ -659,16 +684,30 @@ namespace ReFixed
         public static void TextAdjust()
         {
             #region Roxas Story Option
-            if (Hypervisor.Read<byte>(Variables.TitleTextAddresses[1]) != 0x46)
+            if (Hypervisor.Read<byte>(Variables.RoxasTextAddresses[Variables.Language][1]) != Variables.RoxasStrings[Variables.Language][1].ToKHSCII()[0])
             {
-                var _buttOffset = Hypervisor.Read<uint>(Variables.TitleButtonAddress);
-                Hypervisor.Write<uint>(Variables.TitleButtonAddress, _buttOffset + 0x01);
+                if (Variables.Language == 0x00)
+                {
+                    var _buttOffset = Hypervisor.Read<uint>(Variables.TitleButtonAddress);
+                    Hypervisor.Write<uint>(Variables.TitleButtonAddress, _buttOffset + 0x01);
+                }
 
-                for (int i = 0; i < Variables.TitleStrings.Length; i++)
+                for (int i = 0; i < Variables.RoxasStrings[Variables.Language].Length; i++)
                     Hypervisor.WriteArray(
-                        Variables.TitleTextAddresses[i],
-                        Variables.TitleStrings[i].ToKHSCII()
+                        Variables.RoxasTextAddresses[Variables.Language][i],
+                        Variables.RoxasStrings[Variables.Language][i].ToKHSCII()
                     );
+
+                if (Variables.RoxasOffsetAddresses[Variables.Language] != null)
+                {
+                    for (int i = 0; i < Variables.RoxasOffsetAddresses[Variables.Language].Length; i++)
+                    {
+                        Hypervisor.Write<int>(
+                            Variables.RoxasOffsetAddresses[Variables.Language][i],
+                            (int)Variables.RoxasOffsets[Variables.Language][i]
+                        );
+                    }
+                }
             }
             #endregion
 
@@ -716,7 +755,7 @@ namespace ReFixed
                     for (int i = 0; i < Variables.SaveStrings.Length; i++)
                         Hypervisor.WriteArray(
                             Variables.SaveTextAddresses[i],
-                            Variables.SaveStrings[i].ToKHSCII()
+                            Variables.SaveStrings[0][i].ToKHSCII()
                         );
                 }
             }
@@ -733,7 +772,7 @@ namespace ReFixed
                     );
                     Hypervisor.WriteArray(
                         Variables.AudioTextAddresses[i],
-                        Variables.AudioStrings[i].ToKHSCII()
+                        Variables.AudioStrings[0][i].ToKHSCII()
                     );
                 }
             }

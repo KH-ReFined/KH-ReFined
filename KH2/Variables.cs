@@ -148,7 +148,7 @@ namespace ReFixed
 
         public static ulong[] ConfigTextAddresses = { 0x2565A59, 0x2565C94 };
 
-        public static ulong[][] TitleTextAddresses =
+        public static ulong[][] RoxasTextAddresses =
         {
             new ulong[]
             {
@@ -173,7 +173,7 @@ namespace ReFixed
             }
         };
 
-        public static ulong[][] TitleOffsets =
+        public static ulong[][] RoxasOffsets =
         {
             null,
             null,
@@ -188,7 +188,7 @@ namespace ReFixed
             }
         };
 
-        public static ulong[][] TitleOffsetAddresses =
+        public static ulong[][] RoxasOffsetAddresses =
         {
             null,
             null,
@@ -237,6 +237,8 @@ namespace ReFixed
                 : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
 
         public static byte[] InstructionRemoved = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+        public static ulong BARAddress = 0x2557112;
 
         public static ulong InformationPointer = 0x25A5972;
         public static ulong SaveAddress = 0x442B62;
@@ -305,7 +307,14 @@ namespace ReFixed
             0x81
         };
 
-        // ORDER: EN, JP, DE, ES, FR, IT
+        /*
+            The was that I handle these is cancerous
+            storage-wise. But hey, it works! So I will 
+            use it.
+
+            Whenever it happens to bite me in the ass I will stop.
+        */
+
         public static string[][] RoxasStrings =
         {   
             new string[]
@@ -322,7 +331,7 @@ namespace ReFixed
             new string[] 
             {
                 "Möchtest du Roxas' Geschichte spielen?",
-                "JA{0x00}NEIN",
+                "Ja{0x00}Nein",
                 "Spiele ganz normal durch Roxas' Geschichte.",
                 "                Überspringe Roxas' Geschichte komplett.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(Dadurch werden wichtige Story-Elemente übersprungen!)",
                 "Roxas' Geschichte"
@@ -336,6 +345,15 @@ namespace ReFixed
                 "                Saltar historia de Roxas.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(¡Te perderás elementos importantes de la historia si lo haces!)",
                 "Historia de Roxas"
             },
+
+            new string[]
+            {
+                "Lancer l'arc de Roxas ?",
+                "OUI{0x00}NON",
+                "Jouer l'arc de Roxas normalement.",
+                "                Passer l'arc de Roxas.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(Vous passerez à coté d'éléments importants de l'histoire!)",
+                "L'arc de Roxas"
+            }
         };
 
         public static readonly string[][] SaveStrings =
@@ -362,6 +380,13 @@ namespace ReFixed
                 "Función de autoguardado.",
                 "Función de autoguardado."
             },
+
+            new string[]
+            {
+                "Sauvegarde automatique",
+                "Fonction de sauvegarde automatique.",
+                "Fonction de sauvegarde automatique."
+            }
         };
 
         public static string[][] AudioStrings =
@@ -391,6 +416,14 @@ namespace ReFixed
                 "Japonés",
                 "Cambia entre las voces en Inglés y Japonés.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(¡Prototipo! ¡El mundo necesita volver a\ncargarse para que surjan los cambios!){0x03}"
             },
+
+            new string[]
+            {
+                "Langue de l'audio",
+                "Anglais",
+                "Japonais",
+                "Passer de l'audio anglais à japonais, vice-versa.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Fonctionnalité en cours de développement! Le monde dans lequel vous vous trouvez doit être \nchargé à nouveau pour que les changements prennnent effet!){0x03}"
+            }
         };
 
         public static string[] LimitStrings = 
