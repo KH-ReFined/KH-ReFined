@@ -1,23 +1,5 @@
 # Kingdom Hearts - Re:Fixed
 
-## Table of Contents
-
-- [Download](#download)
-	- [Purpose](#purpose)
-	- [Game Status](#game-status) 
-- [Wiki](#wiki)
-- [Support](#support)
-- [Features](#features)
-	- [All Games](#all-games)
-	- [Kingdom Hearts 1](#kingdom-hearts-1)
-	- [Kingdom Hearts 2](#kingdom-hearts-2)
-	- [Kingdom Hearts - Birth by Sleep](#kingdom-hearts---birth-by-sleep)
-- [Installation](#installation)
-	- [without Dual Audio](#without-dual-audio)
-	- [with Dual Audio](#with-dual-audio)
-- [Credits](#credits)
-- [Third Party Libraries](#third-party-libraries)
-
 ## Download
 
 Get the latest release by clicking the button below.
