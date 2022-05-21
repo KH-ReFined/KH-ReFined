@@ -32,7 +32,8 @@ If you wish to support this project, consider becoming a Patron.
 
 ## Features
 
-_Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_  
+_Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_ 
+_All features indicating a version number will be released in that said version._
 
 ### All Games
 
@@ -69,6 +70,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 | :heavy_check_mark: | - | Correct Limit Form's Limit names so that they are more accurately translated. [[3]](#reference) |
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
 | - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence. |
+| - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [v2.50] [[8]](#reference) |
 | - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking. [[4]](#reference) | 
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 | - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) | 
@@ -91,6 +93,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Tri/Y, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
 6. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games.
 7. The party will wear their Halloween costumes in the days between October 31st and November 2nd (inclusive). Whilst they wear their Christmas costumes in the days between December 24th and January 1st (also inclusive).
+8. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fixed implements this feature to KH2 and it will replace the continue option. To revert back to and from the continue option, you can use theleft and right D-Pad buttons.
 
 ## Installation
 
@@ -114,7 +117,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 - KSX for his work on the MP Bar enhancement.
 - Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.
 - Xeeynamo for the functions used to calculate the Save Checksum.
-- Dekirai for his immense testing.
+- Dekirai and RelaxedBatter for their immense testing.
 
 ### Kingdom Hearts 1
 - Denhonator for his work on Cutscene Skip.
@@ -122,6 +125,7 @@ _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". T
 
 ### Kingdom Hearts 2
 - Stickman Sham for the idea that led to Magic Reorganization.
+- Krakrenzo for the idea that led to Retry Bettle.
 - CrazyCatz00 for the inspiration that led to Dual-Audio.
 - TieuLink for proviging the Japanese voices for Dual Audio.
 - DA and AntonioDePau for their help with injecting ".a.jp" files for Dual-Audio.
