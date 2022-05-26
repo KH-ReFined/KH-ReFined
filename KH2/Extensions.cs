@@ -15,6 +15,28 @@ namespace ReFixed
 {
     public static class Extensions
     {
+        public static ulong FindValue(this byte[] Source, uint Value)
+        {
+            var _pattern = BitConverter.GetBytes(Value);
+            ulong _charSlot = (ulong)(Source.Length - _pattern.Length + 1);
+
+            for (ulong i = 0; i < _charSlot; i++)
+            {
+                if (Source[i] != _pattern[0])
+                    continue;
+
+                for (ulong j = (ulong)_pattern.Length - 1; j >= 1; j--)
+                {
+                    if (Source[i + j] != _pattern[j]) 
+                        break;
+
+                    if (j == 1) 
+                        return i;
+                }
+            }
+            return 0xFFFFFFFFFFFFFFFF;
+        }
+
         public static byte[] ToKHSCII(this string inText)
         {
             var _specialDict = new Dictionary<char, byte>
@@ -124,7 +146,7 @@ namespace ReFixed
                 {
                     if (_specialDict.ContainsKey(_char))
                         _outList.Add(_specialDict[_char]);
-						
+
                     else
                         _outList.Add(0x01);
                     _charCount++;
@@ -135,7 +157,7 @@ namespace ReFixed
             return _outList.ToArray();
         }
 
-        public static uint CalculateCRC32(byte[] data, int offset, uint checksum)
+        public static uint SaveCRC32(byte[] data, int offset, uint checksum)
         {
             uint[] array = GetCRC32Table(0x4C11DB7).Take(0x100).ToArray();
 
