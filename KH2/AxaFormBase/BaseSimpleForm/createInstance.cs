@@ -34,31 +34,15 @@ namespace AxaFormBase
         {
             UpdateAgent.UpdateCheck();
 
-            if (File.Exists("DBGHELP.dll") || File.Exists("DINPUT8.dll") || File.Exists("LuaBackend.dll"))
-            {
-                var _boxMessage = "Re:Fixed detected the presence of LuaBackend! Unfortunately,\n" +
-                                  "LuaBackend does not support Re:Fixed. Please use LuaFrontend!\n" +
-                                  "The game cannot start until LuaBackendHook is removed.";  
-
-                var _boxTitle = "LuaBackend Detected!";  
-                var _boxButtons = MessageBoxButtons.OK;  
-
-                MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error); 
-				Environment.Exit(-1); 
-            }
-
             if (BaseSimpleForm.theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.10]");
+                new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.75]");
 
             Variables.DiscordClient.Initialize();
 
             CancelSource = new CancellationTokenSource();
             MainToken = BaseSimpleForm.CancelSource.Token;
 
-            Variables.GameProcess = Process.GetCurrentProcess();
-            Variables.GameHandle = Variables.GameProcess.Handle;
-            Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
-            Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
+            Hypervisor.AttachProcess(Process.GetCurrentProcess(), 0x56454E);
 
             MainTask = Task.Factory.StartNew(
                 delegate()
