@@ -16,6 +16,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ReFixed
 {
+	
+
     public static class Hypervisor
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -54,27 +56,34 @@ namespace ReFixed
         /// <param name="Address">The address of the value to read.</param>
         /// <param name="Absolute">Whether the address is an absolute address or not. Defaults to false.</param>
         /// <returns></returns>
-        public static unsafe T Read<T>(ulong Address, bool Absolute = false) where T : unmanaged
+        public static T Read<T>(ulong Address, bool Absolute = false) where T : struct
         {
             IntPtr _address = (IntPtr)(BaseAddress + Address);
 
             if (Absolute)
                 _address = (IntPtr)(Address);
 
-            int _outSize = sizeof(T);
+            var _dynoMethod = new DynamicMethod("SizeOfType", typeof(int), new Type[] { });
+            ILGenerator _ilGen = _dynoMethod.GetILGenerator();
+
+            _ilGen.Emit(OpCodes.Sizeof, typeof(T));
+            _ilGen.Emit(OpCodes.Ret);
+
+            var _outSize = (int)_dynoMethod.Invoke(null, null);
 
             var _outArray = new byte[_outSize];
             int _outRead = 0;
 
-            ReadProcessMemory(Handle, _address, _outArray, _outSize, ref _outRead);
+                ReadProcessMemory(Handle, _address, _outArray, _outSize, ref _outRead);
 
             var _gcHandle = GCHandle.Alloc(_outArray, GCHandleType.Pinned);
             var _retData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), typeof(T));
-
-            _gcHandle.Free();
-
+            
+            _gcHandle.Free();  
+                    
             return _retData;
         }
+
 
         /// <summary>
         /// Writes a value with the type of T to an address.
@@ -83,19 +92,25 @@ namespace ReFixed
         /// <typeparam name="T">Type of the value to write. Must have a size.</typeparam>
         /// <param name="Address">The address which the value will be written to.</param>
         /// <param name="Absolute">Whether the address is an absolute address or not. Defaults to false.</param>
-        public static unsafe void Write<T>(ulong Address, T Value, bool Absolute = false) where T : unmanaged
+        public static void Write<T>(ulong Address, T Value, bool Absolute = false) where T : struct
         {
             IntPtr _address = (IntPtr)(BaseAddress + Address);
 
             if (Absolute)
                 _address = (IntPtr)(Address);
 
-            int _inSize = sizeof(T);
+            var _dynoMethod = new DynamicMethod("SizeOfType", typeof(int), new Type[] { });
+            ILGenerator _ilGen = _dynoMethod.GetILGenerator();
+
+            _ilGen.Emit(OpCodes.Sizeof, typeof(T));
+            _ilGen.Emit(OpCodes.Ret);
+
+            var _inSize = (int)_dynoMethod.Invoke(null, null);
             int _inWrite = 0;
 
             if (_inSize > 1)
             {
-                var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }).Invoke(null, new object[] { Value });
+                var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }) .Invoke(null, new object[] { Value });
 
                 WriteProcessMemory(Handle, _address, _inArray, _inArray.Length, ref _inWrite);
             }
