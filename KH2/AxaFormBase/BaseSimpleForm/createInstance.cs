@@ -32,8 +32,6 @@ namespace AxaFormBase
 
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {
-            UpdateAgent.UpdateCheck();
-
             if (BaseSimpleForm.theInstance == null)
                 new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.75]");
 
@@ -42,7 +40,8 @@ namespace AxaFormBase
             CancelSource = new CancellationTokenSource();
             MainToken = BaseSimpleForm.CancelSource.Token;
 
-            Hypervisor.AttachProcess(Process.GetCurrentProcess(), 0x56454E);
+            var _proc = Process.GetCurrentProcess();
+            Hypervisor.AttachProcess(_proc, Variables.BASE_ADDRESS);
 
             MainTask = Task.Factory.StartNew(
                 delegate()

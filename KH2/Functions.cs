@@ -11,10 +11,8 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using System.Threading;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
@@ -80,6 +78,8 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            Variables.DiscordClient.Initialize();
+
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
@@ -116,217 +116,222 @@ namespace ReFixed
             var _strSize = Hypervisor.Read<int>(SYSBAR_POINTER - 0x14, true);
             SYSBAR_HEADER = Hypervisor.ReadArray(SYSBAR_POINTER, _strSize, true);
 
-            var _strOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue(0x1E0) + 0x04, true);
-            var _strRead = Hypervisor.ReadArray(SYSBAR_POINTER + _strOffset, 0x06, true);
+            if (SYSBAR_POINTER != 0x00 && _strSize != 0x00)
+            { 
+                var _strOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue(0x1E0) + 0x04, true);
+                var _strRead = Hypervisor.ReadArray(SYSBAR_POINTER + _strOffset, 0x06, true);
 
-            if (LANGUAGE == 0xFF)
-            {
-                if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0x9C, 0xA4 }))
-                    LANGUAGE = 0x00;
-
-                else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xA7, 0xA0, 0xAB, 0xA2, 0x9F }))
-                    LANGUAGE = 0x01;
-
-                else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0x9A, 0x9C, 0x9A, 0xAB }))
-                    LANGUAGE = 0x02;
-
-                else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0xAA, 0xAE }))
-                    LANGUAGE = 0x03;
-
-                else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0x9C, 0x9C }))
-                    LANGUAGE = 0x04;
-            }
-
-            #region Roxas Skip Text
-            if (CheckTitle())
-            {
-                var _roxasText = Strings.RoxasSkip[LANGUAGE];
-
-                if (ROXAS_OFFSETS == null)
+                if (LANGUAGE == 0xFF)
                 {
-                    ROXAS_OFFSETS = new List<ulong>();
+                    if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0x9C, 0xA4 }))
+                        LANGUAGE = 0x00;
 
-                    for (int i = 0; i < 6; i++)
-                        ROXAS_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.RoxasIDs[i]) + 0x04);
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xA7, 0xA0, 0xAB, 0xA2, 0x9F }))
+                        LANGUAGE = 0x01;
+
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0x9A, 0x9C, 0x9A, 0xAB }))
+                        LANGUAGE = 0x02;
+
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0xAA, 0xAE }))
+                        LANGUAGE = 0x03;
+
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0x9C, 0x9C }))
+                        LANGUAGE = 0x04;
+
+                    Console.WriteLine(String.Format("DEBUG: The detected language is \"{0}\"!", _langList[LANGUAGE]));
                 }
 
-                var _roxOffsetTitle = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[0], true);
-                var _roxOffsetYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[1], true);
-                var _roxOffsetNO = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[2], true);
-
-                var _roxOffsetDescYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[3], true);
-                var _roxOffsetDescNO = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[4], true);
-
-                var _roxOffsetConfirm = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[5], true);
-
-                switch (LANGUAGE)
+                #region Roxas Skip Text
+                if (CheckTitle())
                 {
-                    case 0x00:
+                    var _roxasText = Strings.RoxasSkip[LANGUAGE];
+
+                    if (ROXAS_OFFSETS == null)
                     {
-                        if (ROXAS_NO_OFFSET == 0x00)
-                            ROXAS_NO_OFFSET = _roxOffsetNO;
+                        ROXAS_OFFSETS = new List<ulong>();
 
-                        if (_roxOffsetNO != ROXAS_NO_OFFSET + 0x01)
-                            Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[2], (uint)(ROXAS_NO_OFFSET + 0x01), true);
-
-                        break;
+                        for (int i = 0; i < 6; i++)
+                            ROXAS_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.RoxasIDs[i]) + 0x04);
                     }
 
-                    case 0x01:
-                    {
-                        if (ROXAS_TITLE_OFFSET == 0x00)
-                            ROXAS_TITLE_OFFSET = _roxOffsetTitle;
+                    var _roxOffsetTitle = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[0], true);
+                    var _roxOffsetYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[1], true);
+                    var _roxOffsetNO = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[2], true);
 
-                        if (_roxOffsetDescYES != ROXAS_TITLE_OFFSET + 0x27)
-                        {
-                            Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[3], (uint)(ROXAS_TITLE_OFFSET + 0x27), true);
-                            _roxOffsetDescYES = (uint)(ROXAS_TITLE_OFFSET + 0x27);
-                        }
+                    var _roxOffsetDescYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[3], true);
+                    var _roxOffsetDescNO = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[4], true);
 
-                        if (_roxOffsetDescNO != ROXAS_TITLE_OFFSET + 0x7A)
-                        {
-                            Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[4], (uint)(ROXAS_TITLE_OFFSET + 0x7A), true);
-                            _roxOffsetDescNO = (uint)(ROXAS_TITLE_OFFSET + 0x7A);
-                        }
-
-                        break;
-                    }
-                }
-
-                Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetTitle, _roxasText[0].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetConfirm, _roxasText[5].ToKHSCII(), true);
-
-                Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetYES, _roxasText[1].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetNO, _roxasText[2].ToKHSCII(), true);
-
-                Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetDescYES, _roxasText[3].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetDescNO, _roxasText[4].ToKHSCII(), true);
-            }
-            #endregion
-
-            if (SETTING_OFFSETS == null)
-            {
-                SETTING_OFFSETS = new List<ulong>();
-
-                for (int i = 0; i < 7; i++)
-                    SETTING_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.SettingIDs[i]) + 0x04);
-            }
-
-            var _setOffsetTitle = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[0], true);
-            var _setOffsetYES = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[1], true);
-            var _setOffsetNO = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[2], true);
-
-            var _setOffsetDescYes = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[3], true);
-            var _setOffsetDescNo = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[4], true);
-
-            var _setOffsetDesc = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[5], true);
-            var _setOffsetBack = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[6], true);
-
-
-            #region Dual Audio Text
-            if (!CheckTitle() && Variables.DualAudio)
-            {
-                var _audioText = Strings.DualAudio[LANGUAGE];
-
-                if (SET_YESDESC_OFFSET == 0x00)
-                    SET_YESDESC_OFFSET = _setOffsetDescYes;
-
-                if (SET_YESDESC_OFFSET != _setOffsetDesc)
-                {
-                    Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[3], _setOffsetDesc, true);
-                    Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[4], _setOffsetDesc, true);
-
-                    SET_YESDESC_OFFSET = _setOffsetDesc;
-                }
-
-                if (LANGUAGE == 0x04)
-                {
-                    if (_setOffsetYES != _setOffsetBack)
-                    {
-                        Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[1], _setOffsetBack, true);
-                        _setOffsetYES = _setOffsetBack;
-                    }
-                }
-
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _audioText[0].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _audioText[2].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, _audioText[3].ToKHSCII(), true);
-            }
-            #endregion
-
-            #region Auto-Save Text
-            else if (!CheckTitle() && !Variables.DualAudio)
-            {
-                var _saveText = Strings.AutoSave[LANGUAGE];
-
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _saveText[0].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _saveText[1].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _saveText[2].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDescYes, _saveText[3].ToKHSCII(), true);
-                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDescNo, _saveText[4].ToKHSCII(), true);
-            }
-            #endregion
-
-            /*
-                What is this?
-                
-                Well you see, OpenKH optimizes text so that all duplicate text is only present once
-                in the SYS.BAR file, so when I write "ON" to be "JP", every instance of "ON" gets
-                overridden. This is a no go.
-
-                This is a smart yet a stupid way to solve this very issue.
-            */
-
-            #region OpenKH Text Correction
-            if (!CheckTitle())
-            {
-                var _openKHText = Strings.FixText[LANGUAGE];
-                var _openKHOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue(Strings.OpenKHID) + 0x04, true);
-
-                if (_openKHText != null)
-                {
-                    if (ON_OFFSET == 0x00)
-                    {
-                        ON_OFFSET = SYSBAR_HEADER.FindValue(Strings.OnID) + 0x04;
-                        OFF_OFFSET = SYSBAR_HEADER.FindValue(Strings.OffID) + 0x04;
-
-                        FULL_OFFSET = SYSBAR_HEADER.FindValue(Strings.FullID) + 0x04;
-                        NONE_OFFSET = SYSBAR_HEADER.FindValue(Strings.NoneID) + 0x04;
-                    }
+                    var _roxOffsetConfirm = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[5], true);
 
                     switch (LANGUAGE)
                     {
                         case 0x00:
-                        case 0x01:
-                        case 0x04:
                             {
-                                if (OPENKH_OFFSET == 0x00)
-                                    OPENKH_OFFSET = _openKHOffset;
+                                if (ROXAS_NO_OFFSET == 0x00)
+                                    ROXAS_NO_OFFSET = _roxOffsetNO;
 
-                                if (OPENKH_OFFSET != ON_OFFSET)
+                                if (_roxOffsetNO != ROXAS_NO_OFFSET + 0x01)
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[2], (uint)(ROXAS_NO_OFFSET + 0x01), true);
+
+                                break;
+                            }
+
+                        case 0x01:
+                            {
+                                if (ROXAS_TITLE_OFFSET == 0x00)
+                                    ROXAS_TITLE_OFFSET = _roxOffsetTitle;
+
+                                if (_roxOffsetDescYES != ROXAS_TITLE_OFFSET + 0x27)
                                 {
-                                    Hypervisor.Write(SYSBAR_POINTER + ON_OFFSET, _openKHOffset, true);
-                                    Hypervisor.Write(SYSBAR_POINTER + OFF_OFFSET, _openKHOffset + 0x03, true);
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[3], (uint)(ROXAS_TITLE_OFFSET + 0x27), true);
+                                    _roxOffsetDescYES = (uint)(ROXAS_TITLE_OFFSET + 0x27);
+                                }
 
-                                    if (LANGUAGE == 0x01)
-                                    {
-                                        Hypervisor.Write(SYSBAR_POINTER + FULL_OFFSET, _openKHOffset, true);
-                                        Hypervisor.Write(SYSBAR_POINTER + NONE_OFFSET, _openKHOffset + 0x03, true);
-                                    }
-
-                                    ON_OFFSET = OPENKH_OFFSET;
+                                if (_roxOffsetDescNO != ROXAS_TITLE_OFFSET + 0x7A)
+                                {
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[4], (uint)(ROXAS_TITLE_OFFSET + 0x7A), true);
+                                    _roxOffsetDescNO = (uint)(ROXAS_TITLE_OFFSET + 0x7A);
                                 }
 
                                 break;
                             }
                     }
 
-                    Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset, _openKHText[0].ToKHSCII(), true);
-                    Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset + 0x03, _openKHText[1].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetTitle, _roxasText[0].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetConfirm, _roxasText[5].ToKHSCII(), true);
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetYES, _roxasText[1].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetNO, _roxasText[2].ToKHSCII(), true);
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetDescYES, _roxasText[3].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetDescNO, _roxasText[4].ToKHSCII(), true);
                 }
+                #endregion
+
+                if (SETTING_OFFSETS == null)
+                {
+                    SETTING_OFFSETS = new List<ulong>();
+
+                    for (int i = 0; i < 7; i++)
+                        SETTING_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.SettingIDs[i]) + 0x04);
+                }
+
+                var _setOffsetTitle = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[0], true);
+                var _setOffsetYES = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[1], true);
+                var _setOffsetNO = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[2], true);
+
+                var _setOffsetDescYes = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[3], true);
+                var _setOffsetDescNo = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[4], true);
+
+                var _setOffsetDesc = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[5], true);
+                var _setOffsetBack = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[6], true);
+
+
+                #region Dual Audio Text
+                if (!CheckTitle() && Variables.DualAudio)
+                {
+                    var _audioText = Strings.DualAudio[LANGUAGE];
+
+                    if (SET_YESDESC_OFFSET == 0x00)
+                        SET_YESDESC_OFFSET = _setOffsetDescYes;
+
+                    if (SET_YESDESC_OFFSET != _setOffsetDesc)
+                    {
+                        Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[3], _setOffsetDesc, true);
+                        Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[4], _setOffsetDesc, true);
+
+                        SET_YESDESC_OFFSET = _setOffsetDesc;
+                    }
+
+                    if (LANGUAGE == 0x04)
+                    {
+                        if (_setOffsetYES != _setOffsetBack)
+                        {
+                            Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[1], _setOffsetBack, true);
+                            _setOffsetYES = _setOffsetBack;
+                        }
+                    }
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _audioText[0].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _audioText[2].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, _audioText[3].ToKHSCII(), true);
+                }
+                #endregion
+
+                #region Auto-Save Text
+                else if (!CheckTitle() && !Variables.DualAudio)
+                {
+                    var _saveText = Strings.AutoSave[LANGUAGE];
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _saveText[0].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _saveText[1].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _saveText[2].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDescYes, _saveText[3].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDescNo, _saveText[4].ToKHSCII(), true);
+                }
+                #endregion
+
+                /*
+                    What is this?
+                
+                    Well you see, OpenKH optimizes text so that all duplicate text is only present once
+                    in the SYS.BAR file, so when I write "ON" to be "JP", every instance of "ON" gets
+                    overridden. This is a no go.
+
+                    This is a smart yet a stupid way to solve this very issue.
+                */
+
+                #region OpenKH Text Correction
+                if (!CheckTitle())
+                {
+                    var _openKHText = Strings.FixText[LANGUAGE];
+                    var _openKHOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue(Strings.OpenKHID) + 0x04, true);
+
+                    if (_openKHText != null)
+                    {
+                        if (ON_OFFSET == 0x00)
+                        {
+                            ON_OFFSET = SYSBAR_HEADER.FindValue(Strings.OnID) + 0x04;
+                            OFF_OFFSET = SYSBAR_HEADER.FindValue(Strings.OffID) + 0x04;
+
+                            FULL_OFFSET = SYSBAR_HEADER.FindValue(Strings.FullID) + 0x04;
+                            NONE_OFFSET = SYSBAR_HEADER.FindValue(Strings.NoneID) + 0x04;
+                        }
+
+                        switch (LANGUAGE)
+                        {
+                            case 0x00:
+                            case 0x01:
+                            case 0x04:
+                                {
+                                    if (OPENKH_OFFSET == 0x00)
+                                        OPENKH_OFFSET = _openKHOffset;
+
+                                    if (OPENKH_OFFSET != ON_OFFSET)
+                                    {
+                                        Hypervisor.Write(SYSBAR_POINTER + ON_OFFSET, _openKHOffset, true);
+                                        Hypervisor.Write(SYSBAR_POINTER + OFF_OFFSET, _openKHOffset + 0x03, true);
+
+                                        if (LANGUAGE == 0x01)
+                                        {
+                                            Hypervisor.Write(SYSBAR_POINTER + FULL_OFFSET, _openKHOffset, true);
+                                            Hypervisor.Write(SYSBAR_POINTER + NONE_OFFSET, _openKHOffset + 0x03, true);
+                                        }
+
+                                        ON_OFFSET = OPENKH_OFFSET;
+                                    }
+
+                                    break;
+                                }
+                        }
+
+                        Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset, _openKHText[0].ToKHSCII(), true);
+                        Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset + 0x03, _openKHText[1].ToKHSCII(), true);
+                    }
+                }
+                #endregion
             }
-            #endregion
         }
 
         /*
@@ -355,7 +360,10 @@ namespace ReFixed
 
             if (_buttRead == 0x090C && !DEBOUNCE[0])
             {
+                Console.WriteLine("DEBUG: Initiating a Soft Reset.");
+
                 Hypervisor.Write<byte>(Variables.ADDR_Reset, 0x01);
+
                 DEBOUNCE[0] = true;
             }
 
@@ -387,6 +395,8 @@ namespace ReFixed
             // If a new spell is learned: Forget the sorting.
             if (_magicOne != MAGIC_LV1 || _magicTwo != MAGIC_LV2)
             {
+                Console.WriteLine("DEBUG: Spell change detected! Resetting sort memory.");
+
                 MAGIC_STORE = null;
 
                 MAGIC_LV1 = _magicOne;
@@ -413,7 +423,10 @@ namespace ReFixed
             {
                 // Write back the memorized magic menu.
                 if (MAGIC_STORE != null)
+                {
+                    Console.WriteLine("DEBUG: Roomchange detected! Restoring the Magic Menu.");
                     Hypervisor.WriteArray(Variables.ADDR_MagicMenu[1], MAGIC_STORE);
+                }
 
                 ROOM_LOADED = false;
             }
@@ -445,6 +458,8 @@ namespace ReFixed
                     // If L2 is being held down:
                     if (_triggerCheck && _insCheck != 0x90)
                     {
+                        Console.WriteLine("DEBUG: L2 Detected within Magic Menu! Disabling input registry.");
+
                         // NOP out command selection, so it does not interfere with our input.
                         for (int _ins = 0; _ins < Variables.ADDR_CMDSelectINST.Length; _ins++)
                             Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_CMDSelectINST[_ins], new byte[] { 0x90, 0x90, 0x90 }, true);
@@ -452,6 +467,8 @@ namespace ReFixed
 
                     else if (!_triggerCheck && _insCheck == 0x90)
                     {
+                        Console.WriteLine("DEBUG: L2 has been let go! Enabling input registry.");
+
                         // Revert the NOP'd instructions.
                         for (int _ins = 0; _ins < Variables.ADDR_CMDSelectINST.Length; _ins++)
                             Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_CMDSelectINST[_ins], Variables.INST_CMDSelect[_ins], true);
@@ -483,6 +500,8 @@ namespace ReFixed
                         Hypervisor.Write(Variables.ADDR_MagicMenu[2], _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01));
                         Hypervisor.Write(Variables.ADDR_MagicMenu[2] + 0x04, _subjectMagic);
 
+                        Console.WriteLine(String.Format("DEBUG: Moving Magic ID \"{0}\" {1} within the menu!", "0x" + _subjectMagic.ToString("X4"), _inputCheck == 0x01 ? "up" : "down"));
+
                         // Read the entirety of the magic menu, and save it to memory.
                         MAGIC_STORE = Hypervisor.ReadArray(Variables.ADDR_MagicMenu[1], _magicMax * 0x02);
                     }
@@ -513,6 +532,8 @@ namespace ReFixed
 
             if (CheckTitle() && !_skipBool)
             {
+                Console.WriteLine("DEBUG: Title screen detected! Resetting Roxas Skip!");
+
                 SKIP_INITIATED = false;
                 SKIP_COMPLETE = false;
 
@@ -529,9 +550,11 @@ namespace ReFixed
                 switch (_vibRead)
                 {
                     case 0x01:
+                        Console.WriteLine("DEBUG: Disabling Roxas Skip!");
                         SKIP_COMPLETE = true;
                         break;
                     case 0x00:
+                        Console.WriteLine("DEBUG: Initiating Roxas Skip!");
                         SKIP_INITIATED = true;
                         SKIP_COMPLETE = false;
                         break;
@@ -546,6 +569,8 @@ namespace ReFixed
 
                 if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck != 0x34 && SKIP_STAGE == 0)
                 {
+                    Console.WriteLine("DEBUG: Room parameters correct! Initiating Roxas Skip's First Phase...");
+
                     Hypervisor.Write<uint>(Variables.ADDR_World, 0x322002);
                     Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, 0x01);
                     Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x01);
@@ -562,6 +587,8 @@ namespace ReFixed
                 {
                     if (SKIP_STAGE == 1)
                     {
+                        Console.WriteLine("DEBUG: Room parameters correct! Skip was initiated! Initiating Roxas Skip's Second Phase...");
+
                         Hypervisor.Write<uint>(Variables.ADDR_World, 0x001702);
                         Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, (0x02 << 10) + 0x02);
                         Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x02);
@@ -617,6 +644,8 @@ namespace ReFixed
                         Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
                         Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
 
+                        Console.WriteLine("DEBUG: Skip completed!");
+
                         SKIP_INITIATED = false;
                         SKIP_COMPLETE = true;
                         SKIP_STAGE = 2;
@@ -624,6 +653,8 @@ namespace ReFixed
 
                     else
                     {
+                        Console.WriteLine("DEBUG: Skip was not initiated! Marking as completed...");
+
                         SKIP_INITIATED = false;
                         SKIP_COMPLETE = true;
                     }
@@ -689,6 +720,8 @@ namespace ReFixed
 
             if (_toggleCheck == 0x00 && _stringCheck != "obj/%s.a.jp")
             {
+                Console.WriteLine("DEBUG: Dual Audio switching to Japanese...");
+
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter, "obj/%s.a.jp");
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter + 0x10, "obj/%s.a.jp");
 
@@ -702,6 +735,8 @@ namespace ReFixed
 
             else if (_toggleCheck == 0x01 && _stringCheck != "obj/%s.a.%s")
             {
+                Console.WriteLine("DEBUG: Dual Audio switching to English...");
+
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter, "obj/%s.a.%s");
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter + 0x10, "obj/%s.a.us");
 
@@ -726,8 +761,7 @@ namespace ReFixed
         public static void RetryPrompt()
         {
             // So, we initialize all of this shit just to determine whether Retry will show up or not.
-            var _menuByte = Hypervisor.Read<byte>(Variables.ADDR_MenuSelect);
-            var _healByte = Hypervisor.Read<byte>(Variables.ADDR_SoraHP);
+            var _menuPoint = Hypervisor.Read<ulong>(Variables.PINT_DeadMenu);
 
             var _bttlByte = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
             var _cutsByte = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
@@ -774,32 +808,59 @@ namespace ReFixed
                         RETRY_OFFSET = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue((uint)(_continueID + 0x01)) + 0x04, true);
                         CONTINUE_OFFSET = SYSBAR_HEADER.FindValue(_continueID) + 0x04;
 
-                        Hypervisor.Write<uint>(SYSBAR_POINTER + CONTINUE_OFFSET, (uint)RETRY_OFFSET, true);
+                        Hypervisor.Write(SYSBAR_POINTER + CONTINUE_OFFSET, (uint)RETRY_OFFSET, true);
                     break;
                 }
                 
             }
 
-            if (_healByte != 0x00 && _bttlByte == 0x02 && _fnshByte == 0x00 && _cutsByte == 0x00 && RETRY_DATA_FIRST == null)
-            {
-                // Read the save data entirely except for the time elapsed.
+            // If one's on the Title Screen while Retry is active: Deactivate it.
 
-                RETRY_DATA_FIRST = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
-                RETRY_DATA_SECOND = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
+            if (CheckTitle() && (RETRY_LOCK || RETRY_DATA_FIRST != null))
+            {
+                Console.WriteLine("DEBUG: Title Screen detected on Retry Mode! Restoring...");
+
+                RETRY_DATA_FIRST = null;
+                RETRY_DATA_SECOND = null;
+
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+
+                RETRY_LOCK = false;
             }
 
-            else if ((_bttlByte == 0x00 || _fnshByte != 0x00) && _healByte != 0 && RETRY_DATA_FIRST != null)
-                RETRY_DATA_FIRST = null;
+            // If on a battle, read the save data so Retrying won't revert it.
+
+            if (!CheckTitle())
+            {
+                if (_bttlByte == 0x02 && _cutsByte == 0x00 && _menuPoint == 0x00 && RETRY_DATA_FIRST == null)
+                {
+                    Console.WriteLine("DEBUG: Start of battle! Reading game state...");
+
+                    RETRY_DATA_FIRST = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
+                    RETRY_DATA_SECOND = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
+                }
+
+                else if ((_bttlByte == 0x00 && _menuPoint == 0x00 && _loadByte == 0x01 || _cutsByte != 0x00) && RETRY_DATA_FIRST != null)
+                {
+                    Console.WriteLine("DEBUG: End of battle! Flushing game state...");
+
+                    RETRY_DATA_FIRST = null;
+                    RETRY_DATA_SECOND = null;
+                }
+            }
 
             // This code blob is responsible for switching between Retry and Continue
             // and only runs if Sora is dead and some sort of a menu is present.
-            if (_healByte == 0x00 && _menuByte == 0x00 && _bttlByte == 0x02)
+            if (_menuPoint != 0x00 && _bttlByte == 0x02)
             {
                 // If D-Pad sides are pressed;
                 if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2])
                 {
                     // Play the sound so that it seems **authentic**.
                     Variables.SwitchSFX.Play();
+
+                    Console.WriteLine(String.Format("DEBUG: Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"));
 
                     // Retry Mode Switch!
                     RETRY_MODE = RETRY_MODE == 0x00 ? 0x01 : 0x00;
@@ -837,24 +898,27 @@ namespace ReFixed
                     DEBOUNCE[2] = false;
             }
 
-            // If in a forced battle, and it is not finished, and Sora ain't dead, and it's in the Continue mode, and if Retry Locking ain't active;
-            if (_bttlByte == 0x02 && _healByte == 0x00 && _menuByte == 0x00 && !RETRY_LOCK)
+            // If in a forced battle, and it is not finished, and Sora is dead, and it's in the Continue mode, and if Retry Locking ain't active;
+            if (_bttlByte == 0x02 && _menuPoint != 0x00 && _cutsByte == 0x00 && !RETRY_LOCK)
             {
                 // Retry Mode active.
                 RETRY_MODE = 0x01;
+
+                Console.WriteLine(String.Format("DEBUG: Sora is dead. Destroying warp functionality."));
 
                 // Destroy the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
 
-                // Activate the Retry Lock.
                 RETRY_LOCK = true;
             }
 
 
             // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
-            else if ((_bttlByte != 0x02 || _healByte != 0x00) && _loadByte == 0x01 && RETRY_LOCK)
+            else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _cutsByte != 0x00) && RETRY_LOCK)
             {
+                Console.WriteLine(String.Format("DEBUG: Sora is alive. Restoring warp functionality."));
+
                 // Reset the save data.
                 RETRY_DATA_FIRST = null;
                 RETRY_DATA_SECOND = null;
@@ -863,14 +927,13 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
 
-                // Deactivate the Retry Lock.
                 RETRY_LOCK = false;
             }
 
             // If the retry text offset is set, write the text necessary according to the mode.
             if (RETRY_OFFSET != 0x00)
             {
-                if (_healByte != 0x00)
+                if (_menuPoint == 0x00)
                     Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][0].ToKHSCII(), true);
 
                 else
@@ -878,7 +941,7 @@ namespace ReFixed
             }
                 
             // If the retry mode is active and Sora is dead;
-            if (RETRY_MODE == 0x01 && _healByte == 0x00 && RETRY_DATA_FIRST != null)
+            if (RETRY_MODE == 0x01 && (_menuPoint != 0x00 || _loadByte == 0x00) && RETRY_DATA_FIRST != null)
             {
                 // Read the save data that is currently wirtten.
                 var _compFirst = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
@@ -887,6 +950,8 @@ namespace ReFixed
                 // If it appears to be overwritten by the game;
                 if (!_compFirst.SequenceEqual(RETRY_DATA_FIRST) || !_compSecond.SequenceEqual(RETRY_DATA_SECOND))
                 {
+                    Console.WriteLine("DEBUG: Data inequality detected after death! Reverting...");
+
                     // Rewrite it with the values read.
                     Hypervisor.WriteArray(Variables.ADDR_SaveData, RETRY_DATA_FIRST);
                     Hypervisor.WriteArray(Variables.ADDR_SaveData + 0x2484, RETRY_DATA_SECOND);
@@ -1103,6 +1168,8 @@ namespace ReFixed
                 {
                     if (SAVE_WORLD != _worldCheck)
                     {
+                        Console.WriteLine("DEBUG: World condition met! Writing Autosave...");
+
                         GenerateSave();
                         SAVE_ITERATOR = 0;
                     }
@@ -1113,6 +1180,8 @@ namespace ReFixed
 
                         if (SAVE_ITERATOR == 3)
                         {
+                            Console.WriteLine("DEBUG: Room condition met! Writing Autosave...");
+
                             GenerateSave();
                             SAVE_ITERATOR = 0;
                         }
@@ -1336,7 +1405,6 @@ namespace ReFixed
             SkipRoxas();
             SortMagic();
 
-            VolumeEngine.SetVolume();
             TextAdjust();
 
             FrameOverride();
@@ -1366,22 +1434,8 @@ namespace ReFixed
                 );
             }
 
-            if (Variables.DCTask == null)
-            {
-                Variables.DCTask = Task.Factory.StartNew(
+            DiscordEngine();
 
-                    delegate ()
-                    {
-                        while (!Variables.Token.IsCancellationRequested)
-                        {
-                            DiscordEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
-
-                    Variables.Token
-                );
-            }
             #endregion
         }
     }
