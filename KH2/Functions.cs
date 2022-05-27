@@ -1455,8 +1455,22 @@ namespace ReFixed
                 );
             }
 
-            DiscordEngine();
+            if (Variables.DCTask == null)
+            {
+                Variables.DCTask = Task.Factory.StartNew(
 
+                    delegate ()
+                    {
+                        while (!Variables.Token.IsCancellationRequested)
+                        {
+                            DiscordEngine();
+                            Thread.Sleep(5);
+                        }
+                    },
+
+                    Variables.Token
+                );
+            }
             #endregion
         }
     }
