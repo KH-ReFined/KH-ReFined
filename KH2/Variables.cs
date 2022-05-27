@@ -96,7 +96,6 @@ namespace ReFixed
         public static ulong ADDR_MagicLV2 = 0x446131;
 
         public static ulong ADDR_DeadSora = 0x553FC6;
-        public static ulong ADDR_MenuSelect = 0x39C242;
 
         public static ulong ADDR_SoraHP = 0x024BC74A;
         public static ulong ADDR_SoraForm = 0x00446086;
@@ -122,6 +121,7 @@ namespace ReFixed
         public static ulong ADDR_InvMemory = 0x2496C22;
 
         public static ulong PINT_SystemBAR = 0x24AA82A;
+        public static ulong PINT_DeadMenu = 0x68863A;
         public static ulong PINT_SaveInformation = 0x25A5972;
 
         //

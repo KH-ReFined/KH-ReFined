@@ -41,7 +41,7 @@ namespace AxaFormBase
             MainToken = BaseSimpleForm.CancelSource.Token;
 
             var _proc = Process.GetCurrentProcess();
-            Hypervisor.AttachProcess(_proc, Variables.BASE_ADDRESS);
+            Hypervisor.AttachProcess(_proc, Variables.BASE_OFFSET);
 
             MainTask = Task.Factory.StartNew(
                 delegate()
