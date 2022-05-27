@@ -11,10 +11,8 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using System.Threading;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
@@ -23,23 +21,338 @@ namespace ReFixed
     public class Functions
     {
         /*
+            Variable Space!
+          
+            Yes, this class has one, too!
+        */
+
+        static byte[] MAGIC_STORE;
+        static uint MAGIC_LV1;
+        static ushort MAGIC_LV2;
+
+        static bool[] DEBOUNCE = new bool[] { false, false, false, false, false };
+        static bool ROOM_LOADED;
+
+        static bool SKIP_INITIATED;
+        static bool SKIP_COMPLETE;
+        static byte SKIP_STAGE;
+
+        static byte SAVE_ROOM;
+        static byte SAVE_WORLD;
+        static byte SAVE_ITERATOR;
+
+        static byte LANGUAGE = 0xFF;
+
+        static byte[] SYSBAR_HEADER;
+        static ulong SYSBAR_POINTER;
+
+        static List<ulong> ROXAS_OFFSETS;
+        static List<ulong> SETTING_OFFSETS;
+        static List<ulong> LIMIT_OFFSETS;
+
+        static ulong ROXAS_TITLE_OFFSET;
+        static ulong ROXAS_NO_OFFSET;
+
+        static ulong SET_YESDESC_OFFSET;
+
+        static ulong OPENKH_OFFSET;
+
+        static ulong ON_OFFSET;
+        static ulong OFF_OFFSET; 
+        static ulong FULL_OFFSET;
+        static ulong NONE_OFFSET;
+
+        static ulong CONTINUE_OFFSET;
+        static ulong RETRY_OFFSET;
+
+        static int RETRY_MODE = 0x00;
+        static bool RETRY_LOCK;
+
+        static byte[] RETRY_DATA_FIRST;
+        static byte[] RETRY_DATA_SECOND;
+
+        /*
             Initialization:
 
             Serves to initialize stuffs.
         */
         public static void Initialization()
         {
-            Variables.CancelSource = new CancellationTokenSource();
-            Variables.TaskToken = Variables.CancelSource.Token;
+            Variables.DiscordClient.Initialize();
 
-            Hypervisor.UnlockBlock(Variables.ShortcutStartAddress);
-            Hypervisor.UnlockBlock(Variables.PaxFormatterAddress);
-            Hypervisor.UnlockBlock(Variables.BattleFormatterAddress);
-            Hypervisor.UnlockBlock(Variables.AnbFormatterAddress);
-            Hypervisor.UnlockBlock(Variables.EventFormatterAddress);
-            Hypervisor.UnlockBlock(Variables.ExeAddress + Variables.LimiterInstructionAddress, true);
+            Variables.Source = new CancellationTokenSource();
+            Variables.Token = Variables.Source.Token;
+
+            Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
+            Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
+            Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
+            Hypervisor.UnlockBlock(Variables.ADDR_BTLFormatter);
+            Hypervisor.UnlockBlock(Variables.ADDR_EVTFormatter);
+
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
 
             Variables.Initialized = true;
+        }
+
+        /*
+            TextAdjust:
+        
+            Change the text in-game to give the feel that this is an official SE mod
+            and not some jank put together by a 20-year-old.
+        */
+        public static void TextAdjust()
+        {
+            var _langList = new string[]
+            {
+                "English",
+                "German",
+                "Spanish",
+                "French",
+                "Italian"
+            };
+
+            SYSBAR_POINTER = Hypervisor.Read<ulong>(Variables.PINT_SystemBAR);
+
+            var _strSize = Hypervisor.Read<int>(SYSBAR_POINTER - 0x14, true);
+            SYSBAR_HEADER = Hypervisor.ReadArray(SYSBAR_POINTER, _strSize, true);
+
+            if (SYSBAR_POINTER != 0x00 && _strSize != 0x00)
+            { 
+                var _strOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue(0x1E0) + 0x04, true);
+                var _strRead = Hypervisor.ReadArray(SYSBAR_POINTER + _strOffset, 0x06, true);
+
+                if (LANGUAGE == 0xFF)
+                {
+                    if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0x9C, 0xA4 }))
+                        LANGUAGE = 0x00;
+
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xA7, 0xA0, 0xAB, 0xA2, 0x9F }))
+                        LANGUAGE = 0x01;
+
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0x9A, 0x9C, 0x9A, 0xAB }))
+                        LANGUAGE = 0x02;
+
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0xAA, 0xAE }))
+                        LANGUAGE = 0x03;
+
+                    else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0x9C, 0x9C }))
+                        LANGUAGE = 0x04;
+
+                    Console.WriteLine(String.Format("DEBUG: The detected language is \"{0}\"!", _langList[LANGUAGE]));
+                }
+
+                #region Roxas Skip Text
+                if (CheckTitle())
+                {
+                    var _roxasText = Strings.RoxasSkip[LANGUAGE];
+
+                    if (ROXAS_OFFSETS == null)
+                    {
+                        ROXAS_OFFSETS = new List<ulong>();
+
+                        for (int i = 0; i < 9; i++)
+                            ROXAS_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.RoxasIDs[i]) + 0x04);
+                    }
+
+                    var _roxOffsetTitle = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[0], true);
+                    var _roxOffsetYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[1], true);
+                    var _roxOffsetNO = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[2], true);
+
+                    var _roxOffsetDescYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[3], true);
+                    var _roxOffsetDescNO = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[4], true);
+
+                    var _roxOffsetConfirm = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[5], true);
+                    var _roxOffsetFix = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[6], true);
+
+                    var _roxOffsetGameYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[7], true);
+                    var _roxOffsetGameFIX = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[8], true);
+
+                    switch (LANGUAGE)
+                    {
+                        case 0x00:
+                            {
+                                if (ROXAS_NO_OFFSET == 0x00)
+                                    ROXAS_NO_OFFSET = _roxOffsetNO;
+
+                                if (_roxOffsetNO != ROXAS_NO_OFFSET + 0x01)
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[2], (uint)(ROXAS_NO_OFFSET + 0x01), true);
+
+                                break;
+                            }
+
+                        case 0x01:
+                            {
+                                if (_roxOffsetYES != _roxOffsetFix && _roxOffsetGameYES != _roxOffsetGameFIX)
+                                {
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[1], _roxOffsetFix, true);
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[2], _roxOffsetFix + 0x03, true);
+
+                                    _roxOffsetYES = _roxOffsetFix;
+                                    _roxOffsetNO = _roxOffsetFix + 0x03;
+                                }
+
+                                if (ROXAS_TITLE_OFFSET == 0x00)
+                                    ROXAS_TITLE_OFFSET = _roxOffsetTitle;
+
+                                if (_roxOffsetDescYES != ROXAS_TITLE_OFFSET + 0x27)
+                                {
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[3], (uint)(ROXAS_TITLE_OFFSET + 0x27), true);
+                                    _roxOffsetDescYES = (uint)(ROXAS_TITLE_OFFSET + 0x27);
+                                }
+
+                                if (_roxOffsetDescNO != ROXAS_TITLE_OFFSET + 0x7A)
+                                {
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[4], (uint)(ROXAS_TITLE_OFFSET + 0x7A), true);
+                                    _roxOffsetDescNO = (uint)(ROXAS_TITLE_OFFSET + 0x7A);
+                                }
+
+                                break;
+                            }
+                    }
+
+                    if (_roxOffsetGameYES != _roxOffsetGameFIX)
+                        Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[7], _roxOffsetGameFIX, true);
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetTitle, _roxasText[0].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetConfirm, _roxasText[5].ToKHSCII(), true);
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetYES, _roxasText[1].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetNO, _roxasText[2].ToKHSCII(), true);
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetDescYES, _roxasText[3].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetDescNO, _roxasText[4].ToKHSCII(), true);
+                }
+                #endregion
+
+                if (SETTING_OFFSETS == null)
+                {
+                    SETTING_OFFSETS = new List<ulong>();
+
+                    for (int i = 0; i < 9; i++)
+                        SETTING_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.SettingIDs[i]) + 0x04);
+                }
+
+                var _setOffsetTitle = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[0], true);
+                var _setOffsetYES = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[1], true);
+                var _setOffsetNO = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[2], true);
+
+                var _setOffsetDescYes = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[3], true);
+                var _setOffsetDescNo = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[4], true);
+
+                var _setOffsetDesc = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[5], true);
+                var _setOffsetBack = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[6], true);
+
+                var _setOffsetCMD = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[7], true);
+                var _setOffsetFix = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[8], true);
+
+                #region Dual Audio Text
+                if (!CheckTitle() && Variables.DualAudio)
+                {
+                    var _audioText = Strings.DualAudio[LANGUAGE];
+
+                    if (SET_YESDESC_OFFSET == 0x00)
+                        SET_YESDESC_OFFSET = _setOffsetDescYes;
+
+                    if (SET_YESDESC_OFFSET != _setOffsetDesc)
+                    {
+                        Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[3], _setOffsetDesc, true);
+                        Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[4], _setOffsetDesc, true);
+
+                        SET_YESDESC_OFFSET = _setOffsetDesc;
+                    }
+
+                    if (LANGUAGE == 0x04)
+                    {
+                        if (_setOffsetYES != _setOffsetBack)
+                        {
+                            Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[1], _setOffsetBack, true);
+                            _setOffsetYES = _setOffsetBack;
+                        }
+                    }
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _audioText[0].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _audioText[2].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, _audioText[3].ToKHSCII(), true);
+                }
+                #endregion
+
+                #region Auto-Save Text
+                else if (!CheckTitle() && !Variables.DualAudio)
+                {
+                    var _saveText = Strings.AutoSave[LANGUAGE];
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _saveText[0].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _saveText[1].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _saveText[2].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDescYes, _saveText[3].ToKHSCII(), true);
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDescNo, _saveText[4].ToKHSCII(), true);
+                }
+                #endregion
+
+                if (_setOffsetCMD != _setOffsetFix && !CheckTitle())
+                    Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[7], _setOffsetFix, true);
+
+                /*
+                    What is this?
+                
+                    Well you see, OpenKH optimizes text so that all duplicate text is only present once
+                    in the SYS.BAR file, so when I write "ON" to be "JP", every instance of "ON" gets
+                    overridden. This is a no go.
+
+                    This is a smart yet a stupid way to solve this very issue.
+                */
+
+                #region OpenKH Text Correction
+                if (!CheckTitle())
+                {
+                    var _openKHText = Strings.FixText[LANGUAGE];
+                    var _openKHOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue(Strings.OpenKHID) + 0x04, true);
+
+                    if (_openKHText != null)
+                    {
+                        if (ON_OFFSET == 0x00)
+                        {
+                            ON_OFFSET = SYSBAR_HEADER.FindValue(Strings.OnID) + 0x04;
+                            OFF_OFFSET = SYSBAR_HEADER.FindValue(Strings.OffID) + 0x04;
+
+                            FULL_OFFSET = SYSBAR_HEADER.FindValue(Strings.FullID) + 0x04;
+                            NONE_OFFSET = SYSBAR_HEADER.FindValue(Strings.NoneID) + 0x04;
+                        }
+
+                        switch (LANGUAGE)
+                        {
+                            case 0x00:
+                            case 0x01:
+                            case 0x04:
+                                {
+                                    if (OPENKH_OFFSET == 0x00)
+                                        OPENKH_OFFSET = _openKHOffset;
+
+                                    if (OPENKH_OFFSET != ON_OFFSET)
+                                    {
+                                        Hypervisor.Write(SYSBAR_POINTER + ON_OFFSET, _openKHOffset, true);
+                                        Hypervisor.Write(SYSBAR_POINTER + OFF_OFFSET, _openKHOffset + 0x03, true);
+
+                                        if (LANGUAGE == 0x01)
+                                        {
+                                            Hypervisor.Write(SYSBAR_POINTER + FULL_OFFSET, _openKHOffset, true);
+                                            Hypervisor.Write(SYSBAR_POINTER + NONE_OFFSET, _openKHOffset + 0x03, true);
+                                        }
+
+                                        ON_OFFSET = OPENKH_OFFSET;
+                                    }
+
+                                    break;
+                                }
+                        }
+
+                        Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset, _openKHText[0].ToKHSCII(), true);
+                        Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset + 0x03, _openKHText[1].ToKHSCII(), true);
+                    }
+                }
+                #endregion
+            }
         }
 
         /*
@@ -49,10 +362,10 @@ namespace ReFixed
             Returns **true** if so, returns **false** otherwise. 
         */
         public static bool CheckTitle() =>
-            Hypervisor.Read<uint>(Variables.RoomAddress) == 0x00FFFFFF
-            || Hypervisor.Read<uint>(Variables.RoomAddress) == 0x00000101
-            || Hypervisor.Read<uint>(Variables.TitleFlagAddress) == 0x00000001
-            || Hypervisor.Read<uint>(Variables.TitleBackAddress) == 0x00000001;
+            Hypervisor.Read<uint>(Variables.ADDR_World) == 0x00FFFFFF
+         || Hypervisor.Read<uint>(Variables.ADDR_World) == 0x00000101
+         || Hypervisor.Read<uint>(Variables.ADDR_Title) == 0x00000001
+         || Hypervisor.Read<uint>(Variables.ADDR_Reset) == 0x00000001;
 
         /*
             ResetGame:
@@ -62,7 +375,22 @@ namespace ReFixed
 
             INPUT: L1 + R1 + START + SELECT.
         */
-        public static void ResetGame() => Hypervisor.Write<byte>(Variables.TitleBackAddress, 0x01);
+        public static void ResetGame()
+        {
+            var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+
+            if (_buttRead == 0x090C && !DEBOUNCE[0])
+            {
+                Console.WriteLine("DEBUG: Initiating a Soft Reset.");
+
+                Hypervisor.Write<byte>(Variables.ADDR_Reset, 0x01);
+
+                DEBOUNCE[0] = true;
+            }
+
+            else if (_buttRead != 0x090C && DEBOUNCE[0])
+                DEBOUNCE[0] = false;
+        }
 
         /*
             SortMagic:
@@ -75,11 +403,30 @@ namespace ReFixed
         public static void SortMagic()
         {
             // Fetch the status of the room. This will be necessary.
-            var _loadRead = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
             // Fetch the input and read the pointer to the second CM.
-            var _inputRead = Hypervisor.Read<ushort>(Variables.InputAddress);
-            var _menuPointer = Hypervisor.Read<ulong>(Variables.MagicAddresses[0]);
+            var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+            var _menuPointer = Hypervisor.Read<ulong>(Variables.ADDR_MagicMenu[0]);
+
+            // Fetch the current Magic Level arrays.
+            var _magicOne = Hypervisor.Read<uint>(Variables.ADDR_MagicLV1);
+            var _magicTwo = Hypervisor.Read<ushort>(Variables.ADDR_MagicLV2);
+
+            // If a new spell is learned: Forget the sorting.
+            if (_magicOne != MAGIC_LV1 || _magicTwo != MAGIC_LV2)
+            {
+                Console.WriteLine("DEBUG: Spell change detected! Resetting sort memory.");
+
+                MAGIC_STORE = null;
+
+                MAGIC_LV1 = _magicOne;
+                MAGIC_LV2 = _magicTwo;
+            }
+
+            // If a soft reset id detected: Forget the sorting.
+            if (Hypervisor.Read<byte>(Variables.ADDR_Reset) == 0x01)
+                MAGIC_STORE = null;
 
             /*
                 So the magic menu resets on each room transition.
@@ -93,17 +440,21 @@ namespace ReFixed
             */
 
             // If the room is reloaded, and menu memory is not empty:
-            if (_loadRead == 0x01 && Variables.RoomLoad && _menuPointer != 0x00)
+            if (_loadRead == 0x01 && ROOM_LOADED && _menuPointer != 0x00)
             {
                 // Write back the memorized magic menu.
-                if (Variables.MagicStoreMemory != null)
-                    Hypervisor.WriteArray(Variables.MagicAddresses[1], Variables.MagicStoreMemory);
+                if (MAGIC_STORE != null)
+                {
+                    Console.WriteLine("DEBUG: Roomchange detected! Restoring the Magic Menu.");
+                    Hypervisor.WriteArray(Variables.ADDR_MagicMenu[1], MAGIC_STORE);
+                }
 
-                Variables.RoomLoad = false;
+                ROOM_LOADED = false;
             }
+
             // Otherwise, if the room ISN'T loaded: Declare as such.
-            else if (_loadRead == 0x00 && !Variables.RoomLoad)
-                Variables.RoomLoad = true;
+            else if (_loadRead == 0x00 && !ROOM_LOADED)
+                ROOM_LOADED = true;
 
             // If there is a secondary CM, and the room is loaded:
             if (_menuPointer != 0x00 && _loadRead == 0x01)
@@ -115,108 +466,78 @@ namespace ReFixed
                 if (_menuRead == 0x01)
                 {
                     // Fetch the current magic index and the max index.
-                    var _magicIndex = Hypervisor.Read<byte>(Variables.MagicAddresses[2]);
+                    var _magicIndex = Hypervisor.Read<byte>(Variables.ADDR_MagicMenu[2]);
                     var _magicMax = Hypervisor.Read<byte>(_menuPointer + 0x10, true);
 
                     // Set to 0x01 if it's going up, set to 0x02 if it's going down.
-                    var _inputCheck =
-                        (_inputRead & 0x01001) == 0x1001
-                            ? 0x01
-                            : (_inputRead & 0x4001) == 0x4001
-                                ? 0x02
-                                : 0x00;
+                    var _inputCheck = (_inputRead & 0x01001) == 0x1001 ? 0x01 : (_inputRead & 0x4001) == 0x4001 ? 0x02 : 0x00;
                     var _triggerCheck = (_inputRead & 0x01) == 0x01;
 
                     // Read the instruction.
-                    var _insCheck = Hypervisor.Read<byte>(
-                        Variables.ExeAddress + Variables.SelectAddresses[0],
-                        true
-                    );
+                    var _insCheck = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_CMDSelectINST[0], true );
 
                     // If L2 is being held down:
                     if (_triggerCheck && _insCheck != 0x90)
                     {
+                        Console.WriteLine("DEBUG: L2 Detected within Magic Menu! Disabling input registry.");
+
                         // NOP out command selection, so it does not interfere with our input.
-                        for (int _ins = 0; _ins < Variables.SelectAddresses.Length; _ins++)
-                            Hypervisor.WriteArray(
-                                Variables.ExeAddress + Variables.SelectAddresses[_ins],
-                                new byte[] { 0x90, 0x90, 0x90 },
-                                true
-                            );
+                        for (int _ins = 0; _ins < Variables.ADDR_CMDSelectINST.Length; _ins++)
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_CMDSelectINST[_ins], new byte[] { 0x90, 0x90, 0x90 }, true);
                     }
+
                     else if (!_triggerCheck && _insCheck == 0x90)
                     {
+                        Console.WriteLine("DEBUG: L2 has been let go! Enabling input registry.");
+
                         // Revert the NOP'd instructions.
-                        for (int _ins = 0; _ins < Variables.SelectAddresses.Length; _ins++)
-                            Hypervisor.WriteArray(
-                                Variables.ExeAddress + Variables.SelectAddresses[_ins],
-                                Variables.SelectInstructions[_ins],
-                                true
-                            );
+                        for (int _ins = 0; _ins < Variables.ADDR_CMDSelectINST.Length; _ins++)
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_CMDSelectINST[_ins], Variables.INST_CMDSelect[_ins], true);
                     }
 
                     // If debounce is not active, and input is proper:
-                    if (!Variables.Debounce && _inputCheck != 0x00)
+                    if (!DEBOUNCE[1] && _inputCheck != 0x00)
                     {
                         // Activate debounce.
-                        Variables.Debounce = true;
+                        DEBOUNCE[1] = true;
 
                         // Calculate the pointer and the bounds of the menu.
                         var _magicPointer = (0x02 * _magicIndex);
                         var _magicBounds = _magicPointer + (_inputCheck == 0x01 ? -0x02 : 0x02);
 
                         // Fetch the subject magic and the switchee.
-                        var _subjectMagic = Hypervisor.Read<ushort>(
-                            Variables.MagicAddresses[1] + (ulong)_magicPointer
-                        );
-                        var _targetMagic =
-                            _magicBounds >= 0
-                                ? Hypervisor.Read<ushort>(
-                                      Variables.MagicAddresses[1] + (ulong)_magicBounds
-                                  )
-                                : (ushort)0x0000;
+                        var _subjectMagic = Hypervisor.Read<ushort>(Variables.ADDR_MagicMenu[1] + (ulong)_magicPointer);
+                        var _targetMagic = _magicBounds >= 0 ? Hypervisor.Read<ushort>(Variables.ADDR_MagicMenu[1] + (ulong)_magicBounds) : (ushort)0x0000;
 
                         // If the move would be in bounds, and if the switchee is not "nothing":
                         if (_targetMagic != 0x0000)
                         {
                             // Make the switch
-                            Hypervisor.Write<ushort>(
-                                Variables.MagicAddresses[1] + (ulong)_magicPointer,
-                                _targetMagic
-                            );
-                            Hypervisor.Write<ushort>(
-                                Variables.MagicAddresses[1] + (ulong)_magicBounds,
-                                _subjectMagic
-                            );
+                            Hypervisor.Write(Variables.ADDR_MagicMenu[1] + (ulong)_magicPointer, _targetMagic);
+                            Hypervisor.Write(Variables.ADDR_MagicMenu[1] + (ulong)_magicBounds, _subjectMagic);
                         }
 
                         // Move the magic index.
-                        Hypervisor.Write<int>(
-                            Variables.MagicAddresses[2],
-                            _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01)
-                        );
-                        Hypervisor.Write<ushort>(Variables.MagicAddresses[2] + 0x04, _subjectMagic);
+                        Hypervisor.Write(Variables.ADDR_MagicMenu[2], _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01));
+                        Hypervisor.Write(Variables.ADDR_MagicMenu[2] + 0x04, _subjectMagic);
+
+                        Console.WriteLine(String.Format("DEBUG: Moving Magic ID \"{0}\" {1} within the menu!", "0x" + _subjectMagic.ToString("X4"), _inputCheck == 0x01 ? "up" : "down"));
 
                         // Read the entirety of the magic menu, and save it to memory.
-                        Variables.MagicStoreMemory = Hypervisor.ReadArray(
-                            Variables.MagicAddresses[1],
-                            _magicMax * 0x02
-                        );
+                        MAGIC_STORE = Hypervisor.ReadArray(Variables.ADDR_MagicMenu[1], _magicMax * 0x02);
                     }
+
                     // Otherwise: If debounce is active and input is improper; deactivate debounce.
-                    else if (Variables.Debounce && _inputCheck == 0x00)
-                        Variables.Debounce = false;
+                    else if (DEBOUNCE[1] && _inputCheck == 0x00)
+                        DEBOUNCE[1] = false;
                 }
             }
+
             else
             {
                 // Revert the NOP'd instructions.
-                for (int _ins = 0; _ins < Variables.SelectAddresses.Length; _ins++)
-                    Hypervisor.WriteArray(
-                        Variables.ExeAddress + Variables.SelectAddresses[_ins],
-                        Variables.SelectInstructions[_ins],
-                        true
-                    );
+                for (int _ins = 0; _ins < Variables.ADDR_CMDSelectINST.Length; _ins++)
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_CMDSelectINST[_ins], Variables.INST_CMDSelect[_ins], true);
             }
         }
 
@@ -228,65 +549,73 @@ namespace ReFixed
         */
         public static void SkipRoxas()
         {
-            var _skipBool = !Variables.SkipRoxas && !Variables.SkipComplete;
+            var _skipBool = !SKIP_INITIATED && !SKIP_COMPLETE;
 
             if (CheckTitle() && !_skipBool)
             {
-                Variables.SkipRoxas = false;
-                Variables.SkipComplete = false;
+                Console.WriteLine("DEBUG: Title screen detected! Resetting Roxas Skip!");
 
-                Variables.SkipStage = 0;
+                SKIP_INITIATED = false;
+                SKIP_COMPLETE = false;
+
+                SKIP_STAGE = 0;
 
                 _skipBool = true;
             }
 
-            var _vibRead = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
-            var _diffRead = Hypervisor.Read<byte>(Variables.DifficultyAddress);
+            var _vibRead = Hypervisor.Read<ushort>(Variables.ADDR_Config) & 0x01;
+            var _diffRead = Hypervisor.Read<byte>(Variables.ADDR_Difficulty);
 
             if (_skipBool && !CheckTitle())
             {
                 switch (_vibRead)
                 {
                     case 0x01:
-                        Variables.SkipComplete = true;
+                        Console.WriteLine("DEBUG: Disabling Roxas Skip!");
+                        SKIP_COMPLETE = true;
                         break;
                     case 0x00:
-                        Variables.SkipRoxas = true;
-                        Variables.SkipComplete = false;
+                        Console.WriteLine("DEBUG: Initiating Roxas Skip!");
+                        SKIP_INITIATED = true;
+                        SKIP_COMPLETE = false;
                         break;
                 }
             }
 
-            if (Variables.SkipRoxas && !Variables.SkipComplete)
+            if (SKIP_INITIATED && !SKIP_COMPLETE)
             {
-                var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
-                var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
-                var _eventCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x04);
+                var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
+                var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
+                var _eventCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x04);
 
-                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck != 0x34 && Variables.SkipStage == 0)
+                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck != 0x34 && SKIP_STAGE == 0)
                 {
-                    Hypervisor.Write<uint>(Variables.RoomAddress, 0x322002);
-                    Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, 0x01);
-                    Hypervisor.Write<uint>(Variables.RoomAddress + 0x08, 0x01);
+                    Console.WriteLine("DEBUG: Room parameters correct! Initiating Roxas Skip's First Phase...");
+
+                    Hypervisor.Write<uint>(Variables.ADDR_World, 0x322002);
+                    Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, 0x01);
+                    Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x01);
 
                     Hypervisor.Write<uint>(0x444832, 0x1FF00001);
                     Hypervisor.Write<uint>(0x444832 + 0x04, 0x00000000);
 
-                    Hypervisor.Write<ushort>(Variables.ConfigAddress, (ushort)(_vibRead + 0x01));
+                    Hypervisor.Write(Variables.ADDR_Config, (ushort)(_vibRead + 0x01));
 
-                    Variables.SkipStage = 1;
+                    SKIP_STAGE = 1;
                 }
 
                 if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A)
                 {
-                    if (Variables.SkipStage == 1)
+                    if (SKIP_STAGE == 1)
                     {
-                        Hypervisor.Write<uint>(Variables.RoomAddress, 0x001702);
-                        Hypervisor.Write<uint>(Variables.RoomAddress + 0x04, (0x02 << 10) + 0x02);
-                        Hypervisor.Write<uint>(Variables.RoomAddress + 0x08, 0x02);
+                        Console.WriteLine("DEBUG: Room parameters correct! Skip was initiated! Initiating Roxas Skip's Second Phase...");
 
-                        Hypervisor.Write<byte>(Variables.InventoryFlagAddress, 0x9F);
-                        Hypervisor.WriteArray(Variables.StoryFlagAddress, Variables.StoryFlagArray);
+                        Hypervisor.Write<uint>(Variables.ADDR_World, 0x001702);
+                        Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, (0x02 << 10) + 0x02);
+                        Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x02);
+
+                        Hypervisor.Write<byte>(Variables.ADDR_InventoryFlag, 0x9F);
+                        Hypervisor.WriteArray(Variables.ADDR_StoryFlag, Variables.VALUE_StoryFlag);
 
                         if (_diffRead == 0x03)
                         {
@@ -336,15 +665,19 @@ namespace ReFixed
                         Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
                         Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
 
-                        Variables.SkipRoxas = false;
-                        Variables.SkipComplete = true;
-                        Variables.SkipStage = 2;
+                        Console.WriteLine("DEBUG: Skip completed!");
+
+                        SKIP_INITIATED = false;
+                        SKIP_COMPLETE = true;
+                        SKIP_STAGE = 2;
                     }
 
                     else
                     {
-                        Variables.SkipRoxas = false;
-                        Variables.SkipComplete = true;
+                        Console.WriteLine("DEBUG: Skip was not initiated! Marking as completed...");
+
+                        SKIP_INITIATED = false;
+                        SKIP_COMPLETE = true;
                     }
                 }
             }
@@ -372,24 +705,24 @@ namespace ReFixed
         public static void FrameOverride()
         {
             // Calculate the instruction address.
-            var _instructionAddress = Variables.ExeAddress + Variables.LimiterInstructionAddress;
+            var _instructionAddress = Hypervisor.PureAddress + Variables.ADDR_LimiterINST;
 
             // Fetch the framerate, and the first byte of the instruction.
-            var _framerateRead = Hypervisor.Read<byte>(Variables.FramerateAddress);
+            var _framerateRead = Hypervisor.Read<byte>(Variables.ADDR_Framerate);
             var _instructionRead = Hypervisor.Read<byte>(_instructionAddress, true);
 
             // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
             if (_framerateRead == 0x00 && _instructionRead == 0x90)
-                Hypervisor.WriteArray(_instructionAddress, Variables.LimiterInstruction, true);
+                Hypervisor.WriteArray(_instructionAddress, Variables.INST_FrameLimiter, true);
 
             // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
             else if (_framerateRead != 0x00 && _instructionRead != 0x90)
             {
                 // NOP the instruction.
-                Hypervisor.WriteArray(_instructionAddress, Variables.InstructionRemoved, true);
+                Hypervisor.WriteArray(_instructionAddress, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
 
                 // Set the current limiter to be off.
-                Hypervisor.Write<byte>(Variables.LimiterAddress, 0x00);
+                Hypervisor.Write<byte>(Variables.ADDR_Limiter, 0x00);
             }
         }
 
@@ -403,32 +736,247 @@ namespace ReFixed
         */
         public static void AudioSwap()
         {
-            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
-            var _stringCheck = Hypervisor.ReadTerminate(Variables.PaxFormatterAddress);
+            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ADDR_Config) & 0x01;
+            var _stringCheck = Hypervisor.ReadTerminate(Variables.ADDR_PAXFormatter);
 
             if (_toggleCheck == 0x00 && _stringCheck != "obj/%s.a.jp")
             {
-                Hypervisor.WriteString(Variables.PaxFormatterAddress, "obj/%s.a.jp");
-                Hypervisor.WriteString(Variables.PaxFormatterAddress + 0x10, "obj/%s.a.jp");
+                Console.WriteLine("DEBUG: Dual Audio switching to Japanese...");
 
-                Hypervisor.WriteString(Variables.BattleFormatterAddress, "voice/jp/battle");
+                Hypervisor.WriteString(Variables.ADDR_PAXFormatter, "obj/%s.a.jp");
+                Hypervisor.WriteString(Variables.ADDR_PAXFormatter + 0x10, "obj/%s.a.jp");
 
-                Hypervisor.WriteString(Variables.AnbFormatterAddress, "anm/jp/");
-                Hypervisor.WriteString(Variables.AnbFormatterAddress + 0x08, "anm/jp/");
+                Hypervisor.WriteString(Variables.ADDR_BTLFormatter, "voice/jp/battle");
 
-                Hypervisor.WriteString(Variables.EventFormatterAddress, "voice/jp/event");
+                Hypervisor.WriteString(Variables.ADDR_ANBFormatter, "anm/jp/");
+                Hypervisor.WriteString(Variables.ADDR_ANBFormatter + 0x08, "anm/jp/");
+
+                Hypervisor.WriteString(Variables.ADDR_EVTFormatter, "voice/jp/event");
             }
-            else if (_stringCheck != "obj/%s.a.%s")
+
+            else if (_toggleCheck == 0x01 && _stringCheck != "obj/%s.a.%s")
             {
-                Hypervisor.WriteString(Variables.PaxFormatterAddress, "obj/%s.a.%s");
-                Hypervisor.WriteString(Variables.PaxFormatterAddress + 0x10, "obj/%s.a.us");
+                Console.WriteLine("DEBUG: Dual Audio switching to English...");
 
-                Hypervisor.WriteString(Variables.BattleFormatterAddress, "voice/us/battle");
+                Hypervisor.WriteString(Variables.ADDR_PAXFormatter, "obj/%s.a.%s");
+                Hypervisor.WriteString(Variables.ADDR_PAXFormatter + 0x10, "obj/%s.a.us");
 
-                Hypervisor.WriteString(Variables.AnbFormatterAddress, "anm/us/");
-                Hypervisor.WriteString(Variables.AnbFormatterAddress + 0x08, "anm/fm/");
+                Hypervisor.WriteString(Variables.ADDR_BTLFormatter, "voice/us/battle");
 
-                Hypervisor.WriteString(Variables.EventFormatterAddress, "voice/us/event");
+                Hypervisor.WriteString(Variables.ADDR_ANBFormatter, "anm/us/");
+                Hypervisor.WriteString(Variables.ADDR_ANBFormatter + 0x08, "anm/fm/");
+
+                Hypervisor.WriteString(Variables.ADDR_EVTFormatter, "voice/us/event");
+            }
+        }
+
+        /*
+            RetryPrompt:
+
+            Allows one to retry a forced fight instead of continuing.
+            Toggling between Retry and Continue is done with D-Pad Sides.
+
+            P.S. from Future Topaz: Fuck this function. It was a hellish experience to
+            implement, test, fix, and stabilize it. But eh, it is worth it.
+        */
+        public static void RetryPrompt()
+        {
+            // So, we initialize all of this shit just to determine whether Retry will show up or not.
+            var _menuPoint = Hypervisor.Read<ulong>(Variables.PINT_DeadMenu);
+
+            var _bttlByte = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+            var _cutsByte = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
+            var _loadByte = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+
+            var _fnshByte = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
+
+            var _warpRead = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
+            var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+
+            var _continueID = Strings.ContinueID;
+            var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+            /*
+                Okay, so I wasted a long ass time trying to make this work. But I figure I got it down to a fine art.
+               
+                This fuınction messes with in-game functions and the save state, dangerous, but it works very well.
+                Basically, when you are in a forced battle, it YEETS the functions responsible for swtiching rooms
+                and reverting flags upon continuing, allowing one to retry the said battle instantly.
+
+                But I also need to revert the save to the point where you first began the battle as well, or your entire
+                save state will be reverted to when you were in the room before and that's a no-no and can cause massive
+                issues such as missed items and what not.
+
+                This currently DOES NOT work for alternative lose conditions. Oh well, that can be fixed another day I suppose.
+                But hey! At least this is currently Mickey Compliant!
+                */
+
+            // If the offset for the text is not set, and we loaded the text file:
+            // Do get the offset for the "Continue" text. And do something dumb, which is to
+            // switch that text to Continue or Retry in KH2 memory, whichever is longer.
+            if (RETRY_OFFSET == 0x00 && SYSBAR_HEADER != null)
+            {
+                switch (LANGUAGE)
+                {
+                    case 0x00:
+                    case 0x03:
+                    case 0x04:
+                        RETRY_OFFSET = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue((uint)(_continueID)) + 0x04, true);
+                    break;
+
+                    case 0x01:
+                    case 0x02:
+                        RETRY_OFFSET = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue((uint)(_continueID + 0x01)) + 0x04, true);
+                        CONTINUE_OFFSET = SYSBAR_HEADER.FindValue(_continueID) + 0x04;
+
+                        Hypervisor.Write(SYSBAR_POINTER + CONTINUE_OFFSET, (uint)RETRY_OFFSET, true);
+                    break;
+                }
+                
+            }
+
+            // If one's on the Title Screen while Retry is active: Deactivate it.
+
+            if (CheckTitle() && (RETRY_LOCK || RETRY_DATA_FIRST != null))
+            {
+                Console.WriteLine("DEBUG: Title Screen detected on Retry Mode! Restoring...");
+
+                RETRY_DATA_FIRST = null;
+                RETRY_DATA_SECOND = null;
+
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+
+                RETRY_LOCK = false;
+            }
+
+            // If on a battle, read the save data so Retrying won't revert it.
+
+            if (!CheckTitle())
+            {
+                if (_bttlByte == 0x02 && _cutsByte == 0x00 && _menuPoint == 0x00 && RETRY_DATA_FIRST == null)
+                {
+                    Console.WriteLine("DEBUG: Start of battle! Reading game state...");
+
+                    RETRY_DATA_FIRST = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
+                    RETRY_DATA_SECOND = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
+                }
+
+                else if ((_bttlByte == 0x00 && _menuPoint == 0x00 && _loadByte == 0x01 || _cutsByte != 0x00) && RETRY_DATA_FIRST != null)
+                {
+                    Console.WriteLine("DEBUG: End of battle! Flushing game state...");
+
+                    RETRY_DATA_FIRST = null;
+                    RETRY_DATA_SECOND = null;
+                }
+            }
+
+            // This code blob is responsible for switching between Retry and Continue
+            // and only runs if Sora is dead and some sort of a menu is present.
+            if (_menuPoint != 0x00 && _bttlByte == 0x02)
+            {
+                // If D-Pad sides are pressed;
+                if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2])
+                {
+                    // Play the sound so that it seems **authentic**.
+                    Variables.SwitchSFX.Play();
+
+                    Console.WriteLine(String.Format("DEBUG: Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"));
+
+                    // Retry Mode Switch!
+                    RETRY_MODE = RETRY_MODE == 0x00 ? 0x01 : 0x00;
+
+                    // This handles the "Continue" mode and restores the function to do room switching.
+                    if (RETRY_MODE == 0x00 && _warpRead == 0x90)
+                    {
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+
+                        RETRY_DATA_FIRST = null;
+                        RETRY_DATA_SECOND = null;
+                    }
+
+                    // This handles the "Retry" mode and destroys the function to do room switching.
+                    else if (RETRY_MODE == 0x01 && _warpRead != 0x90)
+                    {
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+
+                        if (RETRY_DATA_FIRST == null)
+                        {
+                            RETRY_DATA_FIRST = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
+                            RETRY_DATA_SECOND = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
+                        }
+
+                    }
+
+                    RETRY_LOCK = true;
+                    DEBOUNCE[2] = true;
+                }
+
+                // Debouncing.
+                else if (((_buttRead & 0x2000) != 0x2000 && (_buttRead & 0x8000) != 0x8000) && DEBOUNCE[2])
+                    DEBOUNCE[2] = false;
+            }
+
+            // If in a forced battle, and it is not finished, and Sora is dead, and it's in the Continue mode, and if Retry Locking ain't active;
+            if (_bttlByte == 0x02 && _menuPoint != 0x00 && _cutsByte == 0x00 && !RETRY_LOCK)
+            {
+                // Retry Mode active.
+                RETRY_MODE = 0x01;
+
+                Console.WriteLine(String.Format("DEBUG: Sora is dead. Destroying warp functionality."));
+
+                // Destroy the functions responsible for switching rooms and reverting story flags.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+
+                RETRY_LOCK = true;
+            }
+
+
+            // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
+            else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _cutsByte != 0x00) && RETRY_LOCK)
+            {
+                Console.WriteLine(String.Format("DEBUG: Sora is alive. Restoring warp functionality."));
+
+                // Reset the save data.
+                RETRY_DATA_FIRST = null;
+                RETRY_DATA_SECOND = null;
+
+                // Restore the functions responsible for switching rooms and reverting story flags.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+
+                RETRY_LOCK = false;
+            }
+
+            // If the retry text offset is set, write the text necessary according to the mode.
+            if (RETRY_OFFSET != 0x00)
+            {
+                if (_menuPoint == 0x00)
+                    Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][0].ToKHSCII(), true);
+
+                else
+                    Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][RETRY_MODE].ToKHSCII(), true);
+            }
+                
+            // If the retry mode is active and Sora is dead;
+            if (RETRY_MODE == 0x01 && (_menuPoint != 0x00 || _loadByte == 0x00) && RETRY_DATA_FIRST != null)
+            {
+                // Read the save data that is currently wirtten.
+                var _compFirst = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
+                var _compSecond = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
+
+                // If it appears to be overwritten by the game;
+                if (!_compFirst.SequenceEqual(RETRY_DATA_FIRST) || !_compSecond.SequenceEqual(RETRY_DATA_SECOND))
+                {
+                    Console.WriteLine("DEBUG: Data inequality detected after death! Reverting...");
+
+                    // Rewrite it with the values read.
+                    Hypervisor.WriteArray(Variables.ADDR_SaveData, RETRY_DATA_FIRST);
+                    Hypervisor.WriteArray(Variables.ADDR_SaveData + 0x2484, RETRY_DATA_SECOND);
+                }
             }
         }
 
@@ -436,21 +984,52 @@ namespace ReFixed
             Limit Override:
 
             Fixes the misplacement of Limit Form shortcuts.
+            It also overrides Limit Form names if in English.
         */
         public static void LimitOverride()
         {
-            var _confirmRead = Hypervisor.Read<byte>(Variables.ConfirmAddress);
-            var _shortRead = Hypervisor.Read<ushort>(Variables.ShortcutStartAddress);
+            var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
+            var _shortRead = Hypervisor.Read<ushort>(Variables.ADDR_LimitShortcut);
 
             if (_confirmRead == 0x00 && _shortRead != 0x02BA)
             {
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02BA);
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02AB);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, 0x02BA);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, 0x02AB);
             }
+
             else if (_confirmRead == 0x01 && _shortRead != 0x02AB)
             {
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress, 0x02AB);
-                Hypervisor.Write<ushort>(Variables.ShortcutStartAddress + 0x06, 0x02BA);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, 0x02AB);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, 0x02BA);
+            }
+
+            if (LANGUAGE == 0x00)
+            {
+                var _limitText = Strings.LimitText;
+
+                if (LIMIT_OFFSETS == null)
+                {
+                    LIMIT_OFFSETS = new List<ulong>();
+
+                    for (int i = 0; i < 6; i++)
+                        LIMIT_OFFSETS.Add(Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[i]) + 0x04), true));
+
+                    var _raveOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x06]) + 0x04), true);
+                    var _finishOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x08]) + 0x04), true);
+                    var _descOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x09]) + 0x04), true);
+
+                    Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x06]) + 0x04), _raveOffset + 0x01, true);
+                    Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x07]) + 0x04), _finishOffset, true);
+                    Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x09]) + 0x04), _descOffset + 0x02, true);
+
+                    Hypervisor.WriteArray(SYSBAR_POINTER + _raveOffset + 0x01, Strings.LimitText[3].ToKHSCII(), true);
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Hypervisor.WriteArray(SYSBAR_POINTER + LIMIT_OFFSETS[i], Strings.LimitText[i].ToKHSCII(), true);
+                        Hypervisor.WriteArray(SYSBAR_POINTER + LIMIT_OFFSETS[i + 0x03], Strings.LimitText[i].ToKHSCII(), true);
+                    }
+                }
             }
         }
 
@@ -462,143 +1041,123 @@ namespace ReFixed
         */
         public static void GenerateSave()
         {
-            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ConfigAddress) & 0x01;
+            // Prepare the pointers.
+            var _pointerBase = Hypervisor.Read<ulong>(Variables.PINT_SaveInformation);
+            var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
 
-            if (_toggleCheck == 0x01 || Variables.DualAudio)
+            // Prepare the strings.
+            var _saveName = "BISLPM-66675FM-98";
+            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM.png";
+
+            // Calculate the Unix Date.
+            var _currDate = DateTime.Now;
+            var _unix = new DateTime(1970, 1, 1);
+            var _writeDate = Convert.ToUInt64((_currDate - _unix).TotalSeconds);
+
+            // Prepare the variables for Save Info.
+            var _saveSlot = 0;
+            var _saveInfoLength = 0x158;
+            var _saveDataLength = 0x10FC0;
+
+            var _saveInfoStartRAM = _pointerSecond + 0x168;
+            var _saveDataStartRAM = _pointerSecond + 0x19630;
+
+            var _saveInfoStartFILE = 0x1C8;
+            var _saveDataStartFILE = 0x19690;
+
+            // Read the save from RAM.
+            var _saveData = Hypervisor.ReadArray(Variables.ADDR_SaveData, _saveDataLength);
+
+            // Read the save slot.
+            var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+
+            // If the file does not bear a save; terminate the operation.
+            if (!Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM"))
+                return;
+
+            // Seek out the physical slot of the save to make.
+            while (_saveSlotRAM[0] != 0x00 && !Encoding.ASCII.GetString(_saveSlotRAM).Contains("66675FM-98"))
             {
-                // Prepare the pointers.
-                var _pointerBase = Hypervisor.Read<ulong>(Variables.InformationPointer);
-                var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
+                _saveSlot++;
+                _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+            }
 
-                // Prepare the strings.
-                var _saveName = "BISLPM-66675FM-98";
-                var _savePath =
-                    Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM.png";
+            // Calculate the checksums.
+            var _magicArray = _saveData.Take(0x08).ToArray();
+            var _dataArray = _saveData.Skip(0x0C).ToArray();
 
-                // Calculate the Unix Date.
-                var _currDate = DateTime.Now;
-                var _unix = new DateTime(1970, 1, 1);
-                var _writeDate = Convert.ToUInt64((_currDate - _unix).TotalSeconds);
+            var _checkMagic = Extensions.SaveCRC32(_magicArray, 8, uint.MaxValue);
+            var _checkData = Extensions.SaveCRC32(_dataArray, _dataArray.Length, _checkMagic ^ uint.MaxValue);
 
-                // Prepare the variables for Save Info.
-                var _saveSlot = 0;
-                var _saveInfoLength = 0x158;
-                var _saveDataLength = 0x10FC0;
+            #region RAM Save
+            // Fetch the address for the save info.
+            var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
+            var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
 
-                var _saveInfoStartRAM = _pointerSecond + 0x168;
-                var _saveDataStartRAM = _pointerSecond + 0x19630;
+            // Write out the save information.
+            Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
 
-                var _saveInfoStartFILE = 0x1C8;
-                var _saveDataStartFILE = 0x19690;
+            // Write the date in which the save was made.
+            Hypervisor.Write(_saveInfoAddrRAM + 0x40, _writeDate, true);
+            Hypervisor.Write(_saveInfoAddrRAM + 0x48, _writeDate, true);
 
-                // Read the save from RAM.
-                var _saveData = Hypervisor.ReadArray(Variables.SaveAddress, _saveDataLength);
+            // Write the length of the save.
+            Hypervisor.Write(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
 
-                // Read the save slot.
-                var _saveSlotRAM = Hypervisor.ReadArray(
-                    _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot),
-                    0x11,
-                    true
-                );
+            // Write the header.
+            Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.ASCII.GetBytes("KH2J"), true);
+            Hypervisor.Write<uint>(_saveDataAddrRAM + 0x04, 0x3A, true);
 
-                // If the file does not bear a save; terminate the operation.
-                if (!Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM"))
-                    return;
+            // Write the checksum.
+            Hypervisor.Write(_saveDataAddrRAM + 0x08, _checkData, true);
 
-                // Seek out the physical slot of the save to make.
-                while (
-                    _saveSlotRAM[0] != 0x00
-                    && !Encoding.ASCII.GetString(_saveSlotRAM).Contains("66675FM-98")
-                )
-                {
-                    _saveSlot++;
-                    _saveSlotRAM = Hypervisor.ReadArray(
-                        _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot),
-                        0x11,
-                        true
-                    );
-                }
+            // Write, the save.
+            Hypervisor.WriteArray(_saveDataAddrRAM + 0x0C, _dataArray, true);
+            #endregion
 
-                // Calculate the checksums.
-                var _magicArray = _saveData.Take(0x08).ToArray();
-                var _dataArray = _saveData.Skip(0x0C).ToArray();
+            #region File Save
 
-                var _checkMagic = Extensions.CalculateCRC32(_magicArray, 8, uint.MaxValue);
-                var _checkData = Extensions.CalculateCRC32(
-                    _dataArray,
-                    _dataArray.Length,
-                    _checkMagic ^ uint.MaxValue
-                );
+            // Fetch the address for the save info.
+            var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
+            var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
 
-                #region RAM Save
-                // Fetch the address for the save info.
-                var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
-                var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
-
+            // Create the writer.
+            using (var _stream = new FileStream(_savePath, FileMode.Open))
+            using (var _write = new BinaryWriter(_stream))
+            {
                 // Write out the save information.
-                Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
+                _stream.Position = _saveInfoAddr;
+                _write.Write(Encoding.ASCII.GetBytes(_saveName));
 
-                // Write the date in which the save was made.
-                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x40, _writeDate, true);
-                Hypervisor.Write<ulong>(_saveInfoAddrRAM + 0x48, _writeDate, true);
+                // The date in which the save was made.
+                _stream.Position = _saveInfoAddr + 0x40;
+                _write.Write(_writeDate);
+                _stream.Position = _saveInfoAddr + 0x48;
+                _write.Write(_writeDate);
 
-                // Write the length of the save.
-                Hypervisor.Write<int>(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
+                // The length of the save.
+                _stream.Position = _saveInfoAddr + 0x50;
+                _write.Write(_saveDataLength);
 
                 // Write the header.
-                Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.ASCII.GetBytes("KH2J"), true);
-                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x04, 0x3A, true);
+                _stream.Position = _saveDataAddr;
+                _write.Write(Encoding.ASCII.GetBytes("KH2J"));
+                _stream.Position = _saveDataAddr + 0x04;
+                _write.Write(0x3A);
 
                 // Write the checksum.
-                Hypervisor.Write<uint>(_saveDataAddrRAM + 0x08, _checkData, true);
+                _stream.Position = _saveDataAddr + 0x08;
+                _write.Write(_checkData);
 
                 // Write, the save.
-                Hypervisor.WriteArray(_saveDataAddrRAM + 0x0C, _dataArray, true);
-                #endregion
-
-                #region File Save
-
-                // Fetch the address for the save info.
-                var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
-                var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
-
-                // Create the writer.
-                using (var _stream = new FileStream(_savePath, FileMode.Open))
-                using (var _write = new BinaryWriter(_stream))
-                {
-                    // Write out the save information.
-                    _stream.Position = _saveInfoAddr;
-                    _write.Write(Encoding.ASCII.GetBytes(_saveName));
-
-                    // The date in which the save was made.
-                    _stream.Position = _saveInfoAddr + 0x40;
-                    _write.Write(_writeDate);
-                    _stream.Position = _saveInfoAddr + 0x48;
-                    _write.Write(_writeDate);
-
-                    // The length of the save.
-                    _stream.Position = _saveInfoAddr + 0x50;
-                    _write.Write(_saveDataLength);
-
-                    // Write the header.
-                    _stream.Position = _saveDataAddr;
-                    _write.Write(Encoding.ASCII.GetBytes("KH2J"));
-                    _stream.Position = _saveDataAddr + 0x04;
-                    _write.Write(0x3A);
-
-                    // Write the checksum.
-                    _stream.Position = _saveDataAddr + 0x08;
-                    _write.Write(_checkData);
-
-                    // Write, the save.
-                    _stream.Position = _saveDataAddr + 0x0C;
-                    _write.Write(_dataArray);
-                }
-                #endregion
-            
-                // Play a sound, dictating that the save was a success!
-                Variables.SaveSFX.Play();
+                _stream.Position = _saveDataAddr + 0x0C;
+                _write.Write(_dataArray);
             }
+            #endregion
+
+            // Play a sound, dictating that the save was a success!
+            if (Variables.sfxToggle)
+                Variables.SaveSFX.Play();
         }
 
         /*
@@ -608,133 +1167,51 @@ namespace ReFixed
         */
         public static void AutosaveEngine()
         {
-            var _loadRead = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
+            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ADDR_Config) & 0x01;
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
-            var _worldCheck = Hypervisor.Read<byte>(Variables.RoomAddress);
-            var _roomCheck = Hypervisor.Read<byte>(Variables.RoomAddress + 0x01);
-            
+            var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
+            var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
+
             if (!CheckTitle() && _loadRead == 0x01)
             {
                 Thread.Sleep(100);
 
-                var _battleRead = Hypervisor.Read<byte>(Variables.BattleFlagAddress);
-                var _cutsceneRead = Hypervisor.Read<byte>(Variables.CutsceneFlagAddress);
-                
-                _loadRead = Hypervisor.Read<byte>(Variables.LoadFlagAddress);
+                var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+                var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
 
-                var _saveableBool = _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00;
+                _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+
+                var _saveConfig = (Variables.DualAudio && Variables.saveToggle) || !Variables.DualAudio;
+                var _saveableBool = _saveConfig && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _toggleCheck == 0x01;
 
                 if (_saveableBool)
                 {
-                    if (Variables.SaveWorld != _worldCheck)
+                    if (SAVE_WORLD != _worldCheck)
                     {
+                        Console.WriteLine("DEBUG: World condition met! Writing Autosave...");
+
                         GenerateSave();
-                        Variables.SaveIterator = 0;
+                        SAVE_ITERATOR = 0;
                     }
 
-                    else if (Variables.SaveRoom != _roomCheck && _worldCheck >= 2)
+                    else if (SAVE_ROOM != _roomCheck && _worldCheck >= 2)
                     {
-                        if (Variables.SaveIterator == 3)
+                        SAVE_ITERATOR++;
+
+                        if (SAVE_ITERATOR == 3)
                         {
+                            Console.WriteLine("DEBUG: Room condition met! Writing Autosave...");
+
                             GenerateSave();
-                            Variables.SaveIterator = 0;
+                            SAVE_ITERATOR = 0;
                         }
-                        else
-                            Variables.SaveIterator++;
                     }
 
-                    Variables.SaveWorld = _worldCheck;
-                    Variables.SaveRoom = _roomCheck;
+                    SAVE_WORLD = _worldCheck;
+                    SAVE_ROOM = _roomCheck;
                 }
             }
-        }
-
-        /*
-            TextAdjust:
-
-            Overwrite the text in certain portions of the game, to give the illusion that
-            the features given are Square-made, and not some jank being made by a 20-year-old
-            no life :^)
-        */
-        public static void TextAdjust()
-        {
-            #region Roxas Story Option
-            if (Hypervisor.Read<byte>(Variables.TitleTextAddresses[1]) != 0x46)
-            {
-                var _buttOffset = Hypervisor.Read<uint>(Variables.TitleButtonAddress);
-                Hypervisor.Write<uint>(Variables.TitleButtonAddress, _buttOffset + 0x01);
-
-                for (int i = 0; i < Variables.TitleStrings.Length; i++)
-                    Hypervisor.WriteArray(
-                        Variables.TitleTextAddresses[i],
-                        Variables.TitleStrings[i].ToKHSCII()
-                    );
-            }
-            #endregion
-
-            #region Limit Text
-            var _secAccumilator = 0;
-
-            if (Hypervisor.Read<byte>(Variables.LimitAddresses[0]) != 0x2E)
-            {
-                for (int i = 0; i < Variables.LimitAddresses.Length; i += 2)
-                {
-                    // Write the text.
-                    Hypervisor.WriteArray(
-                        Variables.LimitAddresses[i],
-                        Variables.LimitStrings[_secAccumilator].ToKHSCII()
-                    );
-                    Hypervisor.WriteArray(
-                        Variables.LimitAddresses[i + 1],
-                        Variables.LimitStrings[_secAccumilator].ToKHSCII()
-                    );
-
-                    // Increase the accumilator for the text array.
-                    _secAccumilator++;
-                }
-
-                // Since "Sonic Blade" is longer than "Sonic Rave", update the offsets for the RCs.
-                Hypervisor.Write<uint>(0x255CFFE, 0x01B42F);
-                Hypervisor.Write<uint>(0x255D006, 0x01B434);
-                Hypervisor.Write<uint>(0x255CE46, 0x01AA4B);
-
-                // Write the RCs text.
-                Hypervisor.WriteArray(0x2572571, ("Rave{0x00}End").ToKHSCII());
-            }
-            #endregion
-
-            #region Auto-Save Toggle
-            if (!Variables.DualAudio)
-            {
-                var _toggleCheck = Hypervisor.Read<byte>(Variables.SaveTextAddresses[1]);
-
-                if (_toggleCheck != 0x2E)
-                {
-                    for (int i = 0; i < Variables.SaveStrings.Length; i++)
-                        Hypervisor.WriteArray(
-                            Variables.SaveTextAddresses[i],
-                            Variables.SaveStrings[i].ToKHSCII()
-                        );
-                }
-            }
-            #endregion
-
-            #region Dual-Audio Toggle
-            else if (Variables.DualAudio)
-            {
-                for (int i = 0; i < Variables.AudioStrings.Length; i++)
-                {
-                    Hypervisor.Write<int>(
-                        Variables.AudioOffsetAddresses[i],
-                        Variables.AudioOffsets[i]
-                    );
-                    Hypervisor.WriteArray(
-                        Variables.AudioTextAddresses[i],
-                        Variables.AudioStrings[i].ToKHSCII()
-                    );
-                }
-            }
-            #endregion
         }
 
         /*
@@ -745,13 +1222,9 @@ namespace ReFixed
         */
         public static void ObjentrySwap(string Input)
         {
-            for (
-                ulong _formIterator = 0;
-                _formIterator < (ulong)Variables.FormNames.Length;
-                _formIterator++
-            )
+            for (ulong _formIterator = 0; _formIterator < (ulong)Variables.SORAObjentry.Length; _formIterator++)
             {
-                var _formatForm = String.Format(Variables.FormNames[_formIterator], Input);
+                var _formatForm = String.Format(Variables.SORAObjentry[_formIterator], Input);
                 var _convertForm = Encoding.ASCII.GetBytes(_formatForm);
 
                 if (_convertForm.Length < 16)
@@ -763,24 +1236,17 @@ namespace ReFixed
                     _convertForm = _byteList.ToArray();
                 }
 
-                Hypervisor.WriteArray(
-                    Variables.ObjentryAddresses[0] + 0x60 * _formIterator,
-                    _convertForm
-                );
+                Hypervisor.WriteArray(Variables.ADDR_Objentry[0] + 0x60 * _formIterator, _convertForm);
             }
 
             var _limitFormat = String.Format("P_EX100{0}_KH1F", Input);
             var _limitConvert = Encoding.ASCII.GetBytes(_limitFormat);
 
-            Hypervisor.WriteArray(Variables.ObjentryAddresses[2], _limitConvert);
+            Hypervisor.WriteArray(Variables.ADDR_Objentry[2], _limitConvert);
 
-            for (
-                ulong _friendIterator = 0;
-                _friendIterator < (ulong)Variables.PartyNames.Length;
-                _friendIterator++
-            )
+            for (ulong _friendIterator = 0; _friendIterator < (ulong)Variables.FRIENDObjentry.Length; _friendIterator++)
             {
-                var _formatFriend = String.Format(Variables.PartyNames[_friendIterator], Input);
+                var _formatFriend = String.Format(Variables.FRIENDObjentry[_friendIterator], Input);
                 var _convertFriend = Encoding.ASCII.GetBytes(_formatFriend);
 
                 if (_convertFriend.Length < 16)
@@ -792,10 +1258,7 @@ namespace ReFixed
                     _convertFriend = _byteList.ToArray();
                 }
 
-                Hypervisor.WriteArray(
-                    Variables.ObjentryAddresses[1] + 0x60 * _friendIterator,
-                    _convertFriend
-                );
+                Hypervisor.WriteArray(Variables.ADDR_Objentry[1] + 0x60 * _friendIterator, _convertFriend);
             }
         }
 
@@ -806,7 +1269,7 @@ namespace ReFixed
         */
         public static void HolidayEngine()
         {
-            var _suffixRead = Hypervisor.Read<byte>(Variables.ObjentryAddresses[0] + 0x07);
+            var _suffixRead = Hypervisor.Read<byte>(Variables.ADDR_Objentry[0] + 0x07);
             var _dateCurrent = DateTime.Now;
 
             var _dateHalloweenStart = new DateTime(_dateCurrent.Year, 10, 31);
@@ -819,13 +1282,16 @@ namespace ReFixed
 
             if (_dateCurrent > _dateHalloweenStart && _dateCurrent < _dateHalloweenEnd)
                 _suffixWrite = "_NM";
+
             else if (_dateCurrent > _dateChristmasStart && _dateCurrent > _dateChristmasEnd)
                 _suffixWrite = "_XM";
+
             else
                 _suffixWrite = "";
 
             if (_suffixWrite != "" && _suffixRead == 0x00)
                 ObjentrySwap(_suffixWrite);
+
             else if (_suffixWrite == "" && _suffixRead != 0x00)
                 ObjentrySwap(_suffixWrite);
         }
@@ -837,21 +1303,19 @@ namespace ReFixed
         */
         public static void MagicHide()
         {
-            if (
-                Hypervisor.Read<uint>(Variables.MagicLVAddress) == 0x00000000
-                && Hypervisor.Read<ushort>(Variables.MagicLV2Address) == 0x0000
-            )
+            if (Hypervisor.Read<uint>(Variables.ADDR_MagicLV1) == 0x00000000 && Hypervisor.Read<ushort>(Variables.ADDR_MagicLV2) == 0x0000 && Hypervisor.Read<byte>(Variables.ADDR_SoraForm) != 0x03)
             {
-                if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0]) != 0x00)
+                if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) != 0x00)
                 {
-                    for (int i = 0; i < Variables.MPSEQDAddresses.Length; i++)
-                        Hypervisor.Write<byte>(Variables.MPSEQDAddresses[i], 0x00);
+                    for (int i = 0; i < Variables.ADDR_MPSEQD.Length; i++)
+                        Hypervisor.Write<byte>(Variables.ADDR_MPSEQD[i], 0x00);
                 }
             }
-            else if (Hypervisor.Read<byte>(Variables.MPSEQDAddresses[0]) == 0x00)
+
+            else if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) == 0x00 || Hypervisor.Read<byte>(Variables.ADDR_SoraForm) == 0x03)
             {
-                for (int i = 0; i < Variables.MPSEQDAddresses.Length; i++)
-                    Hypervisor.Write<byte>(Variables.MPSEQDAddresses[i], Variables.MPSEQDValues[i]);
+                for (int i = 0; i < Variables.ADDR_MPSEQD.Length; i++)
+                    Hypervisor.Write<byte>(Variables.ADDR_MPSEQD[i], Variables.VALUE_MPSEQD[i]);
             }
         }
 
@@ -863,31 +1327,29 @@ namespace ReFixed
         */
         public static void DiscordEngine()
         {
-            var _healthValue = Hypervisor.Read<byte>(0x024BC74A);
-            var _magicValue = Hypervisor.Read<byte>(0x024BC8CA);
+            var _healthValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP);
+            var _magicValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP + 0x180);
+
             var _levelValue = Hypervisor.Read<byte>(0x00445061);
-            var _formValue = Hypervisor.Read<byte>(0x00446086);
+            var _formValue = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
 
             var _stringState = string.Format(
                 "Level {0} | Form: {1}",
                 _levelValue,
-                Variables.FormText.ElementAtOrDefault(_formValue)
+                Variables.FRMDictionary.ElementAtOrDefault(_formValue)
             );
+
             var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
 
-            var _worldID = Hypervisor.Read<byte>(Variables.RoomAddress);
-            var _battleFlag = Hypervisor.Read<byte>(0x024AA5B6);
+            var _worldID = Hypervisor.Read<byte>(Variables.ADDR_World);
+            var _battleFlag = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
 
             var _timeValue = Math.Floor(Hypervisor.Read<int>(0x00444FA6) / 60F);
             var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
             var _timeHours = Math.Floor(_timeValue / 3600F);
 
-            var _timeText = string.Format(
-                "In-Game Time: {0}",
-                string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00"))
-            );
-
-            var _diffValue = Hypervisor.Read<byte>(Variables.DifficultyAddress);
+            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+            var _diffValue = Hypervisor.Read<byte>(Variables.ADDR_Difficulty);
 
             var _rpcButtons = new DiscordRPC.Button[]
             {
@@ -896,6 +1358,7 @@ namespace ReFixed
                     Label = "== Powered by Re:Fixed ==",
                     Url = "https://github.com/TopazTK/KH-ReFixed"
                 },
+
                 new DiscordRPC.Button
                 {
                     Label = "== Icons by Televo ==",
@@ -912,15 +1375,16 @@ namespace ReFixed
                         State = _stringState,
                         Assets = new Assets
                         {
-                            LargeImageKey = Variables.WorldImages.ElementAtOrDefault(_worldID),
+                            LargeImageKey = Variables.WRLDictionary.ElementAtOrDefault(_worldID),
                             LargeImageText = _timeText,
-                            SmallImageKey = Variables.BattleImages.ElementAtOrDefault(_battleFlag),
-                            SmallImageText = Variables.ModeText.ElementAtOrDefault(_diffValue)
+                            SmallImageKey = Variables.BTLDictionary.ElementAtOrDefault(_battleFlag),
+                            SmallImageText = Variables.MDEDictionary.ElementAtOrDefault(_diffValue)
                         },
                         Buttons = _rpcButtons
                     }
                 );
             }
+
             else
             {
                 Variables.DiscordClient.SetPresence(
@@ -951,8 +1415,8 @@ namespace ReFixed
             if (!Variables.Initialized)
                 Initialization();
 
-            if (Hypervisor.Read<ushort>(Variables.InputAddress) == 0x090C)
-                ResetGame();
+            ResetGame();
+            RetryPrompt();
             #endregion
 
             #region Mid Priority
@@ -962,46 +1426,37 @@ namespace ReFixed
             SkipRoxas();
             SortMagic();
 
+            TextAdjust();
+
             FrameOverride();
             #endregion
 
             #region Low Priority
             MagicHide();
-            TextAdjust();
             HolidayEngine();
             LimitOverride();
             #endregion
 
             #region Tasks
-            if (Variables.AutoSaveTask == null)
+            if (Variables.ASTask == null)
             {
-                Variables.AutoSaveTask = Task.Factory.StartNew(
-                    delegate()
+                Variables.ASTask = Task.Factory.StartNew(
+
+                    delegate ()
                     {
-                        while (!Variables.TaskToken.IsCancellationRequested)
+                        while (!Variables.Token.IsCancellationRequested)
                         {
                             AutosaveEngine();
                             Thread.Sleep(5);
                         }
                     },
-                    Variables.TaskToken
+
+                    Variables.Token
                 );
             }
-            
-            if (Variables.DiscordTask == null)
-            {
-                Variables.DiscordTask = Task.Factory.StartNew(
-                    delegate()
-                    {
-                        while (!Variables.TaskToken.IsCancellationRequested)
-                        {
-                            DiscordEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
-                    Variables.TaskToken
-                );
-            }
+
+            DiscordEngine();
+
             #endregion
         }
     }

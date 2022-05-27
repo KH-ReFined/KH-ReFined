@@ -8,13 +8,6 @@
 
 ### ALL OF THESE MUST BE DONE PRE-PATCH ###
 
--> Fix Framelimiter
-
-VERSION 0.0:
-    @0x1190CF => [C7 83 98 59 00 00 00 20 00 00] to [90 90 90 90 90 90 90 90 90 90]
-VERSION 0.1:
-    @0x1190DF => [C7 83 A0 59 00 00 00 20 00 00] to [90 90 90 90 90 90 90 90 90 90]
-
 -> True Kingdom Hearts I Command Menu
 
 VERSION 0.0:

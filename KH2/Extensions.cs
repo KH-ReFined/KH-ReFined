@@ -15,6 +15,28 @@ namespace ReFixed
 {
     public static class Extensions
     {
+        public static ulong FindValue(this byte[] Source, uint Value)
+        {
+            var _pattern = BitConverter.GetBytes(Value);
+            ulong _charSlot = (ulong)(Source.Length - _pattern.Length + 1);
+
+            for (ulong i = 0; i < _charSlot; i++)
+            {
+                if (Source[i] != _pattern[0])
+                    continue;
+
+                for (ulong j = (ulong)_pattern.Length - 1; j >= 1; j--)
+                {
+                    if (Source[i + j] != _pattern[j]) 
+                        break;
+
+                    if (j == 1) 
+                        return i;
+                }
+            }
+            return 0xFFFFFFFFFFFFFFFF;
+        }
+
         public static byte[] ToKHSCII(this string inText)
         {
             var _specialDict = new Dictionary<char, byte>
@@ -34,7 +56,53 @@ namespace ReFixed
                 { '(', 0x5A },
                 { ')', 0x5B },
                 { '[', 0x62 },
-                { ']', 0x63 }
+                { ']', 0x63 },
+                { 'à', 0xB7 },
+                { 'á', 0xB8 },
+                { 'â', 0xB9 },
+                { 'ä', 0xBA },
+                { 'è', 0xBB },
+                { 'é', 0xBC },
+                { 'ê', 0xBD },
+                { 'ë', 0xBE },
+                { 'ì', 0xBF },
+                { 'í', 0xC0 },
+                { 'î', 0xC1 },
+                { 'ï', 0xC2 },
+                { 'ñ', 0xC3 },
+                { 'ò', 0xC4 },
+                { 'ó', 0xC5 },
+                { 'ô', 0xC6 },
+                { 'ö', 0xC7 },
+                { 'ù', 0xC8 },
+                { 'ú', 0xC9 },
+                { 'û', 0xCA },
+                { 'ü', 0xCB },
+                { 'ç', 0xE8 },
+                { 'À', 0xD0 },
+                { 'Á', 0xD1 },
+                { 'Â', 0xD2 },
+                { 'Ä', 0xD3 },
+                { 'È', 0xD4 },
+                { 'É', 0xD5 },
+                { 'Ê', 0xD6 },
+                { 'Ë', 0xD7 },
+                { 'Ì', 0xD8 },
+                { 'Í', 0xD9 },
+                { 'Î', 0xDA },
+                { 'Ï', 0xDB },
+                { 'Ñ', 0xDC },
+                { 'Ò', 0xDD },
+                { 'Ó', 0xDE },
+                { 'Ô', 0xDF },
+                { 'Ö', 0xE0 },
+                { 'Ù', 0xE1 },
+                { 'Ú', 0xE2 },
+                { 'Û', 0xE3 },
+                { 'Ü', 0xE4 },
+                { '¡', 0xE5 },
+                { '¿', 0xE6 },
+                { 'Ç', 0xE7 }
             };
 
             var _outList = new List<byte>();
@@ -78,7 +146,7 @@ namespace ReFixed
                 {
                     if (_specialDict.ContainsKey(_char))
                         _outList.Add(_specialDict[_char]);
-						
+
                     else
                         _outList.Add(0x01);
                     _charCount++;
@@ -89,7 +157,7 @@ namespace ReFixed
             return _outList.ToArray();
         }
 
-        public static uint CalculateCRC32(byte[] data, int offset, uint checksum)
+        public static uint SaveCRC32(byte[] data, int offset, uint checksum)
         {
             uint[] array = GetCRC32Table(0x4C11DB7).Take(0x100).ToArray();
 

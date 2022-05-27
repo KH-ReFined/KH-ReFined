@@ -195,7 +195,20 @@ namespace ReFixed
         public static byte SaveWorld;
         public static byte SaveRoom;
 
-        public static string FovTextString = "Field of View{0x00}Classic{0x00}Enhanced{0x00}Toggle between Field of View modes.";
-        public static string CamTextString = "X-Axis{0x00}Y-Axis";
+        public static string[] FovTextStrings = new string[] 
+        {
+            "Field of View{0x00}Classic{0x00}Enhanced{0x00}Toggle between Field of View modes.",
+            "",
+            "Sichtfeld{0x00}Klassisch{0x00}Erweitert{0x00}Wechsle die Art der Sichtweite.",
+            "Campo de Visión{0x00}Clásico{0x00}Mejorado{0x00}Cambia entre los diferentes modos de Campo de Visión."
+        };
+
+        public static string[] CamTextStrings = new string[] 
+        {
+            "X-Axis{0x00}Y-Axis",
+            "",
+            "X-Achse{0x00}Y-Achse",
+            "Eje-X{0x00}Eje-Y"
+        };
     }
 }
