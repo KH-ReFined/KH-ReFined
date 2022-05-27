@@ -118,6 +118,10 @@ _All features indicating a version number will be released in that said version.
 - Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.
 - Xeeynamo for the functions used to calculate the Save Checksum.
 - Dekirai and RelaxedBatter for their immense testing.
+- RukaPML for the German translation.
+- Svenchu for the Spanish translation.
+- SoraikoSan for the French translation.
+- iTeoh for the Italian translation.
 
 ### Kingdom Hearts 1
 - Denhonator for his work on Cutscene Skip.
