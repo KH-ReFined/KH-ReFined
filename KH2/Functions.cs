@@ -150,7 +150,7 @@ namespace ReFixed
                     {
                         ROXAS_OFFSETS = new List<ulong>();
 
-                        for (int i = 0; i < 6; i++)
+                        for (int i = 0; i < 9; i++)
                             ROXAS_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.RoxasIDs[i]) + 0x04);
                     }
 
@@ -162,6 +162,10 @@ namespace ReFixed
                     var _roxOffsetDescNO = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[4], true);
 
                     var _roxOffsetConfirm = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[5], true);
+                    var _roxOffsetFix = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[6], true);
+
+                    var _roxOffsetGameYES = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[7], true);
+                    var _roxOffsetGameFIX = Hypervisor.Read<uint>(SYSBAR_POINTER + ROXAS_OFFSETS[8], true);
 
                     switch (LANGUAGE)
                     {
@@ -178,6 +182,15 @@ namespace ReFixed
 
                         case 0x01:
                             {
+                                if (_roxOffsetYES != _roxOffsetFix && _roxOffsetGameYES != _roxOffsetGameFIX)
+                                {
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[1], _roxOffsetFix, true);
+                                    Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[2], _roxOffsetFix + 0x03, true);
+
+                                    _roxOffsetYES = _roxOffsetFix;
+                                    _roxOffsetNO = _roxOffsetFix + 0x03;
+                                }
+
                                 if (ROXAS_TITLE_OFFSET == 0x00)
                                     ROXAS_TITLE_OFFSET = _roxOffsetTitle;
 
@@ -197,6 +210,9 @@ namespace ReFixed
                             }
                     }
 
+                    if (_roxOffsetGameYES != _roxOffsetGameFIX)
+                        Hypervisor.Write(SYSBAR_POINTER + ROXAS_OFFSETS[7], _roxOffsetGameFIX, true);
+
                     Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetTitle, _roxasText[0].ToKHSCII(), true);
                     Hypervisor.WriteArray(SYSBAR_POINTER + _roxOffsetConfirm, _roxasText[5].ToKHSCII(), true);
 
@@ -212,7 +228,7 @@ namespace ReFixed
                 {
                     SETTING_OFFSETS = new List<ulong>();
 
-                    for (int i = 0; i < 7; i++)
+                    for (int i = 0; i < 9; i++)
                         SETTING_OFFSETS.Add(SYSBAR_HEADER.FindValue(Strings.SettingIDs[i]) + 0x04);
                 }
 
@@ -226,6 +242,8 @@ namespace ReFixed
                 var _setOffsetDesc = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[5], true);
                 var _setOffsetBack = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[6], true);
 
+                var _setOffsetCMD = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[7], true);
+                var _setOffsetFix = Hypervisor.Read<uint>(SYSBAR_POINTER + SETTING_OFFSETS[8], true);
 
                 #region Dual Audio Text
                 if (!CheckTitle() && Variables.DualAudio)
@@ -271,6 +289,9 @@ namespace ReFixed
                     Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDescNo, _saveText[4].ToKHSCII(), true);
                 }
                 #endregion
+
+                if (_setOffsetCMD != _setOffsetFix && !CheckTitle())
+                    Hypervisor.Write(SYSBAR_POINTER + SETTING_OFFSETS[7], _setOffsetFix, true);
 
                 /*
                     What is this?

@@ -1,12 +1,8 @@
-/*
-==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 2 FM!
-       COPYRIGHT TOPAZ WHITELOCK - 2022
- LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
-==================================================
-*/
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ReFixed
 {
@@ -19,7 +15,10 @@ namespace ReFixed
             0x4339,
             0x433A,
             0x433B,
-            0x4381
+            0x4381,
+            0x372E,
+            0x4383,
+            0x0A7C
         };
 
         public static ushort[] SettingIDs =
@@ -31,6 +30,8 @@ namespace ReFixed
             0x372D,
             0x433D,
             0x3733,
+            0x371C,
+            0X3723
         };
 
         public static ushort[] LimitIDs =
@@ -82,8 +83,8 @@ namespace ReFixed
             new string[]
             {
                 "Möchtest du Roxas' Geschichte spielen?",
-                "JA",
-                "NEIN",
+                "Ja",
+                "Nein",
                 "Spiele ganz normal durch Roxas' Geschichte.",
                 "          Überspringe Roxas' Geschichte komplett.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(Dadurch werden wichtige Story-Elemente übersprungen!)",
                 "Roxas' Geschichte"
@@ -92,8 +93,8 @@ namespace ReFixed
             new string[]
             {
                 "¿Quieres jugar la historia de Roxas?",
-                "SÍ",
-                "NO",
+                "Sí",
+                "No",
                 "Juega la historia completa.",
                 "       Saltar historia de Roxas.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(¡Te perderás elementos importantes\n      de la historia si lo haces!)",
                 "Historia de Roxas"
@@ -102,8 +103,8 @@ namespace ReFixed
             new string[]
             {
                 "Lancer l'arc de Roxas ?",
-                "OUI",
-                "NON",
+                "Oui",
+                "Non",
                 "Jouer l'arc de Roxas normalement.",
                 "                       Passer l'arc de Roxas.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(Vous passerez à coté d'éléments importants de l'histoire!)",
                 "L'arc de Roxas"
@@ -112,7 +113,7 @@ namespace ReFixed
             new string[]
             {
                 "Gioca la storia di Roxas?",
-                "Si",
+                "Sì",
                 "No",
                 "Gioca la storia di Roxas normalmente.",
                 "        Salta la storia di Roxas completamente.{0x02}{0x07}{0xFF}{0xFF}{0x00}{0x80}(Perderai elementi della storia se decidi di saltarla!)",
@@ -175,7 +176,7 @@ namespace ReFixed
                 "Audio Language",
                 "English",
                 "Japanese",
-                "Switch between English and Japanese speech.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(The world must be reloaded for the changes to take effect!){0x03}"
+                "Switch between English and Japanese speech.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(The world must be reloaded for the changes\nto take effect!){0x03}"
             },
 
             new string[]
