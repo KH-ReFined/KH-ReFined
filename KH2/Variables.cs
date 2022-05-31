@@ -114,6 +114,9 @@ namespace ReFixed
         public static ulong ADDR_BattleFlag = 0x24AA5B6;
         public static ulong ADDR_InventoryFlag = 0x444F00;
 
+        public static ulong ADDR_MenuSelect = 0x39C242;
+        public static ulong ADDR_MenuCount = 0x39C258;
+
         public static ulong ADDR_Limiter = 0x553EBA;
         public static ulong ADDR_FinishFlag = 0x572672;
 
@@ -156,6 +159,7 @@ namespace ReFixed
         public static ulong ADDR_LimiterINST = (ulong)(FileVersion == "1.0.0.0" ? 0x152160 : 0x152220);
         public static ulong ADDR_WarpINST = (ulong)(FileVersion == "1.0.0.0" ? 0x000000 : 0x150782);
         public static ulong ADDR_RevertINST = (ulong)(FileVersion == "1.0.0.0" ? 0x000000 : 0x39D8D6);
+        public static ulong ADDR_InventoryINST = (ulong)(FileVersion == "1.0.0.0" ? 0x000000 : 0x39D8EF);
         public static ulong[] ADDR_CMDSelectINST = FileVersion == "1.0.0.0" ? new ulong[] { 0x3AEAC1, 0x3AEBA5, 0x3AEC4C, 0x3AEBCD, 0x3AEC1C } : new ulong[] { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
 
         //
@@ -167,6 +171,7 @@ namespace ReFixed
         public static byte[] INST_FrameLimiter = FileVersion == "1.0.0.0" ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 } : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
         public static byte[] INST_RoomWarp = FileVersion == "1.0.0.0" ? new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 } : new byte[] { 0xE8, 0x59, 0x00, 0x00, 0x00 };
         public static byte[] INST_FlagRevert = FileVersion == "1.0.0.0" ? new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 } : new byte[] { 0xE8, 0x05, 0x01, 0x00, 0x00 };
+        public static byte[] INST_InvRevert = FileVersion == "1.0.0.0" ? new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 } : new byte[] { 0xE8, 0xA4, 0x1A, 0x0D, 0x00};
 
         public static byte[][] INST_CMDSelect = 
         {

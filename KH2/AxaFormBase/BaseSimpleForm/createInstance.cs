@@ -35,6 +35,8 @@ namespace AxaFormBase
             if (BaseSimpleForm.theInstance == null)
                 new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.75]");
 
+            Variables.DiscordClient.Initialize();
+
             CancelSource = new CancellationTokenSource();
             MainToken = BaseSimpleForm.CancelSource.Token;
 

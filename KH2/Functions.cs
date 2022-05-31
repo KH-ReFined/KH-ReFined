@@ -68,9 +68,6 @@ namespace ReFixed
         static int RETRY_MODE = 0x00;
         static bool RETRY_LOCK;
 
-        static byte[] RETRY_DATA_FIRST;
-        static byte[] RETRY_DATA_SECOND;
-
         /*
             Initialization:
 
@@ -78,8 +75,6 @@ namespace ReFixed
         */
         public static void Initialization()
         {
-            Variables.DiscordClient.Initialize();
-
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
@@ -90,6 +85,7 @@ namespace ReFixed
             Hypervisor.UnlockBlock(Variables.ADDR_EVTFormatter);
 
             Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
             Variables.Initialized = true;
         }
@@ -784,14 +780,17 @@ namespace ReFixed
             // So, we initialize all of this shit just to determine whether Retry will show up or not.
             var _menuPoint = Hypervisor.Read<ulong>(Variables.PINT_DeadMenu);
 
+            var _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuSelect);
+            var _optionRead = Hypervisor.Read<byte>(Variables.ADDR_MenuCount);
+
             var _bttlByte = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
             var _cutsByte = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
             var _loadByte = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
             var _fnshByte = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
 
-            var _warpRead = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
             var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+            var _warpRead = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
             var _continueID = Strings.ContinueID;
             var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
@@ -837,46 +836,45 @@ namespace ReFixed
 
             // If one's on the Title Screen while Retry is active: Deactivate it.
 
-            if (CheckTitle() && (RETRY_LOCK || RETRY_DATA_FIRST != null))
+            if (CheckTitle() && (RETRY_LOCK || RETRY_MODE == 0x01))
             {
                 Console.WriteLine("DEBUG: Title Screen detected on Retry Mode! Restoring...");
 
-                RETRY_DATA_FIRST = null;
-                RETRY_DATA_SECOND = null;
-
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
                 RETRY_LOCK = false;
-            }
-
-            // If on a battle, read the save data so Retrying won't revert it.
-
-            if (!CheckTitle())
-            {
-                if (_bttlByte == 0x02 && _cutsByte == 0x00 && _menuPoint == 0x00 && RETRY_DATA_FIRST == null)
-                {
-                    Console.WriteLine("DEBUG: Start of battle! Reading game state...");
-
-                    RETRY_DATA_FIRST = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
-                    RETRY_DATA_SECOND = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
-                }
-
-                else if ((_bttlByte == 0x00 && _menuPoint == 0x00 && _loadByte == 0x01 || _cutsByte != 0x00) && RETRY_DATA_FIRST != null)
-                {
-                    Console.WriteLine("DEBUG: End of battle! Flushing game state...");
-
-                    RETRY_DATA_FIRST = null;
-                    RETRY_DATA_SECOND = null;
-                }
             }
 
             // This code blob is responsible for switching between Retry and Continue
             // and only runs if Sora is dead and some sort of a menu is present.
             if (_menuPoint != 0x00 && _bttlByte == 0x02)
             {
+                if (_menuRead == 0x01 && _warpRead == 0x90 && RETRY_MODE == 0x01)
+                {
+                    Console.WriteLine(String.Format("DEBUG: User is going to load the game! Reverting warp functionality..."));
+
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
+
+                    RETRY_LOCK = true;
+                }
+
+                else if (_menuRead == 0x00 && _optionRead == 0x02 && _warpRead != 0x90 && RETRY_MODE == 0x01)
+                {
+                    Console.WriteLine(String.Format("DEBUG: User defected from loading! Destroying warp functionality..."));
+
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
+
+                    RETRY_LOCK = true;
+                }
+
                 // If D-Pad sides are pressed;
-                if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2])
+                if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00)
                 {
                     // Play the sound so that it seems **authentic**.
                     Variables.SwitchSFX.Play();
@@ -891,9 +889,7 @@ namespace ReFixed
                     {
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
-
-                        RETRY_DATA_FIRST = null;
-                        RETRY_DATA_SECOND = null;
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
                     }
 
                     // This handles the "Retry" mode and destroys the function to do room switching.
@@ -901,13 +897,7 @@ namespace ReFixed
                     {
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-
-                        if (RETRY_DATA_FIRST == null)
-                        {
-                            RETRY_DATA_FIRST = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
-                            RETRY_DATA_SECOND = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
-                        }
-
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
                     }
 
                     RETRY_LOCK = true;
@@ -930,23 +920,20 @@ namespace ReFixed
                 // Destroy the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
                 RETRY_LOCK = true;
             }
-
 
             // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
             else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _cutsByte != 0x00) && RETRY_LOCK)
             {
                 Console.WriteLine(String.Format("DEBUG: Sora is alive. Restoring warp functionality."));
 
-                // Reset the save data.
-                RETRY_DATA_FIRST = null;
-                RETRY_DATA_SECOND = null;
-
                 // Restore the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
                 RETRY_LOCK = false;
             }
@@ -959,24 +946,6 @@ namespace ReFixed
 
                 else
                     Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][RETRY_MODE].ToKHSCII(), true);
-            }
-                
-            // If the retry mode is active and Sora is dead;
-            if (RETRY_MODE == 0x01 && (_menuPoint != 0x00 || _loadByte == 0x00) && RETRY_DATA_FIRST != null)
-            {
-                // Read the save data that is currently wirtten.
-                var _compFirst = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x2444);
-                var _compSecond = Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x2484, 0x1DF2);
-
-                // If it appears to be overwritten by the game;
-                if (!_compFirst.SequenceEqual(RETRY_DATA_FIRST) || !_compSecond.SequenceEqual(RETRY_DATA_SECOND))
-                {
-                    Console.WriteLine("DEBUG: Data inequality detected after death! Reverting...");
-
-                    // Rewrite it with the values read.
-                    Hypervisor.WriteArray(Variables.ADDR_SaveData, RETRY_DATA_FIRST);
-                    Hypervisor.WriteArray(Variables.ADDR_SaveData + 0x2484, RETRY_DATA_SECOND);
-                }
             }
         }
 
@@ -1014,20 +983,25 @@ namespace ReFixed
                     for (int i = 0; i < 6; i++)
                         LIMIT_OFFSETS.Add(Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[i]) + 0x04), true));
 
-                    var _raveOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x06]) + 0x04), true);
-                    var _finishOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x08]) + 0x04), true);
-                    var _descOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x09]) + 0x04), true);
+                    var _arsCheck = Hypervisor.ReadArray(SYSBAR_POINTER + LIMIT_OFFSETS[1], 0x0C, true);
 
-                    Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x06]) + 0x04), _raveOffset + 0x01, true);
-                    Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x07]) + 0x04), _finishOffset, true);
-                    Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x09]) + 0x04), _descOffset + 0x02, true);
-
-                    Hypervisor.WriteArray(SYSBAR_POINTER + _raveOffset + 0x01, Strings.LimitText[3].ToKHSCII(), true);
-
-                    for (int i = 0; i < 3; i++)
+                    if (!_arsCheck.SequenceEqual(Strings.LimitText[1].ToKHSCII()))
                     {
-                        Hypervisor.WriteArray(SYSBAR_POINTER + LIMIT_OFFSETS[i], Strings.LimitText[i].ToKHSCII(), true);
-                        Hypervisor.WriteArray(SYSBAR_POINTER + LIMIT_OFFSETS[i + 0x03], Strings.LimitText[i].ToKHSCII(), true);
+                        var _raveOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x06]) + 0x04), true);
+                        var _finishOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x08]) + 0x04), true);
+                        var _descOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x09]) + 0x04), true);
+
+                        Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x06]) + 0x04), _raveOffset + 0x01, true);
+                        Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x07]) + 0x04), _finishOffset, true);
+                        Hypervisor.Write(SYSBAR_POINTER + (SYSBAR_HEADER.FindValue(Strings.LimitIDs[0x09]) + 0x04), _descOffset + 0x02, true);
+
+                        Hypervisor.WriteArray(SYSBAR_POINTER + _raveOffset + 0x01, Strings.LimitText[3].ToKHSCII(), true);
+
+                        for (int i = 0; i < 3; i++)
+                        {
+                            Hypervisor.WriteArray(SYSBAR_POINTER + LIMIT_OFFSETS[i], Strings.LimitText[i].ToKHSCII(), true);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + LIMIT_OFFSETS[i + 0x03], Strings.LimitText[i].ToKHSCII(), true);
+                        }
                     }
                 }
             }
