@@ -70,7 +70,7 @@ _All features indicating a version number will be released in that said version.
 | :heavy_check_mark: | - | Correct Limit Form's Limit names so that they are more accurately translated. [[3]](#reference) |
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
 | - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence. |
-| - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [v2.50] [[8]](#reference) |
+| - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [[8]](#reference) |
 | - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking. [[4]](#reference) | 
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 | - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) | 
@@ -118,6 +118,10 @@ _All features indicating a version number will be released in that said version.
 - Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.
 - Xeeynamo for the functions used to calculate the Save Checksum.
 - Dekirai and RelaxedBatter for their immense testing.
+- RukaPML for the German translation.
+- Svenchu for the Spanish translation.
+- SoraikoSan for the French translation.
+- iTeoh for the Italian translation.
 
 ### Kingdom Hearts 1
 - Denhonator for his work on Cutscene Skip.
