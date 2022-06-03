@@ -34,7 +34,7 @@ namespace AxaFormBase
         public static CancellationToken MainToken;
         public static Task MainTask;
 
-        public static void keyEvent(object s, KeyEventArgs e)
+        public static void _keyEvent(object s, KeyEventArgs e)
 		{
 			if ((e.Control && e.Alt) || (e.Control && e.KeyCode == Keys.Escape))
 				_captureStatus = !_captureStatus;
@@ -60,8 +60,8 @@ namespace AxaFormBase
             Cursor.Hide();
             theInstance.KeyDown += _keyEvent;
 
-            captureStatus = true;
-            cursorHidden = true;
+            _captureStatus = true;
+            _cursorHidden = true;
 
             Variables.DiscordClient.Initialize();
 
@@ -69,6 +69,8 @@ namespace AxaFormBase
             MainToken = BaseSimpleForm.CancelSource.Token;
 
             Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_OFFSET);
+
+            theInstance.timer1.Start();
 
             MainTask = Task.Factory.StartNew(
                 delegate()
@@ -82,6 +84,9 @@ namespace AxaFormBase
                             var _scrPoint = theInstance.PointToScreen(new Point(0, 0));
                             Cursor.Position = new Point(_scrPoint.X + theInstance.Width / 2, _scrPoint.Y + theInstance.Height / 2);
                         }
+
+                        else
+                            _captureStatus = false;
 
                         Thread.Sleep(5);
                     }
