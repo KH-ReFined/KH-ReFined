@@ -7,6 +7,7 @@
 */
 
 using System;
+using System.IO;
 using System.Media;
 using System.Threading;
 using System.Reflection;
@@ -56,11 +57,14 @@ namespace ReFixed
 
         public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
 
-        public static SoundPlayer SaveSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxSave.wav"));
-        public static SoundPlayer SwitchSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxSwitch.wav"));
+        public static Stream SaveSFX = ExeAssembly.GetManifestResourceStream("sfxSave.wav");
+        public static Stream SwitchSFX = ExeAssembly.GetManifestResourceStream("sfxSwitch.wav");
 
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
+
+        public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
+        public static string SwitchSFXPath = Path.GetTempPath() + "ReFixed/switchSFX.wav";
 
         //
         // RPC ASSET LIBRARY

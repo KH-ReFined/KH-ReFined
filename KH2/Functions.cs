@@ -75,6 +75,18 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
+                Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
+                
+            if (!File.Exists(Variables.SaveSFXPath))
+            {
+                var _saveStream = File.Create(Variables.SaveSFXPath);
+                var _switchStream = File.Create(Variables.SwitchSFXPath);
+
+                Variables.SaveSFX.CopyTo(_saveStream);
+                Variables.SwitchSFX.CopyTo(_switchStream);
+            }
+
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
@@ -877,7 +889,7 @@ namespace ReFixed
                 if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00)
                 {
                     // Play the sound so that it seems **authentic**.
-                    Variables.SwitchSFX.Play();
+                    Extensions.PlaySFX(Variables.SwitchSFXPath);
 
                     Console.WriteLine(String.Format("DEBUG: Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"));
 
@@ -1131,7 +1143,7 @@ namespace ReFixed
 
             // Play a sound, dictating that the save was a success!
             if (Variables.sfxToggle)
-                Variables.SaveSFX.Play();
+                Extensions.PlaySFX(Variables.SaveSFXPath);
         }
 
         /*
