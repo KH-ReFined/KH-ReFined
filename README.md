@@ -40,13 +40,16 @@ _All features indicating a version number will be released in that said version.
 | Error/Bug Fix | Enhancement | Description |
 |---------------|-------------|-------------|
 | :heavy_check_mark: | - | Disable cutscene framelimiter. [[1]](#reference) |
+| :heavy_check_mark: | - | The Mouse Cursor will now follow a VirtualBox-style capture mechanism. |
+| :heavy_check_mark: | - | The game will no longer infinitely freeze while shutting down. |
+| :heavy_check_mark: | - | The game will no longer crash OBS after a resize. |
 | - | :heavy_check_mark: | Voice channels will now be muted when set to "1" in the PC settings menu. |
 | - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
 | - | :heavy_check_mark: | The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference)| 
 | - | :heavy_check_mark: | Press R1 + L1 + START + SELECT to soft reset. |
 | - | :heavy_check_mark: | Every game has an update agent built-in, so Re:Fixed can keep itself updated. |
-| - | :heavy_check_mark: | Creates a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
+| - | :heavy_check_mark: | Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
 
 ### Kingdom Hearts 1
 
@@ -70,10 +73,10 @@ _All features indicating a version number will be released in that said version.
 | :heavy_check_mark: | - | Correct Limit Form's Limit names so that they are more accurately translated. [[3]](#reference) |
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
 | - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence. |
-| - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [[8]](#reference) |
 | - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking. [[4]](#reference) | 
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 | - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) | 
+| - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [[8]](#reference) |
 
 
 ### Kingdom Hearts - Birth by Sleep
@@ -93,7 +96,7 @@ _All features indicating a version number will be released in that said version.
 5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Tri/Y, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
 6. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games.
 7. The party will wear their Halloween costumes in the days between October 31st and November 2nd (inclusive). Whilst they wear their Christmas costumes in the days between December 24th and January 1st (also inclusive).
-8. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fixed implements this feature to KH2 and it will replace the continue option. To revert back to and from the continue option, you can use theleft and right D-Pad buttons.
+8. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fixed implements this feature to KH2 and it will replace the continue option. To revert back to and from the continue option, you can use the left and right D-Pad buttons.
 
 ## Installation
 
