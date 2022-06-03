@@ -8,5 +8,6 @@
 
 ### ALL OF THESE MUST BE DONE PRE-INJECTION ###
 
-AxaFormBase.BaseSimpleForm.clipCusor => Purge function.
-AxaFormBase.BaseSimpleForm.hideCusor => Purge function.
+AxaFormBase.BaseSimpleForm.clipCursor => Purge function.
+AxaFormBase.BaseSimpleForm.hideCursor => Purge function.
+AxaFormBase.BaseSimpleForm.OnFormClosing => Purge function.
