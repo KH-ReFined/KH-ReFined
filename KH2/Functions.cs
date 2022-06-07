@@ -68,6 +68,9 @@ namespace ReFixed
         static int RETRY_MODE = 0x00;
         static bool RETRY_LOCK;
 
+        static List<byte[]> ITEM_READ;
+        static byte[] DRIVE_READ;
+
         /*
             Initialization:
 
@@ -799,6 +802,8 @@ namespace ReFixed
             var _cutsByte = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
             var _loadByte = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
+            var _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
+
             var _fnshByte = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
 
             var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
@@ -856,7 +861,33 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
+                DRIVE_READ = null;
+                ITEM_READ = new List<byte[]>();
+
                 RETRY_LOCK = false;
+            }
+
+            if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00)
+            {
+                Console.WriteLine(String.Format("DEBUG: Start of forced fight, reading necessary values."));
+
+                ITEM_READ = new List<byte[]>();
+
+                for (int i = 0; i < 4; i++)
+                    ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
+
+                DRIVE_READ = Hypervisor.ReadArray(Variables.ADDR_DriveStart, 0x04);
+
+                if (DRIVE_READ[2] == 0x00)
+                    DRIVE_READ = null;
+            }
+
+            else if ((_bttlByte != 0x02 || _cutsByte != 0x00) && _pausRead == 0x00 && DRIVE_READ != null)
+            {
+                Console.WriteLine(String.Format("DEBUG: Out of battle. Erasing value memory."));
+
+                DRIVE_READ = null;
+                ITEM_READ = new List<byte[]>(); 
             }
 
             // This code blob is responsible for switching between Retry and Continue
@@ -865,7 +896,7 @@ namespace ReFixed
             {
                 if (_menuRead == 0x01 && _warpRead == 0x90 && RETRY_MODE == 0x01)
                 {
-                    Console.WriteLine(String.Format("DEBUG: User is going to load the game! Reverting warp functionality..."));
+                    Console.WriteLine("DEBUG: User is going to load the game! Reverting warp functionality...");
 
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
@@ -876,7 +907,7 @@ namespace ReFixed
 
                 else if (_menuRead == 0x00 && _optionRead == 0x02 && _warpRead != 0x90 && RETRY_MODE == 0x01)
                 {
-                    Console.WriteLine(String.Format("DEBUG: User defected from loading! Destroying warp functionality..."));
+                    Console.WriteLine("DEBUG: User defected from loading! Destroying warp functionality...");
 
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
@@ -927,25 +958,37 @@ namespace ReFixed
                 // Retry Mode active.
                 RETRY_MODE = 0x01;
 
-                Console.WriteLine(String.Format("DEBUG: Sora is dead. Destroying warp functionality."));
+                Console.WriteLine("DEBUG: Sora is dead. Destroying warp functionality.");
 
                 // Destroy the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
+                BATTLE_FLAG = false;
                 RETRY_LOCK = true;
             }
 
             // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
             else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _cutsByte != 0x00) && RETRY_LOCK)
             {
-                Console.WriteLine(String.Format("DEBUG: Sora is alive. Restoring warp functionality."));
+                Console.WriteLine("DEBUG: Sora is alive. Restoring warp functionality.");
 
                 // Restore the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
+
+                if (RETRY_MODE == 0x01)
+                {
+                    while (_pausRead == 0x01)
+                        _pausRead = Hypervisor.Read<byte>(Variable.ADDR_PauseFlag);
+
+                    for (int i = 0; i < 4; i++)
+                        Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
+                        
+                    Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
+                }
 
                 RETRY_LOCK = false;
             }
@@ -953,7 +996,7 @@ namespace ReFixed
             // If the retry text offset is set, write the text necessary according to the mode.
             if (RETRY_OFFSET != 0x00)
             {
-                if (_menuPoint == 0x00)
+                if (_menuPoint == 0x00 || _cutsByte != 0x00)
                     Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][0].ToKHSCII(), true);
 
                 else

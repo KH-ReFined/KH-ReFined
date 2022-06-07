@@ -91,10 +91,12 @@ namespace ReFixed
         public static CancellationTokenSource Source;
 
         //
-        // STATIC ADDRESSES
+        // ADDRESSES
         //
-        // Addresses that do not need changes regardless of the version.
+        // All of the necessary address values.
         //
+
+        public static ulong BASE_OFFSET = 0x56454E;
 
         public static ulong ADDR_MagicLV1 = 0x4460F6;
         public static ulong ADDR_MagicLV2 = 0x446131;
@@ -102,9 +104,11 @@ namespace ReFixed
         public static ulong ADDR_DeadSora = 0x553FC6;
 
         public static ulong ADDR_SoraHP = 0x024BC74A;
-        public static ulong ADDR_SoraForm = 0x00446086;
+        public static ulong ADDR_SoraForm = 0x0446086;
 
         public static ulong ADDR_ContText = 0x2562CA2;
+        public static ulong ADDR_ItemStart = 0x0445086;
+        public static ulong ADDR_DriveStart = 0x24BC8FA;
 
         public static ulong[] ADDR_Objentry = { 0x24BFA72, 0x24BFD72, 0x24E7852 };
         public static ulong[] ADDR_MagicMenu = { 0x24AA2CA, 0x24AA33A, 0x24A98EE };
@@ -113,6 +117,7 @@ namespace ReFixed
         public static ulong ADDR_Reset = 0x553F0C;
         public static ulong ADDR_Config = 0x446D06;
         public static ulong ADDR_LoadFlag = 0x453B82;
+        public static ulong ADDR_PauseFlag = 0x554092;
         public static ulong ADDR_StoryFlag = 0x444832;
         public static ulong ADDR_Difficulty = 0x444FFA;
         public static ulong ADDR_BattleFlag = 0x24AA5B6;
@@ -127,32 +132,24 @@ namespace ReFixed
         public static ulong ADDR_SaveData = 0x442B62;
         public static ulong ADDR_InvMemory = 0x2496C22;
 
+        public static ulong ADDR_Input = 0x1ACF3B;
+        public static ulong ADDR_Confirm = 0x365520;
+        public static ulong ADDR_Framerate = 0x36550C;
+
+        public static ulong ADDR_PAXFormatter = 0x61F92;
+        public static ulong ADDR_BTLFormatter = 0x5F83A;
+        public static ulong ADDR_ANBFormatter = 0x529C2;
+        public static ulong ADDR_EVTFormatter = 0x52A32;
+
+        public static ulong ADDR_Title = 0x1B0216;
+        public static ulong ADDR_World = 0x1B086A;
+
+        public static ulong ADDR_CutsceneFlag = 0x1C1C52;
+        public static ulong ADDR_LimitShortcut = 0x06306A;
+
         public static ulong PINT_SystemBAR = 0x24AA82A;
         public static ulong PINT_DeadMenu = 0x68863A;
         public static ulong PINT_SaveInformation = 0x25A5972;
-
-        //
-        // DYNAMIC ADDRESSES
-        //
-        // Addresses that do need changes depending on the version.
-        //
-
-        public static ulong BASE_OFFSET = (ulong)(FileVersion == "1.0.0.0" ? 0x56450E : 0x56454E);
-
-        public static ulong ADDR_Input = (ulong)(FileVersion == "1.0.0.0" ? 0x1ACF7B : 0x1ACF3B);
-        public static ulong ADDR_Confirm = (ulong)(FileVersion == "1.0.0.0" ? 0x365550 : 0x365520);
-        public static ulong ADDR_Framerate = (ulong)(FileVersion == "1.0.0.0" ? 0x36553C : 0x36550C);
-
-        public static ulong ADDR_PAXFormatter = (ulong)(FileVersion == "1.0.0.0" ? 0x61FD2 : 0x61F92);
-        public static ulong ADDR_BTLFormatter = (ulong)(FileVersion == "1.0.0.0" ? 0x5F87A : 0x5F83A);
-        public static ulong ADDR_ANBFormatter = (ulong)(FileVersion == "1.0.0.0" ? 0x52A02 : 0x529C2);
-        public static ulong ADDR_EVTFormatter = (ulong)(FileVersion == "1.0.0.0" ? 0x52A72 : 0x52A32);
-
-        public static ulong ADDR_Title = (ulong)(FileVersion == "1.0.0.0" ? 0x1B0256 : 0x1B0216);
-        public static ulong ADDR_World = (ulong)(FileVersion == "1.0.0.0" ? 0x1B08AA : 0x1B086A);
-
-        public static ulong ADDR_CutsceneFlag = (ulong)(FileVersion == "1.0.0.0" ? 0x1C1C92 : 0x1C1C52);
-        public static ulong ADDR_LimitShortcut = (ulong)(FileVersion == "1.0.0.0" ? 0x0630AA : 0x06306A);
 
         //
         // INSTRUCTION ADDRESSES
@@ -160,11 +157,11 @@ namespace ReFixed
         // Addresses for instructions are here.
         //
 
-        public static ulong ADDR_LimiterINST = (ulong)(FileVersion == "1.0.0.0" ? 0x152160 : 0x152220);
-        public static ulong ADDR_WarpINST = (ulong)(FileVersion == "1.0.0.0" ? 0x000000 : 0x150782);
-        public static ulong ADDR_RevertINST = (ulong)(FileVersion == "1.0.0.0" ? 0x000000 : 0x39D8D6);
-        public static ulong ADDR_InventoryINST = (ulong)(FileVersion == "1.0.0.0" ? 0x000000 : 0x39D8EF);
-        public static ulong[] ADDR_CMDSelectINST = FileVersion == "1.0.0.0" ? new ulong[] { 0x3AEAC1, 0x3AEBA5, 0x3AEC4C, 0x3AEBCD, 0x3AEC1C } : new ulong[] { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
+        public static ulong ADDR_LimiterINST = 0x152220;
+        public static ulong ADDR_WarpINST = 0x150782;
+        public static ulong ADDR_RevertINST = 0x39D8D6;
+        public static ulong ADDR_InventoryINST = 0x39D8EF;
+        public static ulong[] ADDR_CMDSelectINST = { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
 
         //
         // INSTRUCTIONS
@@ -172,10 +169,10 @@ namespace ReFixed
         // We store the actual instructions here.
         //
 
-        public static byte[] INST_FrameLimiter = FileVersion == "1.0.0.0" ? new byte[] { 0x89, 0x1D, 0x62, 0x62, 0x96, 0x00 } : new byte[] { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
-        public static byte[] INST_RoomWarp = FileVersion == "1.0.0.0" ? new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 } : new byte[] { 0xE8, 0x59, 0x00, 0x00, 0x00 };
-        public static byte[] INST_FlagRevert = FileVersion == "1.0.0.0" ? new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 } : new byte[] { 0xE8, 0x05, 0x01, 0x00, 0x00 };
-        public static byte[] INST_InvRevert = FileVersion == "1.0.0.0" ? new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 } : new byte[] { 0xE8, 0xA4, 0x1A, 0x0D, 0x00};
+        public static byte[] INST_FrameLimiter = { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
+        public static byte[] INST_RoomWarp = { 0xE8, 0x59, 0x00, 0x00, 0x00 };
+        public static byte[] INST_FlagRevert = { 0xE8, 0x05, 0x01, 0x00, 0x00 };
+        public static byte[] INST_InvRevert = { 0xE8, 0xA4, 0x1A, 0x0D, 0x00};
 
         public static byte[][] INST_CMDSelect = 
         {
