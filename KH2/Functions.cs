@@ -979,7 +979,7 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
-                if (RETRY_MODE == 0x01)
+                if (RETRY_MODE == 0x01 && _cutsByte != 0x00)
                 {
                     while (_pausRead == 0x01)
                         _pausRead = Hypervisor.Read<byte>(Variable.ADDR_PauseFlag);
