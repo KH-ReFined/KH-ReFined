@@ -20,76 +20,97 @@ using System.Runtime.ExceptionServices;
 using Axa;
 using ReFixed;
 
+using DiscordRPC;
+
 namespace AxaFormBase
 {
+    
     public partial class BaseSimpleForm : Form
     {
+        static bool _cursorHidden;
+        static bool _captureStatus;
+
         public static CancellationTokenSource CancelSource;
         public static CancellationToken MainToken;
         public static Task MainTask;
 
-        public static float ResolutionDiv;
+        public static float _resDiv;
+
+        public static void _keyEvent(object s, KeyEventArgs e)
+		{
+			if ((e.Control && e.Alt) || (e.Control && e.KeyCode == Keys.Escape))
+				_captureStatus = !_captureStatus;
+
+			if (_captureStatus && !_cursorHidden)
+			{
+				Cursor.Hide();
+                _cursorHidden = true;
+			}
+
+			else if (!_captureStatus && _cursorHidden)
+			{
+				Cursor.Show();
+                _cursorHidden = false;
+			}
+		}
 
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {
-            UpdateAgent.UpdateCheck();
+            if (BaseSimpleForm.theInstance == null)
+                new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.75]");
 
-            if (File.Exists("DBGHELP.dll") || File.Exists("DINPUT8.dll") || File.Exists("LuaBackend.dll"))
-            {
-                var _boxMessage = "Re:Fixed detected the presence of LuaBackend! Unfortunately,\n" +
-                                  "LuaBackend does not support Re:Fixed. Please use LuaFrontend!\n" +
-                                  "The game cannot start until LuaBackendHook is removed.";  
+            Cursor.Hide();
+            theInstance.KeyDown += _keyEvent;
 
-                var _boxTitle = "LuaBackend Detected!";  
-                var _boxButtons = MessageBoxButtons.OK;  
-
-                MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error); 
-				Environment.Exit(-1); 
-            }
-
-            if (theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.10]");
+            _captureStatus = true;
+            _cursorHidden = true;
 
             Variables.DiscordClient.Initialize();
 
             CancelSource = new CancellationTokenSource();
             MainToken = BaseSimpleForm.CancelSource.Token;
 
-            Variables.GameProcess = Process.GetCurrentProcess();
-            Variables.GameHandle = Variables.GameProcess.Handle;
-            Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
-            Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
+            Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_OFFSET);
+
+            theInstance.timer1.Start();
 
             MainTask = Task.Factory.StartNew(
                 delegate()
                 {
                     while (!MainToken.IsCancellationRequested)
                     {
+                        Functions.Execute();
+
+                        if (Form.ActiveForm != null && _captureStatus)
+                        {
+                            var _scrPoint = theInstance.PointToScreen(new Point(0, 0));
+                            Cursor.Position = new Point(_scrPoint.X + theInstance.Width / 2, _scrPoint.Y + theInstance.Height / 2);
+                        }
+
+                        else
+                            _captureStatus = false;
+
                         Rectangle _windRect = Screen.FromControl(BaseSimpleForm.theInstance).Bounds;
 
-                        if (
-                            _windRect.Bottom == theInstance.Height
-                            && _windRect.Right == theInstance.Width
-                        )
+                        if (_windRect.Bottom == theInstance.Height && _windRect.Right == theInstance.Width)
                         {
                             float _divisorValue =
                                 (float)theInstance.Width / (float)theInstance.Height;
 
-                            if (_divisorValue != ResolutionDiv)
+                            if (_divisorValue != _resDiv)
                             {
-                                ResolutionDiv = _divisorValue;
+                                _resDiv = _divisorValue;
                                 Functions.AspectCorrection(_divisorValue);
                             }
                         }
-
-                        Functions.Execute();
+                        
                         Thread.Sleep(5);
                     }
                 },
                 MainToken
             );
 
-            return theInstance;
+            return BaseSimpleForm.theInstance;
         }
     }
 }

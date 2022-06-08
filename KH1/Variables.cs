@@ -1,12 +1,13 @@
 /*
-===================================================
-      KINGDOM HEARTS, RE:FIXED FOR 1 FM!
-       COPYRIGHT TOPAZ WHITELOCK, 2022
+==================================================
+      KINGDOM HEARTS - RE:FIXED FOR 1 FM!
+       COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
-===================================================
+==================================================
 */
 
 using System;
+using System.IO;
 using System.Media;
 using System.Threading;
 using System.Reflection;
@@ -21,92 +22,42 @@ namespace ReFixed
 {
     public class Variables
     {
-        private static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
+        //
+        // CONFIG VARIABLES
+        //
+        // Variables that will be read from a config file to tell Re:Fixed what to do.
+        //
 
-        public static bool Initialized = false;
+        public static bool saveToggle = true;
+        public static bool sfxToggle = true;
 
-        public static Task DiscordTask;
-        public static Task AutoSaveTask;
-        public static CancellationToken TaskToken;
-        public static CancellationTokenSource CancelSource;
+        //
+        // INFORMATION GRAB
+        //
+        // Grab informaiton from the EXE direct.
+        //
+
+        static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
+        static FileVersionInfo FileInfo = FileVersionInfo.GetVersionInfo(ExeAssembly.Location);
+        static string FileVersion = FileInfo.FileVersion;
+
+        //
+        // RESOURCE LIBRARY
+        //
+        // Reserved for static resources, or initialization of APIs
+        //
 
         public static DiscordRpcClient DiscordClient = new DiscordRpcClient("837171155076513834");
 
-        public static SoundPlayer SaveSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxSave.wav"));
-        public static SoundPlayer DenySFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxDeny.wav"));
-        public static SoundPlayer ToggleSFX = new SoundPlayer(ExeAssembly.GetManifestResourceStream("sfxToggle.wav"));
+        public static Stream SaveSFX = ExeAssembly.GetManifestResourceStream("sfxSave.wav");
+        public static Stream DenySFX = ExeAssembly.GetManifestResourceStream("sfxDeny.wav");
+        public static Stream ToggleSFX = ExeAssembly.GetManifestResourceStream("sfxToggle.wav");
 
-        public static string[] ModeText = { "Beginner", "Standard", "Proud" };
-        public static string[] WorldImages =
-        {
-            "",
-            "di",
-            "",
-            "tt",
-            "wl",
-            "tz",
-            "po",
-            "",
-            "al",
-            "lm",
-            "nm",
-            "he",
-            "pn",
-            "nv",
-            "",
-            "hb",
-            "eh"
-        };
+        public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
+        public static string DenySFXPath = Path.GetTempPath() + "ReFixed/denySFX.wav";
+        public static string ToggleSFXPath = Path.GetTempPath() + "ReFixed/toggleSFX.wav";
 
-        public static Process GameProcess;
-        public static IntPtr GameHandle;
-
-        public static ulong GameAddress;
-        public static ulong ExeAddress;
-
-        public static ulong BaseAddress = 0x3A0606;
-        public static ulong VibrationAddress = 0x2A5B7DA;
-
-        public static ulong InputAddress = 0x1F9CA2E;
-        public static ulong GameRunningFlag = 0x1372A7;
-
-        public static ulong SoraMPAddress = 0x246E512;
-        public static ulong SoraMagicAddress = 0x2A4543E;
-
-        public static ulong SaveMenuSelect = 0x2A7C552;
-        public static ulong[] ResetAddresses = new ulong[] { 0x1F480D6, 0x1F480DA, 0x1F9BC3A };
-
-        public static ulong[] FovTextAddresses = new ulong[] { 0x2A76F66, 0x2A78F86 };
-        public static ulong[] CamTextAddresses = new ulong[] { 0x2A76F6E, 0x2A79D4D };
-
-        public static ushort[] FovTextOffsets = new ushort[] { 0x1EBA, 0x1EC8, 0x1ED0, 0x1ED9 };
-        public static ushort[] CamTextOffsets = new ushort[] { 0x2C88, 0x2C8F };
-
-        public static float[] FovClassic = new float[] { 400, -50, -100, 350, 300, 300, 300, 300 };
-        public static float[] FovEnhanced = new float[] { 600, 0, -150, 600, 600, 600, 600, 600 };
-
-        public static ulong[] FovAddresses = new ulong[]
-        {
-            0x2194066,
-            0x2194072,
-            0x219406E,
-            0x0163352,
-            0x0163372,
-            0x0163392,
-            0x01633B2,
-            0x2A4518E
-        };
-
-        public static bool AbilityBool = false;
-        public static long UsedPoints = -1392;
-        public static ulong PartyStart = 0x2A45859;
-        public static ulong SharedStart = 0x2A45963;
-        public static ulong AbilityStart = 0x2A4540E;
-        public static ulong AbilityMenuStart = 0x2AF8BD2;
-        public static ulong AbilityPointAddress = 0x2AF031E;
-
-        // Look, I know this is dumb but what can I do.
-        public static Dictionary<byte, byte> DictionaryAP = new Dictionary<byte, byte>()
+        public static Dictionary<byte, byte> APDictionary = new Dictionary<byte, byte>()
         {
             { 0x01, 0x00 },
             { 0x02, 0x00 },
@@ -175,40 +126,110 @@ namespace ReFixed
             { 0x41, 0x03 }
         };
 
-        public static ulong SaveAddress = 0x2A5BFCA;
-        public static ulong InformationPointer = 0x2B379CA;
+        //
+        // RPC ASSET LIBRARY
+        //
+        // Everything DiscordRPC uses (except for the RPC itself) resides here.
+        //
 
-        public static ulong TimeAddress = 0x01F9BC4E;
-        public static ulong MunnyAddress = 0x2A5B7E6;
-        public static ulong LevelAddress = 0x02A453CE;
-        public static ulong WorldAddress = 0x01F9C4D6;
-        public static ulong SoraStatStart = 0x029B8CC6;
-        public static ulong LoadFlagAddress = 0x2B6DFD7;
-        public static ulong GummiFlagAddress = 0x00163C17;
-        public static ulong BattleFlagAddress = 0x024C3352;
-        public static ulong DifficultyAddress = 0x02A5B7F6;
-        public static ulong CutsceneFlagAddress = 0x1FF3EDE;
+        public static string[] BTLDictionary = { "safe", "battle" };
+        public static string[] WRLDictionary = { "", "di", "", "tt", "wl", "tz", "po", "", "al", "lm", "nm", "he", "pn", "nv", "", "hb", "eh" };
+        public static string[] MDEDictionary = { "Beginner", "Standard", "Proud" };
 
-        public static ulong VPHeightAddress = 0x10F2E;
+        //
+        // ALTERED VARIABLES
+        //
+        // Variables that can be altered reside here.
+        //
 
-        public static byte SaveIterator;
-        public static byte SaveWorld;
-        public static byte SaveRoom;
+        public static bool Initialized = false;
 
-        public static string[] FovTextStrings = new string[] 
+        public static Task DCTask;
+        public static Task ASTask;
+        public static CancellationToken Token;
+        public static CancellationTokenSource Source;
+
+        //
+        // STATIC ADDRESSES
+        //
+        // Addresses that do not need changes regardless of the version.
+        //
+
+        public static ulong BASE_ADDRESS = 0x3A0606;
+
+        public static ulong ADDR_Config = 0x2A5B7DA;
+
+        public static ulong ADDR_Input = 0x1F9CA2E;
+        public static ulong ADDR_GameState = 0x1372A7;
+
+        public static ulong ADDR_Magic = 0x2A4543E;
+        public static ulong ADDR_SoraMP = 0x246E512;
+
+        public static ulong ADDR_SaveData = 0x2A5BFCA;
+        public static ulong ADDR_SaveSelect = 0x2A7C552;
+
+        public static ulong ADDR_Time = 0x01F9BC4E;
+        public static ulong ADDR_Munny = 0x2A5B7E6;
+        public static ulong ADDR_Level = 0x02A453CE;
+        public static ulong ADDR_SoraStats = 0x029B8CC6;
+
+        public static ulong ADDR_World = 0x01F9C4D6;
+        public static ulong ADDR_Difficulty = 0x02A5B7F6;
+
+        public static ulong ADDR_LoadFlag = 0x1FD855A;
+        public static ulong ADDR_GummiFlag = 0x00163C17;
+        public static ulong ADDR_BattleFlag = 0x024C3352;
+        public static ulong ADDR_CutsceneFlag = 0x1FD855A;
+
+        public static ulong ADDR_Viewport = 0x10F2E;
+
+        public static ulong ADDR_ALLAbility = 0x2A45963;
+        public static ulong ADDR_SORAAbility = 0x2A4540E;
+        public static ulong ADDR_FRIENDAbility = 0x2A45859;
+
+        public static ulong ADDR_AbilityMenu = 0x2AF8BD2;
+        public static ulong ADDR_AbilityPoint = 0x2AF031E;
+
+        public static ulong[] ADDR_Reset = new ulong[]
         {
-            "Field of View{0x00}Classic{0x00}Enhanced{0x00}Toggle between Field of View modes.",
-            "",
-            "Sichtfeld{0x00}Klassisch{0x00}Erweitert{0x00}Wechsle die Art der Sichtweite.",
-            "Campo de Visión{0x00}Clásico{0x00}Mejorado{0x00}Cambia entre los diferentes modos de Campo de Visión."
+            0x1F480D6,
+            0x1F480DA,
+            0x1F9BC3A
         };
 
-        public static string[] CamTextStrings = new string[] 
+        public static ulong[] ADDR_FieldOfView = new ulong[]
         {
-            "X-Axis{0x00}Y-Axis",
-            "",
-            "X-Achse{0x00}Y-Achse",
-            "Eje-X{0x00}Eje-Y"
+            0x2194066,
+            0x2194072,
+            0x219406E,
+            0x0163352,
+            0x0163392,
+            0x01633B2,
+            0x2A4518E
         };
+
+        public static ulong[] ADDR_CameraINST = new ulong[]
+        {
+            0x1E0D74,
+            0x1DD5A9,
+            0x1DD453,
+            0x1DD89C,
+            0x1DD628
+        };
+
+        public static ulong PINT_MenuState = 0x2AF021A;
+        public static ulong PINT_SystemBAR = 0x2A76CCA;
+        public static ulong PINT_SaveInformation = 0x2B379CA;
+
+        //
+        // VALUE DUMP
+        //
+        // The values themselves, which will be written to shit, are stored here.
+        //
+
+        public static float[] VALUE_DefaultFOV =  { 400, -050, -100, 350, 300, 300, 300, 300 };
+        public static float[] VALUE_EnhancedFOV = { 600, -000, -150, 600, 600, 600, 600, 600 };
+        public static byte[] VALUE_DefaultCAM =  { 0x84, 0x73, 0x85, 0x74, 0x85 };
+        public static byte[] VALUE_EnhancedCAM = { 0x85, 0x72, 0x81, 0x72, 0x81 };
     }
 }

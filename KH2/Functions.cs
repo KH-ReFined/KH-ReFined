@@ -81,7 +81,7 @@ namespace ReFixed
             if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
                 Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
                 
-            if (!File.Exists(Variables.SaveSFXPath))
+            if (!File.Exists(Variables.SwitchSFXPath))
             {
                 var _saveStream = File.Create(Variables.SaveSFXPath);
                 var _switchStream = File.Create(Variables.SwitchSFXPath);
