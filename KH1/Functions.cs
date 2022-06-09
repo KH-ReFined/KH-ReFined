@@ -80,11 +80,7 @@ namespace ReFixed
             Checks certain points in RAM to see if the player is in the Title Screen.
             Returns **true** if so, returns **false** otherwise. 
         */
-        public static bool CheckTitle() =>
-            Hypervisor.Read<byte>(Variables.ADDR_World) == 0xFF
-            || Hypervisor.Read<byte>(Variables.ADDR_World + 0x68) == 0xFF
-            || Hypervisor.Read<byte>(Variables.ADDR_World) == 0x00
-            || Hypervisor.Read<byte>(Variables.ADDR_Level) == 0;
+        public static bool CheckTitle() => Hypervisor.Read<byte>(Variables.ADDR_TitleFlag) == 0x01;
 
         /*
             TextAdjust:
@@ -494,19 +490,25 @@ namespace ReFixed
         */
         public static void AutosaveEngine()
         {
-            var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
-            var _titleCheck = Hypervisor.Read<byte>(Variables.ADDR_Reset[1]);
-
             var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
-            var _loadCheck = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
             var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x68);
+
+            var _battleCheck = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
             var _cutsceneCheck = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
 
             var _menuCheck = Hypervisor.Read<ulong>(Variables.PINT_MenuState);
+            var _gummiCheck = Hypervisor.Read<byte>(Variables.ADDR_GummiFlag);
 
-            var _saveableBool = Variables.saveToggle && _titleCheck > 0x02 && _battleRead == 0x00 && _loadCheck == 0x00 && _cutsceneCheck == 0x00 && _menuCheck == 0x00;
+            var _loadCheck = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+            var _blackCheck = Hypervisor.Read<byte>(Variables.ADDR_Blackness);
+            var _whiteCheck = Hypervisor.Read<byte>(Variables.ADDR_Whiteness);
 
-            if (_saveableBool)
+            var _isLoading = _loadCheck == 0x01 || _blackCheck != 0x80 || _whiteCheck != 0x00;
+            var _isViable = (_battleCheck % 0x02) == 0x00 && _cutsceneCheck == 0x00 && _menuCheck == 0x00 && _gummiCheck == 0x00;
+
+            var _saveableBool = Variables.saveToggle && _isViable && !_isLoading;
+
+            if (_saveableBool && !CheckTitle())
             {
                 if (SAVE_WORLD != _worldCheck)
                 {
@@ -684,6 +686,7 @@ namespace ReFixed
 
             #region Mid Priority
             MagicHide();
+            TextAdjust();
             FieldOfView();
             AbilityToggle();
             #endregion

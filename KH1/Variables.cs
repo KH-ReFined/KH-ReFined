@@ -176,10 +176,14 @@ namespace ReFixed
         public static ulong ADDR_World = 0x01F9C4D6;
         public static ulong ADDR_Difficulty = 0x02A5B7F6;
 
-        public static ulong ADDR_LoadFlag = 0x1FD855A;
+        public static ulong ADDR_TitleFlag = 0x45E38A;
+        public static ulong ADDR_LoadFlag = 0x1F89D62;
         public static ulong ADDR_GummiFlag = 0x00163C17;
         public static ulong ADDR_BattleFlag = 0x024C3352;
-        public static ulong ADDR_CutsceneFlag = 0x1FD855A;
+        public static ulong ADDR_CutsceneFlag = 0x1F9A86E;
+
+        public static ulong ADDR_Blackness = 0x0138DB2;
+        public static ulong ADDR_Whiteness = 0x1F9BE96;
 
         public static ulong ADDR_Viewport = 0x10F2E;
 
