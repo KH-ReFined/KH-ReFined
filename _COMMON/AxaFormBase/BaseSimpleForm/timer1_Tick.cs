@@ -23,11 +23,11 @@ namespace AxaFormBase
 	{
 		private void timer1_Tick(object sender, EventArgs e)
 		{
-			if (!_captureStatus && _cursorHidden)
+			if (!CaptureStatus && _cursorHidden)
 			{
 				Cursor.Show();
-				<Module>.Axa.setMouseActive(false);
 				_cursorHidden = false;
+				<Module>.Axa.setMouseActive(false);
 			}
 		}
 	}

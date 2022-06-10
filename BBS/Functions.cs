@@ -68,6 +68,14 @@ namespace ReFixed
                 Variables.ToggleSFX.CopyTo(_toggleStream);
             }
 
+            if (File.Exists("reFixed.ini"))
+            {
+                var _configIni = new TinyIni("reFixed.ini");
+
+                Variables.saveToggle = bool.Parse(_configIni.Read("autoSave"));
+                Variables.sfxToggle =  bool.Parse(_configIni.Read("saveIndicator"));
+            }
+
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
@@ -156,7 +164,7 @@ namespace ReFixed
                     var _yesRead = Hypervisor.ReadTerminate(_headerBegin + _yesLocation, true);
                     Console.WriteLine(_yesRead);
                     var _catchStr = Strings.OriginText.FirstOrDefault(x => x == _yesRead);
-                    LANGUAGE = Array.IndexOf(Strings.OriginText, _catchStr);
+                    LANGUAGE = (byte)Array.IndexOf(Strings.OriginText, _catchStr);
                 }
 
                 ulong _writeOffset = 0;

@@ -23,12 +23,12 @@ namespace AxaFormBase
 	{
 		private void noMouse_OnMouseDown(object sender, MouseEventArgs e)
 		{
-			if (!_captureStatus && !_cursorHidden)
+			if (!CaptureStatus && !_cursorHidden)
 			{
 				Cursor.Hide();
-				<Module>.Axa.setMouseActive(true);
 			    _cursorHidden = true;		
-                _captureStatus = true;
+                CaptureStatus = true;
+				<Module>.Axa.setMouseActive(true);
             }
 		}
 	}

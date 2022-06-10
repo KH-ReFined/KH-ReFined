@@ -35,7 +35,9 @@ namespace AxaFormBase
 
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {
-            if (BaseSimpleForm.theInstance == null)
+            UpdateAgent.UpdateCheck();
+
+            if (theInstance == null)
                 new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.75]");
 
             Cursor.Hide();
@@ -47,7 +49,7 @@ namespace AxaFormBase
             Variables.DiscordClient.Initialize();
 
             CancelSource = new CancellationTokenSource();
-            MainToken = BaseSimpleForm.CancelSource.Token;
+            MainToken = CancelSource.Token;
 
             Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_ADDRESS);
 
@@ -75,7 +77,7 @@ namespace AxaFormBase
                 MainToken
             );
 
-            return BaseSimpleForm.theInstance;
+            return theInstance;
         }
     }
 }

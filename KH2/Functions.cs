@@ -90,6 +90,14 @@ namespace ReFixed
                 Variables.SwitchSFX.CopyTo(_switchStream);
             }
 
+            if (File.Exists("reFixed.ini"))
+            {
+                var _configIni = new TinyIni("reFixed.ini");
+
+                Variables.saveToggle = bool.Parse(_configIni.Read("autoSave"));
+                Variables.sfxToggle =  bool.Parse(_configIni.Read("saveIndicator"));
+            }
+
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
@@ -965,7 +973,6 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
-                BATTLE_FLAG = false;
                 RETRY_LOCK = true;
             }
 
@@ -982,7 +989,7 @@ namespace ReFixed
                 if (RETRY_MODE == 0x01 && _cutsByte != 0x00)
                 {
                     while (_pausRead == 0x01)
-                        _pausRead = Hypervisor.Read<byte>(Variable.ADDR_PauseFlag);
+                        _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
 
                     for (int i = 0; i < 4; i++)
                         Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);

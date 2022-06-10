@@ -16,8 +16,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ReFixed
 {
-	
-
     public static class Hypervisor
     {
         [DllImport("kernel32.dll", SetLastError = true)]
