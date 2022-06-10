@@ -24,53 +24,77 @@ using DiscordRPC;
 
 namespace AxaFormBase
 {
-	public partial class BaseSimpleForm : Form
-	{
-		public static CancellationTokenSource CancelSource;
-		public static CancellationToken MainToken;
-		public static Task MainTask;
+    
+    public partial class BaseSimpleForm : Form
+    {
+        static bool _cursorHidden;
+        static bool _captureStatus;
 
-		public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
+        public static CancellationTokenSource CancelSource;
+        public static CancellationToken MainToken;
+        public static Task MainTask;
+
+        public static void _keyEvent(object s, KeyEventArgs e)
 		{
-			UpdateAgent.UpdateCheck();
+			if ((e.Control && e.Alt) || (e.Control && e.KeyCode == Keys.Escape))
+				_captureStatus = !_captureStatus;
 
-			if (File.Exists("DBGHELP.dll") || File.Exists("DINPUT8.dll") || File.Exists("LuaBackend.dll"))
-            {
-                var _boxMessage = "Re:Fixed detected the presence of LuaBackend! Unfortunately,\n" +
-                                  "LuaBackend does not support Re:Fixed. Please use LuaFrontend!\n" +
-                                  "The game cannot start until LuaBackendHook is removed.";  
-
-                var _boxTitle = "LuaBackend Detected!";  
-                var _boxButtons = MessageBoxButtons.OK;  
-
-                MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error); 
-				System.Environment.Exit(-1);
-            }
-			
-			if (theInstance == null)
-				new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.10]");
-
-			Variables.DiscordClient.Initialize();
-
-			CancelSource = new CancellationTokenSource();
-			MainToken = BaseSimpleForm.CancelSource.Token;
-
-			Variables.GameProcess = Process.GetCurrentProcess();
-			Variables.GameHandle = Variables.GameProcess.Handle;
-			Variables.ExeAddress = (ulong)Variables.GameProcess.MainModule.BaseAddress.ToInt64();
-			Variables.GameAddress = Variables.ExeAddress + Variables.BaseAddress;
-
-			MainTask = Task.Factory.StartNew(delegate()
+			if (_captureStatus && !_cursorHidden)
 			{
-				while (!MainToken.IsCancellationRequested)
-				{
-					Functions.Execute();
-					Thread.Sleep(5);
-				}
+				Cursor.Hide();
+                _cursorHidden = true;
+			}
 
-			}, MainToken);
-
-			return theInstance;
+			else if (!_captureStatus && _cursorHidden)
+			{
+				Cursor.Show();
+                _cursorHidden = false;
+			}
 		}
-	}
+
+        public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
+        {
+            if (BaseSimpleForm.theInstance == null)
+                new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.75]");
+
+            Cursor.Hide();
+            theInstance.KeyDown += _keyEvent;
+
+            _captureStatus = true;
+            _cursorHidden = true;
+
+            Variables.DiscordClient.Initialize();
+
+            CancelSource = new CancellationTokenSource();
+            MainToken = BaseSimpleForm.CancelSource.Token;
+
+            Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_OFFSET);
+
+            theInstance.timer1.Start();
+
+            MainTask = Task.Factory.StartNew(
+                delegate()
+                {
+                    while (!MainToken.IsCancellationRequested)
+                    {
+                        Functions.Execute();
+
+                        if (Form.ActiveForm != null && _captureStatus)
+                        {
+                            var _scrPoint = theInstance.PointToScreen(new Point(0, 0));
+                            Cursor.Position = new Point(_scrPoint.X + theInstance.Width / 2, _scrPoint.Y + theInstance.Height / 2);
+                        }
+
+                        else
+                            _captureStatus = false;
+
+                        Thread.Sleep(5);
+                    }
+                },
+                MainToken
+            );
+
+            return BaseSimpleForm.theInstance;
+        }
+    }
 }

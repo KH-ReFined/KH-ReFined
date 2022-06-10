@@ -46,8 +46,6 @@ namespace ReFixed
         //
 
         static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
-        static FileVersionInfo FileInfo = FileVersionInfo.GetVersionInfo(ExeAssembly.Location);
-        static string FileVersion = FileInfo.FileVersion;
 
         //
         // RESOURCE LIBRARY
