@@ -185,7 +185,7 @@ namespace ReFixed
 
             ReadProcessMemory(Handle, _address, _outArray, _length, ref _outRead);
 
-            return Encoding.Default.GetString(_outArray);
+            return Encoding.GetEncoding(437).GetString(_outArray);
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace ReFixed
 
             int _inWrite = 0;
 
-            var _stringArray = Encoding.ASCII.GetBytes(Value);
+            var _stringArray = Encoding.GetEncoding(437).GetBytes(Value);
 
             WriteProcessMemory(Handle, _address, _stringArray, _stringArray.Length, ref _inWrite);
         }

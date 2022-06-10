@@ -33,6 +33,9 @@ namespace ReFixed
             Yes, this class has one, too!
         */
 
+        [DllImport("kernel32")]
+        static extern bool AllocConsole();
+
         static bool[] DEBOUNCE = new bool[] { false, false, false, false, false };
 
         static bool SAVE_ONCE;
@@ -105,6 +108,70 @@ namespace ReFixed
 
             else if ((_inputRead & 0x0C09) != 0x0C09 && DEBOUNCE[1])
                 DEBOUNCE[1] = false;
+        }
+
+        /*
+            TextAdjust:
+            Overwrite the text in certain portions of the game, to give the illusion that
+            the features given are Square-made, and not some jank being made by a 20-year-old
+            no life :^)
+        */
+        public static void TextAdjust()
+        {
+            var _basePointer = Hypervisor.Read<ulong>(Variables.PINT_SettingsText);
+            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA0, true);
+
+            var _headerBegin = _secondaryPointer - 0x9A0;
+
+            var _textBegin = _secondaryPointer + 0x781;
+            var _textEnd = _secondaryPointer + 0x2CD0;
+
+            var _headerMagic = Hypervisor.ReadArray(_headerBegin, 0x04, true);
+            var _headerBlock = Hypervisor.ReadArray(_headerBegin, 0x9A0, true);
+
+            var _optionTitle = _headerBlock.FindValue(0x3432030F) + 0x04;
+
+            var _optionNoDesc = _headerBlock.FindValue(0x34322601) + 0x04;
+            var _optionYesDesc = _headerBlock.FindValue(0x34322600) + 0x04;
+
+            var _optionNo = _headerBlock.FindValue(0x34320B00) + 0x04;    
+            var _optionYes = _headerBlock.FindValue(0x34320B01) + 0x04;
+
+            if (_headerMagic.SequenceEqual(new byte[] { 0x40, 0x43, 0x54, 0x44 }))
+            {
+                var _yesLocation = Hypervisor.Read<ushort>(_headerBegin + _optionYes, true);
+
+                var _locArray = new ulong[]
+                {
+                    _optionTitle,
+                    _optionYes,
+                    _optionNo,
+                    _optionYesDesc,
+                    _optionNoDesc
+                };
+
+                if (LANGUAGE == 0xFF)
+                {
+                    AllocConsole();
+                    var _yesRead = Hypervisor.ReadTerminate(_headerBegin + _yesLocation, true);
+                    Console.WriteLine(_yesRead);
+                    var _catchStr = Strings.OriginText.FirstOrDefault(x => x == _yesRead);
+                    LANGUAGE = Array.IndexOf(Strings.OriginText, _catchStr);
+                }
+
+                ulong _writeOffset = 0;
+
+                for (int i = 0; i < Strings.AutoSave[LANGUAGE].Length; i++)
+                {
+                    var _str = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
+                    var _offset = _textEnd - _headerBegin + _writeOffset;
+
+                    Hypervisor.WriteString(_textEnd + _writeOffset, _str, true);
+                    Hypervisor.Write<ushort>(_headerBegin + _locArray[i], (ushort)_offset, true);
+
+                    _writeOffset += (ulong)_str.Length;
+                }
+            }
         }
 
         /*
@@ -548,6 +615,7 @@ namespace ReFixed
             if (Variables.DualAudio)
                 AudioSwap();
 
+            TextAdjust();
             FinisherPrompt();
             FrameOverride();
             #endregion

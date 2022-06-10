@@ -19,6 +19,28 @@ namespace ReFixed
 {
     public static class Extensions
     {
+        public static ulong FindValue(this byte[] Source, uint Value)
+        {
+            var _pattern = BitConverter.GetBytes(Value);
+            ulong _charSlot = (ulong)(Source.Length - _pattern.Length + 1);
+
+            for (ulong i = 0; i < _charSlot; i++)
+            {
+                if (Source[i] != _pattern[0])
+                    continue;
+
+                for (ulong j = (ulong)_pattern.Length - 1; j >= 1; j--)
+                {
+                    if (Source[i + j] != _pattern[j]) 
+                        break;
+
+                    if (j == 1) 
+                        return i;
+                }
+            }
+            return 0xFFFFFFFFFFFFFFFF;
+        }
+        
         public static void PlaySFX(string Input)
 		{
 			var _output = new DirectSoundOut();

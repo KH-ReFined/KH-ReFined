@@ -114,7 +114,7 @@ namespace ReFixed
 
         public static ulong PINT_StatusMenu = 0x109A3334;
         public static ulong PINT_CommandMenu = 0x109A333C;
-        public static ulong PINT_SettingsMenu = 0x896C7BC;
+        public static ulong PINT_SettingsText = 0x896C7BC;
         public static ulong PINT_SaveInformation = 0x109A387C;
 
         //
