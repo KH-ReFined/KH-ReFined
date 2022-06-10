@@ -24,7 +24,6 @@ using DiscordRPC;
 
 namespace AxaFormBase
 {
-    
     public partial class BaseSimpleForm : Form
     {
         static bool _cursorHidden;
@@ -35,11 +34,6 @@ namespace AxaFormBase
         public static Task MainTask;
 
         public static float _resDiv;
-
-        public static void _keyEvent(object s, KeyEventArgs e)
-		{
-
-		}
 
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {

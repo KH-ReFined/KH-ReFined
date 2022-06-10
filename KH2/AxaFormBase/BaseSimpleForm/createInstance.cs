@@ -33,12 +33,7 @@ namespace AxaFormBase
         public static CancellationTokenSource CancelSource;
         public static CancellationToken MainToken;
         public static Task MainTask;
-
-        public static void _keyEvent(object s, KeyEventArgs e)
-		{
-
-		}
-
+        
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {
             if (BaseSimpleForm.theInstance == null)
