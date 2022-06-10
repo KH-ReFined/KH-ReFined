@@ -94,7 +94,7 @@ namespace ReFixed
         // All of the necessary address values.
         //
 
-        public static ulong BASE_OFFSET = 0x56454E;
+        public static ulong BASE_ADDRESS = 0x56454E;
 
         public static ulong ADDR_MagicLV1 = 0x4460F6;
         public static ulong ADDR_MagicLV2 = 0x446131;

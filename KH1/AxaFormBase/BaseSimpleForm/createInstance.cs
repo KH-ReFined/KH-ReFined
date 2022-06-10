@@ -28,7 +28,7 @@ namespace AxaFormBase
     public partial class BaseSimpleForm : Form
     {
         static bool _cursorHidden;
-        static bool _captureStatus;
+        static bool CaptureStatus;
 
         public static CancellationTokenSource CancelSource;
         public static CancellationToken MainToken;
@@ -38,20 +38,7 @@ namespace AxaFormBase
 
         public static void _keyEvent(object s, KeyEventArgs e)
 		{
-			if ((e.Control && e.Alt) || (e.Control && e.KeyCode == Keys.Escape))
-				_captureStatus = !_captureStatus;
 
-			if (_captureStatus && !_cursorHidden)
-			{
-				Cursor.Hide();
-                _cursorHidden = true;
-			}
-
-			else if (!_captureStatus && _cursorHidden)
-			{
-				Cursor.Show();
-                _cursorHidden = false;
-			}
 		}
 
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
@@ -62,7 +49,7 @@ namespace AxaFormBase
             Cursor.Hide();
             theInstance.KeyDown += _keyEvent;
 
-            _captureStatus = true;
+            CaptureStatus = true;
             _cursorHidden = true;
 
             Variables.DiscordClient.Initialize();
@@ -70,7 +57,7 @@ namespace AxaFormBase
             CancelSource = new CancellationTokenSource();
             MainToken = BaseSimpleForm.CancelSource.Token;
 
-            Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_OFFSET);
+            Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_ADDRESS);
 
             theInstance.timer1.Start();
 
@@ -81,14 +68,14 @@ namespace AxaFormBase
                     {
                         Functions.Execute();
 
-                        if (Form.ActiveForm != null && _captureStatus)
+                        if (Form.ActiveForm != null && CaptureStatus)
                         {
                             var _scrPoint = theInstance.PointToScreen(new Point(0, 0));
                             Cursor.Position = new Point(_scrPoint.X + theInstance.Width / 2, _scrPoint.Y + theInstance.Height / 2);
                         }
 
                         else
-                            _captureStatus = false;
+                            CaptureStatus = false;
 
                         Rectangle _windRect = Screen.FromControl(BaseSimpleForm.theInstance).Bounds;
 

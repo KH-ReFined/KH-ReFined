@@ -139,7 +139,8 @@ namespace ReFixed
                             ? Hypervisor.Read<byte>(_finishPointer + 0x8E, true)
                             : Hypervisor.Read<ulong>(_finishPointer + 0xD8, true);
 
-                    var _isFinisher =  _statusPointer > 0 ? (Hypervisor.Read<byte>(_selectedFinisher + 0x8E, true) < 0x0F && Hypervisor.Read<byte>(_selectedFinisher + 0x8C, true) == 0x00) : true;  
+                    var _isFinisher =  _statusPointer > 0 ? true : (Hypervisor.Read<byte>(_selectedFinisher + 0x92, true) > 0x00 && Hypervisor.Read<byte>(_selectedFinisher + 0x8C, true) == 0x00);  
+                    _isFinisher = _selectedFinisher > 0 ? _isFinisher : false;
 
                     _selectedFinisher =
                         _statusPointer > 0
@@ -158,6 +159,9 @@ namespace ReFixed
                         // Using the input form we made specifically for this:
                         using (InputText _inForm = new InputText())
                         {
+                            // Release the mouse.
+                            BaseSimpleForm.CaptureStatus = false;
+
                             // Literally halt the game.
                             BaseSimpleForm.theInstance.suspend();
 
@@ -184,6 +188,9 @@ namespace ReFixed
                                     _fillerArray.ToArray()
                                 );
                             }
+
+                            // Capture the mouse.
+                            BaseSimpleForm.CaptureStatus = true;
 
                             // Resume the game.
                             BaseSimpleForm.theInstance.resume();
