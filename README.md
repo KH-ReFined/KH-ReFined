@@ -101,12 +101,12 @@ _All features indicating a version number will be released in that said version.
 ## Installation
 
 ### Without Dual Audio
-- Drag the EXE of your choice (v1.0.0.0 or v1.0.0.2) unto the game directory. [v1.0.1.0 or v1.0.1.2 for KH1 if you want Battle Chests]
+- Drag the EXE unto the game directory.
 - Rename the dragged EXE to the name of the original ones (Ex. "KINGDOM HEARTS FINAL MIX" for KH1)
 - Tada! You have installed it.
 
 ### With Dual Audio
-- Drag the EXE of your choice (v1.0.1.0 or v1.0.1.2) unto the game directory.
+- Drag the EXE unto the game directory.
 - Rename the dragged EXE to the name of the original ones (Ex. "KINGDOM HEARTS II FINAL MIX" for KH2)
 - Download the patch in https://bit.ly/DualAudioBBS for BBS, the one in https://bit.ly/DualAudioKH2 for KH2.  	
 - Download KHPCPatchManager v1.2.0 or higher from https://github.com/AntonioDePau/KHPCPatchManager/releases.
