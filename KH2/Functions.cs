@@ -1211,8 +1211,8 @@ namespace ReFixed
 
                 _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
-                var _saveConfig = (Variables.DualAudio && Variables.saveToggle) || !Variables.DualAudio;
-                var _saveableBool = _saveConfig && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _toggleCheck == 0x01;
+                var _saveConfig = Variables.DualAudio && Variables.saveToggle;
+                var _saveableBool = (_saveConfig ? _saveConfig : _toggleCheck == 0x01) && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00;
 
                 if (_saveableBool)
                 {
