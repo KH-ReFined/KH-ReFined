@@ -38,7 +38,7 @@ namespace AxaFormBase
             UpdateAgent.UpdateCheck();
 
             if (BaseSimpleForm.theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.75]");
+                new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v2.80]");
 
             Cursor.Hide();
             theInstance.KeyDown += _keyEvent;
@@ -46,8 +46,17 @@ namespace AxaFormBase
             CaptureStatus = true;
             _cursorHidden = true;
 
-            if (!Variables.Initialized)
-                Functions.Initialization();
+            if (File.Exists("reFixed.ini"))
+            {
+                var _configIni = new TinyIni("reFixed.ini");
+
+                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
+                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
+                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
+            }
+
+            else
+                File.WriteAllText("reFixed.ini", "[ReFixed]\n" + "autoSave = true\n" + "discordRPC = true\n" + "saveIndicator = true");
 
             if (Variables.discordToggle)
                 Variables.DiscordClient.Initialize();

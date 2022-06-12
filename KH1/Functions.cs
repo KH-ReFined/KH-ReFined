@@ -65,15 +65,8 @@ namespace ReFixed
                 Variables.DenySFX.CopyTo(_denyStream);
                 Variables.ToggleSFX.CopyTo(_toggleStream);
             }
-
-            if (File.Exists("reFixed.ini"))
-            {
-                var _configIni = new TinyIni("reFixed.ini");
-
-                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
-                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
-                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
-            }
+            
+            Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
@@ -275,8 +268,6 @@ namespace ReFixed
         public static void AspectCorrection(float InputValue)
         {
             float _floatValue = 9F;
-
-            Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
             switch (InputValue)
             {
@@ -554,26 +545,16 @@ namespace ReFixed
                 case 0:
                 {
                     if (Hypervisor.Read<float>(Variables.ADDR_FieldOfView[0]) != 400F)
-                    {
                         for (uint i = 0; i < Variables.ADDR_FieldOfView.Length; i++)
                             Hypervisor.Write(Variables.ADDR_FieldOfView[i], Variables.VALUE_DefaultFOV[i]);
-
-                        for (uint i = 0; i < Variables.ADDR_CameraINST.Length; i++)
-                            Hypervisor.Write(Hypervisor.PureAddress + Variables.ADDR_CameraINST[i], Variables.VALUE_DefaultCAM[i], true);
-                    }
                     break;
                 }
 
                 case 1:
                 {
                     if (Hypervisor.Read<float>(Variables.ADDR_FieldOfView[0]) != 600F)
-                    {
                         for (int i = 0; i < Variables.ADDR_FieldOfView.Length; i++)
                             Hypervisor.Write(Variables.ADDR_FieldOfView[i], Variables.VALUE_EnhancedFOV[i]);
-
-                        for (uint i = 0; i < Variables.ADDR_CameraINST.Length; i++)
-                            Hypervisor.Write(Hypervisor.PureAddress + Variables.ADDR_CameraINST[i], Variables.VALUE_EnhancedCAM[i], true);
-                    }
                     break;
                 }
             }
@@ -687,6 +668,9 @@ namespace ReFixed
         public static void Execute()
         {
             #region High Priority
+            if (!Variables.Initialized)
+                Initialization();
+
             ResetGame();
             #endregion
 

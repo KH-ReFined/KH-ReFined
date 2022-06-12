@@ -8,7 +8,7 @@ namespace ReFixed
 {
     internal class Strings
     {
-        public static ushort[] RoxasIDs =
+        public static uint[] RoxasIDs =
         {
             0x4337,
             0x4338,
@@ -21,7 +21,7 @@ namespace ReFixed
             0x0A7C
         };
 
-        public static ushort[] SettingIDs =
+        public static uint[] SettingIDs =
         {
             0x371A,
             0x372A,
@@ -34,7 +34,7 @@ namespace ReFixed
             0X3723
         };
 
-        public static ushort[] LimitIDs =
+        public static uint[] LimitIDs =
         {
             0x4E8D,
             0x4E8F,
@@ -51,14 +51,14 @@ namespace ReFixed
             0x4E8E
         };
 
-        public static ushort OnID = 0x3726;
-        public static ushort OffID = 0x3727;
+        public static uint OnID = 0x3726;
+        public static uint OffID = 0x3727;
 
-        public static ushort FullID = 0x4300;
-        public static ushort NoneID = 0x4301;
+        public static uint FullID = 0x4300;
+        public static uint NoneID = 0x4301;
 
-        public static ushort ContinueID = 0x0AB0;
-        public static ushort OpenKHID = 0x433C;
+        public static uint ContinueID = 0x0AB0;
+        public static uint OpenKHID = 0x433C;
 
         public static string[] LimitText =
         {

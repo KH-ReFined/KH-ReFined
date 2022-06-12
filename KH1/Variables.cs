@@ -214,15 +214,6 @@ namespace ReFixed
             0x2A4518E
         };
 
-        public static ulong[] ADDR_CameraINST = new ulong[]
-        {
-            0x1E0D74,
-            0x1DD5A9,
-            0x1DD453,
-            0x1DD89C,
-            0x1DD628
-        };
-
         public static ulong PINT_MenuState = 0x2AF021A;
         public static ulong PINT_SystemBAR = 0x2A76CCA;
         public static ulong PINT_SaveInformation = 0x2B379CA;
@@ -235,7 +226,5 @@ namespace ReFixed
 
         public static float[] VALUE_DefaultFOV =  { 400, -050, -100, 350, 300, 300, 300, 300 };
         public static float[] VALUE_EnhancedFOV = { 600, -000, -150, 600, 600, 600, 600, 600 };
-        public static byte[] VALUE_DefaultCAM =  { 0x84, 0x73, 0x85, 0x74, 0x85 };
-        public static byte[] VALUE_EnhancedCAM = { 0x85, 0x72, 0x81, 0x72, 0x81 };
     }
 }

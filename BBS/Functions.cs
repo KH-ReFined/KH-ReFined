@@ -65,14 +65,8 @@ namespace ReFixed
                 Variables.ToggleSFX.CopyTo(_toggleStream);
             }
 
-            if (File.Exists("reFixed.ini"))
-            {
-                var _configIni = new TinyIni("reFixed.ini");
-
-                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
-                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
-                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
-            }
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
+            Hypervisor.UnlockBlock(Variables.ADDR_VoicePath);
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
@@ -298,15 +292,12 @@ namespace ReFixed
 
             // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
             if (_framerateRead == 0x00 && _instructionRead == 0x90)
-            {
-                Hypervisor.UnlockBlock(_instructionAddress, true);
                 Hypervisor.WriteArray(_instructionAddress, Variables.INST_FrameLimiter, true);
-            }
+
             // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
             else if (_framerateRead != 0x00 && _instructionRead != 0x90)
             {
                 // NOP the instruction.
-                Hypervisor.UnlockBlock(_instructionAddress, true);
                 Hypervisor.WriteArray(_instructionAddress, _nullArray, true);
 
                 // Set the current limiter to be off.
@@ -324,10 +315,9 @@ namespace ReFixed
         */
         public static void AudioSwap()
         {
-            Hypervisor.UnlockBlock(Variables.ADDR_VoicePath);
-
             if (Hypervisor.Read<byte>(Variables.ADDR_Config) == 0x00)
                 Hypervisor.WriteString(Variables.ADDR_VoicePath, "jp");
+
             else
                 Hypervisor.WriteString(Variables.ADDR_VoicePath, "en");
         }
@@ -611,6 +601,9 @@ namespace ReFixed
         public static void Execute()
         {
             #region High Priority
+            if (Variables.Initialized)
+                Initialization();
+
             ResetGame();
             #endregion
 

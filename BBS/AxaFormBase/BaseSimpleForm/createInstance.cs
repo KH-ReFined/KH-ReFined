@@ -19,13 +19,20 @@ namespace AxaFormBase
 	// Token: 0x02000500 RID: 1280
 	public partial class BaseSimpleForm : Form
 	{
+        static bool _cursorHidden;
+        public static bool CaptureStatus;
+
+        public static CancellationTokenSource CancelSource;
+        public static CancellationToken MainToken;
+        public static Task MainTask;
+
 		// Token: 0x060001E3 RID: 483 RVA: 0x11D5A000 File Offset: 0x01482800
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {
             UpdateAgent.UpdateCheck();
 
             if (theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.75]");
+                new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.80]");
 
             Cursor.Hide();
             theInstance.KeyDown += _keyEvent;
@@ -33,8 +40,17 @@ namespace AxaFormBase
             CaptureStatus = true;
             _cursorHidden = true;
 
-            if (!Variables.Initialized)
-                Functions.Initialization();
+            if (File.Exists("reFixed.ini"))
+            {
+                var _configIni = new TinyIni("reFixed.ini");
+
+                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
+                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
+                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
+            }
+
+            else
+                File.WriteAllText("reFixed.ini", "[ReFixed]\n" + "autoSave = true\n" + "discordRPC = true\n" + "saveIndicator = true");
 
             if (Variables.discordToggle)
                 Variables.DiscordClient.Initialize();
