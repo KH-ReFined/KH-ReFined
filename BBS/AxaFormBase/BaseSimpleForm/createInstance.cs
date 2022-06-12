@@ -1,11 +1,3 @@
-/*
-==================================================
-      KINGDOM HEARTS - RE:FIXED FOR BBS!
-       COPYRIGHT TOPAZ WHITELOCK - 2022
- LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
-==================================================
-*/
-
 using System;
 using System.IO;
 using System.Drawing;
@@ -24,15 +16,10 @@ using DiscordRPC;
 
 namespace AxaFormBase
 {
-    public partial class BaseSimpleForm : Form
-    {
-        static bool _cursorHidden;
-        public static bool CaptureStatus;
-
-        public static CancellationTokenSource CancelSource;
-        public static CancellationToken MainToken;
-        public static Task MainTask;
-
+	// Token: 0x02000500 RID: 1280
+	public partial class BaseSimpleForm : Form
+	{
+		// Token: 0x060001E3 RID: 483 RVA: 0x11D5A000 File Offset: 0x01482800
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {
             UpdateAgent.UpdateCheck();
@@ -46,7 +33,11 @@ namespace AxaFormBase
             CaptureStatus = true;
             _cursorHidden = true;
 
-            Variables.DiscordClient.Initialize();
+            if (!Variables.Initialized)
+                Functions.Initialization();
+
+            if (Variables.discordToggle)
+                Variables.DiscordClient.Initialize();
 
             CancelSource = new CancellationTokenSource();
             MainToken = CancelSource.Token;
@@ -79,5 +70,5 @@ namespace AxaFormBase
 
             return theInstance;
         }
-    }
+	}
 }

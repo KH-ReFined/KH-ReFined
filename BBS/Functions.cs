@@ -33,9 +33,6 @@ namespace ReFixed
             Yes, this class has one, too!
         */
 
-        [DllImport("kernel32")]
-        static extern bool AllocConsole();
-
         static bool[] DEBOUNCE = new bool[] { false, false, false, false, false };
 
         static bool SAVE_ONCE;
@@ -72,14 +69,13 @@ namespace ReFixed
             {
                 var _configIni = new TinyIni("reFixed.ini");
 
-                Variables.saveToggle = bool.Parse(_configIni.Read("autoSave"));
-                Variables.sfxToggle =  bool.Parse(_configIni.Read("saveIndicator"));
+                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
+                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
+                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
             }
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
-
-            Hypervisor.UnlockBlock(Variables.ADDR_VoicePath);
 
             Variables.Initialized = true;
         }
@@ -127,12 +123,11 @@ namespace ReFixed
         public static void TextAdjust()
         {
             var _basePointer = Hypervisor.Read<ulong>(Variables.PINT_SettingsText);
-            var _secondaryPointer = Hypervisor.Read<ulong>(_basePointer + 0xA0, true);
 
-            var _headerBegin = _secondaryPointer - 0x9A0;
+            var _headerBegin = _basePointer;
 
-            var _textBegin = _secondaryPointer + 0x781;
-            var _textEnd = _secondaryPointer + 0x2CD0;
+            var _textBegin = _basePointer + 0x1121;
+            var _textEnd = _basePointer + 0x3670;
 
             var _headerMagic = Hypervisor.ReadArray(_headerBegin, 0x04, true);
             var _headerBlock = Hypervisor.ReadArray(_headerBegin, 0x9A0, true);
@@ -160,24 +155,25 @@ namespace ReFixed
 
                 if (LANGUAGE == 0xFF)
                 {
-                    AllocConsole();
                     var _yesRead = Hypervisor.ReadTerminate(_headerBegin + _yesLocation, true);
-                    Console.WriteLine(_yesRead);
                     var _catchStr = Strings.OriginText.FirstOrDefault(x => x == _yesRead);
                     LANGUAGE = (byte)Array.IndexOf(Strings.OriginText, _catchStr);
                 }
 
-                ulong _writeOffset = 0;
-
-                for (int i = 0; i < Strings.AutoSave[LANGUAGE].Length; i++)
+                else
                 {
-                    var _str = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
-                    var _offset = _textEnd - _headerBegin + _writeOffset;
+                    ulong _writeOffset = 0;
 
-                    Hypervisor.WriteString(_textEnd + _writeOffset, _str, true);
-                    Hypervisor.Write<ushort>(_headerBegin + _locArray[i], (ushort)_offset, true);
+                    for (int i = 0; i < Strings.AutoSave[LANGUAGE].Length; i++)
+                    {
+                        var _str = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
+                        var _offset = _textEnd - _headerBegin + _writeOffset;
 
-                    _writeOffset += (ulong)_str.Length;
+                        Hypervisor.WriteString(_textEnd + _writeOffset, _str, true);
+                        Hypervisor.Write<ushort>(_headerBegin + _locArray[i], (ushort)_offset, true);
+
+                        _writeOffset += (ulong)_str.Length;
+                    }
                 }
             }
         }
@@ -328,6 +324,8 @@ namespace ReFixed
         */
         public static void AudioSwap()
         {
+            Hypervisor.UnlockBlock(Variables.ADDR_VoicePath);
+
             if (Hypervisor.Read<byte>(Variables.ADDR_Config) == 0x00)
                 Hypervisor.WriteString(Variables.ADDR_VoicePath, "jp");
             else
@@ -613,9 +611,6 @@ namespace ReFixed
         public static void Execute()
         {
             #region High Priority
-            if (!Variables.Initialized)
-                Initialization();
-
             ResetGame();
             #endregion
 
@@ -647,7 +642,7 @@ namespace ReFixed
                 );
             }
 
-            if (Variables.DCTask == null)
+            if (Variables.DCTask == null && Variables.discordToggle)
             {
                 Variables.DCTask = Task.Factory.StartNew(
                     delegate()

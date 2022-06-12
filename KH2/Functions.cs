@@ -94,21 +94,13 @@ namespace ReFixed
             {
                 var _configIni = new TinyIni("reFixed.ini");
 
-                Variables.saveToggle = bool.Parse(_configIni.Read("autoSave"));
-                Variables.sfxToggle =  bool.Parse(_configIni.Read("saveIndicator"));
+                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
+                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
+                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
             }
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
-
-            Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
-            Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
-            Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
-            Hypervisor.UnlockBlock(Variables.ADDR_BTLFormatter);
-            Hypervisor.UnlockBlock(Variables.ADDR_EVTFormatter);
-
-            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
-            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
             Variables.Initialized = true;
         }
@@ -758,6 +750,11 @@ namespace ReFixed
             var _toggleCheck = Hypervisor.Read<ushort>(Variables.ADDR_Config) & 0x01;
             var _stringCheck = Hypervisor.ReadTerminate(Variables.ADDR_PAXFormatter);
 
+            Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
+            Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
+            Hypervisor.UnlockBlock(Variables.ADDR_BTLFormatter);
+            Hypervisor.UnlockBlock(Variables.ADDR_EVTFormatter);
+
             if (_toggleCheck == 0x00 && _stringCheck != "obj/%s.a.jp")
             {
                 Console.WriteLine("DEBUG: Dual Audio switching to Japanese...");
@@ -816,6 +813,9 @@ namespace ReFixed
 
             var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
             var _warpRead = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
+
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
             var _continueID = Strings.ContinueID;
             var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
@@ -986,7 +986,7 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
-                if (RETRY_MODE == 0x01 && _cutsByte != 0x00)
+                if (RETRY_MODE == 0x01 && _cutsByte == 0x00)
                 {
                     while (_pausRead == 0x01)
                         _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
@@ -1021,6 +1021,8 @@ namespace ReFixed
         {
             var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
             var _shortRead = Hypervisor.Read<ushort>(Variables.ADDR_LimitShortcut);
+
+            Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
 
             if (_confirmRead == 0x00 && _shortRead != 0x02BA)
             {
@@ -1448,9 +1450,6 @@ namespace ReFixed
         public static void Execute()
         {
             #region High Priority
-            if (!Variables.Initialized)
-                Initialization();
-
             ResetGame();
             RetryPrompt();
             #endregion
@@ -1491,7 +1490,7 @@ namespace ReFixed
                 );
             }
 
-            if (Variables.DCTask == null)
+            if (Variables.DCTask == null && Variables.discordToggle)
             {
                 Variables.DCTask = Task.Factory.StartNew(
 

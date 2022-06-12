@@ -70,14 +70,13 @@ namespace ReFixed
             {
                 var _configIni = new TinyIni("reFixed.ini");
 
-                Variables.saveToggle = bool.Parse(_configIni.Read("autoSave"));
-                Variables.sfxToggle =  bool.Parse(_configIni.Read("saveIndicator"));
+                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
+                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
+                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
             }
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
-
-            Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
             Variables.Initialized = true;
         }
@@ -276,6 +275,8 @@ namespace ReFixed
         public static void AspectCorrection(float InputValue)
         {
             float _floatValue = 9F;
+
+            Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
             switch (InputValue)
             {
@@ -686,9 +687,6 @@ namespace ReFixed
         public static void Execute()
         {
             #region High Priority
-            if (!Variables.Initialized)
-                Initialization();
-
             ResetGame();
             #endregion
 
@@ -715,7 +713,7 @@ namespace ReFixed
                 );
             }
 
-            if (Variables.DCTask == null)
+            if (Variables.DCTask == null && Variables.discordToggle)
             {
                 Variables.DCTask = Task.Factory.StartNew(
                     delegate ()

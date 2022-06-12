@@ -48,7 +48,7 @@ namespace ReFixed
 
             new string[]
             {
-                "Sauvegarde Automatique\x00",
+                "Sauvegarde Auto\x00",
                 "ActivÖíe\x00",
                 "DesctivÖíe\x00",
                 "Active la fonction de sauvegarde automatique.\x00",
@@ -57,7 +57,7 @@ namespace ReFixed
 
             new string[]
             {
-                "Salvataggio Automatico\x00",
+                "Autosalvataggio\x00",
                 "ON\x00",
                 "OFF\x00",
                 "Abilita funzione di salvataggio automatico.\x00",

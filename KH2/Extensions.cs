@@ -18,45 +18,6 @@ namespace ReFixed
 {
     public static class Extensions
     {
-		public static void PlaySFX(string Input)
-		{
-			var _output = new DirectSoundOut();
-			var _wavRead = new AudioFileReader(Input);
-
-			var _volumeSFX = Hypervisor.Read<byte>(0x36551A);
-            var _volumeMaster = Hypervisor.Read<byte>(0x365516);
-            
-			var _sfxValue = Hypervisor.Read<float>(0x44D42 + (ulong)(0x04 * _volumeSFX));
-			var _masterValue = Hypervisor.Read<float>(0x44D42 + (ulong)(0x04 * _volumeMaster));
-
-			_wavRead.Volume = _sfxValue * _masterValue;
-
-			_output.Init(_wavRead);
-			_output.Play();
-		}
-
-        public static ulong FindValue(this byte[] Source, uint Value)
-        {
-            var _pattern = BitConverter.GetBytes(Value);
-            ulong _charSlot = (ulong)(Source.Length - _pattern.Length + 1);
-
-            for (ulong i = 0; i < _charSlot; i++)
-            {
-                if (Source[i] != _pattern[0])
-                    continue;
-
-                for (ulong j = (ulong)_pattern.Length - 1; j >= 1; j--)
-                {
-                    if (Source[i + j] != _pattern[j]) 
-                        break;
-
-                    if (j == 1) 
-                        return i;
-                }
-            }
-            return 0xFFFFFFFFFFFFFFFF;
-        }
-
         public static byte[] ToKHSCII(this string inText)
         {
             var _specialDict = new Dictionary<char, byte>

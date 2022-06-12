@@ -36,8 +36,9 @@ namespace ReFixed
         // Variables that will be read from a config file to tell Re:Fixed what to do.
         //
 
-        public static bool saveToggle = true;
         public static bool sfxToggle = true;
+        public static bool saveToggle = true;
+        public static bool discordToggle = true;
 
         //
         // INFORMATION GRAB
@@ -107,6 +108,9 @@ namespace ReFixed
         public static ulong ADDR_ContText = 0x2562CA2;
         public static ulong ADDR_ItemStart = 0x0445086;
         public static ulong ADDR_DriveStart = 0x24BC8FA;
+
+        public static ulong ADDR_VolumeTable = 0x44D42;
+        public static ulong ADDR_MasterVolume = 0x365516;
 
         public static ulong[] ADDR_Objentry = { 0x24BFA72, 0x24BFD72, 0x24E7852 };
         public static ulong[] ADDR_MagicMenu = { 0x24AA2CA, 0x24AA33A, 0x24A98EE };

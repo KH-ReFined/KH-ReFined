@@ -48,8 +48,12 @@ namespace AxaFormBase
             CaptureStatus = true;
             _cursorHidden = true;
 
-            Variables.DiscordClient.Initialize();
+            if (!Variables.Initialized)
+                Functions.Initialization();
 
+            if (Variables.discordToggle)
+                Variables.DiscordClient.Initialize();
+                
             CancelSource = new CancellationTokenSource();
             MainToken = BaseSimpleForm.CancelSource.Token;
 
