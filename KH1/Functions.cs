@@ -116,23 +116,26 @@ namespace ReFixed
                     }
                 }
 
-                var _repText = Strings.TextFOV[LANGUAGE];
-                var _ogText = Strings.VibrationOG[LANGUAGE].ToKHSCII();
-
-                var _listText = new List<byte>();
-                ulong _addLength = 0x00;
-
-                foreach (var _e in _repText)
-                    _listText.AddRange(_e.ToKHSCII());
-
-                Hypervisor.WriteArray(_menuPointer + _headerSize + _fileSize + 0x10, _listText.ToArray(), true);
-
-                for (ulong i = 0; i < 4; i++)
+                else
                 {
-                    if (i > 0)
-                        _addLength += (ulong)_repText[i - 1].Length + 0x01;
+                    var _repText = Strings.TextFOV[LANGUAGE];
+                    var _ogText = Strings.VibrationOG[LANGUAGE].ToKHSCII();
 
-                    Hypervisor.Write(_menuPointer + (VIBRATION_OFFSET + 0x02 * i), (ushort)(_fileSize + _addLength), true);
+                    var _listText = new List<byte>();
+                    ulong _addLength = 0x00;
+
+                    foreach (var _e in _repText)
+                        _listText.AddRange(_e.ToKHSCII());
+
+                    Hypervisor.WriteArray(_menuPointer + _headerSize + _fileSize + 0x10, _listText.ToArray(), true);
+
+                    for (ulong i = 0; i < 4; i++)
+                    {
+                        if (i > 0)
+                            _addLength += (ulong)_repText[i - 1].Length + 0x01;
+
+                        Hypervisor.Write(_menuPointer + (VIBRATION_OFFSET + 0x02 * i), (ushort)(_fileSize + _addLength), true);
+                    }
                 }
             }
         }
