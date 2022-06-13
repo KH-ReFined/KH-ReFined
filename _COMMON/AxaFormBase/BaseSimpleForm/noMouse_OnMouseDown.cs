@@ -26,7 +26,7 @@ namespace AxaFormBase
 			if (!CaptureStatus && !_cursorHidden)
 			{
 				Cursor.Hide();
-			    _cursorHidden = true;		
+			    _cursorHidden = true;
                 CaptureStatus = true;
 				<Module>.Axa.setMouseActive(true);
             }

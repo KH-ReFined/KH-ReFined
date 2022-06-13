@@ -11,6 +11,7 @@ using System.IO;
 using System.Net;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Reflection.Emit;
@@ -25,7 +26,7 @@ namespace ReFixed
 {
 	public class UpdateAgent
 	{
-        protected static readonly double _version = 2.80;
+        protected static readonly double _version = 2.90;
         protected static FormDL _downForm = new FormDL();
         
         public static void UpdateCheck()
@@ -43,12 +44,12 @@ namespace ReFixed
                 var _latestFile = _latestInfo.Assets[0].BrowserDownloadUrl;
 
                 var _downPath = Path.GetTempPath() + "reFixedUpdate.zip";
-                var _exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var _exePath = Assembly.GetExecutingAssembly().Location;
 
                 var _nameVersion = "[v{0}].exe";
 
-                var _exeAssembly = System.Reflection.Assembly.GetExecutingAssembly();
-                var _verInformation = System.Diagnostics.FileVersionInfo.GetVersionInfo(_exeAssembly.Location);
+                var _exeAssembly = Assembly.GetExecutingAssembly();
+                var _verInformation = FileVersionInfo.GetVersionInfo(_exeAssembly.Location);
                 var _strVersion = _verInformation.FileVersion;
 
                 var _formatVersion = String.Format(_nameVersion, _strVersion);
@@ -109,8 +110,9 @@ namespace ReFixed
 
                                         if (!Directory.Exists(_exeBase + "BACKUP_EXE/"))
                                             Directory.CreateDirectory(_exeBase + "BACKUP_EXE/");
+                                        var _dateStr = DateTime.Now.ToString("dd_MM_yyyy-hh_mm_ss");
 
-                                        File.Move(_extractName, _extractName.Replace(_exeBase, _exeBase + "BACKUP_EXE/"));
+                                        File.Move(_extractName, _extractName.Replace(_exeBase, _exeBase + "BACKUP_EXE/").Replace(".exe", "_" + _dateStr + ".exe"));
 
                                         using (FileStream _exeStream = new FileStream(_extractName, System.IO.FileMode.OpenOrCreate))
                                             _file.Extract(_exeStream);

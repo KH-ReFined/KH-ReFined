@@ -40,7 +40,7 @@ namespace AxaFormBase
             UpdateAgent.UpdateCheck();
 
             if (BaseSimpleForm.theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.80]");
+                new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v2.90]");
 
             Cursor.Hide();
             theInstance.KeyDown += _keyEvent;
@@ -58,7 +58,7 @@ namespace AxaFormBase
             }
 
             else
-                File.WriteAllLines("reFixed.ini", "[ReFixed]\n" + "autoSave = true\n" + "discordRPC = true\n" + "saveIndicator = true");
+                File.WriteAllText("reFixed.ini", "[ReFixed]\n" + "autoSave = true\n" + "discordRPC = true\n" + "saveIndicator = true");
 
             if (Variables.discordToggle)
                 Variables.DiscordClient.Initialize();

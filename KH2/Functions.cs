@@ -70,6 +70,7 @@ namespace ReFixed
 
         static List<byte[]> ITEM_READ;
         static byte[] DRIVE_READ;
+        static int EXP_READ;
 
         /*
             Initialization:
@@ -862,6 +863,7 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
+                EXP_READ = -1;
                 DRIVE_READ = null;
                 ITEM_READ = new List<byte[]>();
 
@@ -877,6 +879,7 @@ namespace ReFixed
                 for (int i = 0; i < 4; i++)
                     ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
 
+                EXP_READ = Hypervisor.Read<int>(Variables.ADDR_EXPStart);
                 DRIVE_READ = Hypervisor.ReadArray(Variables.ADDR_DriveStart, 0x04);
 
                 if (DRIVE_READ[2] == 0x00)
@@ -887,6 +890,7 @@ namespace ReFixed
             {
                 Console.WriteLine(String.Format("DEBUG: Out of battle. Erasing value memory."));
 
+                EXP_READ = -1;
                 DRIVE_READ = null;
                 ITEM_READ = new List<byte[]>(); 
             }
@@ -979,7 +983,7 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
-                if (RETRY_MODE == 0x01 && _cutsByte == 0x00)
+                if (RETRY_MODE == 0x01 && _cutsByte == 0x00 && DRIVE_READ != null)
                 {
                     while (_pausRead == 0x01)
                         _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
@@ -988,6 +992,7 @@ namespace ReFixed
                         Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
                         
                     Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
+                    Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
                 }
 
                 RETRY_LOCK = false;
