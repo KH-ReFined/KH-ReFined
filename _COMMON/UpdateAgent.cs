@@ -14,6 +14,7 @@ using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.Globalization;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
