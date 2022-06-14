@@ -18,6 +18,25 @@ using DiscordRPC;
 
 namespace ReFixed
 {
+        public static class Helpers
+    {
+        public static void PlaySFX(string Input)
+		{
+			var _output = new DirectSoundOut();
+			var _wavRead = new AudioFileReader(Input);
+
+            var _volumeMaster = Hypervisor.Read<byte>(Variables.ADDR_MasterVolume);
+            var _volumeSFX = Hypervisor.Read<byte>(Variables.ADDR_MasterVolume + 0x04);
+
+			var _sfxValue = Hypervisor.Read<float>(Variables.ADDR_VolumeTable + (ulong)(0x04 * _volumeSFX));
+			var _masterValue = Hypervisor.Read<float>(Variables.ADDR_VolumeTable + (ulong)(0x04 * _volumeMaster));
+
+			_wavRead.Volume = _sfxValue * _masterValue;
+
+			_output.Init(_wavRead);
+			_output.Play();
+		}
+    }
     public class Functions
     {
         /*
@@ -925,7 +944,7 @@ namespace ReFixed
                 if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00)
                 {
                     // Play the sound so that it seems **authentic**.
-                    Extensions.PlaySFX(Variables.SwitchSFXPath);
+                    Helpers.PlaySFX(Variables.SwitchSFXPath);
 
                     Console.WriteLine(String.Format("DEBUG: Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"));
 
@@ -1191,7 +1210,7 @@ namespace ReFixed
 
             // Play a sound, dictating that the save was a success!
             if (Variables.sfxToggle)
-                Extensions.PlaySFX(Variables.SaveSFXPath);
+                Helpers.PlaySFX(Variables.SaveSFXPath);
         }
 
         /*

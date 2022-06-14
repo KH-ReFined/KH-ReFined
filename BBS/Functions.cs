@@ -219,7 +219,7 @@ namespace ReFixed
                         DEBOUNCE[0] = true;
 
                         // Play a sound, dictating that you actually pressed a button!
-                        Extensions.PlaySFX(Variables.ToggleSFXPath);
+                        Helpers.PlaySFX(Variables.ToggleSFXPath);
 
                         // Using the input form we made specifically for this:
                         using (InputText _inForm = new InputText())
@@ -462,7 +462,7 @@ namespace ReFixed
 
                 // Play a sound, dictating that the save was a success!
                 if (Variables.sfxToggle)
-                    Extensions.PlaySFX(Variables.SaveSFXPath);
+                    Helpers.PlaySFX(Variables.SaveSFXPath);
             }
             
             else

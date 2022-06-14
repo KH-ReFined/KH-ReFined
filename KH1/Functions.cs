@@ -234,7 +234,7 @@ namespace ReFixed
                         Hypervisor.Write(_abilityOffset, (byte)(_readSkill - 0x80));
                         ABILITY_POINT += _skillCost;
 
-                        Extensions.PlaySFX(Variables.ToggleSFXPath);
+                        Helpers.PlaySFX(Variables.ToggleSFXPath);
                     }
 
                     else if ((_readSkill & 0x80) == 0x00)
@@ -242,11 +242,11 @@ namespace ReFixed
                         Hypervisor.Write(_abilityOffset, (byte)(_readSkill + 0x80));
                         ABILITY_POINT -= _skillCost;
 
-                        Extensions.PlaySFX(Variables.ToggleSFXPath);
+                        Helpers.PlaySFX(Variables.ToggleSFXPath);
                     }
 
                     else
-                        Extensions.PlaySFX(Variables.DenySFXPath);
+                        Helpers.PlaySFX(Variables.DenySFXPath);
 
                     DEBOUNCE[1] = true;
                 }
@@ -479,7 +479,7 @@ namespace ReFixed
 
                 // Play a sound, dictating that the save was a success!
                 if (Variables.sfxToggle)
-                    Extensions.PlaySFX(Variables.SaveSFXPath);
+                    Helpers.PlaySFX(Variables.SaveSFXPath);
             }
 
             else
