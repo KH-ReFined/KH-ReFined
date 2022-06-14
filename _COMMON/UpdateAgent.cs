@@ -36,11 +36,7 @@ namespace ReFixed
                 var _gitClient = new GitHubClient(new ProductHeaderValue("ReFixed-Updater"));
                 var _latestInfo = _gitClient.Repository.Release.GetLatest("TopazTK", "KH-ReFixed").Result;
 
-                var _latestNumber = Convert.ToDouble(_latestInfo.TagName.Substring(1));
-
-                if (_latestNumber >= 100)
-                    _latestNumber = Convert.ToDouble(_latestInfo.TagName.Substring(1).Replace(".", ","));
-
+                var _latestNumber = Convert.ToDouble(_latestInfo.TagName.Substring(1), CultureInfo.InvariantCulture);
                 var _latestFile = _latestInfo.Assets[0].BrowserDownloadUrl;
 
                 var _downPath = Path.GetTempPath() + "reFixedUpdate.zip";
