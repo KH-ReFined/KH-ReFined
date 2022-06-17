@@ -12,6 +12,9 @@
     @ 0x5AD283 => "zz0command.2dd" to "tt1command.2dd"
     @ 0x5AD298 => "zz0command.2dd" to "tt1command.2dd"
 
+-> Disable Title Screen FMV
+    @ 0x2B066A => [F3 0F 11 0D 82 9B 86 00] to [90 90 90 90 90 90 90 90]
+
 -> Rename Config File
     @ 0x5F7A10 => "/config1525.dat" to "/config_kh2.dat"
 

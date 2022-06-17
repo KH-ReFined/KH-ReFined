@@ -12,6 +12,7 @@ using System.Text;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -796,6 +797,37 @@ namespace ReFixed
         }
 
         /*
+            FixExit:
+
+            I sorta kinda unknowningly broke the Exit function in KH.
+            To fix this, this function exists.
+        */
+        public static void FixExit()
+        {
+            if (CheckTitle())
+            {
+                var _countButton = Hypervisor.Read<byte>(Variables.ADDR_TitleCount);
+                var _selectButton = Hypervisor.Read<byte>(Variables.ADDR_TitleSelect);
+
+                var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+                var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
+
+                var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
+                var _inputValue = _inputRead & _buttonSeek;
+
+                if (_inputValue == _buttonSeek && _selectButton == _countButton - 0x01)
+                {
+                    Thread.Sleep(2500);
+
+                    if (File.Exists("KINGDOM HEARTS HD 1.5+2.5 Launcher.exe"))
+                        Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
+                    
+                    Environment.Exit(0);
+                }
+            }
+        }
+
+        /*
             RetryPrompt:
 
             Allows one to retry a forced fight instead of continuing.
@@ -1481,6 +1513,7 @@ namespace ReFixed
             SkipRoxas();
             ResetGame();
             RetryPrompt();
+            FixExit();
             #endregion
 
             #region Mid Priority

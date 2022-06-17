@@ -117,6 +117,9 @@ namespace ReFixed
         public static ulong ADDR_VolumeTable = 0x44D42;
         public static ulong ADDR_MasterVolume = 0x365516;
 
+        public static ulong ADDR_TitleSelect = 0x5B6896;
+        public static ulong ADDR_TitleCount = 0x5B68A2;
+
         public static ulong[] ADDR_Objentry = { 0x24BFA72, 0x24BFD72, 0x24E7852 };
         public static ulong[] ADDR_MagicMenu = { 0x24AA2CA, 0x24AA33A, 0x24A98EE };
         public static ulong[] ADDR_MPSEQD = { 0x4A03C6, 0x4A0376, 0x4A035A, 0x4A038A };
