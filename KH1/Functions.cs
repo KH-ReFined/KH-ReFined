@@ -80,7 +80,11 @@ namespace ReFixed
             Checks certain points in RAM to see if the player is in the Title Screen.
             Returns **true** if so, returns **false** otherwise. 
         */
-        public static bool CheckTitle() => Hypervisor.Read<byte>(Variables.ADDR_TitleFlag) == 0x01;
+        public static bool CheckTitle() => Hypervisor.Read<byte>(Variables.ADDR_World) == 0xFF
+            || Hypervisor.Read<byte>(Variables.ADDR_World + 0x68) == 0xFF
+            || Hypervisor.Read<byte>(Variables.ADDR_World) == 0x00
+            || Hypervisor.Read<byte>(Variables.ADDR_Level) == 0 
+            || Hypervisor.Read<byte>(Variables.ADDR_TitleFlag) == 0x01;
 
         /*
             TextAdjust:
