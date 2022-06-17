@@ -48,7 +48,7 @@ namespace AxaFormBase
 
             Helpers.InitConfig();
 
-            if (Variables.discordToggle)
+            if (Variables.rpcToggle)
                 Variables.DiscordClient.Initialize();
                 
             CancelSource = new CancellationTokenSource();

@@ -37,8 +37,8 @@ namespace ReFixed
         //
 
         public static bool sfxToggle = true;
+        public static bool rpcToggle = true;
         public static bool saveToggle = true;
-        public static bool discordToggle = true;
 
         public static bool devMode = false;
         public static bool festiveToggle = true;
@@ -112,6 +112,7 @@ namespace ReFixed
         public static ulong ADDR_EXPStart = 0x446242;
         public static ulong ADDR_ItemStart = 0x0445086;
         public static ulong ADDR_DriveStart = 0x24BC8FA;
+        public static ulong ADDR_FormStart = 0x445E56;
 
         public static ulong ADDR_VolumeTable = 0x44D42;
         public static ulong ADDR_MasterVolume = 0x365516;

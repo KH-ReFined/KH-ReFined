@@ -71,10 +71,12 @@ namespace ReFixed
 
         static int RETRY_MODE = 0x00;
         static bool RETRY_LOCK;
-
-        static List<byte[]> ITEM_READ;
-        static byte[] DRIVE_READ;
+        
         static int EXP_READ;
+        static byte FORM_READ;
+        static byte[] DRIVE_READ;
+        static byte[] FORM_STAT_READ;
+        static List<byte[]> ITEM_READ;
 
         /*
             Initialization:
@@ -141,7 +143,7 @@ namespace ReFixed
 
             if (SYSBAR_POINTER != 0x00 && _strSize != 0x00)
             { 
-                var _strOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue(0x1E0) + 0x04, true);
+                var _strOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue<uint>(0x1E0) + 0x04, true);
                 var _strRead = Hypervisor.ReadArray(SYSBAR_POINTER + _strOffset, 0x06, true);
 
                 if (LANGUAGE == 0xFF)
@@ -816,6 +818,7 @@ namespace ReFixed
 
             var _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
 
+            var _formByte = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
             var _fnshByte = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
 
             var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
@@ -874,7 +877,9 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
                 EXP_READ = -1;
+                FORM_READ = 0;
                 DRIVE_READ = null;
+                FORM_STAT_READ = null;
                 ITEM_READ = new List<byte[]>();
 
                 RETRY_LOCK = false;
@@ -890,7 +895,9 @@ namespace ReFixed
                     ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
 
                 EXP_READ = Hypervisor.Read<int>(Variables.ADDR_EXPStart);
-                DRIVE_READ = Hypervisor.ReadArray(Variables.ADDR_DriveStart, 0x04);
+                FORM_READ = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
+                DRIVE_READ = Hypervisor.ReadArray(Variables.ADDR_DriveStart, 0x0C);
+                FORM_STAT_READ = Hypervisor.ReadArray(Variables.ADDR_FormStart, 0x38 * 0x0A);
 
                 if (DRIVE_READ[2] == 0x00)
                     DRIVE_READ = null;
@@ -901,8 +908,10 @@ namespace ReFixed
                 Console.WriteLine(String.Format("DEBUG: Out of battle. Erasing value memory."));
 
                 EXP_READ = -1;
+                FORM_READ = 0;
                 DRIVE_READ = null;
-                ITEM_READ = new List<byte[]>(); 
+                FORM_STAT_READ = null;
+                ITEM_READ = new List<byte[]>();
             }
 
             // This code blob is responsible for switching between Retry and Continue
@@ -980,13 +989,21 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
+                // This must be written at death instead of at retry.
+                // Do not ask me why.
+                Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
+
                 RETRY_LOCK = true;
             }
 
             // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
             else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _fnshByte == 0x01 || _cutsByte != 0x00) && RETRY_LOCK)
             {
-                Console.WriteLine("DEBUG: Sora is alive. Restoring warp functionality.");
+                if (_fnshByte != 0x01)
+                    Console.WriteLine("DEBUG: Sora is alive. Restoring warp functionality.");
+
+                else
+                    Console.WriteLine("DEBUG: End of battle detected! Restoring warp functionality.");
 
                 // Restore the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
@@ -1001,8 +1018,9 @@ namespace ReFixed
                     for (int i = 0; i < 4; i++)
                         Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
                         
-                    Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
                     Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
+                    Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
+                    Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
                 }
 
                 RETRY_LOCK = false;
