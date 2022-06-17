@@ -149,4 +149,5 @@ _All features indicating a version number will be released in that said version.
 [DiscordRPC by Lachee](https://github.com/Lachee/discord-rpc-csharp)  
 [DotNetZip by DinoChiesa](https://github.com/DinoChiesa/DotNetZip)  
 [Octokit.NET by GitHub](https://github.com/octokit/octokit.net)
+[NAudio by Mark Heath](https://github.com/naudio/NAudio)
 
