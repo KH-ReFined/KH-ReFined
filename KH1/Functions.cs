@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Linq;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -25,6 +26,9 @@ namespace ReFixed
           
             Yes, this class has one, too!
         */
+
+        [DllImport("kernel32")]
+		static extern bool AllocConsole();
 
         static bool[] DEBOUNCE = new bool[] { false, false, false, false, false };
 
@@ -65,6 +69,9 @@ namespace ReFixed
                 Variables.DenySFX.CopyTo(_denyStream);
                 Variables.ToggleSFX.CopyTo(_toggleStream);
             }
+
+            if (Variables.devMode)
+            AllocConsole();
             
             Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
@@ -155,12 +162,15 @@ namespace ReFixed
         public static void ResetGame()
         {
             var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+			var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
 
             var _selectRead = Hypervisor.Read<byte>(Variables.ADDR_SaveSelect);
             var _amountRead = Hypervisor.Read<byte>(Variables.ADDR_SaveSelect + 0x044);
 
             var _buttonRead = _inputRead == 0x0C09;
-            var _saveMenuRead = (_selectRead == _amountRead - 0x01) && (_inputRead & 0x4000) == 0x4000;
+            var _buttonSeek = (_confirmRead == 0x01 ? 0x2000 : 0x4000);
+
+            var _saveMenuRead = (_selectRead == _amountRead - 0x01) && (_inputRead & _buttonSeek) == _buttonSeek;
 
             if ((_buttonRead || _saveMenuRead) && !DEBOUNCE[0])
             {
@@ -172,6 +182,36 @@ namespace ReFixed
 
             else
                 DEBOUNCE[0] = false;
+        }
+
+        /*
+            FixExit:
+
+            I sorta kinda unknowningly broke the Exit function in KH.
+            To fix this, this function exists.
+        */
+        public static void FixExit()
+        {
+            if (CheckTitle())
+            {
+                var _selectButton = Hypervisor.Read<byte>(Variables.ADDR_TitleSelect);
+
+                var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+                var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
+
+                var _buttonSeek = (_confirmRead == 0x01 ? 0x2000 : 0x4000);
+                var _inputValue = _inputRead & _buttonSeek;
+
+                if (_inputValue == _buttonSeek && _selectButton == 0x03)
+                {
+                    Thread.Sleep(2500);
+
+                    if (File.Exists("KINGDOM HEARTS HD 1.5+2.5 Launcher.exe"))
+                        Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
+                    
+                    Environment.Exit(0);
+                }
+            }
         }
 
         /*
@@ -679,6 +719,7 @@ namespace ReFixed
                 Initialization();
 
             ResetGame();
+            FixExit();
             #endregion
 
             #region Mid Priority
@@ -704,7 +745,7 @@ namespace ReFixed
                 );
             }
 
-            if (Variables.DCTask == null && Variables.discordToggle)
+            if (Variables.DCTask == null && Variables.rpcToggle)
             {
                 Variables.DCTask = Task.Factory.StartNew(
                     delegate ()

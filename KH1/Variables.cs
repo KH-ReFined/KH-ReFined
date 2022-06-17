@@ -29,8 +29,10 @@ namespace ReFixed
         //
 
         public static bool sfxToggle = true;
+        public static bool rpcToggle = true;
         public static bool saveToggle = true;
-        public static bool discordToggle = true;
+        
+        public static bool devMode = false;
 
         //
         // INFORMATION GRAB
@@ -159,6 +161,7 @@ namespace ReFixed
         public static ulong ADDR_Config = 0x2A5B7DA;
 
         public static ulong ADDR_Input = 0x1F9CA2E;
+        public static ulong ADDR_Confirm = 0x1F36678;
         public static ulong ADDR_GameState = 0x1372A7;
 
         public static ulong ADDR_VolumeTable = 0x364B2;
@@ -174,6 +177,8 @@ namespace ReFixed
         public static ulong ADDR_Munny = 0x2A5B7E6;
         public static ulong ADDR_Level = 0x02A453CE;
         public static ulong ADDR_SoraStats = 0x029B8CC6;
+
+        public static ulong ADDR_TitleSelect = 0x2B44FDE;
 
         public static ulong ADDR_World = 0x01F9C4D6;
         public static ulong ADDR_Difficulty = 0x02A5B7F6;
