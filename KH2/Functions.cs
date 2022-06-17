@@ -13,30 +13,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
 namespace ReFixed
 {
-        public static class Helpers
-    {
-        public static void PlaySFX(string Input)
-		{
-			var _output = new DirectSoundOut();
-			var _wavRead = new AudioFileReader(Input);
-
-            var _volumeMaster = Hypervisor.Read<byte>(Variables.ADDR_MasterVolume);
-            var _volumeSFX = Hypervisor.Read<byte>(Variables.ADDR_MasterVolume + 0x04);
-
-			var _sfxValue = Hypervisor.Read<float>(Variables.ADDR_VolumeTable + (ulong)(0x04 * _volumeSFX));
-			var _masterValue = Hypervisor.Read<float>(Variables.ADDR_VolumeTable + (ulong)(0x04 * _volumeMaster));
-
-			_wavRead.Volume = _sfxValue * _masterValue;
-
-			_output.Init(_wavRead);
-			_output.Play();
-		}
-    }
     public class Functions
     {
         /*
@@ -44,6 +26,9 @@ namespace ReFixed
           
             Yes, this class has one, too!
         */
+
+		[DllImport("kernel32")]
+		static extern bool AllocConsole();
 
         static byte[] MAGIC_STORE;
         static uint MAGIC_LV1;
@@ -109,6 +94,12 @@ namespace ReFixed
                 Variables.SaveSFX.CopyTo(_saveStream);
                 Variables.SwitchSFX.CopyTo(_switchStream);
             }
+
+            if (Variables.devMode)
+            AllocConsole();
+
+            var _configIni = new TinyIni("reFixed.ini");
+            Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
 
             Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
             Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
@@ -993,7 +984,7 @@ namespace ReFixed
             }
 
             // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
-            else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _cutsByte != 0x00) && RETRY_LOCK)
+            else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _fnshByte == 0x01 || _cutsByte != 0x00) && RETRY_LOCK)
             {
                 Console.WriteLine("DEBUG: Sora is alive. Restoring warp functionality.");
 
@@ -1322,31 +1313,32 @@ namespace ReFixed
         */
         public static void HolidayEngine()
         {
-            var _suffixRead = Hypervisor.Read<byte>(Variables.ADDR_Objentry[0] + 0x07);
-            var _dateCurrent = DateTime.Now;
+            if (Variables.festiveToggle)
+            {
+                var _suffixRead = Hypervisor.Read<byte>(Variables.ADDR_Objentry[0] + 0x07);
+                var _dateCurrent = DateTime.Now;
 
-            var _dateHalloweenStart = new DateTime(_dateCurrent.Year, 10, 31);
-            var _dateHalloweenEnd = new DateTime(_dateCurrent.Year, 11, 03);
+                var _dateHalloweenStart = new DateTime(_dateCurrent.Year, 10, 31);
+                var _dateHalloweenEnd = new DateTime(_dateCurrent.Year, 11, 03);
 
-            var _dateChristmasStart = new DateTime(_dateCurrent.Year, 12, 24);
-            var _dateChristmasEnd = new DateTime(_dateCurrent.Year, 01, 02);
+                var _dateChristmasStart = new DateTime(_dateCurrent.Year, 12, 24);
+                var _dateChristmasEnd = new DateTime(_dateCurrent.Year, 01, 02);
 
-            var _suffixWrite = "";
+                var _suffixWrite = "";
 
-            if (_dateCurrent > _dateHalloweenStart && _dateCurrent < _dateHalloweenEnd)
-                _suffixWrite = "_NM";
+                if (_dateCurrent > _dateHalloweenStart && _dateCurrent < _dateHalloweenEnd)
+                    _suffixWrite = "_NM";
 
-            else if (_dateCurrent > _dateChristmasStart && _dateCurrent > _dateChristmasEnd)
-                _suffixWrite = "_XM";
+                else if (_dateCurrent > _dateChristmasStart && _dateCurrent > _dateChristmasEnd)
+                    _suffixWrite = "_XM";
 
-            else
-                _suffixWrite = "";
 
-            if (_suffixWrite != "" && _suffixRead == 0x00)
-                ObjentrySwap(_suffixWrite);
+                if (_suffixWrite != "" && _suffixRead == 0x00)
+                    ObjentrySwap(_suffixWrite);
 
-            else if (_suffixWrite == "" && _suffixRead != 0x00)
-                ObjentrySwap(_suffixWrite);
+                else if (_suffixWrite == "" && _suffixRead != 0x00)
+                    ObjentrySwap(_suffixWrite);
+            }
         }
 
         /*
@@ -1468,6 +1460,7 @@ namespace ReFixed
             if (!Variables.Initialized)
                 Initialization();
 
+            SkipRoxas();
             ResetGame();
             RetryPrompt();
             #endregion
@@ -1476,11 +1469,8 @@ namespace ReFixed
             if (Variables.DualAudio)
                 AudioSwap();
 
-            SkipRoxas();
             SortMagic();
-
             TextAdjust();
-
             FrameOverride();
             #endregion
 
@@ -1508,7 +1498,7 @@ namespace ReFixed
                 );
             }
 
-            if (Variables.DCTask == null && Variables.discordToggle)
+            if (Variables.DCTask == null && Variables.rpcToggle)
             {
                 Variables.DCTask = Task.Factory.StartNew(
 

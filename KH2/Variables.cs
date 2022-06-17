@@ -40,6 +40,9 @@ namespace ReFixed
         public static bool saveToggle = true;
         public static bool discordToggle = true;
 
+        public static bool devMode = false;
+        public static bool festiveToggle = true;
+
         //
         // INFORMATION GRAB
         //
