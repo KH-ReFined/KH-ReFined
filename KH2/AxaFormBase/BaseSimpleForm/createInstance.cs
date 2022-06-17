@@ -46,17 +46,7 @@ namespace AxaFormBase
             CaptureStatus = true;
             _cursorHidden = true;
 
-            if (File.Exists("reFixed.ini"))
-            {
-                var _configIni = new TinyIni("reFixed.ini");
-
-                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
-                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
-                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
-            }
-
-            else
-                File.WriteAllText("reFixed.ini", "[ReFixed]\n" + "autoSave = true\n" + "discordRPC = true\n" + "saveIndicator = true");
+            Helpers.InitConfig();
 
             if (Variables.discordToggle)
                 Variables.DiscordClient.Initialize();
