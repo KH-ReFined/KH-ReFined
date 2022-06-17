@@ -9,6 +9,12 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Windows;
+using System.Runtime;
+using System.Reflection;
+using System.Diagnostics;
+using System.Windows.Forms;
+using System.Security.Principal;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -18,9 +24,9 @@ namespace ReFixed
 {
     public static class Helpers
     {
-		private void LaunchAdmin()
+		private static void LaunchAdmin()
 		{
-			if (!IsRunAsAdmin())
+			if (!CheckAdmin())
 			{
 				ProcessStartInfo _process = new ProcessStartInfo();
 				_process.UseShellExecute = true;
@@ -32,17 +38,27 @@ namespace ReFixed
 				try
 				{
 					Process.Start(_process);
-					Application.Current.Shutdown();
+					Environment.Exit(0);
 				}
 				
 				catch(Exception ex)
 				{
-					Console.WriteLine("This program must be run as an administrator! \n\n" + ex.ToString());
+					var _boxMessage = "Re:Fixed must be launched with Admin Previliges\n" +
+									  "the first time it's installed. Please make sure you\n" +
+									  "run it as an Administrator.";  
+
+                    var _boxTitle = "Error #403 - Forbidden";  
+                    var _boxButtons = MessageBoxButtons.OK;  
+
+                    var _boxResult = MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error);  
+
+                    if (_boxResult != null)
+						Environment.Exit(-1);
 				}
 			}
 		}
 
-		private bool CheckAdmin()
+		private static bool CheckAdmin()
 		{
 			var _identity = WindowsIdentity.GetCurrent();
 			var _principal = new WindowsPrincipal(_identity);
@@ -77,13 +93,13 @@ namespace ReFixed
 					"autoSave = true",
 					"discordRPC = true",
 					"saveIndicator = true",
-					""
-					"[Kingdom Hearts]"
+					"",
+					"[Kingdom Hearts]",
 					"battleChests = true",
-					""
+					"",
 					"[Kingdom Hearts II]",
 					"festivityEngine = true"
-				}
+				};
 
 				File.WriteAllLines("reFixed.ini", _outIni);
 			}
