@@ -89,12 +89,13 @@ namespace ReFixed
         public static ulong ADDR_VolumeTable = 0x44D42;
         public static ulong ADDR_MasterVolume = 0x365516;
 
-        public static ulong ADDR_TitleSelect = 0x5B6896;
-        public static ulong ADDR_TitleCount = 0x5B68A2;
+        public static ulong PINT_TitleSelect = 0x60F248;
+        public static ulong PINT_SystemBAR = 0x5DEAB0;
 
         public static ulong ADDR_Reset = 0x5DC634;
 
-        public static ulong ADDR_Input = 0x735E30;
+        public static ulong ADDR_InputGP = 0x735E30;
+        public static ulong ADDR_InputKB = 0x33AB28;
         public static ulong ADDR_Confirm = 0x365520;
     }
 }
