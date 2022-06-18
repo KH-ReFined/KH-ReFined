@@ -28,9 +28,6 @@ namespace ReFixed
             Yes, this class has one, too!
         */
 
-		[DllImport("kernel32")]
-		static extern bool AllocConsole();
-
         static byte[] MAGIC_STORE;
         static uint MAGIC_LV1;
         static ushort MAGIC_LV2;
@@ -86,6 +83,8 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            Helpers.Log("Initializing Re:Fixed...", 0);
+
             if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
                 Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
                 
@@ -97,10 +96,7 @@ namespace ReFixed
                 Variables.SaveSFX.CopyTo(_saveStream);
                 Variables.SwitchSFX.CopyTo(_switchStream);
             }
-
-            if (Variables.devMode)
-            AllocConsole();
-
+            
             var _configIni = new TinyIni("reFixed.ini");
             Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
 
@@ -118,6 +114,8 @@ namespace ReFixed
             Variables.Token = Variables.Source.Token;
 
             Variables.Initialized = true;
+
+            Helpers.Log("Re:Fixed initialized with no errors!", 0);
         }
 
         /*
@@ -164,7 +162,7 @@ namespace ReFixed
                     else if (_strRead.SequenceEqual(new byte[] { 0x2E, 0xAD, 0xAD, 0x9A, 0x9C, 0x9C }))
                         LANGUAGE = 0x04;
 
-                    Console.WriteLine(String.Format("DEBUG: The detected language is \"{0}\"!", _langList[LANGUAGE]));
+                    Helpers.Log(String.Format("The detected language is \"{0}\"!", _langList[LANGUAGE]), 0);
                 }
 
                 #region Roxas Skip Text
@@ -407,7 +405,7 @@ namespace ReFixed
 
             if (_buttRead == 0x090C && !DEBOUNCE[0])
             {
-                Console.WriteLine("DEBUG: Initiating a Soft Reset.");
+                Helpers.Log("Initiating a Soft Reset.", 0);
 
                 Hypervisor.Write<byte>(Variables.ADDR_Reset, 0x01);
 
@@ -442,7 +440,7 @@ namespace ReFixed
             // If a new spell is learned: Forget the sorting.
             if (_magicOne != MAGIC_LV1 || _magicTwo != MAGIC_LV2)
             {
-                Console.WriteLine("DEBUG: Spell change detected! Resetting sort memory.");
+                Helpers.Log("Spell change detected! Resetting sort memory.", 1);
 
                 MAGIC_STORE = null;
 
@@ -471,7 +469,7 @@ namespace ReFixed
                 // Write back the memorized magic menu.
                 if (MAGIC_STORE != null)
                 {
-                    Console.WriteLine("DEBUG: Roomchange detected! Restoring the Magic Menu.");
+                    Helpers.Log("Roomchange detected! Restoring the Magic Menu.", 1);
                     Hypervisor.WriteArray(Variables.ADDR_MagicMenu[1], MAGIC_STORE);
                 }
 
@@ -505,7 +503,7 @@ namespace ReFixed
                     // If L2 is being held down:
                     if (_triggerCheck && _insCheck != 0x90)
                     {
-                        Console.WriteLine("DEBUG: L2 Detected within Magic Menu! Disabling input registry.");
+                        Helpers.Log("L2 Detected within Magic Menu! Disabling input registry.", 1);
 
                         // NOP out command selection, so it does not interfere with our input.
                         for (int _ins = 0; _ins < Variables.ADDR_CMDSelectINST.Length; _ins++)
@@ -514,7 +512,7 @@ namespace ReFixed
 
                     else if (!_triggerCheck && _insCheck == 0x90)
                     {
-                        Console.WriteLine("DEBUG: L2 has been let go! Enabling input registry.");
+                        Helpers.Log("L2 has been let go! Enabling input registry.", 1);
 
                         // Revert the NOP'd instructions.
                         for (int _ins = 0; _ins < Variables.ADDR_CMDSelectINST.Length; _ins++)
@@ -547,7 +545,7 @@ namespace ReFixed
                         Hypervisor.Write(Variables.ADDR_MagicMenu[2], _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01));
                         Hypervisor.Write(Variables.ADDR_MagicMenu[2] + 0x04, _subjectMagic);
 
-                        Console.WriteLine(String.Format("DEBUG: Moving Magic ID \"{0}\" {1} within the menu!", "0x" + _subjectMagic.ToString("X4"), _inputCheck == 0x01 ? "up" : "down"));
+                        Helpers.Log(String.Format("Moving Magic ID \"{0}\" {1} within the menu!", "0x" + _subjectMagic.ToString("X4"), _inputCheck == 0x01 ? "up" : "down"), 0);
 
                         // Read the entirety of the magic menu, and save it to memory.
                         MAGIC_STORE = Hypervisor.ReadArray(Variables.ADDR_MagicMenu[1], _magicMax * 0x02);
@@ -579,7 +577,7 @@ namespace ReFixed
 
             if (CheckTitle() && !_skipBool)
             {
-                Console.WriteLine("DEBUG: Title screen detected! Resetting Roxas Skip!");
+                Helpers.Log("Title screen detected! Resetting Roxas Skip!", 0);
 
                 SKIP_INITIATED = false;
                 SKIP_COMPLETE = false;
@@ -597,11 +595,11 @@ namespace ReFixed
                 switch (_vibRead)
                 {
                     case 0x01:
-                        Console.WriteLine("DEBUG: Disabling Roxas Skip!");
+                        Helpers.Log("Disabling Roxas Skip!", 0);
                         SKIP_COMPLETE = true;
                         break;
                     case 0x00:
-                        Console.WriteLine("DEBUG: Initiating Roxas Skip!");
+                        Helpers.Log("Initiating Roxas Skip!", 0);
                         SKIP_INITIATED = true;
                         SKIP_COMPLETE = false;
                         break;
@@ -616,7 +614,7 @@ namespace ReFixed
 
                 if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck != 0x34 && SKIP_STAGE == 0)
                 {
-                    Console.WriteLine("DEBUG: Room parameters correct! Initiating Roxas Skip's First Phase...");
+                    Helpers.Log("Room parameters correct! Initiating Roxas Skip's First Phase...", 0);
 
                     Hypervisor.Write<uint>(Variables.ADDR_World, 0x322002);
                     Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, 0x01);
@@ -634,7 +632,7 @@ namespace ReFixed
                 {
                     if (SKIP_STAGE == 1)
                     {
-                        Console.WriteLine("DEBUG: Room parameters correct! Skip was initiated! Initiating Roxas Skip's Second Phase...");
+                        Helpers.Log("Room parameters correct! Skip was initiated! Initiating Roxas Skip's Second Phase...", 0);
 
                         Hypervisor.Write<uint>(Variables.ADDR_World, 0x001702);
                         Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, (0x02 << 10) + 0x02);
@@ -691,7 +689,7 @@ namespace ReFixed
                         Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
                         Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
 
-                        Console.WriteLine("DEBUG: Skip completed!");
+                        Helpers.Log("Roxas Skip has been completed!", 0);
 
                         SKIP_INITIATED = false;
                         SKIP_COMPLETE = true;
@@ -700,7 +698,7 @@ namespace ReFixed
 
                     else
                     {
-                        Console.WriteLine("DEBUG: Skip was not initiated! Marking as completed...");
+                        Helpers.Log("Skip was not initiated! Marking as completed...", 0);
 
                         SKIP_INITIATED = false;
                         SKIP_COMPLETE = true;
@@ -739,11 +737,16 @@ namespace ReFixed
 
             // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
             if (_framerateRead == 0x00 && _instructionRead == 0x90)
+            {
+                Helpers.Log("30FPS Detected! Restoring the Framelimiter.", 0);
                 Hypervisor.WriteArray(_instructionAddress, Variables.INST_FrameLimiter, true);
+            }
 
             // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
             else if (_framerateRead != 0x00 && _instructionRead != 0x90)
             {
+                Helpers.Log("60FPS Detected! Destroying the Framelimiter.", 0);
+
                 // NOP the instruction.
                 Hypervisor.WriteArray(_instructionAddress, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
 
@@ -767,7 +770,7 @@ namespace ReFixed
 
             if (_toggleCheck == 0x00 && _stringCheck != "obj/%s.a.jp")
             {
-                Console.WriteLine("DEBUG: Dual Audio switching to Japanese...");
+                Helpers.Log("Dual Audio switching to Japanese...", 0);
 
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter, "obj/%s.a.jp");
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter + 0x10, "obj/%s.a.jp");
@@ -782,7 +785,7 @@ namespace ReFixed
 
             else if (_toggleCheck == 0x01 && _stringCheck != "obj/%s.a.%s")
             {
-                Console.WriteLine("DEBUG: Dual Audio switching to English...");
+                Helpers.Log("Dual Audio switching to English...", 0);
 
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter, "obj/%s.a.%s");
                 Hypervisor.WriteString(Variables.ADDR_PAXFormatter + 0x10, "obj/%s.a.us");
@@ -817,11 +820,16 @@ namespace ReFixed
 
                 if (_inputValue == _buttonSeek && _selectButton == _countButton - 0x01)
                 {
+                    Helpers.Log("Title to Exit detected! 2.5 second limit set! Initating exit...", 0);
                     Thread.Sleep(2500);
 
                     if (File.Exists("KINGDOM HEARTS HD 1.5+2.5 Launcher.exe"))
+                    {
+                        Helpers.Log("Launcher found! Launching the launcher...", 0);
                         Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
+                    }
                     
+                    Helpers.Log("Re:Fixed terminated with no errors.", 0);
                     Environment.Exit(0);
                 }
             }
@@ -902,7 +910,7 @@ namespace ReFixed
 
             if (CheckTitle() && (RETRY_LOCK || RETRY_MODE == 0x01))
             {
-                Console.WriteLine("DEBUG: Title Screen detected on Retry Mode! Restoring...");
+                Helpers.Log("Title Screen detected on Retry Mode! Restoring functions...", 0);
 
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
@@ -914,13 +922,12 @@ namespace ReFixed
                 FORM_STAT_READ = null;
                 ITEM_READ = new List<byte[]>();
 
+                RETRY_MODE = 0;
                 RETRY_LOCK = false;
             }
 
-            if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00)
+            if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && !CheckTitle())
             {
-                Console.WriteLine(String.Format("DEBUG: Start of forced fight, reading necessary values."));
-
                 ITEM_READ = new List<byte[]>();
 
                 for (int i = 0; i < 4; i++)
@@ -933,11 +940,14 @@ namespace ReFixed
 
                 if (DRIVE_READ[2] == 0x00)
                     DRIVE_READ = null;
+
+                else
+                    Helpers.Log(String.Format("Start of forced fight, reading necessary values into memory..."), 0);
             }
 
             else if ((_bttlByte != 0x02 || _cutsByte != 0x00) && _pausRead == 0x00 && DRIVE_READ != null)
             {
-                Console.WriteLine(String.Format("DEBUG: Out of battle. Erasing value memory."));
+                Helpers.Log(String.Format("The plaer is out of battle. Flushing memory..."), 0);
 
                 EXP_READ = -1;
                 FORM_READ = 0;
@@ -952,7 +962,7 @@ namespace ReFixed
             {
                 if (_menuRead == 0x01 && _warpRead == 0x90 && RETRY_MODE == 0x01)
                 {
-                    Console.WriteLine("DEBUG: User is going to load the game! Reverting warp functionality...");
+                    Helpers.Log("User is going to load the game! Restoring functions...", 0);
 
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
@@ -963,7 +973,7 @@ namespace ReFixed
 
                 else if (_menuRead == 0x00 && _optionRead == 0x02 && _warpRead != 0x90 && RETRY_MODE == 0x01)
                 {
-                    Console.WriteLine("DEBUG: User defected from loading! Destroying warp functionality...");
+                    Helpers.Log("User defected from loading! Destroying functions...", 0);
 
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
@@ -978,7 +988,7 @@ namespace ReFixed
                     // Play the sound so that it seems **authentic**.
                     Helpers.PlaySFX(Variables.SwitchSFXPath);
 
-                    Console.WriteLine(String.Format("DEBUG: Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"));
+                    Helpers.Log(String.Format("Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"), 0);
 
                     // Retry Mode Switch!
                     RETRY_MODE = RETRY_MODE == 0x00 ? 0x01 : 0x00;
@@ -986,6 +996,7 @@ namespace ReFixed
                     // This handles the "Continue" mode and restores the function to do room switching.
                     if (RETRY_MODE == 0x00 && _warpRead == 0x90)
                     {
+                        Helpers.Log("Switched to Continue mode! Restoring functions...", 0);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
@@ -994,6 +1005,7 @@ namespace ReFixed
                     // This handles the "Retry" mode and destroys the function to do room switching.
                     else if (RETRY_MODE == 0x01 && _warpRead != 0x90)
                     {
+                        Helpers.Log("Switched to Retry mode! Destroying functions....", 0);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
@@ -1014,7 +1026,7 @@ namespace ReFixed
                 // Retry Mode active.
                 RETRY_MODE = 0x01;
 
-                Console.WriteLine("DEBUG: Sora is dead. Destroying warp functionality.");
+                Helpers.Log("Death Screen detected! Destroying functions...", 0);
 
                 // Destroy the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
@@ -1032,10 +1044,10 @@ namespace ReFixed
             else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _fnshByte == 0x01 || _cutsByte != 0x00) && RETRY_LOCK)
             {
                 if (_fnshByte != 0x01)
-                    Console.WriteLine("DEBUG: Sora is alive. Restoring warp functionality.");
+                    Helpers.Log("Death screen is not present! Restoring functions...", 0);
 
                 else
-                    Console.WriteLine("DEBUG: End of battle detected! Restoring warp functionality.");
+                    Helpers.Log("End of battle detected! Restoring functions...", 0);
 
                 // Restore the functions responsible for switching rooms and reverting story flags.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
@@ -1283,7 +1295,7 @@ namespace ReFixed
                 {
                     if (SAVE_WORLD != _worldCheck)
                     {
-                        Console.WriteLine("DEBUG: World condition met! Writing Autosave...");
+                        Helpers.Log("World condition met! Writing Autosave...", 0);
 
                         GenerateSave();
                         SAVE_ITERATOR = 0;
@@ -1295,7 +1307,7 @@ namespace ReFixed
 
                         if (SAVE_ITERATOR == 3)
                         {
-                            Console.WriteLine("DEBUG: Room condition met! Writing Autosave...");
+                            Helpers.Log("Room condition met! Writing Autosave...", 0);
 
                             GenerateSave();
                             SAVE_ITERATOR = 0;
@@ -1402,6 +1414,7 @@ namespace ReFixed
             {
                 if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) != 0x00)
                 {
+                    Helpers.Log("No spells or Limit Form detected! Hiding the MP Bar...", 0);
                     for (int i = 0; i < Variables.ADDR_MPSEQD.Length; i++)
                         Hypervisor.Write<byte>(Variables.ADDR_MPSEQD[i], 0x00);
                 }
@@ -1409,6 +1422,8 @@ namespace ReFixed
 
             else if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) == 0x00 || Hypervisor.Read<byte>(Variables.ADDR_SoraForm) == 0x03)
             {
+                Helpers.Log("A spell or Limit Form detected! Showing the MP Bar...", 0);
+
                 for (int i = 0; i < Variables.ADDR_MPSEQD.Length; i++)
                     Hypervisor.Write<byte>(Variables.ADDR_MPSEQD[i], Variables.VALUE_MPSEQD[i]);
             }
@@ -1506,66 +1521,76 @@ namespace ReFixed
         */
         public static void Execute()
         {
-            #region High Priority
-            if (!Variables.Initialized)
-                Initialization();
-
-            SkipRoxas();
-            ResetGame();
-            RetryPrompt();
-            FixExit();
-            #endregion
-
-            #region Mid Priority
-            if (Variables.DualAudio)
-                AudioSwap();
-
-            SortMagic();
-            TextAdjust();
-            FrameOverride();
-            #endregion
-
-            #region Low Priority
-            MagicHide();
-            HolidayEngine();
-            LimitOverride();
-            #endregion
-
-            #region Tasks
-            if (Variables.ASTask == null)
+            try
             {
-                Variables.ASTask = Task.Factory.StartNew(
+                #region High Priority
+                if (!Variables.Initialized)
+                    Initialization();
 
-                    delegate ()
-                    {
-                        while (!Variables.Token.IsCancellationRequested)
+                SkipRoxas();
+                ResetGame();
+                RetryPrompt();
+                FixExit();
+                #endregion
+
+                #region Mid Priority
+                if (Variables.DualAudio)
+                    AudioSwap();
+
+                SortMagic();
+                TextAdjust();
+                FrameOverride();
+                #endregion
+
+                #region Low Priority
+                MagicHide();
+                HolidayEngine();
+                LimitOverride();
+                #endregion
+
+                #region Tasks
+                if (Variables.ASTask == null)
+                {
+                    Variables.ASTask = Task.Factory.StartNew(
+
+                        delegate ()
                         {
-                            AutosaveEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                AutosaveEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
 
-                    Variables.Token
-                );
+                        Variables.Token
+                    );
+                }
+
+                if (Variables.DCTask == null && Variables.rpcToggle)
+                {
+                    Variables.DCTask = Task.Factory.StartNew(
+
+                        delegate ()
+                        {
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                DiscordEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
+
+                        Variables.Token
+                    );
+                }
+                #endregion
             }
-
-            if (Variables.DCTask == null && Variables.rpcToggle)
+            
+            catch (Exception _caughtEx)
             {
-                Variables.DCTask = Task.Factory.StartNew(
-
-                    delegate ()
-                    {
-                        while (!Variables.Token.IsCancellationRequested)
-                        {
-                            DiscordEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
-
-                    Variables.Token
-                );
+                Helpers.LogException(_caughtEx);
+                Helpers.Log("Re:Fixed terminated with an exception!", 1);
+                Environment.Exit(-1);
             }
-            #endregion
         }
     }
 }

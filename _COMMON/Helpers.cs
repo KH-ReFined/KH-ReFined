@@ -85,6 +85,8 @@ namespace ReFixed
 
 		public static void InitConfig()
 		{
+			LaunchAdmin();
+			
 			if (!File.Exists("reFixed.ini"))
 			{
 				var _outIni = new string[]
@@ -115,6 +117,54 @@ namespace ReFixed
 				if (_configIni.KeyExists("debugMode", "General"))
 					Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));
 			}
+		}
+
+		public static void Log(string Input, byte Type)
+		{
+			if (Variables.devMode)
+			{
+				var _formatStr = "[{0}] {1}: {2}";
+
+				var _dateStr = DateTime.Now.ToString("dd-mm-yyyy");
+				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
+
+				var _typeStr = "";
+				var _fileName = "ReFixed-" + _dateStr + ".txt";
+
+				switch(Type)
+				{
+					case 0:
+						_typeStr = "MESSAGE";
+						break;
+
+					case 1:
+						_typeStr = "WARNING";
+						break;
+
+					case 2:
+						_typeStr = "ERROR";
+						break;
+				}
+
+				using (StreamWriter _write = File.AppendText(_fileName))
+					_write.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
+
+				Console.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
+			}
+		}
+
+		public static void LogException(Exception Input)
+		{
+			var _formatStr = "[{0}] {1}";
+
+			var _dateStr = DateTime.Now.ToString("dd-mm-yyyy");
+			var _timeStr = DateTime.Now.ToString("hh:mm:ss");
+
+			var _fileName = "ReFixed-" + _dateStr + ".txt";
+			var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
+
+			using (StreamWriter _write = File.AppendText(_fileName))
+                _write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
 		}
     }
 }
