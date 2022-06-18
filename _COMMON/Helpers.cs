@@ -125,7 +125,7 @@ namespace ReFixed
 			{
 				var _formatStr = "[{0}] {1}: {2}";
 
-				var _dateStr = DateTime.Now.ToString("dd-mm-yyyy");
+				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
 				var _typeStr = "";
@@ -157,7 +157,7 @@ namespace ReFixed
 		{
 			var _formatStr = "[{0}] {1}";
 
-			var _dateStr = DateTime.Now.ToString("dd-mm-yyyy");
+			var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 			var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
 			var _fileName = "ReFixed-" + _dateStr + ".txt";
