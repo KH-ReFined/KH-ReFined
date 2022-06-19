@@ -160,6 +160,7 @@ namespace ReFixed
         public static ulong PINT_SystemBAR = 0x24AA82A;
         public static ulong PINT_DeadMenu = 0x68863A;
         public static ulong PINT_SaveInformation = 0x25A5972;
+        public static ulong PINT_SoraVSB = 0x261ABD2;
 
         //
         // INSTRUCTION ADDRESSES

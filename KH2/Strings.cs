@@ -212,6 +212,44 @@ namespace ReFixed
             }
         };
 
+        public static string[][] VoicePatch = new string[][]
+        {
+            new string[]
+            {
+                "German",
+                "Spanish",
+                "French"
+            },
+
+            new string[]
+            {
+                "Deutsch",
+                "Französisch",
+                "Spanisch"
+            },
+
+            new string[]
+            {
+                "Alemán",
+                "Francés",
+                "Español"
+            },
+
+            new string[]
+            {
+                "Allemand",
+                "Français",
+                "Espagnol"
+            },
+
+            new string[]
+            {
+                "Tedesco",
+                "Francese",
+                "Tedesco"
+            }
+        };
+
         public static string[][] FixText = new string[][]
         {
             new string[]

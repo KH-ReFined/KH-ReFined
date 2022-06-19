@@ -295,7 +295,6 @@ namespace ReFixed
                     }
 
                     Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _audioText[0].ToKHSCII(), true);
-                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
                     Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _audioText[2].ToKHSCII(), true);
                     Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, _audioText[3].ToKHSCII(), true);
                 }
@@ -373,6 +372,36 @@ namespace ReFixed
 
                         Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset, _openKHText[0].ToKHSCII(), true);
                         Hypervisor.WriteArray(SYSBAR_POINTER + _openKHOffset + 0x03, _openKHText[1].ToKHSCII(), true);
+                    }
+                }
+                #endregion
+
+                #region Voice Patch Detection
+                if (Variables.DualAudio)
+                {
+                    var _patchText = Strings.VoicePatch[LANGUAGE];
+                    var _audioText = Strings.DualAudio[LANGUAGE];
+
+                    var _firstPoint = Hypervisor.Read<ulong>(Variables.PINT_SoraVSB);
+                    var _secondPoint = Hypervisor.Read<ulong>(_firstPoint + 0x40, true);
+                    var _thirdPoint = Hypervisor.Read<ulong>(_secondPoint + 0x08, true);
+
+                    var _soraBytes = Hypervisor.Read<uint>(_thirdPoint + 0x2280, true);
+
+                    switch (_soraBytes)
+                    {
+                        case 0x81818181:
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
+                            break;
+                        case 0x726F7601:
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[0].ToKHSCII(), true);
+                            break;
+                        case 0x00:
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[1].ToKHSCII(), true);
+                            break;
+                        case 0x1E015B60:
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[2].ToKHSCII(), true);
+                            break;
                     }
                 }
                 #endregion
