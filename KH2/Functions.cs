@@ -385,23 +385,23 @@ namespace ReFixed
                     var _secondPoint = Hypervisor.Read<ulong>(_firstPoint + 0x40, true);
                     var _thirdPoint = Hypervisor.Read<ulong>(_secondPoint + 0x08, true);
 
-                    var _soraBytes = Hypervisor.Read<uint>(_thirdPoint + 0x2280, true);
+                    var _soraBytes = Hypervisor.Read<uint>(_thirdPoint + 0x3500, true);
 
                     switch (_soraBytes)
                     {
-                        case 0x81818181:
+                        case 0x74201E09:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _audioText[1]).ToKHSCII(), true);
                             break;
-                        case 0x726F7601:
+                        case 0xC274D2A8:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[0].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[0]).ToKHSCII(), true);
                             break;
-                        case 0x00:
+                        case 0x04D1CEA9:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[1].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[1]).ToKHSCII(), true);
                             break;
-                        case 0x1E015B60:
+                        case 0xED1C47E9:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[2].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[2]).ToKHSCII(), true);
                             break;
