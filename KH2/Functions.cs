@@ -296,7 +296,6 @@ namespace ReFixed
 
                     Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetTitle, _audioText[0].ToKHSCII(), true);
                     Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetNO, _audioText[2].ToKHSCII(), true);
-                    Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, _audioText[3].ToKHSCII(), true);
                 }
                 #endregion
 
@@ -392,15 +391,19 @@ namespace ReFixed
                     {
                         case 0x81818181:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _audioText[1]).ToKHSCII(), true);
                             break;
                         case 0x726F7601:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[0].ToKHSCII(), true);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[0]).ToKHSCII(), true);
                             break;
                         case 0x00:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[1].ToKHSCII(), true);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[1]).ToKHSCII(), true);
                             break;
                         case 0x1E015B60:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[2].ToKHSCII(), true);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[2]).ToKHSCII(), true);
                             break;
                     }
                 }

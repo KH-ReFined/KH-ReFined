@@ -176,7 +176,7 @@ namespace ReFixed
                 "Audio Language",
                 "English",
                 "Japanese",
-                "Switch between English and Japanese speech.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(The world must be reloaded for the changes\nto take effect!){0x03}"
+                "Switch between {0} and Japanese speech.\n{{0x07}}{{0xFF}}{{0xFF}}{{0x00}}{{0x80}}(The world must be reloaded for the changes\nto take effect!){{0x03}}"
             },
 
             new string[]
@@ -184,7 +184,7 @@ namespace ReFixed
                 "Audio-Sprachausgabe",
                 "Englisch",
                 "Japanisch",
-                "Wechsle zwischen der Englischen und Japanischen\nSprachausgabe. {0x07}{0xFF}{0xFF}{0x00}{0x80}(Die Welt muss neu geladen werden,\nbevor die Effekte in Kraft treten!){0x03}"
+                "Wechsle zwischen der {0} und Japanischen\nSprachausgabe. {{0x07}}{{0xFF}}{{0xFF}}{{0x00}}{{0x80}}(Die Welt muss neu geladen werden,\nbevor die Effekte in Kraft treten!){{0x03}}"
             },
 
             new string[]
@@ -192,7 +192,7 @@ namespace ReFixed
                 "Idioma de las Voces",
                 "Inglés",
                 "Japonés",
-                "Cambia entre las voces en Inglés y Japonés.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(¡El mundo necesita volver a cargarse\npara que surjan los cambios!){0x03}"
+                "Cambia entre las voces en {0} y Japonés.\n{{0x07}}{{0xFF}}{{0xFF}}{{0x00}}{{0x80}}(¡El mundo necesita volver a cargarse\npara que surjan los cambios!){{0x03}}"
             },
 
             new string[]
@@ -200,7 +200,7 @@ namespace ReFixed
                 "Langue de l'audio",
                 "Anglais",
                 "Japonais",
-                "Passer de l'audio Anglais à Japonais, vice-versa.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Le monde dans lequel vous vous trouvez doit être \nchargé à nouveau pour que les changements prennnent effet!){0x03}"
+                "Passer de l'audio {0} à Japonais, vice-versa.\n{{0x07}}{{0xFF}}{{0xFF}}{{0x00}}{{0x80}}(Le monde dans lequel vous vous trouvez doit être \nchargé à nouveau pour que les changements prennnent effet!){{0x03}}"
             },
 
             new string[]
@@ -208,7 +208,7 @@ namespace ReFixed
                 "Voci Dialoghi",
                 "Inglese",
                 "Giapponese",
-                "Scegli tra doppiaggio Inglese o Giapponese.\n{0x07}{0xFF}{0xFF}{0x00}{0x80}(Il mondo deve essere ricaricato prima\nche i cambiamenti prendano effetto!){0x03}"
+                "Scegli tra doppiaggio {0} o Giapponese.\n{{0x07}}{{0xFF}}{{0xFF}}{{0x00}}{{0x80}}(Il mondo deve essere ricaricato prima\nche i cambiamenti prendano effetto!){{0x03}}"
             }
         };
 
