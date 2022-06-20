@@ -64,6 +64,8 @@ namespace ReFixed
         static ulong FULL_OFFSET;
         static ulong NONE_OFFSET;
 
+        static bool DUB_FOUND;
+
         static ulong CONTINUE_OFFSET;
         static ulong RETRY_OFFSET;
 
@@ -376,7 +378,7 @@ namespace ReFixed
                 #endregion
 
                 #region Voice Patch Detection
-                if (Variables.DualAudio)
+                if (Variables.DualAudio && !DUB_FOUND)
                 {
                     var _patchText = Strings.VoicePatch[LANGUAGE];
                     var _audioText = Strings.DualAudio[LANGUAGE];
@@ -385,26 +387,43 @@ namespace ReFixed
                     var _secondPoint = Hypervisor.Read<ulong>(_firstPoint + 0x40, true);
                     var _thirdPoint = Hypervisor.Read<ulong>(_secondPoint + 0x08, true);
 
-                    var _soraBytes = Hypervisor.Read<uint>(_thirdPoint + 0x3500, true);
-
-                    switch (_soraBytes)
+                    if (_thirdPoint > 0x00)
                     {
-                        default:
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _audioText[1]).ToKHSCII(), true);
-                            break;
-                        case 0xC274D2A8:
+                        var _soraRead = Hypervisor.ReadArray(_thirdPoint, 0x3500, true);
+
+                        var _germanSeek = _soraRead.FindValue(new byte[] { 0xED, 0xEF, 0x6D, 0x76 });
+                        var _spanishSeek = _soraRead.FindValue(new byte[] { 0x80, 0xEB, 0x51, 0xE9 });
+                        var _frenchSeek = _soraRead.FindValue(new byte[] { 0xCD, 0x39, 0x0E, 0x9A });
+
+                        if ((long)_germanSeek != -1)
+                        {
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[0].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[0]).ToKHSCII(), true);
-                            break;
-                        case 0x04D1CEA9:
+                            Helpers.Log("Detected Dub Patch: German!", 0);
+                        }
+
+                        else if ((long)_spanishSeek != -1)
+                        {
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[1].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[1]).ToKHSCII(), true);
-                            break;
-                        case 0xED1C47E9:
+                            Helpers.Log("Detected Dub Patch: Spanish!", 0);
+                        }
+
+                        else if ((long)_frenchSeek != -1)
+                        {
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[2].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[2]).ToKHSCII(), true);
-                            break;
+                            Helpers.Log("Detected Dub Patch: French!", 0);
+                        }
+
+                        else
+                        {
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _audioText[1]).ToKHSCII(), true);
+                            Helpers.Log("Detected Dub Patch: None.", 0);
+                        }
+
+                        DUB_FOUND = true;
                     }
                 }
                 #endregion
