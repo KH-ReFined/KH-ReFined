@@ -389,7 +389,7 @@ namespace ReFixed
 
                     switch (_soraBytes)
                     {
-                        case 0x74201E09:
+                        default:
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _audioText[1]).ToKHSCII(), true);
                             break;
