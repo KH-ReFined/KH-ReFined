@@ -122,7 +122,10 @@ namespace ReFixed
 					Variables.autoController = true;
 
 				else
+				{
+					Variables.autoController = false;
 					Variables.contToggle = Convert.ToBoolean(_contValue);
+				}
 
 				if (_configIni.KeyExists("debugMode", "General"))
 					Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));

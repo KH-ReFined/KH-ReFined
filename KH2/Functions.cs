@@ -119,11 +119,9 @@ namespace ReFixed
                 LIMIT_SHORT[3] = Variables.LMTDictionary[_splitArr[3]];
             }
 
-            if (!Variables.autoController)
-            {
-                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
-                Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, (byte)(Variables.contToggle ? 0 : 1));
-            }
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
+            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
             Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
             Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
@@ -488,6 +486,20 @@ namespace ReFixed
 
             else if (_buttRead != 0x090C && DEBOUNCE[0])
                 DEBOUNCE[0] = false;
+        }
+
+        public static void AdjustControler()
+        {
+            if (!Variables.autoController)
+            {
+                var _contCheck = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
+
+                if (_contCheck != 0x90)
+                {
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
+                    Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, (byte)(Variables.contToggle ? 0 : 1));
+                }
+            }
         }
 
         /*
@@ -1616,6 +1628,7 @@ namespace ReFixed
                     AudioSwap();
 
                 SortMagic();
+                AdjustControler();
                 TextAdjust();
                 FrameOverride();
                 #endregion
