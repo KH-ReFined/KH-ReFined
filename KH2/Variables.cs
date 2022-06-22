@@ -44,7 +44,9 @@ namespace ReFixed
         public static bool autoController = true;
 
         public static bool devMode = false;
+
         public static bool festiveToggle = true;
+        public static string limitShorts = "";
 
         //
         // INFORMATION GRAB
@@ -67,6 +69,14 @@ namespace ReFixed
 
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
+
+        public static Dictionary<string, short> LMTDictionary = new Dictionary<string, short>()
+        {
+            { "ragnarok", 0x02AB },
+            { "arcanum", 0x02BD },
+            { "raid", 0x02C0 },
+            { "sonic", 0x02BA }
+        }
 
         public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
         public static string SwitchSFXPath = Path.GetTempPath() + "ReFixed/switchSFX.wav";

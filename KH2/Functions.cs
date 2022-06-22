@@ -71,6 +71,8 @@ namespace ReFixed
 
         static int RETRY_MODE = 0x00;
         static bool RETRY_LOCK;
+
+        static short[] LIMIT_SHORT;
         
         static int EXP_READ;
         static byte FORM_READ;
@@ -100,7 +102,22 @@ namespace ReFixed
             }
             
             var _configIni = new TinyIni("reFixed.ini");
+
             Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
+            Variables.limitShorts = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
+
+            if (Variables.limitShorts != "")
+            {
+                LIMIT_SHORT = new short[4];
+
+                var _splitArr = Variables.limitShorts.Replace("[", "").Replace("]", "").Split(", ");
+
+                // This code always presumes O is confirm.
+                LIMIT_SHORT[0] = Variables.LMTDictionary[_splitArr[0]];
+                LIMIT_SHORT[1] = Variables.LMTDictionary[_splitArr[1]];
+                LIMIT_SHORT[2] = Variables.LMTDictionary[_splitArr[2]];
+                LIMIT_SHORT[3] = Variables.LMTDictionary[_splitArr[3]];
+            }
 
             if (!Variables.autoController)
             {
@@ -1152,15 +1169,18 @@ namespace ReFixed
 
             if (_confirmRead == 0x00 && _shortRead != 0x02BA)
             {
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, 0x02BA);
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, 0x02AB);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, LIMIT_SHORT[0]);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[3]);
             }
 
             else if (_confirmRead == 0x01 && _shortRead != 0x02AB && _modeRead == 0)
             {
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, 0x02AB);
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, 0x02BA);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, LIMIT_SHORT[3]);
+                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[0]);
             }
+
+            Hypervisor.Write<short>(Variables.ADDR_LimitShortcut + 0x02, LIMIT_SHORT[1]);
+            Hypervisor.Write<short>(Variables.ADDR_LimitShortcut + 0x04, LIMIT_SHORT[2]);
 
             if (LANGUAGE == 0x00)
             {
