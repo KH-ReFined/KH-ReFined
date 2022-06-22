@@ -174,6 +174,8 @@ namespace ReFixed
 
 			using (StreamWriter _write = File.AppendText(_fileName))
                 _write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
+
+			Console.WriteLine(String.Format(_formatStr, _timeStr, _exString));
 		}
     }
 }
