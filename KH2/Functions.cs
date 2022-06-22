@@ -1147,6 +1147,7 @@ namespace ReFixed
         public static void LimitOverride()
         {
             var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
+            var _modeRead = Hypervisor.Read<ushort>(Variables.ADDR_ControllerMode);
             var _shortRead = Hypervisor.Read<ushort>(Variables.ADDR_LimitShortcut);
 
             if (_confirmRead == 0x00 && _shortRead != 0x02BA)
@@ -1155,7 +1156,7 @@ namespace ReFixed
                 Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, 0x02AB);
             }
 
-            else if (_confirmRead == 0x01 && _shortRead != 0x02AB)
+            else if (_confirmRead == 0x01 && _shortRead != 0x02AB && _modeRead == 0)
             {
                 Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, 0x02AB);
                 Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, 0x02BA);
