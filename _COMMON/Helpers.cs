@@ -95,6 +95,7 @@ namespace ReFixed
 					"autoSave = true",
 					"discordRPC = true",
 					"saveIndicator = true",
+					"controllerPrompt = auto",
 					"",
 					"[Kingdom Hearts]",
 					"battleChests = true",
@@ -113,6 +114,14 @@ namespace ReFixed
                 Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
 				Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
                 Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "General"));
+				
+				var _contValue = _configIni.Read("controllerPrompt", "General");
+
+				if (_contValue.ToLower() == "auto")
+					Variables.autoController = true;
+
+				else
+					Variables.contToggle = Convert.ToBoolean(_contValue);
 
 				if (_configIni.KeyExists("debugMode", "General"))
 					Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));

@@ -102,6 +102,12 @@ namespace ReFixed
             var _configIni = new TinyIni("reFixed.ini");
             Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
 
+            if (!Variables.autoController)
+            {
+                Hypervisor.WriteArray(Variables.ADDR_ControllerINST, new byte{ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+                Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, Variables.contToggle ? 0 : 1);
+            }
+
             Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
             Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
             Hypervisor.UnlockBlock(Variables.ADDR_BTLFormatter);

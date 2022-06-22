@@ -40,6 +40,9 @@ namespace ReFixed
         public static bool rpcToggle = true;
         public static bool saveToggle = true;
 
+        public static bool contToggle = true;
+        public static bool autoController = true;
+
         public static bool devMode = false;
         public static bool festiveToggle = true;
 
@@ -120,6 +123,8 @@ namespace ReFixed
         public static ulong ADDR_TitleSelect = 0x5B6896;
         public static ulong ADDR_TitleCount = 0x5B68A2;
 
+        public static ulong ADDR_ControllerMode = 0x25DDFFA;
+
         public static ulong[] ADDR_Objentry = { 0x24BFA72, 0x24BFD72, 0x24E7852 };
         public static ulong[] ADDR_MagicMenu = { 0x24AA2CA, 0x24AA33A, 0x24A98EE };
         public static ulong[] ADDR_MPSEQD = { 0x4A03C6, 0x4A0376, 0x4A035A, 0x4A038A };
@@ -172,6 +177,7 @@ namespace ReFixed
         public static ulong ADDR_WarpINST = 0x150782;
         public static ulong ADDR_RevertINST = 0x39D8D6;
         public static ulong ADDR_InventoryINST = 0x39D8EF;
+        public static ulong ADDR_ControllerINST = 0x4E80DA;
         public static ulong[] ADDR_CMDSelectINST = { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
 
         //
