@@ -101,7 +101,7 @@ namespace ReFixed
 					"battleChests = true",
 					"",
 					"[Kingdom Hearts II]",
-					"festivityEngine = true"
+					"festivityEngine = true",
 					"limitShortcuts = [ragnarok, arcanum, raid, sonic]"
 				};
 

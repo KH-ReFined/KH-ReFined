@@ -76,7 +76,7 @@ namespace ReFixed
             { "arcanum", 0x02BD },
             { "raid", 0x02C0 },
             { "sonic", 0x02BA }
-        }
+        };
 
         public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
         public static string SwitchSFXPath = Path.GetTempPath() + "ReFixed/switchSFX.wav";

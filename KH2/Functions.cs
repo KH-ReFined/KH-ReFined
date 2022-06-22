@@ -110,7 +110,7 @@ namespace ReFixed
             {
                 LIMIT_SHORT = new short[4];
 
-                var _splitArr = Variables.limitShorts.Replace("[", "").Replace("]", "").Split(", ");
+                var _splitArr = Variables.limitShorts.Replace("[", "").Replace("]", "").Replace(", ", ",").Split(',');
 
                 // This code always presumes O is confirm.
                 LIMIT_SHORT[0] = Variables.LMTDictionary[_splitArr[0]];
@@ -121,8 +121,8 @@ namespace ReFixed
 
             if (!Variables.autoController)
             {
-                Hypervisor.WriteArray(Variables.ADDR_ControllerINST, new byte{ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
-                Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, Variables.contToggle ? 0 : 1);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
+                Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, (byte)(Variables.contToggle ? 0 : 1));
             }
 
             Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
@@ -1169,14 +1169,14 @@ namespace ReFixed
 
             if (_confirmRead == 0x00 && _shortRead != 0x02BA)
             {
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, LIMIT_SHORT[0]);
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[3]);
+                Hypervisor.Write<short>(Variables.ADDR_LimitShortcut, LIMIT_SHORT[0]);
+                Hypervisor.Write<short>(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[3]);
             }
 
             else if (_confirmRead == 0x01 && _shortRead != 0x02AB && _modeRead == 0)
             {
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut, LIMIT_SHORT[3]);
-                Hypervisor.Write<ushort>(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[0]);
+                Hypervisor.Write<short>(Variables.ADDR_LimitShortcut, LIMIT_SHORT[3]);
+                Hypervisor.Write<short>(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[0]);
             }
 
             Hypervisor.Write<short>(Variables.ADDR_LimitShortcut + 0x02, LIMIT_SHORT[1]);
