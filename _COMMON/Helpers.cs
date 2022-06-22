@@ -102,7 +102,7 @@ namespace ReFixed
 					"",
 					"[Kingdom Hearts II]",
 					"festivityEngine = true",
-					"limitShortcuts = [ragnarok, arcanum, raid, sonic]"
+					"limitShortcuts = [sonic, arcanum, raid, ragnarok]"
 				};
 
 				File.WriteAllLines("reFixed.ini", _outIni);
