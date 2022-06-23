@@ -161,10 +161,7 @@ namespace ReFixed
                     for (int i = 0; i < Strings.AutoSave[LANGUAGE].Length; i++)
                     {
                         var _str = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
-                        var _offset = _textEnd - _headerBegin + _writeOffset;
-
-                        Hypervisor.WriteString(_textEnd + _writeOffset, _str, true);
-                        Hypervisor.Write<ushort>(_headerBegin + _locArray[i], (ushort)_offset, true);
+                        Hypervisor.WriteString(_headerBegin + _locArray[i], _str, true);
 
                         _writeOffset += (ulong)_str.Length;
                     }
