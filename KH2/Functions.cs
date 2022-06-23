@@ -683,6 +683,8 @@ namespace ReFixed
                     case 0x01:
                         Helpers.Log("Disabling Roxas Skip!", 0);
                         SKIP_COMPLETE = true;
+                        SKIP_INITIATED = false;
+                        SKIP_STAGE = 2;
                         break;
                     case 0x00:
                         Helpers.Log("Initiating Roxas Skip!", 0);
@@ -698,7 +700,7 @@ namespace ReFixed
                 var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
                 var _eventCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x04);
 
-                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck != 0x34 && SKIP_STAGE == 0)
+                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck == 0x38 && SKIP_STAGE == 0)
                 {
                     Helpers.Log("Room parameters correct! Initiating Roxas Skip's First Phase...", 0);
 

@@ -84,7 +84,7 @@ namespace AxaFormBase
                             else
                                 CaptureStatus = false;
 
-                            Thread.Sleep(5);
+                            Thread.Sleep(1);
                         }
                     },
                     MainToken
