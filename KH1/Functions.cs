@@ -27,9 +27,6 @@ namespace ReFixed
             Yes, this class has one, too!
         */
 
-        [DllImport("kernel32")]
-		static extern bool AllocConsole();
-
         static bool[] DEBOUNCE = new bool[] { false, false, false, false, false };
 
         static long ABILITY_POINT = -1392;
@@ -70,10 +67,14 @@ namespace ReFixed
                 Variables.ToggleSFX.CopyTo(_toggleStream);
             }
 
-            if (Variables.devMode)
-            AllocConsole();
-            
+            var _configIni = new TinyIni("reFixed.ini");
+            Variables.chestToggle = Convert.ToBoolean(_configIni.Read("battleChests", "Kingdom Hearts"));
+
+            Hypervisor.UnlockBlock(Variables.ADDR_ChestCheck);
             Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
+
+            if (Variables.chestToggle)
+                Hypervisor.Wrtie<byte>(Variables.ADDR_ChestCheck, 0x7D);
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;

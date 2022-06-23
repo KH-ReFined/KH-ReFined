@@ -34,6 +34,8 @@ namespace ReFixed
         
         public static bool devMode = false;
 
+        public static bool chestToggle = true;
+
         //
         // INFORMATION GRAB
         //
@@ -200,6 +202,8 @@ namespace ReFixed
 
         public static ulong ADDR_AbilityMenu = 0x2AF8BD2;
         public static ulong ADDR_AbilityPoint = 0x2AF031E;
+
+        public static ulong ADDR_ChestCheck = 0x2B12C4;
 
         public static ulong[] ADDR_Reset = new ulong[]
         {
