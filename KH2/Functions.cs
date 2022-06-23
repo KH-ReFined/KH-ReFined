@@ -659,138 +659,118 @@ namespace ReFixed
         */
         public static void SkipRoxas()
         {
-            var _skipBool = !SKIP_INITIATED && !SKIP_COMPLETE;
-
-            if (CheckTitle() && !_skipBool)
+            if (CheckTitle() && SKIP_STAGE != 0)
             {
                 Helpers.Log("Title screen detected! Resetting Roxas Skip!", 0);
-
-                SKIP_INITIATED = false;
-                SKIP_COMPLETE = false;
-
                 SKIP_STAGE = 0;
-
-                _skipBool = true;
             }
 
             var _vibRead = Hypervisor.Read<ushort>(Variables.ADDR_Config) & 0x01;
             var _diffRead = Hypervisor.Read<byte>(Variables.ADDR_Difficulty);
 
-            if (_skipBool && !CheckTitle())
-            {
-                switch (_vibRead)
-                {
-                    case 0x01:
-                        Helpers.Log("Disabling Roxas Skip!", 0);
-                        SKIP_COMPLETE = true;
-                        SKIP_INITIATED = false;
-                        SKIP_STAGE = 2;
-                        break;
-                    case 0x00:
-                        Helpers.Log("Initiating Roxas Skip!", 0);
-                        SKIP_INITIATED = true;
-                        SKIP_COMPLETE = false;
-                        break;
-                }
-            }
+            var _countButton = Hypervisor.Read<byte>(Variables.ADDR_TitleCount);
+            var _selectButton = Hypervisor.Read<byte>(Variables.ADDR_TitleSelect);
 
-            if (SKIP_INITIATED && !SKIP_COMPLETE)
+            if (!CheckTitle())
             {
                 var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
                 var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
                 var _eventCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x04);
 
+                var _cutsceneCheck = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
+
                 if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck == 0x38 && SKIP_STAGE == 0)
                 {
-                    Helpers.Log("Room parameters correct! Initiating Roxas Skip's First Phase...", 0);
-
-                    Hypervisor.Write<uint>(Variables.ADDR_World, 0x322002);
-                    Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, 0x01);
-                    Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x01);
-
-                    Hypervisor.Write<uint>(0x444832, 0x1FF00001);
-                    Hypervisor.Write<uint>(0x444832 + 0x04, 0x00000000);
-
-                    Hypervisor.Write(Variables.ADDR_Config, (ushort)(_vibRead + 0x01));
-
-                    SKIP_STAGE = 1;
-                }
-
-                if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A)
-                {
-                    if (SKIP_STAGE == 1)
+                    if (_vibRead == 0x00)
                     {
-                        Helpers.Log("Room parameters correct! Skip was initiated! Initiating Roxas Skip's Second Phase...", 0);
+                        Helpers.Log("Room and Settings are correct! Initiating Roxas Skip's First Phase...", 0);
 
-                        Hypervisor.Write<uint>(Variables.ADDR_World, 0x001702);
-                        Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, (0x02 << 10) + 0x02);
-                        Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x02);
+                        Hypervisor.Write<uint>(Variables.ADDR_World, 0x322002);
+                        Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, 0x01);
+                        Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x01);
 
-                        Hypervisor.Write<byte>(Variables.ADDR_InventoryFlag, 0x9F);
-                        Hypervisor.WriteArray(Variables.ADDR_StoryFlag, Variables.VALUE_StoryFlag);
+                        Hypervisor.Write<uint>(0x444832, 0x1FF00001);
+                        Hypervisor.Write<uint>(0x444832 + 0x04, 0x00000000);
 
-                        if (_diffRead == 0x03)
-                        {
-                            Hypervisor.Write<byte>(0x445056, 0x18);
-                            Hypervisor.Write<byte>(0x445056 + 0x01, 0x18);
-                            Hypervisor.WriteArray(
-                                0x4450A6,
-                                new byte[]
-                                {
-                                    0x89,
-                                    0x01,
-                                    0x88,
-                                    0x01,
-                                    0xA5,
-                                    0x01,
-                                    0x94,
-                                    0x01,
-                                    0x97,
-                                    0x01,
-                                    0x97,
-                                    0x01,
-                                    0x95,
-                                    0x01,
-                                    0x52,
-                                    0x00,
-                                    0x8A,
-                                    0x00,
-                                    0x9E,
-                                    0x00
-                                }
-                            );
-                        }
+                        Hypervisor.Write(Variables.ADDR_Config, (ushort)(_vibRead + 0x01));
 
-                        else
-                        {
-                            Hypervisor.Write<byte>(0x445056, 0x1E);
-                            Hypervisor.Write<byte>(0x445056 + 0x01, 0x1E);
-                            Hypervisor.WriteArray(
-                                0x4450A6,
-                                new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 }
-                            );
-                        }
-
-                        Hypervisor.Write<byte>(0x446262, 0x04);
-
-                        Hypervisor.Write<byte>(0x446262 + 0x08, 0x06);
-                        Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
-                        Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
-
-                        Helpers.Log("Roxas Skip has been completed!", 0);
-
-                        SKIP_INITIATED = false;
-                        SKIP_COMPLETE = true;
-                        SKIP_STAGE = 2;
+                        SKIP_STAGE = 1;
                     }
 
                     else
                     {
-                        Helpers.Log("Skip was not initiated! Marking as completed...", 0);
-
-                        SKIP_INITIATED = false;
-                        SKIP_COMPLETE = true;
+                        Helpers.Log("Room is correct but settings are not! Disabling Roxas Skip...", 0);
+                        SKIP_STAGE = 2;
                     }
+                }
+
+                else if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x9A && SKIP_STAGE == 1)
+                {
+                    Helpers.Log("Room parameters correct! Skip was initiated! Initiating Roxas Skip's Second Phase...", 0);
+
+                    Hypervisor.Write<uint>(Variables.ADDR_World, 0x001702);
+                    Hypervisor.Write<uint>(Variables.ADDR_World + 0x04, (0x02 << 10) + 0x02);
+                    Hypervisor.Write<uint>(Variables.ADDR_World + 0x08, 0x02);
+
+                    Hypervisor.Write<byte>(Variables.ADDR_InventoryFlag, 0x9F);
+                    Hypervisor.WriteArray(Variables.ADDR_StoryFlag, Variables.VALUE_StoryFlag);
+
+                    if (_diffRead == 0x03)
+                    {
+                        Hypervisor.Write<byte>(0x445056, 0x18);
+                        Hypervisor.Write<byte>(0x445056 + 0x01, 0x18);
+                        Hypervisor.WriteArray(
+                            0x4450A6,
+                            new byte[]
+                            {
+                                0x89,
+                                0x01,
+                                0x88,
+                                0x01,
+                                0xA5,
+                                0x01,
+                                0x94,
+                                0x01,
+                                0x97,
+                                0x01,
+                                0x97,
+                                0x01,
+                                0x95,
+                                0x01,
+                                0x52,
+                                0x00,
+                                0x8A,
+                                0x00,
+                                0x9E,
+                                0x00
+                            }
+                        );
+                    }
+
+                    else
+                    {
+                        Hypervisor.Write<byte>(0x445056, 0x1E);
+                        Hypervisor.Write<byte>(0x445056 + 0x01, 0x1E);
+                        Hypervisor.WriteArray(
+                            0x4450A6,
+                            new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 }
+                        );
+                    }
+
+                    Hypervisor.Write<byte>(0x446262, 0x04);
+
+                    Hypervisor.Write<byte>(0x446262 + 0x08, 0x06);
+                    Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
+                    Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
+
+                    Helpers.Log("Roxas Skip has been completed!", 0);
+                    SKIP_STAGE = 2;
+                }
+
+                else if (_selectButton == 0x01 && SKIP_STAGE == 0)
+                {
+                    Helpers.Log("Loaded game detected! Disabling Roxas Skip...", 0);
+                    SKIP_STAGE = 2;
                 }
             }
         }
@@ -1035,7 +1015,7 @@ namespace ReFixed
 
             else if ((_bttlByte != 0x02 || _cutsByte != 0x00) && _pausRead == 0x00 && DRIVE_READ != null)
             {
-                Helpers.Log(String.Format("The plaer is out of battle. Flushing memory..."), 0);
+                Helpers.Log(String.Format("The player is out of battle. Flushing memory..."), 0);
 
                 EXP_READ = -1;
                 FORM_READ = 0;
