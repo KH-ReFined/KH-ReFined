@@ -7,7 +7,7 @@ function changePage()
 
     var xhr= new XMLHttpRequest();
     xhr.withCredentials = true;
-    xhr.open('GET', 'index.html', true);
+    xhr.open('GET', 'https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/index.html', true);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); 
     xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
     xhr.onreadystatechange= function() {
