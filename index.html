@@ -2,31 +2,33 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Kingdom Hearts - Re:Fixed</title>
+		<title>Kingdom Hearts - Re:Fixed | Main Page</title>
 		<link rel="stylesheet" href="index.css">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script src="index.js"></script>
 	</head>
 
-	<body>
+	<body onhashchange="changePage()">
 		<div  class="overlay">
 			<div class="sideBar">
 				<img class="logo"/>
 				<div class="linkContain">
 					<div class="linkHover" >
 					<img class="iconImg" src="img/main.png">
-						<a class="mainLink" href="#main">Main Page</a>
+						<a class="mainLink" href="#Main_Page">Main Page</a>
 					</img>
 					</div>
 					<div class="linkHover">
 					<img class="iconImg" src="img/info.png">
-						<a class="infoLink" href="#about">About</a>
+						<a class="infoLink" href="#About">About</a>
 					</img>
 					</div>
 					<div class="linkHover">
 					<img class="iconImg" src="img/down.png">
-						<a class="downLink" href="#download">Download</a>
+						<a class="downLink" href="#Download">Download</a>
 					</img>
 					</div>
 					<div class="linkHover">
@@ -36,14 +38,13 @@
 					</div>
 					<div class="linkHover">
 					<img class="iconImg" src="img/sprt.png">
-						<a class="supportLink" href="#support">Support</a>
+						<a class="supportLink" href="#Support">Support</a>
 					</img>
 					</div>
 				</div>
 			</div>
 			<div class="contentMain">
-				<div class="trueContent" markdown="1">
-*Hello! This is a test text!*
+				<div id="trueContent">
 				</div>
 			</div>
 		</div>
