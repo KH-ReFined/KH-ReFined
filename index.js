@@ -5,7 +5,12 @@ function changePage()
 
     document.title = "Kingdom Hearts - Re:Fixed | " + _fetchHash.substring(1).replace("_", " ");
 
-    fetch('index.html')
-    .then(response=> response.text())
-    .then(text=> document.getElementById('trueContent').innerHTML = text);
+    var xhr= new XMLHttpRequest();
+    xhr.open('GET', 'index.html', true);
+    xhr.onreadystatechange= function() {
+        if (this.readyState!==4) return;
+        if (this.status!==200) return; // or whatever error handling you want
+        document.getElementById('trueContent').innerHTML= this.responseText;
+    };
+    xhr.send();
 }
