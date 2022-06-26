@@ -1,0 +1,161 @@
+body {
+	font-family: Poppins;
+	font-size: 28pt;
+}
+
+a {
+	text-decoration: none;
+	color: white;
+	position: relative;
+    transition: color 0.4s;
+	font-style: normal;
+	margin-top: -50px;
+	margin-left: 60px;
+}
+
+
+a:after 
+{
+	content: '';
+	position: absolute;
+	bottom: 0;
+	margin-bottom: 7px;
+	left: 0;
+	width: 0%;
+	border-bottom: 3px solid #dd83f5;
+	transition: 0.4s;
+}
+
+.linkHover{
+	display: inline-grid;
+}
+
+.linkHover:hover a
+{
+	color: #dd83f5;
+}
+
+.linkHover:hover a:after
+{
+	width: 100%;
+}
+
+.linkHover:hover .iconImg
+{
+	filter: grayscale(0%) brightness(100%);	
+}
+
+a:active
+{
+	color: #dd83f5;
+}
+
+
+.iconImg{
+	max-width: 48px;
+	transition: filter 0.4s;
+	filter: grayscale(100%) brightness(200%);
+}
+
+
+.linkContain
+{
+	align-items: center;
+	align-content: center;
+	display: inline-grid;
+	row-gap: 10px;
+	margin-left: 10px;
+}
+
+.overlay
+{
+	background-image: url("img/background.png");
+	background-repeat: repeat;
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	overflow-y: hidden;
+	box-shadow: inset 0 10px 10px #000;
+	box-shadow: inset 0 10px 10px #000;
+    animation: animatedBackground 10s linear infinite;
+}
+
+.sideBar
+{
+	background: rgba(0, 0, 0, 0.5);
+	position: fixed;
+	flex-flow: row;
+	left: 30px;
+	top: 30px;
+	right: 0px;
+	bottom: 30px;
+	width: 285px;
+	border-radius: 30px;
+	box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.50);
+	min-height: 550px;
+}
+
+.logo
+{
+	image-rendering: auto;
+	content: url("img/logo.png");
+	left: 10px;
+	right: 10px;
+	margin-top: 20px;
+	width: 100%;
+}
+
+.contentMain
+{
+	display: flex;
+	flex-flow: row;
+	background: rgba(0, 0, 0, 0.5);
+	position: fixed;
+	left: 350px;
+	top: 30px;
+	right: 30px;
+	bottom: 30px;
+	border-radius: 30px;
+	box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.50);
+	min-height: 550px;
+}
+
+.trueContent
+{
+	display: inline;
+	position: relative;
+	margin: 30px 20px 30px 20px;
+
+	flex-grow: 1;
+	overflow-y: scroll;
+}
+
+.trueContent::-webkit-scrollbar {
+  width: 7px;       
+}
+
+.trueContent::-webkit-scrollbar-track {
+	left: 50px;
+	top: 50px;
+	bottom: 5px;
+	position: fixed;
+  	background: rgba(60, 12, 72, 0); 
+	border-radius: 20px;
+}
+
+.trueContent::-webkit-scrollbar-thumb {
+  	background: rgba(60, 12, 72, 0.75); 
+	border-radius: 20px;      
+}
+
+
+@keyframes animatedBackground {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 282px 284px;
+  }
+}
