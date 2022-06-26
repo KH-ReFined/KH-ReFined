@@ -5,13 +5,8 @@ function changePage()
 
     document.title = "Kingdom Hearts - Re:Fixed | " + _fetchHash.substring(1).replace("_", " ");
 
-    var xhr= new XMLHttpRequest();
-    xhr.withCredentials = true;
-    xhr.open('GET', 'https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/index.html', true);
-    xhr.onreadystatechange= function() {
-        if (this.readyState!==4) return;
-        if (this.status!==200) return; // or whatever error handling you want
-        document.getElementById('trueContent').innerHTML= this.responseText;
-    };
+    const url1 = 'https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/index.html'
+    const response = await fetch(url1);
+    document.getElementById('trueContent').innerHTML= response.text;
     xhr.send();
 }
