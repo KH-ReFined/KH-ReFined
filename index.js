@@ -8,5 +8,4 @@ function changePage()
     const url1 = 'https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/index.html'
     const response = await fetch(url1);
     document.getElementById('trueContent').innerHTML= response.text;
-    xhr.send();
 }
