@@ -15,20 +15,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using DiscordRPC;
-
 namespace ReFixed
 {
     public class Functions
     {
-        /*
-            Variable Space!
-          
-            Yes, this class has one, too!
-        */
-
-        [DllImport("kernel32")]
-		static extern bool AllocConsole();
 
         /*
             Initialization:
@@ -38,15 +28,6 @@ namespace ReFixed
         public static void Initialization()
         {
             Helpers.Log("Initializing Re:Fixed...", 0);
-
-            if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
-                Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
-                
-            if (!File.Exists(Variables.SaveSFXPath))
-            {
-                var _saveStream = File.Create(Variables.SaveSFXPath);
-                Variables.SaveSFX.CopyTo(_saveStream);
-            }
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
