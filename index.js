@@ -6,6 +6,7 @@ function changePage()
     document.title = "Kingdom Hearts - Re:Fixed | " + _fetchHash.substring(1).replace("_", " ");
 
     var xhr= new XMLHttpRequest();
+    xhr.withCredentials = true;
     xhr.open('GET', 'index.html', true);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); 
     xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
