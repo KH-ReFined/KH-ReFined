@@ -4,8 +4,8 @@ function changePage()
 
 
     document.title = "Kingdom Hearts - Re:Fixed | " + _fetchHash.substring(1).replace("_", " ");
-
-    const url1 = 'https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/index.html'
-    const response = fetch(url1);
-    document.getElementById('trueContent').innerHTML= response.text;
+    
+    fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/index.html')
+  .then(response=> response.text())
+  .then(text=> document.getElementById('trueContent').innerHTML = text)
 }
