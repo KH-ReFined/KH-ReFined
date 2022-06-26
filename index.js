@@ -5,5 +5,7 @@ function changePage()
 
     document.title = "Kingdom Hearts - Re:Fixed | " + _fetchHash.substring(1).replace("_", " ");
 
-    $('#trueContent').load('index.html');
+    fetch('index.html')
+    .then(response=> response.text())
+    .then(text=> document.getElementById('trueContent').innerHTML = text);
 }
