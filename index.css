@@ -13,18 +13,13 @@ a {
 	margin-left: 60px;
 }
 
-#linkActive
-{
-	color: #dd83f5;
-}
-
 
 a:after 
 {
 	content: '';
 	position: absolute;
 	bottom: 0;
-	margin-bottom: 7px;
+	margin-bottom: 10px;
 	left: 0;
 	width: 0%;
 	border-bottom: 3px solid #dd83f5;
@@ -35,6 +30,10 @@ a:after
 	display: inline-grid;
 }
 
+.linkNonHover{
+	display: inline-grid;
+}
+
 .linkHover:hover a
 {
 	color: #dd83f5;
@@ -42,7 +41,7 @@ a:after
 
 .linkHover:hover a:after
 {
-	width: 100%;
+	width: auto;
 }
 
 .linkHover:hover .iconImg
@@ -151,6 +150,11 @@ a:after
 	border-radius: 20px;      
 }
 
+.linkActive
+{
+	color: #dd83f5;
+	filter: grayscale(0%) brightness(100%);	
+}
 
 @keyframes animatedBackground {
   from {

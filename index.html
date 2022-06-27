@@ -12,12 +12,12 @@
 		<script src="index.js"></script>
 	</head>
 
-	<body onhashchange="changePage()">
+	<body onload="changePage()" onhashchange="changePage()">
 		<div id="overlay">
 			<div id="sideBar">
 				<img id="logo"/>
 				<div id="linkContain">
-					<div class="linkHover" >
+					<div class="linkNonHover">
 					<img class="iconImg linkActive" src="img/main.png">
 						<a id="mainLink" class="linkActive" href="#Main_Page">Main Page</a>
 					</img>
