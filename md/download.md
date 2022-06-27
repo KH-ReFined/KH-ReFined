@@ -1,4 +1,5 @@
-Given below, you will find all the changelogs and release notes of every Re:Fixed version to date.
+Given below, you will find all the changelogs and release notes of every Re:Fixed release since v2.10.  
+For older releases, please visit the Re:Fixed repository.
 
 ---
 
