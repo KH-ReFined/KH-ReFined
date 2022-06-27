@@ -1,4 +1,4 @@
-function changePage()
+async function changePage()
 {
     const md = new Remarkable({
         html:true
@@ -29,7 +29,7 @@ function changePage()
 
     if (window.getComputedStyle(_firstContent).getPropertyValue("opacity") != 0)
     {
-        fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
+        await fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
         .then(response=> response.text())
         .then(text=> _secondContent.innerHTML = md.render(text))
         
@@ -46,7 +46,7 @@ function changePage()
 
     else if (window.getComputedStyle(_secondContent).getPropertyValue("opacity") != 0)
     {
-        fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
+        await fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
         .then(response=> response.text())
         .then(text=> _firstContent.innerHTML = md.render(text))
 
