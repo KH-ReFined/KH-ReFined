@@ -102,44 +102,15 @@ Given below, you will find all the changelogs and release notes of every Re:Fixe
 
 <li>The MP Bar will now stay invisible until Sora/Roxas gains a magic spell.</li>  
 <li>Fixed an issue where Autosave saved on cutscenes. This caused some lockdown saves.</li>  
-<li>Implementation of the Dual Audio engine, inspired by CrazyCatz00's work on KH2 PS2! Allowing one to switch between English and Japanese voice acting. Requires a world change to take full effect. 
-<li>Work in Progress and not 100% tested, may crash on cutscenes or cause infinite loads on transitions due to a missed file. PLEASE let me know if that happens to be the case.</li>  
-<li>Includes some nit-bits on the English side, such as reverting Roxas' Voices to KH2 PS2.</li>  
-</li> 
+<li>Implementation of the Dual Audio engine, inspired by CrazyCatz00's work on KH2 PS2! Allowing one to switch between English and Japanese voice acting. Requires a world change to take full effect. </li> 
 <li>Fixed an issue which caused the Limit Form shortcuts to flicker when X/A was set to confirm.</li>  
-<li>Fixed an issue with Roxas' Story Skip where the skip triggered mid-story when Roxas' Story was set to NOT skip.
-<li>Implementation of the Festivity Engine, switching Sora, Donald, and Goofy to their Halloween Outfits from October 31st to November 2nd, and to their Christmas Outfits from December 24th to January 1st (inclusive).
-<li>Because of the fact that Donald and Goofy had no high-poly models to work with, High Poly models default to the regular outfits.</li> 
-</li>  
+<li>Fixed an issue with Roxas' Story Skip where the skip triggered mid-story when Roxas' Story was set to NOT skip.</li>
+<li>Implementation of the Festivity Engine, switching Sora, Donald, and Goofy to their Halloween Outfits from October 31st to November 2nd, and to their Christmas Outfits from December 24th to January 1st (inclusive).</li> 
 
 ### Birth by Sleep
 
-<li>Implementation of the Dual Audio engine, inspired by CrazyCatz00's work on KH2 PS2! Allowing one to switch between English and Japanese voice acting. Requires a significant load to take full effect.
-<li>A "significant load" can mean either a cutscene, a save and soft-reset, or going in and out of Mirage Arena.</li>
-<li>Does NOT include lipsyncing yet. I am trying to solve this issue.</li>
-<li>Work in Progress and not 100% tested, may crash on cutscenes or cause infinite loads on transitions due to a missed file. PLEASE let me know if that happens to be the case.</li>
-<li>
+<li>Implementation of the Dual Audio engine, inspired by CrazyCatz00's work on KH2 PS2! Allowing one to switch between English and Japanese voice acting. Requires a significant load to take full effect.</li>
 
 ### <a style="color:#dd83f5" href="https://github.com/TopazTK/KH-ReFixed/releases/download/v2.10/ReFixed-v2.10.zip">Download Here!</a>
 
 ---
-
-## Re:Fixed v2.90 - STABLE
-
-**IMPORTANT:** Install this update manually! I am serious, the updater may not actually install this due to a bug!
-
-### General
-
-<li>Fixed an issue with the updater where it would fail on systems which used comma as the decimal point.</li>  
-<li>Fixed an issue with the updater where it would update under some circumstances.</li>  
-<li>Fixed some mouse operations.</li>
-
-### Kingdom Hearts I
-
-<li>Fixed the MULTI5 Engine so it doesn't crash.</li>
-
-### Kingdom Hearts II
-
-<li>Fixed Retry not resetting the EXP Earned.</li>
-
-### <a style="color:#dd83f5" href="https://github.com/TopazTK/KH-ReFixed/releases/download/v2.90/ReFixed-v2.90.zip">Download Here!</a>
