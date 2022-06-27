@@ -19,8 +19,8 @@ You can see which games are supported, and which patches are live below:
 
 ## Support
 
-If you wish to support this project, consider becoming a Patron at <span style="color:#dd83f5" href="https://www.patreon.com/topaztk">https://www.patreon.com/topaztk</span>!  
-It really helps a lot!
+If you wish to support this project, consider becoming  
+a Patron at <a style="color:#dd83f5" href="https://www.patreon.com/topaztk">https://www.patreon.com/topaztk</a>! It really helps a lot!
 
 ## Features
 
