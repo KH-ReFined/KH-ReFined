@@ -107,6 +107,7 @@ a:after
 
 #contentMain
 {
+	font-size: 24pt;
 	display: flex;
 	flex-flow: row;
 	background: rgba(0, 0, 0, 0.5);
