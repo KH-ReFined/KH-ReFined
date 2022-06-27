@@ -68,7 +68,6 @@ _All features indicating a version number will be released in that said version.
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
-| :heavy_check_mark: | - | Fix an issue with 60fps being locked in certain scenarios. | 
 | :heavy_check_mark: | - | Correct an issue with Limit Form's shortcuts being misplaced when O/B is used to confirm. |
 | :heavy_check_mark: | - | Correct Limit Form's Limit names so that they are more accurately translated. [[3]](#reference) |
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
