@@ -124,6 +124,8 @@ a:active
 
 .trueContent
 {
+	text-align: center;
+	color: white;
 	display: inline;
 	position: relative;
 	padding: 30px 20px 30px 20px;
