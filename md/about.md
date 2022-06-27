@@ -11,11 +11,11 @@ Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
 
 You can see which games are supported, and which patches are live below:
 
-\- Kingdom Hearts I - Live!  
-\- Kingdom Hearts II - Live!  
-\- Birth by Sleep - Live!  
-\- Chain of Memories - Not Available!  
-\- Dream Drop Distance - Work in Progress!   
+<li>Kingdom Hearts I - <a style="color:#40ff40">Live!</a></li>
+<li>Kingdom Hearts II - <a style="color:#40ff40">Live!</a></li>
+<li>Birth by Sleep - <a style="color:#40ff40">Live!</a></li>
+<li>Chain of Memories - <a style="color:#ff4040">Not Available!</a></li>
+<li>Dream Drop Distance - <a style="color:#ff8040">Work in Progress!</a></li>
 
 ## Support
 
