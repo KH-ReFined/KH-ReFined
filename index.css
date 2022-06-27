@@ -13,6 +13,11 @@ a {
 	margin-left: 60px;
 }
 
+#linkActive
+{
+	color: #dd83f5;
+}
+
 
 a:after 
 {
@@ -45,12 +50,6 @@ a:after
 	filter: grayscale(0%) brightness(100%);	
 }
 
-a:active
-{
-	color: #dd83f5;
-}
-
-
 .iconImg{
 	max-width: 48px;
 	transition: filter 0.4s;
@@ -58,7 +57,7 @@ a:active
 }
 
 
-.linkContain
+#linkContain
 {
 	align-items: center;
 	align-content: center;
@@ -67,7 +66,7 @@ a:active
 	margin-left: 10px;
 }
 
-.overlay
+#overlay
 {
 	background-image: url("img/background.png");
 	background-repeat: repeat;
@@ -82,7 +81,7 @@ a:active
     animation: animatedBackground 10s linear infinite;
 }
 
-.sideBar
+#sideBar
 {
 	background: rgba(0, 0, 0, 0.5);
 	position: fixed;
@@ -97,7 +96,7 @@ a:active
 	min-height: 550px;
 }
 
-.logo
+#logo
 {
 	image-rendering: auto;
 	content: url("img/logo.png");
@@ -107,7 +106,7 @@ a:active
 	width: 100%;
 }
 
-.contentMain
+#contentMain
 {
 	display: flex;
 	flex-flow: row;
