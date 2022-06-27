@@ -19,11 +19,12 @@ You can see which games are supported, and which patches are live below:
 
 ## Support
 
-If you wish to support this project, consider becoming a Patron at https://www.patreon.com/topaztk! It really helps a lot!
+If you wish to support this project, consider becoming a Patron at <span style="color:#dd83f5" href="https://www.patreon.com/topaztk">https://www.patreon.com/topaztk</span>!  
+It really helps a lot!
 
 ## Features
 
-\- Disable cutscene framelimiter.
+\- Disable cutscene framelimiter.  
 \- The Mouse Cursor will now follow a VirtualBox-style capture mechanism.  
 \- The game will no longer infinitely freeze while shutting down.  
 \- The game will no longer crash OBS after a resize.  
@@ -71,28 +72,28 @@ If you wish to support this project, consider becoming a Patron at https://www.p
 ## Credits
 
 ### All Games
-\- Televo for the icons used in Discord Rich Presence and the Executables.
-\- KSX for his work on the MP Bar enhancement.
-\- Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.
-\- Xeeynamo for the functions used to calculate the Save Checksum.
-\- Dekirai and RelaxedBatter for their immense testing.
-\- RukaPML for the German translation.
-\- Svenchu for the Spanish translation.
-\- SoraikoSan for the French translation.
-\- iTeoh for the Italian translation.
-\- TopazTK for anything that is not mentioned.
+\- Televo for the icons used in Discord Rich Presence and the Executables.  
+\- KSX for his work on the MP Bar enhancement.  
+\- Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.  
+\- Xeeynamo for the functions used to calculate the Save Checksum.  
+\- Dekirai and RelaxedBatter for their immense testing.  
+\- RukaPML for the German translation.  
+\- Svenchu for the Spanish translation.  
+\- SoraikoSan for the French translation.  
+\- iTeoh for the Italian translation.  
+\- TopazTK for anything that is not mentioned.  
 
 ### Kingdom Hearts 1
 \- Denhonator for his work on Cutscene Skip.
 
 ### Kingdom Hearts 2
-\- Stickman Sham for the idea that led to Magic Reorganization.
-\- Krakrenzo for the idea that led to Retry Bettle.
-\- CrazyCatz00 for the inspiration that led to Dual-Audio.
-\- TieuLink for proviging the Japanese voices for Dual Audio.
-\- DA and AntonioDePau for their help with injecting ".a.jp" files for Dual-Audio.
-\- Drahsid for his work on the 60FPS Framelock Issue.
-\- Y2K for his work on the Roxas Skip.
+\- Stickman Sham for the idea that led to Magic Reorganization.  
+\- Krakrenzo for the idea that led to Retry Bettle.  
+\- CrazyCatz00 for the inspiration that led to Dual-Audio.  
+\- TieuLink for proviging the Japanese voices for Dual Audio.  
+\- DA and AntonioDePau for their help with injecting ".a.jp" files for Dual-Audio.  
+\- Drahsid for his work on the 60FPS Framelock Issue.  
+\- Y2K for his work on the Roxas Skip.  
 
 ## Third Party Libraries
 
