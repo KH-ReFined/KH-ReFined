@@ -1,46 +1,39 @@
-![image](https://user-images.githubusercontent.com/95656963/171788826-e2049957-b00b-4502-87e9-6cf7df9d8efd.png)
+![](https://user-images.githubusercontent.com/95656963/171788826-e2049957-b00b-4502-87e9-6cf7df9d8efd.png)
 
 ## Purpose
 
-This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
+This project aims to improve the game in many ways  
+
+whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
   
 Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
 
 ## Game Status
 
 You can see which games are supported, and which patches are live below:
-  
-[![Kingdom Hearts I](https://img.shields.io/badge/Kingdom%20Hearts%20I-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH1)  
-[![Kingdom Hearts II](https://img.shields.io/badge/Kingdom%20Hearts%20II-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH2)  
-![Chain of Memories](https://img.shields.io/badge/Chain%20of%20Memories-Work%20in%20Progress!-yellow)  
-[![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
-![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Not%20Present!-red)  
+
+Kingdom Hearts I - Live!
+Kingdom Hearts II - Live!
+Birth by Sleep - Live!
+Chain of Memories - Not Available!
+Dream Drop Distance - Work in Progress! 
 
 ## Support
-If you wish to support this project, consider becoming a Patron.  
-  
-[![Patreon](https://img.shields.io/endpoint?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%2F%3Fusername%3Dtopaztk%26type%3Dpatrons)](https://www.patreon.com/topaztk)
+If you wish to support this project, consider becoming a Patron at https://www.patreon.com/topaztk! It really helps a lot!
 
 ## Features
 
-_Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_ 
-_All features indicating a version number will be released in that said version._
-
-### All Games
-
-| Error/Bug Fix | Enhancement | Description |
-|---------------|-------------|-------------|
-| :heavy_check_mark: | - | Disable cutscene framelimiter. [[1]](#reference) |
-| :heavy_check_mark: | - | The Mouse Cursor will now follow a VirtualBox-style capture mechanism. |
-| :heavy_check_mark: | - | The game will no longer infinitely freeze while shutting down. |
-| :heavy_check_mark: | - | The game will no longer crash OBS after a resize. |
-| - | :heavy_check_mark: | Voice channels will now be muted when set to "1" in the PC settings menu. |
-| - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
-| - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
-| - | :heavy_check_mark: | The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference)| 
-| - | :heavy_check_mark: | Press R1 + L1 + START + SELECT to soft reset. |
-| - | :heavy_check_mark: | Every game has an update agent built-in, so Re:Fixed can keep itself updated. |
-| - | :heavy_check_mark: | Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
+Disable cutscene framelimiter. [[1]](#reference)
+The Mouse Cursor will now follow a VirtualBox-style capture mechanism.
+The game will no longer infinitely freeze while shutting down.
+The game will no longer crash OBS after a resize.
+Voice channels will now be muted when set to "1" in the PC settings menu.
+Autosaving functionality, utilizing Slot #99.
+An RPC Engine is now present for use with Discord.
+The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference)
+Press R1 + L1 + START + SELECT to soft reset.
+Every game has an update agent built-in, so Re:Fixed can keep itself updated.
+Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis.
 
 ### Kingdom Hearts 1
 
