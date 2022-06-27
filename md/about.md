@@ -12,28 +12,29 @@ Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
 
 You can see which games are supported, and which patches are live below:
 
-Kingdom Hearts I - Live!
-Kingdom Hearts II - Live!
-Birth by Sleep - Live!
-Chain of Memories - Not Available!
-Dream Drop Distance - Work in Progress! 
+Kingdom Hearts I - Live!  
+Kingdom Hearts II - Live!  
+Birth by Sleep - Live!  
+Chain of Memories - Not Available!  
+Dream Drop Distance - Work in Progress!   
 
 ## Support
+
 If you wish to support this project, consider becoming a Patron at https://www.patreon.com/topaztk! It really helps a lot!
 
 ## Features
 
-Disable cutscene framelimiter. [[1]](#reference)
-The Mouse Cursor will now follow a VirtualBox-style capture mechanism.
-The game will no longer infinitely freeze while shutting down.
-The game will no longer crash OBS after a resize.
-Voice channels will now be muted when set to "1" in the PC settings menu.
-Autosaving functionality, utilizing Slot #99.
-An RPC Engine is now present for use with Discord.
-The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference)
-Press R1 + L1 + START + SELECT to soft reset.
-Every game has an update agent built-in, so Re:Fixed can keep itself updated.
-Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis.
+Disable cutscene framelimiter. [[1]](#reference)  
+The Mouse Cursor will now follow a VirtualBox-style capture mechanism.  
+The game will no longer infinitely freeze while shutting down.  
+The game will no longer crash OBS after a resize.  
+Voice channels will now be muted when set to "1" in the PC settings menu.  
+Autosaving functionality, utilizing Slot #99.  
+An RPC Engine is now present for use with Discord.  
+The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference)  
+Press R1 + L1 + START + SELECT to soft reset.  
+Every game has an update agent built-in, so Re:Fixed can keep itself updated.  
+Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis.  
 
 ### Kingdom Hearts 1
 
