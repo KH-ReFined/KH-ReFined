@@ -97,4 +97,4 @@ If you wish to support this project, consider becoming a Patron at https://www.p
 ## Third Party Libraries
 
 Re:Fixed makes use of some third party libraries whilst trying comply with their licenses.  
-For more info, please visit the Re:Fixed repository.
+For more info, please visit the Re:Fixed repository. 
