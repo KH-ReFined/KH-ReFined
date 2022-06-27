@@ -24,7 +24,7 @@ function changePage()
     _inactive.classList.add("linkActive");
     _inactive.parentNode.children[0].className += " linkActive";
 
-    fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/index.md')
+    fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).replace("_", "") +'.md')
     .then(response=> response.text())
     .then(text=> document.getElementById('trueContent').innerHTML = md.render(text))
 }

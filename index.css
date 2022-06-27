@@ -127,7 +127,7 @@ a:after
 	color: white;
 	display: inline;
 	position: relative;
-	padding: 30px 20px 30px 20px;
+	padding: -30px 20px -30px 20px;
 	margin: 30px 20px 30px 20px;
 
 	flex-grow: 1;
