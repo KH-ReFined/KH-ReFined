@@ -122,7 +122,7 @@ a:active
 	min-height: 550px;
 }
 
-.trueContent
+#trueContent
 {
 	text-align: center;
 	color: white;
@@ -134,11 +134,11 @@ a:active
 	overflow-y: scroll;
 }
 
-.trueContent::-webkit-scrollbar {
+#trueContent::-webkit-scrollbar {
   width: 7px;       
 }
 
-.trueContent::-webkit-scrollbar-track {
+#trueContent::-webkit-scrollbar-track {
 	left: 50px;
 	top: 50px;
 	bottom: 5px;
@@ -147,7 +147,7 @@ a:active
 	border-radius: 20px;
 }
 
-.trueContent::-webkit-scrollbar-thumb {
+#trueContent::-webkit-scrollbar-thumb {
   	background: rgba(60, 12, 72, 0.75); 
 	border-radius: 20px;      
 }
