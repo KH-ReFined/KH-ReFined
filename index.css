@@ -127,6 +127,7 @@ a:after
 	display: inline;
 	position: relative;
 	padding: 30px 20px 30px 20px;
+	margin: 30px 20px 30px 20px;
 
 	flex-grow: 1;
 	overflow-y: scroll;
