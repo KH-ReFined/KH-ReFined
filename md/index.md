@@ -18,7 +18,7 @@ This game does not really have all that much to change, but one of the biggest c
 
 Kinda gamechanging, extremely useful for those who are forgetful and don't stack on Dorp-Me-Nots like myself. With this simple toggle, you won't ever have to remember to drop again, demonstrated below:  
   
-<iframe width="720" height="500" src="https://www.youtube.com/embed/vRfGZmdRwok?controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="800" height="500" src="https://www.youtube.com/embed/vRfGZmdRwok?controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 Along with the introduction of DDD comes many fixes, tweaks, and some new features to both KH1 and KH2! I am excited to share them all with you in the near future.
 
