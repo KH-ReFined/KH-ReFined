@@ -29,10 +29,6 @@ body {
 	display: inline-grid;
 }
 
-.linkNonHover{
-	display: inline-grid;
-}
-
 .linkHover:hover .navLink
 {
 	color: #dd83f5;
