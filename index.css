@@ -3,7 +3,7 @@ body {
 	font-size: 28pt;
 }
 
-a {
+.navLink {
 	text-decoration: none;
 	color: white;
 	position: relative;
@@ -13,8 +13,7 @@ a {
 	margin-left: 60px;
 }
 
-
-a:after 
+.navLink:after 
 {
 	content: '';
 	position: absolute;
@@ -34,12 +33,12 @@ a:after
 	display: inline-grid;
 }
 
-.linkHover:hover a
+.linkHover:hover .navLink
 {
 	color: #dd83f5;
 }
 
-.linkHover:hover a:after
+.linkHover:hover .navLink:after
 {
 	width: auto;
 }

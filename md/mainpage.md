@@ -6,7 +6,7 @@ So yea, this is the official website for Re:Fixed, where all updates regarding i
 
 I gotta admit, I am not a wizard of web development but eh, if I can make a nice lookin' website I sure am satisfied.
 
-Welp, nothing more to say for now, go over to the Re:Fixed Twitter Page for more updates, or join the Re:Fixed Discord Server for 24/7 interaction with others! Both of the links are in the Support section!
+Welp, nothing more to say for now, go over to the <a style="color:#dd83f5" href="https://twitter.com/KH_ReFixed">Re:Fixed Twitter Page</a> for more updates, or join the <a style="color:#dd83f5" href="https://discord.gg/aGc7CyEJgv">Re:Fixed Discord Server</a> for 24/7 interaction with others!
 
 ---
 
