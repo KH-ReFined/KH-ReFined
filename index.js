@@ -24,7 +24,40 @@ function changePage()
     _inactive.classList.add("linkActive");
     _inactive.parentNode.children[0].className += " linkActive";
 
-    fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
-    .then(response=> response.text())
-    .then(text=> document.getElementById('trueContent').innerHTML = md.render(text))
+    _firstContent = document.getElementById('firstContent');
+    _secondContent = document.getElementById('secondContent');
+
+    if (window.getComputedStyle(_firstContent).getPropertyValue("opacity") != 0)
+    {
+        _secondContent.scrollTop = 0;
+
+        _firstContent.classList.add("inactive");    
+        _secondContent.classList.remove("inactive");   
+
+        _firstContent.style.pointerEvents = "none";
+        _secondContent.style.pointerEvents = "all";
+
+        _secondContent.focus();
+
+        fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
+        .then(response=> response.text())
+        .then(text=> _secondContent.innerHTML = md.render(text))
+    }
+
+    else if (window.getComputedStyle(_secondContent).getPropertyValue("opacity") != 0)
+    {
+        _firstContent.scrollTop = 0;
+
+        _firstContent.classList.remove("inactive");    
+        _secondContent.classList.add("inactive"); 
+
+        _firstContent.style.pointerEvents = "all";
+        _secondContent.style.pointerEvents = "none";
+
+        _firstContent.focus();
+
+        fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
+        .then(response=> response.text())
+        .then(text=> _firstContent.innerHTML = md.render(text))
+    }
 }
