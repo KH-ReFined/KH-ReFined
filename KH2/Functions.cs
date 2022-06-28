@@ -88,12 +88,15 @@ namespace ReFixed
         public static void Initialization()
         {
             Helpers.Log("Initializing Re:Fixed...", 0);
-
+            
+            // Create the TEMP Path to store our sound files.
             if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
                 Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
                 
+            // Check if the sound files actually exist.
             if (!File.Exists(Variables.SwitchSFXPath))
             {
+                // Should they not, extract the sound files.
                 var _saveStream = File.Create(Variables.SaveSFXPath);
                 var _switchStream = File.Create(Variables.SwitchSFXPath);
 
@@ -101,11 +104,14 @@ namespace ReFixed
                 Variables.SwitchSFX.CopyTo(_switchStream);
             }
             
+            // Open the config file for game-specific configs.
             var _configIni = new TinyIni("reFixed.ini");
 
+            // Parse the Festive Toggle, and the chosen Limit Form shortcuts.
             Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
             Variables.limitShorts = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
 
+            // Should the shortcuts be parsed; Place them accordingly.
             if (Variables.limitShorts != "")
             {
                 LIMIT_SHORT = new short[4];
@@ -119,6 +125,7 @@ namespace ReFixed
                 LIMIT_SHORT[3] = Variables.LMTDictionary[_splitArr[3]];
             }
 
+            // Unlock all the EXE-Related addresses.
             Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
             Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
             Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
@@ -133,9 +140,11 @@ namespace ReFixed
             
             Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
 
+            // Initialize the source and the token for secondary tasks.
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
+            // Mark the initialization as complete.
             Variables.Initialized = true;
 
             Helpers.Log("Re:Fixed initialized with no errors!", 0);
@@ -635,6 +644,9 @@ namespace ReFixed
 
                         // Read the entirety of the magic menu, and save it to memory.
                         MAGIC_STORE = Hypervisor.ReadArray(Variables.ADDR_MagicMenu[1], _magicMax * 0x02);
+
+                        // Save the menu to the Save File as well.
+                        // The offset is 0xE550 to retain compatibility with 
                     }
 
                     // Otherwise: If debounce is active and input is improper; deactivate debounce.
