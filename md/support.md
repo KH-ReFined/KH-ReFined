@@ -13,5 +13,5 @@ help that you need! Folks can be a lil' slow to respond to ya because of life an
 work and what not, but trust me, no one will let you down and empty handed. There is always a solution!
 
 If you want to support me, however, you can do so by subscribing to my Patreon  
-at <a style="color:#dd83f5" href="https://www.patreon.com/topaztk">https://www.patreon.com/topaztk</a>! Every single cent spent here means the 
-world to me, and whatever your heart can muster is fine! Everything counts!
+at <a style="color:#dd83f5" href="https://www.patreon.com/topaztk">https://www.patreon.com/topaztk</a>! Every single cent spent here means the world to me, and  
+whatever your heart can muster is fine! Everything counts!
