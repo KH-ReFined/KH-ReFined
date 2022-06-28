@@ -32,7 +32,7 @@ namespace AxaFormBase
             UpdateAgent.UpdateCheck();
 
             if (theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v2.90]");
+                new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v3.00]");
 
             Cursor.Hide();
             theInstance.KeyDown += _keyEvent;

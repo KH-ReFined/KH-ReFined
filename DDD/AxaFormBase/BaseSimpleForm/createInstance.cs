@@ -50,7 +50,7 @@ namespace AxaFormBase
                 UpdateAgent.UpdateCheck();
 
                 if (BaseSimpleForm.theInstance == null)
-                    new BaseSimpleForm(_app, "DREAM DROP DISTANCE [Re:Fixed v3.00]");
+                    new BaseSimpleForm(_app, "KINGDOM HEARTS: DREAM DROP DISTANCE [Re:Fixed v3.00]");
 
                 // Cursor.Hide();
                 // theInstance.KeyDown += _keyEvent;
