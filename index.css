@@ -102,7 +102,7 @@ body {
 
 #contentMain
 {
-	font-size: 24pt;
+	font-size: calc(10pt + 0.5vw);
 	display: grid;
 	background: rgba(0, 0, 0, 0.5);
 	position: fixed;
@@ -128,6 +128,7 @@ body {
 
 	flex-grow: 1;
 	overflow-y: scroll;
+	overflow-x: hidden;
 
 	opacity: 100%;
 	transition: opacity 0.3s;
