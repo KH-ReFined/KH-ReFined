@@ -15,6 +15,9 @@
     @ 0x17545C => [0F 94 C0 C3] to [0F 9E C0 C3]
     @ 0x17A2A3 => [74 10] to [7E 10]
 
+-> Allow Offline Play [DRM Compliant]
+    @ 0x1273B8 => [75 27] to [EB 27]
+
 -> Examine and Open Chest Mid-Battle
     @ 0x2B06C4 => [74 3A B9 03] to [7D 3A B9 03]
 
