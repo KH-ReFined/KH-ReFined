@@ -67,7 +67,7 @@ a Patron at <a style="color:#dd83f5" href="https://www.patreon.com/topaztk">http
 
 ## Installation
 
-<iframe width="800" height="500" src="https://www.youtube.com/embed/CZvX4w_w4Q8?controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="100%" height="100%" src="https://www.youtube.com/embed/CZvX4w_w4Q8?controls=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Credits
 
