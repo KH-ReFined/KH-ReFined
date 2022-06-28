@@ -1,4 +1,4 @@
-![](https://user-images.githubusercontent.com/95656963/171788826-e2049957-b00b-4502-87e9-6cf7df9d8efd.png)
+<img src="https://user-images.githubusercontent.com/95656963/171788826-e2049957-b00b-4502-87e9-6cf7df9d8efd.png" width="75%" height="75%"/>
 
 ## Purpose
 
