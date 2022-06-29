@@ -74,7 +74,7 @@ namespace ReFixed
             Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
             if (Variables.chestToggle)
-                Hypervisor.Wrtie<byte>(Variables.ADDR_ChestCheck, 0x7D);
+                Hypervisor.Write<byte>(Variables.ADDR_ChestCheck, 0x7D);
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
@@ -130,7 +130,7 @@ namespace ReFixed
 
                 else
                 {
-                    var _repText = Strings.TextFOV[LANGUAGE];
+                    var _repText = Variables.DualAudio ? Strings.TextAUDIO[LANGUAGE] : Strings.TextFOV[LANGUAGE];
                     var _ogText = Strings.VibrationOG[LANGUAGE].ToKHSCII();
 
                     var _listText = new List<byte>();
@@ -609,6 +609,34 @@ namespace ReFixed
         }
 
         /*
+            AudioSwap:
+
+            Enforces English or Japanese Audio depending on player preference.
+            This is detemined by the **Vibration** option at the Camp Menu.
+
+            This function is reliant on a patch.
+        */
+        public static void AudioSwap()
+        {
+            switch (Hypervisor.Read<int>(Variables.ADDR_Config))
+            {
+                case 0:
+                {
+                    if (Hypervisor.Read<byte>(Variables.ADDR_AudioPath) == 0x6A)
+                        Hypervisor.WriteArray(Variables.ADDR_AudioPath, new byte[] { 0x76, 0x6F, 0x69, 0x63, 0x65, 0x2F });
+                    break;
+                }
+
+                case 1:
+                {
+                    if (Hypervisor.Read<byte>(Variables.ADDR_AudioPath) == 0x76)
+                        Hypervisor.WriteArray(Variables.ADDR_AudioPath, new byte[] { 0x6A, 0x61, 0x70, 0x61, 0x6E, 0x2F });
+                    break;
+                }
+            }
+        }
+
+        /*
             MagicHide:
 
             Hides the MP Bar until Sora learns a spell.
@@ -726,7 +754,12 @@ namespace ReFixed
             #region Mid Priority
             MagicHide();
             TextAdjust();
-            FieldOfView();
+
+            if (!Variables.DualAudio)
+                FieldOfView();
+            else
+                AudioSwap();
+
             AbilityToggle();
             #endregion
 

@@ -34,6 +34,17 @@ namespace ReFixed
             "Vibrazione"
         };
 
+        public static string[][] TextAUDIO =
+        {
+            new string[]
+            {
+                "Audio Language",
+                "English",
+                "Japanese",
+                "Toggle between English and Japanese speech.",
+            },
+        };
+
         public static string[][] TextFOV =
         {
             new string[]
