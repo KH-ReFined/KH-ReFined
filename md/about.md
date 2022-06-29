@@ -73,7 +73,6 @@ a Patron at <a style="color:#dd83f5" href="https://www.patreon.com/topaztk">http
 
 ### All Games
 <li>Televo for the icons used in Discord Rich Presence and the Executables.</li>
-<li>KSX for his work on the MP Bar enhancement.</li>
 <li>Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.</li>
 <li>Xeeynamo for the functions used to calculate the Save Checksum.</li>
 <li>Dekirai and RelaxedBatter for their immense testing.</li>
