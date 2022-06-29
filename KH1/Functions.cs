@@ -70,6 +70,9 @@ namespace ReFixed
             var _configIni = new TinyIni("reFixed.ini");
             Variables.chestToggle = Convert.ToBoolean(_configIni.Read("battleChests", "Kingdom Hearts"));
 
+            if (Variables.DualAudio)
+                Variables.fovToggle = Convert.ToBoolean(_configIni.Read("fovEnhanced", "Kingdom Hearts")); 
+
             Hypervisor.UnlockBlock(Variables.ADDR_ChestCheck);
             Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
@@ -588,24 +591,13 @@ namespace ReFixed
 		*/
         public static void FieldOfView()
         {
-            switch (Hypervisor.Read<int>(Variables.ADDR_Config))
-            {
-                case 0:
-                {
-                    if (Hypervisor.Read<float>(Variables.ADDR_FieldOfView[0]) != 400F)
-                        for (uint i = 0; i < Variables.ADDR_FieldOfView.Length; i++)
-                            Hypervisor.Write(Variables.ADDR_FieldOfView[i], Variables.VALUE_DefaultFOV[i]);
-                    break;
-                }
+            if ((!Variables.DualAudio && Hypervisor.Read<int>(Variables.ADDR_Config) == 0x01) || (Variables.DualAudio && Variables.fovToggle))
+                for (int i = 0; i < Variables.ADDR_FieldOfView.Length; i++)
+                    Hypervisor.Write(Variables.ADDR_FieldOfView[i], Variables.VALUE_EnhancedFOV[i]);
 
-                case 1:
-                {
-                    if (Hypervisor.Read<float>(Variables.ADDR_FieldOfView[0]) != 600F)
-                        for (int i = 0; i < Variables.ADDR_FieldOfView.Length; i++)
-                            Hypervisor.Write(Variables.ADDR_FieldOfView[i], Variables.VALUE_EnhancedFOV[i]);
-                    break;
-                }
-            }
+            else
+                for (uint i = 0; i < Variables.ADDR_FieldOfView.Length; i++)
+                    Hypervisor.Write(Variables.ADDR_FieldOfView[i], Variables.VALUE_DefaultFOV[i]);
         }
 
         /*
@@ -755,11 +747,10 @@ namespace ReFixed
             MagicHide();
             TextAdjust();
 
-            if (!Variables.DualAudio)
-                FieldOfView();
-            else
+            if (Variables.DualAudio)
                 AudioSwap();
 
+            FieldOfView();
             AbilityToggle();
             #endregion
 

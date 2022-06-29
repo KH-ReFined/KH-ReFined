@@ -41,7 +41,8 @@ namespace ReFixed
         public static bool saveToggle = true;
         
         public static bool devMode = false;
-
+        
+        public static bool fovToggle = false;
         public static bool chestToggle = true;
 
         //
