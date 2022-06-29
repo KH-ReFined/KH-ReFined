@@ -116,7 +116,6 @@ _All features indicating a version number will be released in that said version.
 
 ### All Games
 - Televo for the icons used in Discord Rich Presence and the Executables.
-- KSX for his work on the MP Bar enhancement.
 - Denhonator for his work on Soft Reset, Volume Mute, and the location of 1FM RAM Saves.
 - Xeeynamo for the functions used to calculate the Save Checksum.
 - Dekirai and RelaxedBatter for their immense testing.
