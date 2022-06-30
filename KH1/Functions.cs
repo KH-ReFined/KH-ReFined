@@ -53,6 +53,8 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            Helpers.Log("Initializing Re:Fixed...", 0);
+
             if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
                 Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
                 
@@ -83,6 +85,9 @@ namespace ReFixed
             Variables.Token = Variables.Source.Token;
 
             Variables.Initialized = true;
+
+            Helpers.Log("Re:Fixed initialized with no errors!", 0);
+
         }
 
         /*
@@ -151,6 +156,20 @@ namespace ReFixed
 
                         Hypervisor.Write(_menuPointer + (VIBRATION_OFFSET + 0x02 * i), (ushort)(_fileSize + _addLength), true);
                     }
+                }
+            }
+        }
+
+        public static void AdjustControler()
+        {
+            if (!Variables.autoController)
+            {
+                var _contCheck = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
+
+                if (_contCheck != 0x90)
+                {
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
+                    Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, (byte)(Variables.contToggle ? 0 : 1));
                 }
             }
         }
@@ -614,15 +633,21 @@ namespace ReFixed
             {
                 case 0:
                 {
-                    if (Hypervisor.Read<byte>(Variables.ADDR_AudioPath) == 0x6A)
-                        Hypervisor.WriteArray(Variables.ADDR_AudioPath, new byte[] { 0x76, 0x6F, 0x69, 0x63, 0x65, 0x2F });
+                    if (Hypervisor.Read<byte>(Variables.ADDR_PartyAudioPath) == 0x6A)
+                    {
+                        Hypervisor.WriteArray(Variables.ADDR_PartyAudioPath, new byte[] { 0x76, 0x6F, 0x69, 0x63, 0x65, 0x2F });
+                        Hypervisor.WriteArray(Variables.ADDR_EventAudioPath, new byte[] { 0x76, 0x6F, 0x69, 0x63, 0x65, 0x2F });
+                    }
                     break;
                 }
 
                 case 1:
                 {
-                    if (Hypervisor.Read<byte>(Variables.ADDR_AudioPath) == 0x76)
-                        Hypervisor.WriteArray(Variables.ADDR_AudioPath, new byte[] { 0x6A, 0x61, 0x70, 0x61, 0x6E, 0x2F });
+                    if (Hypervisor.Read<byte>(Variables.ADDR_PartyAudioPath) == 0x76)
+                    {
+                        Hypervisor.WriteArray(Variables.ADDR_PartyAudioPath, new byte[] { 0x6A, 0x61, 0x70, 0x61, 0x6E, 0x2F });
+                        Hypervisor.WriteArray(Variables.ADDR_EventAudioPath, new byte[] { 0x6A, 0x61, 0x70, 0x61, 0x6E, 0x2F });
+                    }
                     break;
                 }
             }
@@ -735,6 +760,8 @@ namespace ReFixed
         */
         public static void Execute()
         {
+            try
+            {
             #region High Priority
             if (!Variables.Initialized)
                 Initialization();
@@ -746,6 +773,7 @@ namespace ReFixed
             #region Mid Priority
             MagicHide();
             TextAdjust();
+            AdjustControler();
 
             if (Variables.DualAudio)
                 AudioSwap();
@@ -785,6 +813,15 @@ namespace ReFixed
                 );
             }
             #endregion
+
+            }
+            
+            catch (Exception _caughtEx)
+            {
+                Helpers.LogException(_caughtEx);
+                Helpers.Log("Re:Fixed terminated with an exception!", 1);
+                Environment.Exit(-1);
+            }
         }
     }
 }

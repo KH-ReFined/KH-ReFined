@@ -45,6 +45,9 @@ namespace ReFixed
         public static bool fovToggle = false;
         public static bool chestToggle = true;
 
+        public static bool autoController = true;
+        public static bool contToggle = false;
+
         //
         // INFORMATION GRAB
         //
@@ -170,7 +173,8 @@ namespace ReFixed
         public static ulong BASE_ADDRESS = 0x3A0606;
 
         public static ulong ADDR_Config = 0x2A5B7DA;
-        public static ulong ADDR_AudioPath = 0x184EBA;
+        public static ulong ADDR_PartyAudioPath = 0x184EBA;
+        public static ulong ADDR_EventAudioPath = 0x40C52;
 
         public static ulong ADDR_Input = 0x1F9CA2E;
         public static ulong ADDR_Confirm = 0x1F36678;
@@ -236,6 +240,9 @@ namespace ReFixed
         public static ulong PINT_MenuState = 0x2AF021A;
         public static ulong PINT_SystemBAR = 0x2A76CCA;
         public static ulong PINT_SaveInformation = 0x2B379CA;
+
+        public static ulong ADDR_ControllerINST = 0x13AEEA;
+        public static ulong ADDR_ControllerMode = 0x1F37442;
 
         //
         // VALUE DUMP
