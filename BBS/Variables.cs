@@ -37,9 +37,14 @@ namespace ReFixed
         //
 
         public static bool sfxToggle = true;
+        public static bool rpcToggle = true;
         public static bool saveToggle = true;
-        public static bool discordToggle = true;
 
+        public static bool contToggle = true;
+        public static bool autoController = true;
+
+        public static bool devMode = false;
+        
         //
         // INFORMATION GRAB
         //

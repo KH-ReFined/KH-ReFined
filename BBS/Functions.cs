@@ -53,6 +53,8 @@ namespace ReFixed
         */
         public static void Initialization()
         {
+            Helpers.Log("Initializing Re:Fixed...", 0);
+
             if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
                 Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
                 
@@ -72,6 +74,8 @@ namespace ReFixed
             Variables.Token = Variables.Source.Token;
 
             Variables.Initialized = true;
+
+            Helpers.Log("Re:Fixed initialized with no errors!", 0);
         }
 
         /*
@@ -100,6 +104,8 @@ namespace ReFixed
 
             if ((_inputRead & 0x0C09) == 0x0C09 && !CheckTitle() && !DEBOUNCE[1])
             {
+                Helpers.Log("Initiating a Soft Reset.", 0);
+
                 Hypervisor.Write<byte>(Variables.ADDR_Limiter + 0x0C, 0x01);
                 DEBOUNCE[1] = true;
             }
@@ -156,14 +162,24 @@ namespace ReFixed
 
                 else
                 {
-                    ulong _writeOffset = 0;
-
                     for (int i = 0; i < Strings.AutoSave[LANGUAGE].Length; i++)
                     {
                         var _str = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
-                        Hypervisor.WriteString(_headerBegin + _locArray[i], _str, true);
 
-                        _writeOffset += (ulong)_str.Length;
+                        if (i == Strings.AutoSave[LANGUAGE].Length - 1)
+                        {
+                            var _strLength = Hypervisor.Read<int>(_headerBegin + _optionYesDesc, true) + (Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i - 1].Length : Strings.AutoSave[LANGUAGE][i - 1].Length) + 0x01;
+                            var _noRead = Hypervisor.Read<int>(_headerBegin + _optionNoDesc, true);
+
+                            if (_noRead != _strLength)
+                            {
+                                Hypervisor.Write<int>(_headerBegin + _optionNoDesc, _strLength, true);
+                                Hypervisor.WriteString(_headerBegin + (ulong)_strLength, _str, true);
+                            }
+                        }
+
+                        else
+                            Hypervisor.WriteString(_headerBegin + Hypervisor.Read<uint>(_headerBegin + _locArray[i], true), _str, true);
                     }
                 }
             }
@@ -221,6 +237,8 @@ namespace ReFixed
                         // Using the input form we made specifically for this:
                         using (InputText _inForm = new InputText())
                         {
+                            Helpers.Log("Showing the form for Finisher Renames.", 0);
+
                             // Release the mouse.
                             BaseSimpleForm.CaptureStatus = false;
 
@@ -234,6 +252,8 @@ namespace ReFixed
                             // If the result of said dialog is OK:
                             if (_result == DialogResult.OK)
                             {
+                                Helpers.Log("Renaming the chosen finisher to: \"" + _inForm.FinisherName + "\"!", 0);
+
                                 // Fetch the text and turn it to a byte array.
                                 var _textArray = Encoding.ASCII.GetBytes(_inForm.FinisherName);
 
@@ -289,11 +309,16 @@ namespace ReFixed
 
             // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
             if (_framerateRead == 0x00 && _instructionRead == 0x90)
+            {
+                Helpers.Log("30FPS Detected! Restoring the Framelimiter.", 0);
                 Hypervisor.WriteArray(_instructionAddress, Variables.INST_FrameLimiter, true);
+            }
 
             // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
             else if (_framerateRead != 0x00 && _instructionRead != 0x90)
             {
+                Helpers.Log("60FPS Detected! Destroying the Framelimiter.", 0);
+
                 // NOP the instruction.
                 Hypervisor.WriteArray(_instructionAddress, _nullArray, true);
 
@@ -494,6 +519,8 @@ namespace ReFixed
                 {
                     if (SAVE_WORLD != _worldCheck)
                     {
+                        Helpers.Log("World condition met! Writing Autosave...", 0);
+
                         GenerateSave();
                         SAVE_ITERATOR = 0;
                     }
@@ -504,6 +531,8 @@ namespace ReFixed
 
                         if (SAVE_ITERATOR == 0x03)
                         {
+                            Helpers.Log("Room condition met! Writing Autosave...", 0);
+
                             GenerateSave();
                             SAVE_ITERATOR = 0;
                         }
@@ -597,56 +626,66 @@ namespace ReFixed
         */
         public static void Execute()
         {
-            #region High Priority
-            if (Variables.Initialized)
-                Initialization();
-
-            ResetGame();
-            #endregion
-
-            #region Mid Priority
-            if (Variables.DualAudio)
-                AudioSwap();
-
-            TextAdjust();
-            FinisherPrompt();
-            FrameOverride();
-            #endregion
-
-            #region Low Priority
-            #endregion
-
-            #region Tasks
-            if (Variables.ASTask == null)
+            try
             {
-                Variables.ASTask = Task.Factory.StartNew(
-                    delegate()
-                    {
-                        while (!Variables.Token.IsCancellationRequested)
-                        {
-                            AutosaveEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
-                    Variables.Token
-                );
-            }
+                #region High Priority
+                if (Variables.Initialized)
+                    Initialization();
 
-            if (Variables.DCTask == null && Variables.discordToggle)
-            {
-                Variables.DCTask = Task.Factory.StartNew(
-                    delegate()
-                    {
-                        while (!Variables.Token.IsCancellationRequested)
+                ResetGame();
+                #endregion
+
+                #region Mid Priority
+                if (Variables.DualAudio)
+                    AudioSwap();
+
+                TextAdjust();
+                FinisherPrompt();
+                FrameOverride();
+                #endregion
+
+                #region Low Priority
+                #endregion
+
+                #region Tasks
+                if (Variables.ASTask == null)
+                {
+                    Variables.ASTask = Task.Factory.StartNew(
+                        delegate()
                         {
-                            DiscordEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
-                    Variables.Token
-                );
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                AutosaveEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
+                        Variables.Token
+                    );
+                }
+
+                if (Variables.DCTask == null && Variables.rpcToggle)
+                {
+                    Variables.DCTask = Task.Factory.StartNew(
+                        delegate()
+                        {
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                DiscordEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
+                        Variables.Token
+                    );
+                }
+                #endregion
             }
-            #endregion
+            
+            catch (Exception _caughtEx)
+            {
+                Helpers.LogException(_caughtEx);
+                Helpers.Log("Re:Fixed terminated with an exception!", 1);
+                Environment.Exit(-1);
+            }
         }
     }
 }

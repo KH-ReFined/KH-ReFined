@@ -26,65 +26,75 @@ namespace AxaFormBase
         public static CancellationToken MainToken;
         public static Task MainTask;
 
-		// Token: 0x060001E3 RID: 483 RVA: 0x11D5A000 File Offset: 0x01482800
+        [DllImport("kernel32")]
+		static extern bool AllocConsole();
+
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
         {
-            UpdateAgent.UpdateCheck();
-
-            if (theInstance == null)
-                new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v3.00]");
-
-            Cursor.Hide();
-            theInstance.KeyDown += _keyEvent;
-
-            CaptureStatus = true;
-            _cursorHidden = true;
-
-            if (File.Exists("reFixed.ini"))
+            try
             {
-                var _configIni = new TinyIni("reFixed.ini");
+                Helpers.InitConfig();
 
-                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "ReFixed"));
-                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "ReFixed"));
-                Variables.discordToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "ReFixed"));
+                if (Variables.devMode)
+                AllocConsole();
+
+                Helpers.Log("Launching Re:Fixed...", 0);
+
+                UpdateAgent.UpdateCheck();
+
+                if (theInstance == null)
+                    new BaseSimpleForm(_app, "KINGDOM HEARTS: BIRTH BY SLEEP - FINAL MIX [Re:Fixed v3.00]");
+
+                Cursor.Hide();
+                theInstance.KeyDown += _keyEvent;
+
+                CaptureStatus = true;
+                _cursorHidden = true;
+
+                if (Variables.rpcToggle)
+                    Variables.DiscordClient.Initialize();
+
+                CancelSource = new CancellationTokenSource();
+                MainToken = CancelSource.Token;
+
+                Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_ADDRESS);
+
+                theInstance.timer1.Start();
+
+                MainTask = Task.Factory.StartNew(
+                    delegate()
+                    {
+                        while (!MainToken.IsCancellationRequested)
+                        {
+                            Functions.Execute();
+
+                            if (Form.ActiveForm != null && CaptureStatus)
+                            {
+                                var _scrPoint = theInstance.PointToScreen(new Point(0, 0));
+                                Cursor.Position = new Point(_scrPoint.X + theInstance.Width / 2, _scrPoint.Y + theInstance.Height / 2);
+                            }
+
+                            else
+                                CaptureStatus = false;
+
+                            Thread.Sleep(5);
+                        }
+                    },
+                    MainToken
+                );
+
+                Helpers.Log("Re:Fixed launched with no errors!", 0);
+
+                return BaseSimpleForm.theInstance;
             }
 
-            else
-                File.WriteAllText("reFixed.ini", "[ReFixed]\n" + "autoSave = true\n" + "discordRPC = true\n" + "saveIndicator = true");
-
-            if (Variables.discordToggle)
-                Variables.DiscordClient.Initialize();
-
-            CancelSource = new CancellationTokenSource();
-            MainToken = CancelSource.Token;
-
-            Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_ADDRESS);
-
-            theInstance.timer1.Start();
-
-            MainTask = Task.Factory.StartNew(
-                delegate()
-                {
-                    while (!MainToken.IsCancellationRequested)
-                    {
-                        Functions.Execute();
-
-                        if (Form.ActiveForm != null && CaptureStatus)
-                        {
-                            var _scrPoint = theInstance.PointToScreen(new Point(0, 0));
-                            Cursor.Position = new Point(_scrPoint.X + theInstance.Width / 2, _scrPoint.Y + theInstance.Height / 2);
-                        }
-
-                        else
-                            CaptureStatus = false;
-
-                        Thread.Sleep(5);
-                    }
-                },
-                MainToken
-            );
-
-            return theInstance;
+            catch (Exception _caughtEx)
+            {
+                Helpers.LogException(_caughtEx);
+                Helpers.Log("Re:Fixed failed to launch because of an exception!", 1);
+                Environment.Exit(-1);
+                return null;
+            }
         }
 	}
 }
