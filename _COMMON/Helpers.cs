@@ -91,7 +91,7 @@ namespace ReFixed
 
 		public static void Log(string Input, byte Type)
 		{
-			if (Variables.devMode)
+			try
 			{
 				var _formatStr = "[{0}] {1}: {2}";
 
@@ -119,24 +119,33 @@ namespace ReFixed
 				using (StreamWriter _write = File.AppendText(_fileName))
 					_write.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
 
-				Console.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
+				if (Variables.devMode)
+					Console.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
 			}
+
+			catch (Exception) {}
 		}
 
 		public static void LogException(Exception Input)
 		{
-			var _formatStr = "[{0}] {1}";
+			try
+			{
+				var _formatStr = "[{0}] {1}";
 
-			var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
-			var _timeStr = DateTime.Now.ToString("hh:mm:ss");
+				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
+				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
-			var _fileName = "ReFixed-" + _dateStr + ".txt";
-			var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
+				var _fileName = "ReFixed-" + _dateStr + ".txt";
+				var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
 
-			using (StreamWriter _write = File.AppendText(_fileName))
-                _write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
+				using (StreamWriter _write = File.AppendText(_fileName))
+					_write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
 
-			Console.WriteLine(String.Format(_formatStr, _timeStr, _exString));
+				if (Variables.devMode)
+					Console.WriteLine(String.Format(_formatStr, _timeStr, _exString));
+			}
+
+			catch (Exception) {}
 		}
     }
 }

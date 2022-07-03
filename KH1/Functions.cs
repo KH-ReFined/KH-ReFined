@@ -87,7 +87,6 @@ namespace ReFixed
             Variables.Initialized = true;
 
             Helpers.Log("Re:Fixed initialized with no errors!", 0);
-
         }
 
         /*
@@ -167,8 +166,11 @@ namespace ReFixed
                 var _contCheck = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
 
                 if (_contCheck != 0x90)
+                {
+                    Helpers.Log("Manual prompt mode detected! Enforcing prompts...", 0);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
-
+                }   
+                
                 Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, (byte)(Variables.contToggle ? 0 : 1));
             }
         }
@@ -182,7 +184,7 @@ namespace ReFixed
             INPUT: L1 + R1 + START + SELECT.
         */
         public static void ResetGame()
-        {
+        {            
             var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
 			var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
 
@@ -196,6 +198,8 @@ namespace ReFixed
 
             if ((_buttonRead || _saveMenuRead) && !DEBOUNCE[0])
             {
+                Helpers.Log("Soft Reset requested!", 0);
+
                 Hypervisor.Write<byte>(Variables.ADDR_Reset[0], 0x01);
                 Hypervisor.Write<byte>(Variables.ADDR_Reset[1], 0x01);
 
@@ -226,10 +230,15 @@ namespace ReFixed
 
                 if (_inputValue == _buttonSeek && _selectButton == 0x03)
                 {
+                    Helpers.Log("Exit fix initiating...", 0);
+
                     Thread.Sleep(2500);
 
                     if (File.Exists("KINGDOM HEARTS HD 1.5+2.5 Launcher.exe"))
+                    {
+                        Helpers.Log("Redirecting to the launcher...", 0);
                         Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
+                    }
                     
                     Environment.Exit(0);
                 }
@@ -300,6 +309,8 @@ namespace ReFixed
                         Hypervisor.Write(_abilityOffset, (byte)(_readSkill - 0x80));
                         ABILITY_POINT += _skillCost;
 
+                        Helpers.Log(String.Format("Enabling Ability ID: {0} with {1} cost.", _readSkill - 0x80, _skillCost), 0);
+
                         Helpers.PlaySFX(Variables.ToggleSFXPath);
                     }
 
@@ -308,11 +319,16 @@ namespace ReFixed
                         Hypervisor.Write(_abilityOffset, (byte)(_readSkill + 0x80));
                         ABILITY_POINT -= _skillCost;
 
+                        Helpers.Log(String.Format("Disabling Ability ID: {0} with {1} cost.", _readSkill - 0x80, _skillCost), 0);
+
                         Helpers.PlaySFX(Variables.ToggleSFXPath);
                     }
 
                     else
+                    {
+                        Helpers.Log(String.Format("Not enough AP to enable Ability ID: {0} with {1} cost.", _readSkill - 0x80, _skillCost), 0);
                         Helpers.PlaySFX(Variables.DenySFXPath);
+                    }
 
                     DEBOUNCE[1] = true;
                 }
@@ -357,6 +373,7 @@ namespace ReFixed
                     break;
             }
 
+            Helpers.Log("Aspect Correction has been applied!", 0);
             Hypervisor.Write(Variables.ADDR_Viewport, _floatValue);
         }
 
@@ -581,6 +598,8 @@ namespace ReFixed
             {
                 if (SAVE_WORLD != _worldCheck)
                 {
+                    Helpers.Log("World condition met! Writing Autosave...", 0);
+
                     GenerateSave();
                     SAVE_ITERATOR = 0;
                 }
@@ -591,6 +610,8 @@ namespace ReFixed
 
                     if (SAVE_ITERATOR == 3)
                     {
+                        Helpers.Log("Room condition met! Writing Autosave...", 0);
+                        
                         GenerateSave();
                         SAVE_ITERATOR = 0;
                     }
