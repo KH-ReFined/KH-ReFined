@@ -24,48 +24,6 @@ namespace ReFixed
 {
     public static class Helpers
     {
-		private static void LaunchAdmin()
-		{
-			if (!CheckAdmin())
-			{
-				ProcessStartInfo _process = new ProcessStartInfo();
-				_process.UseShellExecute = true;
-				_process.WorkingDirectory = Environment.CurrentDirectory;
-				_process.FileName = Assembly.GetEntryAssembly().CodeBase;
-
-				_process.Verb = "runas";
-
-				try
-				{
-					Process.Start(_process);
-					Environment.Exit(0);
-				}
-				
-				catch(Exception ex)
-				{
-					var _boxMessage = "Re:Fixed must be launched with Admin Previliges\n" +
-									  "the first time it's installed. Please make sure you\n" +
-									  "run it as an Administrator.";  
-
-                    var _boxTitle = "Error #403 - Forbidden";  
-                    var _boxButtons = MessageBoxButtons.OK;  
-
-                    var _boxResult = MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error);  
-
-                    if (_boxResult != null)
-						Environment.Exit(-1);
-				}
-			}
-		}
-
-		private static bool CheckAdmin()
-		{
-			var _identity = WindowsIdentity.GetCurrent();
-			var _principal = new WindowsPrincipal(_identity);
-
-			return _principal.IsInRole(WindowsBuiltInRole.Administrator);
-		}
-
         public static void PlaySFX(string Input)
 		{
 			var _output = new DirectSoundOut();
@@ -84,9 +42,7 @@ namespace ReFixed
 		}
 
 		public static void InitConfig()
-		{
-			LaunchAdmin();
-			
+		{			
 			if (!File.Exists("reFixed.ini"))
 			{
 				var _outIni = new string[]
