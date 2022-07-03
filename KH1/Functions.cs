@@ -775,8 +775,8 @@ namespace ReFixed
             TextAdjust();
             AdjustControler();
 
-            if (Variables.DualAudio)
-                AudioSwap();
+            // if (Variables.DualAudio)
+                // AudioSwap();
 
             FieldOfView();
             AbilityToggle();

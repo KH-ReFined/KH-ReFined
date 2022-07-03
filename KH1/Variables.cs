@@ -28,7 +28,7 @@ namespace ReFixed
         // - DualAudio => If set to "true", will cause the Dual Audio feature to activate.
         //
 
-        public const bool DualAudio = true;
+        public const bool DualAudio = false;
 
         //
         // CONFIG VARIABLES
