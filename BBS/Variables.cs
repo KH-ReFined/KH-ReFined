@@ -61,7 +61,6 @@ namespace ReFixed
         public static Stream ToggleSFX = ExeAssembly.GetManifestResourceStream("sfxToggle.wav");
 
         public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
-        public static string DenySFXPath = Path.GetTempPath() + "ReFixed/denySFX.wav";
         public static string ToggleSFXPath = Path.GetTempPath() + "ReFixed/toggleSFX.wav";
 
         //
