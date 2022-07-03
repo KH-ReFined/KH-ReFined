@@ -174,7 +174,7 @@ namespace ReFixed
 
             if (SYSBAR_POINTER != 0x00 && _strSize != 0x00)
             { 
-                var _strOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue<uint>(0x1E0) + 0x04, true);
+                var _strOffset = Hypervisor.Read<uint>(SYSBAR_POINTER + SYSBAR_HEADER.FindValue((uint)0x1E0) + 0x04, true);
                 var _strRead = Hypervisor.ReadArray(SYSBAR_POINTER + _strOffset, 0x06, true);
 
                 if (LANGUAGE == 0xFF)
