@@ -18,9 +18,6 @@
 -> Allow Offline Play [DRM Compliant]
     @ 0x1273B8 => [75 27] to [EB 27]
 
--> Examine and Open Chest Mid-Battle
-    @ 0x2B06C4 => [74 3A B9 03] to [7D 3A B9 03]
-
 -> Rename Config File
     @ 0x3DA458 => "/config1525.dat" to "/config_kh1.dat"
 
