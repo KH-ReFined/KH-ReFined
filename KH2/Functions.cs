@@ -1136,7 +1136,7 @@ namespace ReFixed
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
-                if (RETRY_MODE == 0x01 && _cutsByte == 0x00 && DRIVE_READ != null)
+                if (RETRY_MODE == 0x01 && _cutsByte == 0x00 && _fnshByte != 0x01 && DRIVE_READ != null)
                 {
                     while (_pausRead == 0x01)
                         _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
@@ -1155,7 +1155,7 @@ namespace ReFixed
             // If the retry text offset is set, write the text necessary according to the mode.
             if (RETRY_OFFSET != 0x00)
             {
-                if (_menuPoint == 0x00 || _cutsByte != 0x00)
+                if (_menuPoint == 0x00 || _cutsByte != 0x00 || _battleFlag != 0x02) 
                     Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][0].ToKHSCII(), true);
 
                 else
