@@ -224,29 +224,29 @@ namespace ReFixed
             new string[]
             {
                 "Deutsch",
-                "Französisch",
-                "Spanisch"
+                "Spanisch",
+                "Französisch"
             },
 
             new string[]
             {
                 "Alemán",
-                "Francés",
-                "Español"
+                "Español",
+                "Francés"
             },
 
             new string[]
             {
                 "Allemand",
-                "Français",
-                "Espagnol"
+                "Espagnol",
+                "Français"
             },
 
             new string[]
             {
                 "Tedesco",
-                "Francese",
-                "Tedesco"
+                "Spagnolo",
+                "Francese"
             }
         };
 
