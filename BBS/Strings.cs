@@ -72,8 +72,8 @@ namespace ReFixed
                 "Audio Language\x00",
                 "English\x00",
                 "Japanese\x00",
-                "Switch to using English vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00",
-                "Switch to using Japanese vocals.\x0A\u2219\x59(Work in Progress! Trigger a significant load\x000Afor the changes to take effect.)\x00"
+                "Switch to using English vocals.\x0A\u2219\x59(Trigger a significant load\x000Afor the changes to take effect.)\x00",
+                "Switch to using Japanese vocals.\x0A\u2219\x59(Trigger a significant load\x000Afor the changes to take effect.)\x00"
             },
 
             new string[]
@@ -99,8 +99,8 @@ namespace ReFixed
                 "Langue de l'audio\x00",
                 "Anglais\x00",
                 "Japonais\x00",
-                "Passer en mode audio Anglais.\x0A\u2219\x59(FonctionnalitÖí en cours de dÖíveloppement! Notez un temps de chargement significatif\x000Aavant l'application des modifications.)\x00",
-                "Passer en mode audio Japonais.\x0A\u2219\x59(FonctionnalitÖí en cours de dÖíveloppement! Notez un temps de chargement significatif\x000Aavant l'application des modifications.)\x00"
+                "Passer en mode audio Anglais.\x0A\u2219\x59(Notez un temps de chargement significatif\x000Aavant l'application des modifications.)\x00",
+                "Passer en mode audio Japonais.\x0A\u2219\x59(Notez un temps de chargement significatif\x000Aavant l'application des modifications.)\x00"
             },
 
             new string[]
@@ -108,8 +108,8 @@ namespace ReFixed
                 "Lingua dialoghi\x00",
                 "Inglese\x00",
                 "Giapponese\x00",
-                "Cambia audio dialoghi in Inglese.\x0A\u2219\x59(Lavoro in Progresso! Il caricamento potrebbe durare a lungo\x000Aper effettuare i cambiamenti.) \x00",
-                "Cambia audio dialoghi in Giapponese.\x0A\u2219\x59(Lavoro in Progresso! Il caricamento potrebbe durare a lungo\x000Aper effettuare i cambiamenti.) \x00"
+                "Cambia audio dialoghi in Inglese.\x0A\u2219\x59(Il caricamento potrebbe durare a lungo\x000Aper effettuare i cambiamenti.) \x00",
+                "Cambia audio dialoghi in Giapponese.\x0A\u2219\x59(Il caricamento potrebbe durare a lungo\x000Aper effettuare i cambiamenti.) \x00"
             }
         };
     }

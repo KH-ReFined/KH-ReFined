@@ -51,7 +51,7 @@ namespace ReFixed
 
         }
 
-         /*
+        /*
             DropToggle:
         
             Seeking the vibration option, toggles the Drop Gauge.
@@ -69,6 +69,7 @@ namespace ReFixed
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_TimeINST, Variables.INST_DropTimer, true);
                     }
                 break;
+                
                 case 0x01:
                     if (_funcRead != 0x90)
                     {
