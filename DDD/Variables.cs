@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 2 FM!
+      KINGDOM HEARTS - RE:FIXED FOR DDD!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================

@@ -192,7 +192,7 @@ namespace ReFixed
         /// <param name="Address">The address which the value will be written to.</param>
         /// <param name="Value">The string to write.</param>
         /// <param name="Absolute">Whether the address is an absolute address or not. Defaults to false.</param>
-        public static void WriteString(ulong Address, string Value, bool Absolute = false)
+        public static void WriteString(ulong Address, string Value, bool Absolute = false, bool Unicode = false)
         {
             IntPtr _address = (IntPtr)(BaseAddress + Address);
 
@@ -202,6 +202,10 @@ namespace ReFixed
             int _inWrite = 0;
 
             var _stringArray = Encoding.GetEncoding(437).GetBytes(Value);
+
+            if (Unicode)
+                _stringArray = Encoding.Unicode.GetBytes(Value);
+
 
             WriteProcessMemory(Handle, _address, _stringArray, _stringArray.Length, ref _inWrite);
         }
