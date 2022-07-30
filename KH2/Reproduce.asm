@@ -23,3 +23,8 @@
 
 -> Voice Channel Mute
     @ 0x5A6E94 => [CD CC CC 3D] to [00 00 00 00]
+
+# No, I do not know why this jank worked but I ain't gonna question it.
+-> Show Forms in the Inventory
+    @ 0x348B0C => [0F BA EB 14] to [EB 45 90 90]
+    @ 0x348B53 => [CC CC CC CC CC CC CC CC] to [81 C3 00 00 20 00 EB B5]
