@@ -56,7 +56,7 @@ namespace ReFixed
         // Grab informaiton from the EXE direct.
         //
 
-        static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
+        public static Assembly ExeAssembly = Assembly.GetExecutingAssembly();
 
         //
         // RESOURCE LIBRARY
@@ -68,6 +68,9 @@ namespace ReFixed
 
         public static Stream SaveSFX = ExeAssembly.GetManifestResourceStream("sfxSave.wav");
         public static Stream SwitchSFX = ExeAssembly.GetManifestResourceStream("sfxSwitch.wav");
+
+        public static Stream LibrettoCA = ExeAssembly.GetManifestResourceStream("libretto-ca");
+        public static Stream BarfileCA;
 
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
@@ -82,6 +85,9 @@ namespace ReFixed
 
         public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
         public static string SwitchSFXPath = Path.GetTempPath() + "ReFixed/switchSFX.wav";
+
+        public static string LibrettoPath = Path.GetTempPath() + "ReFixed/libretto.bin";
+        public static string BarfilePath = Path.GetTempPath() + "ReFixed/barfile.bin";
 
         //
         // RPC ASSET LIBRARY
@@ -150,6 +156,8 @@ namespace ReFixed
         public static ulong ADDR_BattleFlag = 0x24AA5B6;
         public static ulong ADDR_InventoryFlag = 0x444F00;
 
+        public static ulong ADDR_LibrettoCA = 0x9223D2;
+
         public static ulong ADDR_MenuSelect = 0x39C242;
         public static ulong ADDR_MenuCount = 0x39C258;
 
@@ -177,6 +185,8 @@ namespace ReFixed
         public static ulong ADDR_LimitShortcut = 0x06306A;
 
         public static ulong PINT_SystemBAR = 0x24AA82A;
+        public static ulong PINT_BarfileCA = 0x24AA83A;
+
         public static ulong PINT_DeadMenu = 0x68863A;
         public static ulong PINT_SaveInformation = 0x25A5972;
         public static ulong PINT_SoraVSB = 0x261ABD2;

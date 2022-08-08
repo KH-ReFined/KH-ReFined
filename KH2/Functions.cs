@@ -81,6 +81,9 @@ namespace ReFixed
         static byte[] FORM_STAT_READ;
         static List<byte[]> ITEM_READ;
 
+        static byte[] LIBRETTO_READ;
+        static byte[] BARFILE_READ;
+
         /*
             Initialization:
 
@@ -168,6 +171,15 @@ namespace ReFixed
                 "Italian"
             };
 
+            var _prefixList = new string[]
+            {
+                "en",
+                "gr",
+                "sp",
+                "fr",
+                "it"
+            };
+
             SYSBAR_POINTER = Hypervisor.Read<ulong>(Variables.PINT_SystemBAR);
 
             var _strSize = Hypervisor.Read<int>(SYSBAR_POINTER - 0x14, true);
@@ -196,6 +208,17 @@ namespace ReFixed
                         LANGUAGE = 0x04;
 
                     Helpers.Log(String.Format("The detected language is \"{0}\"!", _langList[LANGUAGE]), 0);
+
+                    Variables.BarfileCA = Variables.ExeAssembly.GetManifestResourceStream(_prefixList[LANGUAGE] + "-barfile-ca");
+
+                    var _barfileStream = File.Create(Variables.BarfilePath);
+                    Variables.BarfileCA.CopyTo(_barfileStream);
+                }
+
+                if (!File.Exists(Variables.LibrettoPath))
+                {
+                    var _librettoStream = File.Create(Variables.LibrettoPath);
+                    Variables.LibrettoCA.CopyTo(_librettoStream);
                 }
 
                 #region Roxas Skip Text
@@ -458,6 +481,39 @@ namespace ReFixed
                     }
                 }
                 #endregion
+            }
+        }
+
+        /*
+            MapSkip:
+
+            Revised by Num, a way to replace the PoC Map with text, avoiding crashes.
+        */
+        public static void MapSkip()
+        {
+            var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_World);
+
+            if (_worldRead == 0x10)
+            {
+                var _caPointer = Hypervisor.Read<ulong>(Variables.PINT_BarfileCA);
+                var _writeRead = Hypervisor.Read<byte>(Variables.ADDR_LibrettoCA - 0x0C);
+
+                if (_caPointer != 0x00)
+                {
+                    if (LIBRETTO_READ == null)
+                    {
+                        LIBRETTO_READ = File.ReadAllBytes(Variables.LibrettoPath);
+                        BARFILE_READ = File.ReadAllBytes(Variables.BarfilePath);
+                    }
+
+                    else if (_writeRead == 0x63)
+                    {
+                        Hypervisor.WriteArray(Variables.ADDR_LibrettoCA, LIBRETTO_READ);
+                        Hypervisor.WriteArray(_caPointer, BARFILE_READ, true);
+
+                        Hypervisor.Write<byte>(Variables.ADDR_LibrettoCA - 0x0C, 0x64);
+                    }
+                }
             }
         }
 
@@ -1653,6 +1709,7 @@ namespace ReFixed
 
                 SkipRoxas();
                 ResetGame();
+                MapSkip();
                 RetryPrompt();
                 FixExit();
                 #endregion
