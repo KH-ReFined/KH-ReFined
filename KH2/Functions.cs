@@ -491,27 +491,31 @@ namespace ReFixed
         */
         public static void MapSkip()
         {
-            var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_World);
-
-            if (_worldRead == 0x10)
+            if (LANGUAGE != 0xFF)
             {
-                var _caPointer = Hypervisor.Read<ulong>(Variables.PINT_BarfileCA);
-                var _writeRead = Hypervisor.Read<byte>(Variables.ADDR_LibrettoCA - 0x0C);
+                var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_World);
+                var _librettoAddr = Variables.ADDR_LibrettoCA[LANGUAGE];
 
-                if (_caPointer != 0x00)
+                if (_worldRead == 0x10)
                 {
-                    if (LIBRETTO_READ == null)
-                    {
-                        LIBRETTO_READ = File.ReadAllBytes(Variables.LibrettoPath);
-                        BARFILE_READ = File.ReadAllBytes(Variables.BarfilePath);
-                    }
+                    var _caPointer = Hypervisor.Read<ulong>(Variables.PINT_BarfileCA);
+                    var _writeRead = Hypervisor.Read<byte>(_librettoAddr- 0x0C);
 
-                    else if (_writeRead == 0x63)
+                    if (_caPointer != 0x00)
                     {
-                        Hypervisor.WriteArray(Variables.ADDR_LibrettoCA, LIBRETTO_READ);
-                        Hypervisor.WriteArray(_caPointer, BARFILE_READ, true);
+                        if (LIBRETTO_READ == null)
+                        {
+                            LIBRETTO_READ = File.ReadAllBytes(Variables.LibrettoPath);
+                            BARFILE_READ = File.ReadAllBytes(Variables.BarfilePath);
+                        }
 
-                        Hypervisor.Write<byte>(Variables.ADDR_LibrettoCA - 0x0C, 0x64);
+                        else if (_writeRead == 0x63)
+                        {
+                            Hypervisor.WriteArray(_librettoAddr, LIBRETTO_READ);
+                            Hypervisor.WriteArray(_caPointer, BARFILE_READ, true);
+
+                            Hypervisor.Write<byte>(_librettoAddr - 0x0C, 0x64);
+                        }
                     }
                 }
             }

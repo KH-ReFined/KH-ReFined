@@ -156,7 +156,14 @@ namespace ReFixed
         public static ulong ADDR_BattleFlag = 0x24AA5B6;
         public static ulong ADDR_InventoryFlag = 0x444F00;
 
-        public static ulong ADDR_LibrettoCA = 0x9223D2;
+        public static ulong[] ADDR_LibrettoCA = 
+        {
+            0x9233D2,
+            0x923BD2,
+            0x0,
+            0x9233D2,
+            0x922BD2
+        };
 
         public static ulong ADDR_MenuSelect = 0x39C242;
         public static ulong ADDR_MenuCount = 0x39C258;
