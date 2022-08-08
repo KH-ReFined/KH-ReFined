@@ -40,6 +40,8 @@ namespace ReFixed
         public static bool rpcToggle = true;
         public static bool saveToggle = true;
 
+        public static bool attackToggle = true;
+
         public static bool contToggle = true;
         public static bool autoController = true;
 
@@ -160,6 +162,8 @@ namespace ReFixed
         public static ulong ADDR_Input = 0x1ACF3B;
         public static ulong ADDR_Confirm = 0x365520;
         public static ulong ADDR_Framerate = 0x36550C;
+
+        public static ulong ADDR_ActionExe = 0x24F5B48;
 
         public static ulong ADDR_PAXFormatter = 0x61F92;
         public static ulong ADDR_BTLFormatter = 0x5F83A;

@@ -65,6 +65,7 @@ namespace ReFixed
         static ulong NONE_OFFSET;
 
         static bool DUB_FOUND;
+        static bool ATTACK_SWITCH;
 
         static ulong CONTINUE_OFFSET;
         static ulong RETRY_OFFSET;
@@ -457,6 +458,40 @@ namespace ReFixed
                     }
                 }
                 #endregion
+            }
+        }
+
+        /*
+            Autoattack:
+
+            Allows automatic attacking by holding down the action button. 
+            Used primarily for accessibility purposes, tied to "autoAttack" in the config.
+        */
+        public static void Autoattack()
+        {
+            var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+            var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+            var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
+
+            var _commandRead = Hypervisor.Read<byte>(0x24A986E);
+            var _dialogRead = Hypervisor.Read<byte>(0x24AF4C2);
+
+            var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
+            var _inputValue = _inputRead & _buttonSeek;
+
+            var _autoBool = _inputValue == _buttonSeek && _commandRead == 0x00 && _dialogRead == 0x00 && _battleRead > 0x00 && Variables.attackToggle == true;
+            var _actionRead = Hypervisor.Read<byte>(Variables.ADDR_ActionExe);
+
+            if (_autoBool && _actionRead != 0x01 && !ATTACK_SWITCH)
+            {
+                Hypervisor.Write(Variables.ADDR_ActionExe, 0x01);
+                ATTACK_SWITCH = true;
+            }
+
+            else if (!_autoBool && _actionRead != 0x00 && ATTACK_SWITCH)
+            {
+                Hypervisor.Write(Variables.ADDR_ActionExe, 0x00);
+                ATTACK_SWITCH = false;
             }
         }
 
@@ -1155,7 +1190,7 @@ namespace ReFixed
             // If the retry text offset is set, write the text necessary according to the mode.
             if (RETRY_OFFSET != 0x00)
             {
-                if (_menuPoint == 0x00 || _cutsByte != 0x00 || _battleFlag != 0x02) 
+                if (_menuPoint == 0x00 || _cutsByte != 0x00 || _bttlByte != 0x02) 
                     Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][0].ToKHSCII(), true);
 
                 else
@@ -1623,6 +1658,7 @@ namespace ReFixed
                 if (Variables.DualAudio)
                     AudioSwap();
 
+                Autoattack();
                 SortMagic();
                 AdjustControler();
                 TextAdjust();

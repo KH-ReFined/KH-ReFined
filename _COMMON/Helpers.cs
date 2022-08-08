@@ -50,6 +50,7 @@ namespace ReFixed
 					"[General]",
 					"autoSave = true",
 					"discordRPC = true",
+					"autoAttack = false",
 					"saveIndicator = true",
 					"controllerPrompt = auto",
 					"",
@@ -71,8 +72,9 @@ namespace ReFixed
 
                 Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
 				Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
+				Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
                 Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "General"));
-				
+
 				var _contValue = _configIni.Read("controllerPrompt", "General");
 
 				if (_contValue.ToLower() == "auto")
