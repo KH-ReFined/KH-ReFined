@@ -812,6 +812,9 @@ namespace ReFixed
                     Hypervisor.Write<byte>(0x446262 + 0x0A, 0x40);
                     Hypervisor.Write<byte>(0x446262 + 0x0D, 0x02);
 
+                    Hypervisor.Write<byte>(0x446229, 0x80);
+                    Hypervisor.Write<byte>(0x44622B, 0x80);
+
                     Helpers.Log("Roxas Skip has been completed!", 0);
                     SKIP_STAGE = 2;
                 }
