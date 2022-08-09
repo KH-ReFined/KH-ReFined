@@ -158,7 +158,7 @@ namespace ReFixed
 
         public static ulong[] ADDR_LibrettoCA = 
         {
-            0x9233D2,
+            0x9223D2,
             0x923BD2,
             0x0,
             0x9233D2,
