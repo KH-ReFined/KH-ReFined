@@ -516,7 +516,7 @@ namespace ReFixed
 
                             Hypervisor.Write<byte>(_librettoAddr - 0x0C, 0x64);
 
-                            Helpers.Log("Writing the necessary info for Map Skip!");
+                            Helpers.Log("Writing the necessary info for Map Skip!", 0);
                         }
                     }
                 }
