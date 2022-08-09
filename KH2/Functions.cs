@@ -515,6 +515,8 @@ namespace ReFixed
                             Hypervisor.WriteArray(_caPointer, BARFILE_READ, true);
 
                             Hypervisor.Write<byte>(_librettoAddr - 0x0C, 0x64);
+
+                            Helpers.Log("Writing the necessary info for Map Skip!");
                         }
                     }
                 }
@@ -1377,7 +1379,10 @@ namespace ReFixed
 
             // If the file does not bear a save; terminate the operation.
             if (!Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM"))
+            {
+                Helpers.Log("File does not bare a save! Autosave aborted to stop corruption!", 1);
                 return;
+            }
 
             // Seek out the physical slot of the save to make.
             while (_saveSlotRAM[0] != 0x00 && !Encoding.ASCII.GetString(_saveSlotRAM).Contains("66675FM-98"))
@@ -1487,7 +1492,7 @@ namespace ReFixed
                 _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
                 var _saveConfig = Variables.DualAudio && Variables.saveToggle;
-                var _saveableBool = (_saveConfig ? _saveConfig : _toggleCheck == 0x01) && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00;
+                var _saveableBool = (_saveConfig ? _saveConfig : _toggleCheck == 0x01) && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _worldCheck >= 0x02;
 
                 if (_saveableBool)
                 {
