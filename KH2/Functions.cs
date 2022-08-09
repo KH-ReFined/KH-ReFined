@@ -1163,7 +1163,7 @@ namespace ReFixed
                 }
 
                 // If D-Pad sides are pressed;
-                if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00)
+                if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00 && RETRY_MODE != 0x03)
                 {
                     // Play the sound so that it seems **authentic**.
                     Helpers.PlaySFX(Variables.SwitchSFXPath);
@@ -1200,22 +1200,36 @@ namespace ReFixed
                     DEBOUNCE[2] = false;
             }
 
+            var _menuCheck = Hypervisor.Read<ushort>(Variables.ADDR_MenuCount + 0x02);
+
             // If in a forced battle, and it is not finished, and Sora is dead, and it's in the Continue mode, and if Retry Locking ain't active;
             if (_bttlByte == 0x02 && _menuPoint != 0x00 && _cutsByte == 0x00 && !RETRY_LOCK)
             {
-                // Retry Mode active.
-                RETRY_MODE = 0x01;
+                while (_menuCheck == 0xEFAC || _menuCheck == 0xCAFE)
+                   _menuCheck = Hypervisor.Read<ushort>(Variables.ADDR_MenuCount + 0x02);
 
-                Helpers.Log("Death Screen detected! Destroying functions...", 0);
+                if (_menuCheck != 0x00)
+                {
+                    Helpers.Log("Unknown Death Screen detected! Disabling the Retry function!", 0);
+                    RETRY_MODE = 0x03;
+                }
 
-                // Destroy the functions responsible for switching rooms and reverting story flags.
-                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
-                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
+                else
+                {
+                    // Retry Mode active.
+                    RETRY_MODE = 0x01;
 
-                // This must be written at death instead of at retry.
-                // Do not ask me why.
-                Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
+                    Helpers.Log("Death Screen detected! Destroying functions...", 0);
+
+                    // Destroy the functions responsible for switching rooms and reverting story flags.
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
+
+                    // This must be written at death instead of at retry.
+                    // Do not ask me why.
+                    Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
+                }
 
                 RETRY_LOCK = true;
             }
@@ -1251,7 +1265,7 @@ namespace ReFixed
             }
 
             // If the retry text offset is set, write the text necessary according to the mode.
-            if (RETRY_OFFSET != 0x00)
+            if (RETRY_OFFSET != 0x00 && RETRY_MODE != 0x03)
             {
                 if (_menuPoint == 0x00 || _cutsByte != 0x00 || _bttlByte != 0x02) 
                     Hypervisor.WriteArray(SYSBAR_POINTER + RETRY_OFFSET, Strings.RetryPrompt[LANGUAGE][0].ToKHSCII(), true);
