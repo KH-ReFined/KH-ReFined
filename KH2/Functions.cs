@@ -180,10 +180,15 @@ namespace ReFixed
                 "it"
             };
 
+            if (CheckTitle())
+                DUB_FOUND = false;
+
             SYSBAR_POINTER = Hypervisor.Read<ulong>(Variables.PINT_SystemBAR);
 
             var _strSize = Hypervisor.Read<int>(SYSBAR_POINTER - 0x14, true);
             SYSBAR_HEADER = Hypervisor.ReadArray(SYSBAR_POINTER, _strSize, true);
+
+            var _vibRead = Hypervisor.Read<byte>(Variables.ADDR_Config) & 0x01;
 
             if (SYSBAR_POINTER != 0x00 && _strSize != 0x00)
             { 
@@ -449,32 +454,42 @@ namespace ReFixed
                         var _spanishSeek = _soraRead.FindValue(new byte[] { 0x80, 0xEB, 0x51, 0xE9 });
                         var _frenchSeek = _soraRead.FindValue(new byte[] { 0xCD, 0x39, 0x0E, 0x9A });
 
-                        if ((long)_germanSeek != -1)
+                        if (_vibRead == 0x01)
                         {
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[0].ToKHSCII(), true);
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[0]).ToKHSCII(), true);
-                            Helpers.Log("Detected Dub Patch: German!", 0);
-                        }
+                            if ((long)_germanSeek != -1)
+                            {
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[0].ToKHSCII(), true);
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[0]).ToKHSCII(), true);
+                                Helpers.Log("Detected Dub Patch: German!", 0);
+                            }
 
-                        else if ((long)_spanishSeek != -1)
-                        {
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[1].ToKHSCII(), true);
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[1]).ToKHSCII(), true);
-                            Helpers.Log("Detected Dub Patch: Spanish!", 0);
-                        }
+                            else if ((long)_spanishSeek != -1)
+                            {
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[1].ToKHSCII(), true);
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[1]).ToKHSCII(), true);
+                                Helpers.Log("Detected Dub Patch: Spanish!", 0);
+                            }
 
-                        else if ((long)_frenchSeek != -1)
-                        {
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[2].ToKHSCII(), true);
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[2]).ToKHSCII(), true);
-                            Helpers.Log("Detected Dub Patch: French!", 0);
+                            else if ((long)_frenchSeek != -1)
+                            {
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[2].ToKHSCII(), true);
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[2]).ToKHSCII(), true);
+                                Helpers.Log("Detected Dub Patch: French!", 0);
+                            }
+
+                            else
+                            {
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
+                                Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _audioText[1]).ToKHSCII(), true);
+                                Helpers.Log("Detected Dub Patch: None.", 0);
+                            }
                         }
 
                         else
                         {
+                            Helpers.Log("Japanese Mode Set! Dub cannot be detected! Defaults set!", 0);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _audioText[1]).ToKHSCII(), true);
-                            Helpers.Log("Detected Dub Patch: None.", 0);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[3]).ToKHSCII(), true);
                         }
 
                         DUB_FOUND = true;

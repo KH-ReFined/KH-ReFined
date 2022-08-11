@@ -218,35 +218,40 @@ namespace ReFixed
             {
                 "German",
                 "Spanish",
-                "French"
+                "French",
+                "Default"
             },
 
             new string[]
             {
                 "Deutsch",
                 "Spanisch",
-                "Französisch"
+                "Französisch",
+                "Standard"
             },
 
             new string[]
             {
                 "Alemán",
                 "Español",
-                "Francés"
+                "Francés",
+                "Predeterminado"
             },
 
             new string[]
             {
                 "Allemand",
                 "Espagnol",
-                "Français"
+                "Français",
+                "Par Défaut."
             },
 
             new string[]
             {
                 "Tedesco",
                 "Spagnolo",
-                "Francese"
+                "Francese",
+                "Predefinito"
             }
         };
 
