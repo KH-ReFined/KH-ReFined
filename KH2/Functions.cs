@@ -1171,7 +1171,7 @@ namespace ReFixed
                 ABILITY_READ = new List<byte[]>();
 
                 SUMM_LVL_READ = 0xFF;
-                SUMM_EXP_READ = 0XFF;
+                SUMM_EXP_READ = 0xFF;
 
                 RETRY_MODE = 0;
                 RETRY_LOCK = false;
@@ -1180,7 +1180,8 @@ namespace ReFixed
             if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && !CheckTitle())
             {
                 ITEM_READ = new List<byte[]>();
-
+                ABILITY_READ = new List<byte[]>();
+                
                 for (int i = 0; i < 4; i++)
                     ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
 
