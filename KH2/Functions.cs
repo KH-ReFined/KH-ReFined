@@ -151,6 +151,12 @@ namespace ReFixed
             
             Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
 
+            var _iconByte = Hypervisor.Read<byte>(0x2506F7D);
+            
+            if (_iconByte < 0x20 && _iconByte != 0x02)
+                for (int i = 0; i < 5; i++)
+                    WriteByte(0x2506F7D + 0x18 * i, 0x02);
+
             // Initialize the source and the token for secondary tasks.
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
