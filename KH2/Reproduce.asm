@@ -23,8 +23,8 @@
 
 -> Directory Forwarding
     @ 0x5FA690 => "\Kingdom Hearts\Configuration"
-    @ 0x7110C0 => "Kingdom Hearts\Save Data\Kingdom Hearts II.png"
-    @ 0x711100 => "Kingdom Hearts\Save Data\System Data.png"
+    @ 0x7110C0 => "Kingdom Hearts\Save Data\KHIIFM.png"
+    @ 0x711100 => "Kingdom Hearts\Save Data\KH1.5+2.5_system.png"
 
 -> Voice Channel Mute
     @ 0x5A6E94 => [CD CC CC 3D] to [00 00 00 00]

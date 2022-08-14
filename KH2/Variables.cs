@@ -72,9 +72,6 @@ namespace ReFixed
         public static Stream LibrettoCA = ExeAssembly.GetManifestResourceStream("libretto-ca");
         public static Stream BarfileCA;
 
-        public static Stream EmptySave = ExeAssembly.GetManifestResourceStream("saveKH2.png");
-        public static Stream EmptySystem = ExeAssembly.GetManifestResourceStream("saveSystem.png");
-
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
 

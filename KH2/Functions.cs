@@ -187,12 +187,6 @@ namespace ReFixed
             {
                 Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _idString));
                 Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/" + _idString));
-
-                var _streamKH2 = File.Create(Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/" + _idString) + "/Kingdom Hearts II.png");
-                var _streamSYS = File.Create(Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/" + _idString) + "/System Data.png");
-
-                Variables.EmptySave.CopyTo(_streamKH2);
-                Variables.EmptySystem.CopyTo(_streamSYS);
             }
 
             // Initialize the source and the token for secondary tasks.

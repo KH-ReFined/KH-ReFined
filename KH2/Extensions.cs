@@ -11,9 +11,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-
 namespace ReFixed
 {
     public static class Extensions
