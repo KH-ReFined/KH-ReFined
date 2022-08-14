@@ -202,6 +202,7 @@ namespace ReFixed
 
         public static ulong PINT_SystemBAR = 0x24AA82A;
         public static ulong PINT_BarfileCA = 0x24AA83A;
+        public static ulong PINT_LoadedMSN = 0x24A9122;
 
         public static ulong PINT_DeadMenu = 0x68863A;
         public static ulong PINT_SaveInformation = 0x25A5972;

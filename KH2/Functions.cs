@@ -577,6 +577,27 @@ namespace ReFixed
         }
 
         /*
+            AtlanticaUnpause:
+
+            What the name says, because fuck having to retry upon pausing.
+        */
+        public static void AtlanticaUnpause()
+        {
+            var _msnPointer = Hypervisor.Read<ulong>(Variables.PINT_LoadedMSN);
+
+            if (_msnPointer != 0x00)
+            {
+                var _readMission = Hypervisor.ReadArray(_msnPointer + 0x20, 0x0A, true);
+                var _missionName = Encoding.ASCII.GetString(_readMission);
+
+                if (_missionName == "ms_musical")
+                {
+                    Hypervisor.Write<byte>(_msnPointer + 0x08, 0x00, true);
+                }
+            }
+        }
+
+        /*
             Autoattack:
 
             Allows automatic attacking by holding down the action button. 
@@ -1835,6 +1856,7 @@ namespace ReFixed
                 SkipRoxas();
                 ResetGame();
                 MapSkip();
+                AtlanticaUnpause();
                 RetryPrompt();
                 FixExit();
                 #endregion
