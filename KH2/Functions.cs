@@ -78,8 +78,15 @@ namespace ReFixed
         static int EXP_READ;
         static byte FORM_READ;
         static byte[] DRIVE_READ;
+        static byte[] CHEST_READ;
+        static byte[] PARTY_READ;
         static byte[] FORM_STAT_READ;
+        static byte[] INVENTORY_READ;
         static List<byte[]> ITEM_READ;
+        static List<byte[]> ABILITY_READ;
+
+        static byte SUMM_LVL_READ;
+        static byte SUMM_EXP_READ;
 
         static byte[] LIBRETTO_READ;
         static byte[] BARFILE_READ;
@@ -488,7 +495,7 @@ namespace ReFixed
                         else
                         {
                             Helpers.Log("Japanese Mode Set! Dub cannot be detected! Defaults set!", 0);
-                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _audioText[1].ToKHSCII(), true);
+                            Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetYES, _patchText[3].ToKHSCII(), true);
                             Hypervisor.WriteArray(SYSBAR_POINTER + _setOffsetDesc, string.Format(_audioText[3], _patchText[3]).ToKHSCII(), true);
                         }
 
@@ -547,7 +554,7 @@ namespace ReFixed
         public static void Autoattack()
         {
             var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
-            var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+            var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
             var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
 
             var _commandRead = Hypervisor.Read<byte>(0x24A986E);
@@ -556,7 +563,7 @@ namespace ReFixed
             var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
             var _inputValue = _inputRead & _buttonSeek;
 
-            var _autoBool = _inputValue == _buttonSeek && _commandRead == 0x00 && _dialogRead == 0x00 && _battleRead > 0x00 && Variables.attackToggle == true;
+            var _autoBool = _inputValue == _buttonSeek && _commandRead == 0x00 && _dialogRead == 0x00 && _worldCheck != 0x0F && Variables.attackToggle == true;
             var _actionRead = Hypervisor.Read<byte>(Variables.ADDR_ActionExe);
 
             if (_autoBool && _actionRead != 0x01 && !ATTACK_SWITCH)
@@ -584,6 +591,7 @@ namespace ReFixed
          || Hypervisor.Read<uint>(Variables.ADDR_Title) == 0x00000001
          || Hypervisor.Read<uint>(Variables.ADDR_Reset) == 0x00000001;
 
+       
         /*
             ResetGame:
 
@@ -609,6 +617,11 @@ namespace ReFixed
                 DEBOUNCE[0] = false;
         }
 
+        /*
+            AdjustController:
+
+            Allows the use of Controller Prompts and Camera on MKB and vice versa.
+        */
         public static void AdjustControler()
         {
             if (!Variables.autoController)
@@ -748,19 +761,19 @@ namespace ReFixed
                             // Make the switch
                             Hypervisor.Write(Variables.ADDR_MagicMenu[1] + (ulong)_magicPointer, _targetMagic);
                             Hypervisor.Write(Variables.ADDR_MagicMenu[1] + (ulong)_magicBounds, _subjectMagic);
+
+                            // Move the magic index.
+                            Hypervisor.Write(Variables.ADDR_MagicMenu[2], _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01));
+                            Hypervisor.Write(Variables.ADDR_MagicMenu[2] + 0x04, _subjectMagic);
+
+                            Helpers.Log(String.Format("Moving Magic ID \"{0}\" {1} within the menu!", "0x" + _subjectMagic.ToString("X4"), _inputCheck == 0x01 ? "up" : "down"), 0);
+
+                            // Read the entirety of the magic menu, and save it to memory.
+                            MAGIC_STORE = Hypervisor.ReadArray(Variables.ADDR_MagicMenu[1], _magicMax * 0x02);
                         }
 
-                        // Move the magic index.
-                        Hypervisor.Write(Variables.ADDR_MagicMenu[2], _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01));
-                        Hypervisor.Write(Variables.ADDR_MagicMenu[2] + 0x04, _subjectMagic);
-
-                        Helpers.Log(String.Format("Moving Magic ID \"{0}\" {1} within the menu!", "0x" + _subjectMagic.ToString("X4"), _inputCheck == 0x01 ? "up" : "down"), 0);
-
-                        // Read the entirety of the magic menu, and save it to memory.
-                        MAGIC_STORE = Hypervisor.ReadArray(Variables.ADDR_MagicMenu[1], _magicMax * 0x02);
-
-                        // Save the menu to the Save File as well.
-                        // The offset is 0xE550 to retain compatibility with 
+                        else
+                            Helpers.Log("Could not move the spell out of bounds!", 1);
                     }
 
                     // Otherwise: If debounce is active and input is improper; deactivate debounce.
@@ -1115,9 +1128,19 @@ namespace ReFixed
 
                 EXP_READ = -1;
                 FORM_READ = 0;
+                
                 DRIVE_READ = null;
+                CHEST_READ = null;
+                PARTY_READ = null;
+
                 FORM_STAT_READ = null;
+                INVENTORY_READ = null;
+
                 ITEM_READ = new List<byte[]>();
+                ABILITY_READ = new List<byte[]>();
+
+                SUMM_LVL_READ = -1;
+                SUMM_EXP_READ = -1;
 
                 RETRY_MODE = 0;
                 RETRY_LOCK = false;
@@ -1130,10 +1153,21 @@ namespace ReFixed
                 for (int i = 0; i < 4; i++)
                     ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
 
+                for (int i = 0; i < 4; i++)
+                    ABILITY_READ.Add(Hypervisor.ReadArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), 0xC0));
+
                 EXP_READ = Hypervisor.Read<int>(Variables.ADDR_EXPStart);
                 FORM_READ = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
+
                 DRIVE_READ = Hypervisor.ReadArray(Variables.ADDR_DriveStart, 0x0C);
+                PARTY_READ = Hypervisor.ReadArray(Variables.ADDR_PartyStart, 0x08);
+                CHEST_READ = Hypervisor.ReadArray(Variables.ADDR_ChestStart, 0x33);
+
                 FORM_STAT_READ = Hypervisor.ReadArray(Variables.ADDR_FormStart, 0x38 * 0x0A);
+                INVENTORY_READ = Hypervisor.ReadArray(Variables.ADDR_Inventory, 0x140);
+
+                SUMM_LVL_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonLevel);
+                SUMM_EXP_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonExp);
 
                 if (DRIVE_READ[2] == 0x00)
                     DRIVE_READ = null;
@@ -1148,9 +1182,19 @@ namespace ReFixed
 
                 EXP_READ = -1;
                 FORM_READ = 0;
+
                 DRIVE_READ = null;
+                CHEST_READ = null;
+                PARTY_READ = null;
+
                 FORM_STAT_READ = null;
+                INVENTORY_READ = null;
+
                 ITEM_READ = new List<byte[]>();
+                ABILITY_READ = new List<byte[]>();
+
+                SUMM_LVL_READ = -1;
+                SUMM_EXP_READ = -1;
             }
 
             // This code blob is responsible for switching between Retry and Continue
@@ -1272,10 +1316,21 @@ namespace ReFixed
 
                     for (int i = 0; i < 4; i++)
                         Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
-                        
+
+                    for (int i = 0; i < 4; i++)
+                        Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
+
                     Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
+
                     Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
+                    Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
+                    Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
+
                     Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
+                    Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
+
+                    Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
+                    Hypervisor.Write(Variables.ADDR_SummonExp, SUMM_EXP_READ);
                 }
 
                 RETRY_LOCK = false;

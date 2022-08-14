@@ -134,6 +134,13 @@ namespace ReFixed
         public static ulong ADDR_ItemStart = 0x0445086;
         public static ulong ADDR_DriveStart = 0x24BC8FA;
         public static ulong ADDR_FormStart = 0x445E56;
+        public static ulong ADDR_ChestStart = 0x444F0E;
+        public static ulong ADDR_AbilityStart = 0x4450A6;
+        public static ulong ADDR_PartyStart = 0x4460D6;
+        public static ulong ADDR_Inventory = 0x4460E2;
+
+        public static ulong ADDR_SummonLevel = 0x446088;
+        public static ulong ADDR_SummonEXP = 0x446246;
 
         public static ulong ADDR_VolumeTable = 0x44D42;
         public static ulong ADDR_MasterVolume = 0x365516;
