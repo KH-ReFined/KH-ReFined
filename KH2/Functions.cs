@@ -1340,9 +1340,10 @@ namespace ReFixed
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
-                    // This must be written at death instead of at retry.
+                    // These must be written at death instead of at retry.
                     // Do not ask me why.
                     Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
+                    Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
                 }
 
                 RETRY_LOCK = true;
@@ -1377,7 +1378,6 @@ namespace ReFixed
 
                     Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
                     Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
-                    Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
 
                     Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
                     Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
