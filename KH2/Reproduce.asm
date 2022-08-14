@@ -21,6 +21,11 @@
 -> Rename Config File
     @ 0x5F7A10 => "/config1525.dat" to "/config_kh2.dat"
 
+-> Directory Forwarding
+    @ 0x5FA690 => "\Kingdom Hearts\Configuration"
+    @ 0x7110C0 => "Kingdom Hearts\Save Data\Kingdom Hearts II.png"
+    @ 0x711100 => "Kingdom Hearts\Save Data\System Data.png"
+
 -> Voice Channel Mute
     @ 0x5A6E94 => [CD CC CC 3D] to [00 00 00 00]
 
