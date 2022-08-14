@@ -96,6 +96,7 @@ namespace ReFixed
 
             Serves to initialize stuffs.
         */
+
         public static void Initialization()
         {
             Helpers.Log("Initializing Re:Fixed...", 0);
@@ -157,37 +158,28 @@ namespace ReFixed
                 for (ulong i = 0; i < 5; i++)
                     Hypervisor.Write<byte>(0x2506F7D + 0x18 * i, 0x02);
 
-            EPIC_INIT:
-            var _epicPointer = Hypervisor.Read<ulong>(Hypervisor.DLLAddress + Variables.ADDR_EpicGamesID, true);
-
-            while (_epicPointer == 0x00)
-                _epicPointer = Hypervisor.Read<ulong>(Hypervisor.DLLAddress + Variables.ADDR_EpicGamesID, true);
-
-            _epicPointer = Hypervisor.Read<ulong>(_epicPointer + 0x30, true);
-            _epicPointer = Hypervisor.Read<ulong>(_epicPointer + 0x58, true);
-            _epicPointer = Hypervisor.Read<ulong>(_epicPointer, true);
-            _epicPointer = Hypervisor.Read<ulong>(_epicPointer + 0x100, true);
-            
-            var _epicAddress = Hypervisor.Read<ulong>(_epicPointer + 0x08, true) + 0x4B7;
-
-            var _epicValue = Hypervisor.ReadArray(_epicAddress, 0x20, true);
-            var _epicCheck = Hypervisor.ReadArray(_epicAddress - 0x0C, 0x0C, true);
-
-            var _checkString = Encoding.ASCII.GetString(_epicCheck);
-            var _idString = Encoding.ASCII.GetString(_epicValue);
-
-            if (_checkString != "-epicuserid=")
-                goto EPIC_INIT;
-
-            Helpers.Log("Looking for the directories that have the ID: " + _idString, 0);
-
             var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
 
-            if (!Directory.Exists(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _idString)))
+            EPIC_INIT:
+            if (Directory.Exists(_saveDir))
             {
-                Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _idString));
-                Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/" + _idString));
+                string[] _epicDirs = Directory.GetDirectories(_saveDir, "*", SearchOption.TopDirectoryOnly);
+
+                if (_epicDirs.Length == 0x00)
+                goto EPIC_INIT; 
+
+                foreach (var _str in _epicDirs)
+                {
+                    var _folderName = new DirectoryInfo(_str).Name;
+                    Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _folderName));
+
+                    Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
+                }
             }
+
+            else
+                goto EPIC_INIT;
 
             // Initialize the source and the token for secondary tasks.
             Variables.Source = new CancellationTokenSource();
@@ -198,6 +190,7 @@ namespace ReFixed
 
             Helpers.Log("Re:Fixed initialized with no errors!", 0);
         }
+
 
         /*
             TextAdjust:
