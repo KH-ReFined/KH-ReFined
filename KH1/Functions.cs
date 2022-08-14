@@ -44,6 +44,7 @@ namespace ReFixed
         static byte[] SYSBAR_HEADER;
         static byte[] SYSBAR_FILE;
         
+        static bool ATTACK_SWITCH;
         static ulong VIBRATION_OFFSET = 0xFFFFFFFFFFFFFFFF;
 
         /*
@@ -89,6 +90,40 @@ namespace ReFixed
             Helpers.Log("Re:Fixed initialized with no errors!", 0);
         }
 
+        /*
+            Autoattack:
+
+            Allows automatic attacking by holding down the action button. 
+            Used primarily for accessibility purposes, tied to "autoAttack" in the config.
+        */
+        public static void Autoattack()
+        {
+            var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+            var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
+
+            var _commandRead = Hypervisor.Read<byte>(0x184F86);
+            var _dialogRead = Hypervisor.Read<byte>(0x25F7B82);
+
+            var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
+            var _inputValue = _inputRead & _buttonSeek;
+
+            var _autoBool = _inputValue == _buttonSeek && _commandRead == 0x00 && _dialogRead != 0x00 && Variables.attackToggle == true;
+            var _actionRead = Hypervisor.Read<byte>(Variables.ADDR_ActionFirst);
+
+            if (_autoBool && _actionRead != 0x01 && !ATTACK_SWITCH)
+            {
+                Hypervisor.Write(Variables.ADDR_ActionFirst, 0x01);
+                Hypervisor.Write(Variables.ADDR_ActionSecond, 0x01);
+                ATTACK_SWITCH = true;
+            }
+
+            else if (!_autoBool && _actionRead != 0x00 && ATTACK_SWITCH)
+            {
+                Hypervisor.Write(Variables.ADDR_ActionFirst, 0x00);
+                Hypervisor.Write(Variables.ADDR_ActionSecond, 0x00);
+                ATTACK_SWITCH = false;
+            }
+        }
         /*
             CheckTitle:
 
@@ -782,58 +817,58 @@ namespace ReFixed
         {
             try
             {
-            #region High Priority
-            if (!Variables.Initialized)
-                Initialization();
+                #region High Priority
+                if (!Variables.Initialized)
+                    Initialization();
 
-            ResetGame();
-            FixExit();
-            #endregion
+                ResetGame();
+                FixExit();
+                #endregion
 
-            #region Mid Priority
-            MagicHide();
-            TextAdjust();
-            AdjustControler();
+                #region Mid Priority
+                MagicHide();
+                Autoattack();
+                TextAdjust();
+                AdjustControler();
 
-            // if (Variables.DualAudio)
-                // AudioSwap();
+                // if (Variables.DualAudio)
+                    // AudioSwap();
 
-            FieldOfView();
-            AbilityToggle();
-            #endregion
+                FieldOfView();
+                AbilityToggle();
+                #endregion
 
-            #region Tasks
-            if (Variables.ASTask == null)
-            {
-                Variables.ASTask = Task.Factory.StartNew(
-                    delegate ()
-                    {
-                        while (!Variables.Token.IsCancellationRequested)
+                #region Tasks
+                if (Variables.ASTask == null)
+                {
+                    Variables.ASTask = Task.Factory.StartNew(
+                        delegate ()
                         {
-                            AutosaveEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
-                    Variables.Token
-                );
-            }
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                AutosaveEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
+                        Variables.Token
+                    );
+                }
 
-            if (Variables.DCTask == null && Variables.rpcToggle)
-            {
-                Variables.DCTask = Task.Factory.StartNew(
-                    delegate ()
-                    {
-                        while (!Variables.Token.IsCancellationRequested)
+                if (Variables.DCTask == null && Variables.rpcToggle)
+                {
+                    Variables.DCTask = Task.Factory.StartNew(
+                        delegate ()
                         {
-                            DiscordEngine();
-                            Thread.Sleep(5);
-                        }
-                    },
-                    Variables.Token
-                );
-            }
-            #endregion
-
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                DiscordEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
+                        Variables.Token
+                    );
+                }
+                #endregion
             }
             
             catch (Exception _caughtEx)

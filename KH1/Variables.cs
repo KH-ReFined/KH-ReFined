@@ -28,7 +28,7 @@ namespace ReFixed
         // - DualAudio => If set to "true", will cause the Dual Audio feature to activate.
         //
 
-        public const bool DualAudio = false;
+        // public const bool DualAudio = false;
 
         //
         // CONFIG VARIABLES
@@ -40,6 +40,7 @@ namespace ReFixed
         public static bool rpcToggle = true;
         public static bool saveToggle = true;
         
+        public static bool attackToggle = false;
         public static bool devMode = false;
         
         public static bool fovToggle = false;
@@ -209,6 +210,9 @@ namespace ReFixed
         public static ulong ADDR_Whiteness = 0x1F9BE96;
 
         public static ulong ADDR_Viewport = 0x10F2E;
+
+        public static ulong ADDR_ActionFirst = 0x1F89E3E;
+        public static ulong ADDR_ActionSecond = 0x202FFFA;
 
         public static ulong ADDR_ALLAbility = 0x2A45963;
         public static ulong ADDR_SORAAbility = 0x2A4540E;

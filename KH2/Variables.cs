@@ -40,7 +40,7 @@ namespace ReFixed
         public static bool rpcToggle = true;
         public static bool saveToggle = true;
 
-        public static bool attackToggle = true;
+        public static bool attackToggle = false;
 
         public static bool contToggle = true;
         public static bool autoController = true;
