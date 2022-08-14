@@ -72,6 +72,9 @@ namespace ReFixed
         public static Stream LibrettoCA = ExeAssembly.GetManifestResourceStream("libretto-ca");
         public static Stream BarfileCA;
 
+        public static Stream EmptySave = ExeAssembly.GetManifestResourceStream("saveKH2.png");
+        public static Stream EmptySystem = ExeAssembly.GetManifestResourceStream("saveSystem.png");
+
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
 
@@ -147,6 +150,8 @@ namespace ReFixed
 
         public static ulong ADDR_TitleSelect = 0x5B6896;
         public static ulong ADDR_TitleCount = 0x5B68A2;
+
+        public static ulong ADDR_EpicGamesID = 0x0B90178;
 
         public static ulong ADDR_ControllerMode = 0x25DDFFA;
 

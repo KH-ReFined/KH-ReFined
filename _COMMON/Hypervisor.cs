@@ -8,6 +8,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Reflection.Emit;
@@ -33,6 +34,10 @@ namespace ReFixed
         public static ulong BaseAddress;
         public static ulong PureAddress;
 
+        public static ProcessModule DLLModule;
+        public static ulong DLLAddress;
+
+
         /// <summary>
         /// Initialize the Hypervisor on a process.
         /// </summary>
@@ -44,6 +49,16 @@ namespace ReFixed
             Handle = Input.Handle;
             PureAddress = (ulong)Input.MainModule.BaseAddress;
             BaseAddress = PureAddress + Offset;
+
+			foreach (ProcessModule _module in Input.Modules)
+			{
+				if (_module.ModuleName == "EOSSDK-Win64-Shipping.dll")
+				{
+					DLLModule = _module;
+					DLLAddress = (ulong)_module.BaseAddress;
+				}
+			}
+            
         }
 
         /// <summary>

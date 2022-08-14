@@ -56,7 +56,6 @@ namespace ReFixed
 					"",
 					"[Kingdom Hearts]",
 					"battleChests = true",
-					"fovEnhanced = false",
 					"",
 					"[Kingdom Hearts II]",
 					"festivityEngine = true",

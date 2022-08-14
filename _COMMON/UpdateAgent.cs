@@ -27,7 +27,7 @@ namespace ReFixed
 {
 	public class UpdateAgent
 	{
-        protected static readonly double _version = 2.90;
+        protected static readonly double _version = 3.00;
         protected static FormDL _downForm = new FormDL();
         
         public static void UpdateCheck()

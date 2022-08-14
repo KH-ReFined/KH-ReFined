@@ -152,10 +152,48 @@ namespace ReFixed
             Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
 
             var _iconByte = Hypervisor.Read<byte>(0x2506F7D);
-            
+
             if (_iconByte < 0x20 && _iconByte != 0x02)
-                for (int i = 0; i < 5; i++)
-                    WriteByte(0x2506F7D + 0x18 * i, 0x02);
+                for (ulong i = 0; i < 5; i++)
+                    Hypervisor.Write<byte>(0x2506F7D + 0x18 * i, 0x02);
+
+            EPIC_INIT:
+            var _epicPointer = Hypervisor.Read<ulong>(Hypervisor.DLLAddress + Variables.ADDR_EpicGamesID, true);
+
+            while (_epicPointer == 0x00)
+                _epicPointer = Hypervisor.Read<ulong>(Hypervisor.DLLAddress + Variables.ADDR_EpicGamesID, true);
+
+            _epicPointer = Hypervisor.Read<ulong>(_epicPointer + 0x30, true);
+            _epicPointer = Hypervisor.Read<ulong>(_epicPointer + 0x58, true);
+            _epicPointer = Hypervisor.Read<ulong>(_epicPointer, true);
+            _epicPointer = Hypervisor.Read<ulong>(_epicPointer + 0x100, true);
+            
+            var _epicAddress = Hypervisor.Read<ulong>(_epicPointer + 0x08, true) + 0x4B7;
+
+            var _epicValue = Hypervisor.ReadArray(_epicAddress, 0x20, true);
+            var _epicCheck = Hypervisor.ReadArray(_epicAddress - 0x0C, 0x0C, true);
+
+            var _checkString = Encoding.ASCII.GetString(_epicCheck);
+            var _idString = Encoding.ASCII.GetString(_epicValue);
+
+            if (_checkString != "-epicuserid=")
+                goto EPIC_INIT;
+
+            Helpers.Log("Looking for the directories that have the ID: " + _idString, 0);
+
+            var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+            if (!Directory.Exists(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _idString)))
+            {
+                Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _idString));
+                Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/" + _idString));
+
+                var _streamKH2 = File.Create(Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/" + _idString) + "/Kingdom Hearts II.png");
+                var _streamSYS = File.Create(Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/" + _idString) + "/System Data.png");
+
+                Variables.EmptySave.CopyTo(_streamKH2);
+                Variables.EmptySystem.CopyTo(_streamSYS);
+            }
 
             // Initialize the source and the token for secondary tasks.
             Variables.Source = new CancellationTokenSource();
@@ -1145,8 +1183,8 @@ namespace ReFixed
                 ITEM_READ = new List<byte[]>();
                 ABILITY_READ = new List<byte[]>();
 
-                SUMM_LVL_READ = -1;
-                SUMM_EXP_READ = -1;
+                SUMM_LVL_READ = 0xFF;
+                SUMM_EXP_READ = 0XFF;
 
                 RETRY_MODE = 0;
                 RETRY_LOCK = false;
@@ -1173,7 +1211,7 @@ namespace ReFixed
                 INVENTORY_READ = Hypervisor.ReadArray(Variables.ADDR_Inventory, 0x140);
 
                 SUMM_LVL_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonLevel);
-                SUMM_EXP_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonExp);
+                SUMM_EXP_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonEXP);
 
                 if (DRIVE_READ[2] == 0x00)
                     DRIVE_READ = null;
@@ -1199,8 +1237,8 @@ namespace ReFixed
                 ITEM_READ = new List<byte[]>();
                 ABILITY_READ = new List<byte[]>();
 
-                SUMM_LVL_READ = -1;
-                SUMM_EXP_READ = -1;
+                SUMM_LVL_READ = 0xFF;
+                SUMM_EXP_READ = 0xFF;
             }
 
             // This code blob is responsible for switching between Retry and Continue
@@ -1336,7 +1374,7 @@ namespace ReFixed
                     Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
 
                     Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
-                    Hypervisor.Write(Variables.ADDR_SummonExp, SUMM_EXP_READ);
+                    Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
                 }
 
                 RETRY_LOCK = false;
