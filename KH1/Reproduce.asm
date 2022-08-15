@@ -21,5 +21,10 @@
 -> Rename Config File
     @ 0x3DA458 => "/config1525.dat" to "/config_kh1.dat"
 
+-> Directory Forwarding
+    @ 0x3DD160 => "\Kingdom Hearts\Configuration"
+    @ 0x4D0EF0 => "Kingdom Hearts\Save Data\KHFM.png"
+    @ 0x4D0F30 => "Kingdom Hearts\Save Data\KH1.5+2.5_system.png"
+
 -> Voice Channel Mute
     @ 0x3D4EBC => [CD CC CC 3D] to [00 00 00 00]
