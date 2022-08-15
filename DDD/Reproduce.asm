@@ -18,9 +18,9 @@
     @ 0x832750 => "/config28.dat" to "/config_ddd.se"
 
 -> Directory Forwarding
-    @ 0x5FA690 => "\Kingdom Hearts\Configuration"
-    @ 0x7110C0 => "Kingdom Hearts\Save Data\KH3DHD.png"
-    @ 0x711100 => "Kingdom Hearts\Save Data\KH2.8_system.png"
+    @ 0x8352B8 => "\Kingdom Hearts\Configuration"
+    @ 0x9B3E20 => "Kingdom Hearts\Save Data\KH3DHD.png"
+    @ 0x9B3E70 => "Kingdom Hearts\Save Data\KH2.8_system.png"
 
 -> Voice Channel Mute
     @ 0x81F53C => [CD CC CC 3D] to [00 00 00 00]
