@@ -152,12 +152,6 @@ namespace ReFixed
             
             Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
 
-            var _iconByte = Hypervisor.Read<byte>(0x2506F7D);
-
-            if (_iconByte < 0x20 && _iconByte != 0x02)
-                for (ulong i = 0; i < 5; i++)
-                    Hypervisor.Write<byte>(0x2506F7D + 0x18 * i, 0x02);
-
             var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
 
@@ -533,6 +527,14 @@ namespace ReFixed
                         DUB_FOUND = true;
                     }
                 }
+                #endregion
+            
+                #region Form Icon Correction
+                    var _iconByte = Hypervisor.Read<byte>(0x2506F7D);
+
+                    if (_iconByte < 0x20 && _iconByte != 0x02)
+                        for (ulong i = 0; i < 5; i++)
+                            Hypervisor.Write<byte>(0x2506F7D + 0x18 * i, 0x02);
                 #endregion
             }
         }
