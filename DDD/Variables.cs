@@ -59,6 +59,11 @@ namespace ReFixed
         // Everything DiscordRPC uses (except for the RPC itself) resides here.
         //
 
+        public static string[] BTLDictionary = { "safe", "mob", "boss" };
+        public static string[] WRLDictionary = { "", "di", "mt", "tt", "dc", "ft", "pn", "hb", "cc", "tr", "eh", "wm", "tt" };
+        public static string[] CHRDictionary = { "Sora", "Riku" };
+        public static string[] MDEDictionary = { "Beginner Mode", "Standard Mode", "Proud Mode", "Critical Mode" };
+
         //
         // ALTERED VARIABLES
         //
@@ -80,8 +85,11 @@ namespace ReFixed
 
         public static ulong BASE_ADDRESS = 0x770EFA;
 
+        public static ulong ADDR_Input = 0x354E16;
         public static ulong ADDR_Vibration = 0x2DCE4C;
         public static ulong ADDR_SystemBAR = 0x101D1E76;
+        public static ulong ADDR_Reset = 0x354FBE;
+        public static ulong ADDR_Limiter = 0x354FD8;
 
         //
         // INSTRUCTION ADDRESSES

@@ -24,6 +24,8 @@ namespace ReFixed
         
         static byte[] SYSBAR_HEADER;
 
+        static bool[] DEBOUNCE = new bool[] { false, false, false, false, false };
+
         /*
             Initialization:
 
@@ -82,6 +84,31 @@ namespace ReFixed
         }
 
         /*
+            ResetGame:
+
+            Triggers a soft-reset if the proper input is given.
+            The input is sought in Execute().
+
+            INPUT: L1 + R1 + START + SELECT.
+        */
+        public static void ResetGame()
+        {
+            var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+
+            if (_buttRead == 0x0C09 && !DEBOUNCE[0])
+            {
+                Helpers.Log("Initiating a Soft Reset.", 0);
+
+                Hypervisor.Write<byte>(Variables.ADDR_Reset, 0x01);
+
+                DEBOUNCE[0] = true;
+            }
+
+            else if (_buttRead != 0x0C09 && DEBOUNCE[0])
+                DEBOUNCE[0] = false;
+        }
+
+        /*
             DropToggle:
         
             Seeking the vibration option, toggles the Drop Gauge.
@@ -119,84 +146,83 @@ namespace ReFixed
             Handle the Discord Rich Presence of Re:Fixed.
             To be executed on a separate thread.
 
-            public static void DiscordEngine()
+        public static void DiscordEngine()
+        {
+            var _healthValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP);
+            var _levelValue = Hypervisor.Read<byte>(0x3237DA);
+
+            var _charValue = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
+
+            var _stringState = string.Format(
+                "Level {0} | Character: {1}",
+                _levelValue,
+                Variables.CHRDictionary.ElementAtOrDefault(_formValue)
+            );
+
+            var _stringDetail = string.Format("HP: {0}", 0, _magicValue);
+
+            var _worldID = Hypervisor.Read<byte>(0x2CBF0A);
+            var _battleFlag = Hypervisor.Read<byte>(0x323782);
+
+            var _timeValue = Math.Floor(Hypervisor.Read<int>(0x00444FA6) / 60F);
+            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
+            var _timeHours = Math.Floor(_timeValue / 3600F);
+
+            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+            var _diffValue = Hypervisor.Read<byte>(0x2CBF08);
+
+            var _rpcButtons = new DiscordRPC.Button[]
             {
-                var _healthValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP);
-                var _magicValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP + 0x180);
-
-                var _levelValue = Hypervisor.Read<byte>(0x3237DA);
-                var _formValue = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
-
-                var _stringState = string.Format(
-                    "Level {0} | Character: {1}",
-                    _levelValue,
-                    Variables.CHRDictionary.ElementAtOrDefault(_formValue)
-                );
-
-                var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue);
-
-                var _worldID = Hypervisor.Read<byte>(0x2CBF0A);
-                var _battleFlag = Hypervisor.Read<byte>(0x323782);
-
-                var _timeValue = Math.Floor(Hypervisor.Read<int>(0x00444FA6) / 60F);
-                var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
-                var _timeHours = Math.Floor(_timeValue / 3600F);
-
-                var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
-                var _diffValue = Hypervisor.Read<byte>(Variables.ADDR_Difficulty);
-
-                var _rpcButtons = new DiscordRPC.Button[]
+                new DiscordRPC.Button
                 {
-                    new DiscordRPC.Button
-                    {
-                        Label = "== Powered by Re:Fixed ==",
-                        Url = "https://github.com/TopazTK/KH-ReFixed"
-                    },
+                    Label = "== Powered by Re:Fixed ==",
+                    Url = "https://github.com/TopazTK/KH-ReFixed"
+                },
 
-                    new DiscordRPC.Button
+                new DiscordRPC.Button
+                {
+                    Label = "== Icons by Televo ==",
+                    Url = "https://github.com/Televo/kingdom-hearts-recollection"
+                }
+            };
+
+            if (!CheckTitle())
+            {
+                Variables.DiscordClient.SetPresence(
+                    new RichPresence
                     {
-                        Label = "== Icons by Televo ==",
-                        Url = "https://github.com/Televo/kingdom-hearts-recollection"
+                        Details = _stringDetail,
+                        State = _stringState,
+                        Assets = new Assets
+                        {
+                            LargeImageKey = Variables.WRLDictionary.ElementAtOrDefault(_worldID),
+                            LargeImageText = _timeText,
+                            SmallImageKey = Variables.BTLDictionary.ElementAtOrDefault(_battleFlag),
+                            SmallImageText = Variables.MDEDictionary.ElementAtOrDefault(_diffValue)
+                        },
+                        Buttons = _rpcButtons
                     }
-                };
-
-                if (!CheckTitle())
-                {
-                    Variables.DiscordClient.SetPresence(
-                        new RichPresence
-                        {
-                            Details = _stringDetail,
-                            State = _stringState,
-                            Assets = new Assets
-                            {
-                                LargeImageKey = Variables.WRLDictionary.ElementAtOrDefault(_worldID),
-                                LargeImageText = _timeText,
-                                SmallImageKey = Variables.BTLDictionary.ElementAtOrDefault(_battleFlag),
-                                SmallImageText = Variables.MDEDictionary.ElementAtOrDefault(_diffValue)
-                            },
-                            Buttons = _rpcButtons
-                        }
-                    );
-                }
-
-                else
-                {
-                    Variables.DiscordClient.SetPresence(
-                        new RichPresence
-                        {
-                            Details = "On the Title Screen",
-                            State = null,
-                            Assets = new Assets
-                            {
-                                LargeImageKey = "title",
-                                SmallImageKey = null,
-                                SmallImageText = null
-                            },
-                            Buttons = _rpcButtons
-                        }
-                    );
-                }
+                );
             }
+
+            else
+            {
+                Variables.DiscordClient.SetPresence(
+                    new RichPresence
+                    {
+                        Details = "On the Title Screen",
+                        State = null,
+                        Assets = new Assets
+                        {
+                            LargeImageKey = "title",
+                            SmallImageKey = null,
+                            SmallImageText = null
+                        },
+                        Buttons = _rpcButtons
+                    }
+                );
+            }
+        }
         */
 
         /*
@@ -209,6 +235,8 @@ namespace ReFixed
             #region High Priority
             if (!Variables.Initialized)
                 Initialization();
+
+            ResetGame();
             #endregion
 
             #region Mid Priority
