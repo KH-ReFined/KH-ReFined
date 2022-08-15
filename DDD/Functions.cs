@@ -140,6 +140,46 @@ namespace ReFixed
             }
         }
 
+                /*
+            FrameOverride:
+
+            Overwrites the frame limiter, and the instruction forcing it, according
+            to the framerate chosen by the player.
+
+            So, the same sort of shit as KH2 and BBS?
+            Exactly!
+        */
+        public static void FrameOverride()
+        {
+            var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+            // Calculate the instruction address.
+            var _instructionAddress = Hypervisor.PureAddress + Variables.ADDR_LimiterINST;
+
+            // Fetch the framerate, and the first byte of the instruction.
+            var _framerateRead = Hypervisor.Read<byte>(Variables.ADDR_Framerate);
+            var _instructionRead = Hypervisor.Read<byte>(_instructionAddress, true);
+
+            // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
+            if (_framerateRead == 0x00 && _instructionRead == 0x90)
+            {
+                Helpers.Log("30FPS Detected! Restoring the Framelimiter.", 0);
+                Hypervisor.WriteArray(_instructionAddress, Variables.INST_FrameLimiter, true);
+            }
+
+            // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
+            else if (_framerateRead != 0x00 && _instructionRead != 0x90)
+            {
+                Helpers.Log("60FPS Detected! Destroying the Framelimiter.", 0);
+
+                // NOP the instruction.
+                Hypervisor.WriteArray(_instructionAddress, _nullArray, true);
+
+                // Set the current limiter to be off.
+                Hypervisor.Write<byte>(Variables.ADDR_Limiter, 0x01);
+            }
+        }
+
         /*
             DiscordEngine:
 
@@ -224,6 +264,7 @@ namespace ReFixed
             }
         }
         */
+        
 
         /*
             Execute:
@@ -236,6 +277,7 @@ namespace ReFixed
             if (!Variables.Initialized)
                 Initialization();
 
+            FrameOverride();
             ResetGame();
             #endregion
 

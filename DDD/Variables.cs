@@ -90,6 +90,7 @@ namespace ReFixed
         public static ulong ADDR_SystemBAR = 0x101D1E76;
         public static ulong ADDR_Reset = 0x354FBE;
         public static ulong ADDR_Limiter = 0x354FD8;
+        public static ulong ADDR_Framerate = 0x146573E0;
 
         //
         // INSTRUCTION ADDRESSES
@@ -100,6 +101,7 @@ namespace ReFixed
         public static ulong ADDR_TimeINST = 0x2DD410;
         public static ulong ADDR_DrawINST = 0x2DD51B;
         public static ulong ADDR_PromptINST = 0x6CC010;
+        public static ulong ADDR_LimiterINST = 0x60DB93;
 
         //
         // INSTRUCTIONS
