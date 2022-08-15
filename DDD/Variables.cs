@@ -32,6 +32,10 @@ namespace ReFixed
         public static bool rpcToggle = true;
         public static bool saveToggle = true;
 
+        public static bool attackToggle = false;
+        public static bool autoController = false;
+        public static bool contToggle = false;
+
         public static bool devMode = false;
 
         //
@@ -92,6 +96,9 @@ namespace ReFixed
         public static ulong ADDR_Limiter = 0x354FD8;
         public static ulong ADDR_Framerate = 0x146573E0;
 
+        public static ulong ADDR_MasterVolume = 0x146573EA;
+        public static ulong ADDR_VolumeTable = 0xB0842;
+
         //
         // INSTRUCTION ADDRESSES
         //
@@ -110,5 +117,6 @@ namespace ReFixed
         //
 
         public static byte[] INST_DropTimer = { 0xF3, 0x0F, 0x5C, 0xC8 };
+        public static byte[] INST_FrameLimiter = { 0x88, 0x15, 0x39, 0x83, 0x4B, 0x00 };
     }
 }
