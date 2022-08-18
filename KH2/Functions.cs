@@ -611,7 +611,7 @@ namespace ReFixed
             var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
             var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
 
-            var _commandRead = Hypervisor.Read<byte>(0x24A986E);
+            var _commandRead = Hypervisor.Read<byte>(0x2030B96);
             var _dialogRead = Hypervisor.Read<byte>(0x24AF4C2);
 
             var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
