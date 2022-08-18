@@ -72,6 +72,7 @@ namespace ReFixed
 
         static int RETRY_MODE = 0x00;
         static bool RETRY_LOCK;
+        static bool RETRY_BLACKLIST;
 
         static short[] LIMIT_SHORT;
         
@@ -1128,6 +1129,9 @@ namespace ReFixed
             var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
             var _warpRead = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
+            var _roomRead = Hypervisor.Read<ushort>(Variables.ADDR_World + 0x01);
+            var _worldRead = Hypervisor.Read<ushort>(Variables.ADDR_World);
+
             var _continueID = Strings.ContinueID;
             var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
 
@@ -1171,7 +1175,6 @@ namespace ReFixed
             }
 
             // If one's on the Title Screen while Retry is active: Deactivate it.
-
             if (CheckTitle() && (RETRY_LOCK || RETRY_MODE == 0x01))
             {
                 Helpers.Log("Title Screen detected on Retry Mode! Restoring functions...", 0);
@@ -1200,195 +1203,215 @@ namespace ReFixed
                 RETRY_LOCK = false;
             }
 
-            if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && !CheckTitle())
+            // Cavern of Remembrance Blacklist.
+            var _cavernCheck = _worldRead == 0x04 && (_roomRead >= 0x15 && _roomRead <= 0x1A);
+
+            if (!_cavernCheck)
             {
-                ITEM_READ = new List<byte[]>();
-                ABILITY_READ = new List<byte[]>();
-                
-                for (int i = 0; i < 4; i++)
-                    ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
-
-                for (int i = 0; i < 4; i++)
-                    ABILITY_READ.Add(Hypervisor.ReadArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), 0xC0));
-
-                EXP_READ = Hypervisor.Read<int>(Variables.ADDR_EXPStart);
-                FORM_READ = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
-
-                DRIVE_READ = Hypervisor.ReadArray(Variables.ADDR_DriveStart, 0x0C);
-                PARTY_READ = Hypervisor.ReadArray(Variables.ADDR_PartyStart, 0x08);
-                CHEST_READ = Hypervisor.ReadArray(Variables.ADDR_ChestStart, 0x33);
-
-                FORM_STAT_READ = Hypervisor.ReadArray(Variables.ADDR_FormStart, 0x38 * 0x0A);
-                INVENTORY_READ = Hypervisor.ReadArray(Variables.ADDR_Inventory, 0x140);
-
-                SUMM_LVL_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonLevel);
-                SUMM_EXP_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonEXP);
-
-                if (DRIVE_READ[2] == 0x00)
-                    DRIVE_READ = null;
-
-                else
-                    Helpers.Log(String.Format("Start of forced fight, reading necessary values into memory..."), 0);
-            }
-
-            else if ((_bttlByte != 0x02 || _cutsByte != 0x00) && _pausRead == 0x00 && DRIVE_READ != null)
-            {
-                Helpers.Log(String.Format("The player is out of battle. Flushing memory..."), 0);
-
-                EXP_READ = -1;
-                FORM_READ = 0;
-
-                DRIVE_READ = null;
-                CHEST_READ = null;
-                PARTY_READ = null;
-
-                FORM_STAT_READ = null;
-                INVENTORY_READ = null;
-
-                ITEM_READ = new List<byte[]>();
-                ABILITY_READ = new List<byte[]>();
-
-                SUMM_LVL_READ = 0xFF;
-                SUMM_EXP_READ = 0xFF;
-            }
-
-            // This code blob is responsible for switching between Retry and Continue
-            // and only runs if Sora is dead and some sort of a menu is present.
-            if (_menuPoint != 0x00 && _bttlByte == 0x02)
-            {
-                if (_menuRead == 0x01 && _warpRead == 0x90 && RETRY_MODE == 0x01)
+                // Read the necessary shits at the start of a fight.
+                if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && !CheckTitle())
                 {
-                    Helpers.Log("User is going to load the game! Restoring functions...", 0);
+                    ITEM_READ = new List<byte[]>();
+                    ABILITY_READ = new List<byte[]>();
+                    
+                    for (int i = 0; i < 4; i++)
+                        ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
 
+                    for (int i = 0; i < 4; i++)
+                        ABILITY_READ.Add(Hypervisor.ReadArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), 0xC0));
+
+                    EXP_READ = Hypervisor.Read<int>(Variables.ADDR_EXPStart);
+                    FORM_READ = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
+
+                    DRIVE_READ = Hypervisor.ReadArray(Variables.ADDR_DriveStart, 0x0C);
+                    PARTY_READ = Hypervisor.ReadArray(Variables.ADDR_PartyStart, 0x08);
+                    CHEST_READ = Hypervisor.ReadArray(Variables.ADDR_ChestStart, 0x33);
+
+                    FORM_STAT_READ = Hypervisor.ReadArray(Variables.ADDR_FormStart, 0x38 * 0x0A);
+                    INVENTORY_READ = Hypervisor.ReadArray(Variables.ADDR_Inventory, 0x140);
+
+                    SUMM_LVL_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonLevel);
+                    SUMM_EXP_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonEXP);
+
+                    if (DRIVE_READ[2] == 0x00)
+                        DRIVE_READ = null;
+
+                    else
+                        Helpers.Log(String.Format("Start of forced fight, reading necessary values into memory..."), 0);
+                }
+
+                // Flush the memory post-fight.
+                else if ((_bttlByte != 0x02 || _cutsByte != 0x00) && _pausRead == 0x00 && DRIVE_READ != null)
+                {
+                    Helpers.Log(String.Format("The player is out of battle. Flushing memory..."), 0);
+
+                    EXP_READ = -1;
+                    FORM_READ = 0;
+
+                    DRIVE_READ = null;
+                    CHEST_READ = null;
+                    PARTY_READ = null;
+
+                    FORM_STAT_READ = null;
+                    INVENTORY_READ = null;
+
+                    ITEM_READ = new List<byte[]>();
+                    ABILITY_READ = new List<byte[]>();
+
+                    SUMM_LVL_READ = 0xFF;
+                    SUMM_EXP_READ = 0xFF;
+                }
+
+                // This code blob is responsible for switching between Retry and Continue
+                // and only runs if Sora is dead and some sort of a menu is present.
+                if (_menuPoint != 0x00 && _bttlByte == 0x02)
+                {
+                    if (_menuRead == 0x01 && _warpRead == 0x90 && RETRY_MODE == 0x01)
+                    {
+                        Helpers.Log("User is going to load the game! Restoring functions...", 0);
+
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
+
+                        RETRY_LOCK = true;
+                    }
+
+                    else if (_menuRead == 0x00 && _optionRead == 0x02 && _warpRead != 0x90 && RETRY_MODE == 0x01)
+                    {
+                        Helpers.Log("User defected from loading! Destroying functions...", 0);
+
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
+
+                        RETRY_LOCK = true;
+                    }
+
+                    // If D-Pad sides are pressed;
+                    if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00 && RETRY_MODE != 0x03)
+                    {
+                        // Play the sound so that it seems **authentic**.
+                        Helpers.PlaySFX(Variables.SwitchSFXPath);
+
+                        Helpers.Log(String.Format("Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"), 0);
+
+                        // Retry Mode Switch!
+                        RETRY_MODE = RETRY_MODE == 0x00 ? 0x01 : 0x00;
+
+                        // This handles the "Continue" mode and restores the function to do room switching.
+                        if (RETRY_MODE == 0x00 && _warpRead == 0x90)
+                        {
+                            Helpers.Log("Switched to Continue mode! Restoring functions...", 0);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
+                        }
+
+                        // This handles the "Retry" mode and destroys the function to do room switching.
+                        else if (RETRY_MODE == 0x01 && _warpRead != 0x90)
+                        {
+                            Helpers.Log("Switched to Retry mode! Destroying functions....", 0);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
+                        }
+
+                        RETRY_LOCK = true;
+                        DEBOUNCE[2] = true;
+                    }
+
+                    // Debouncing.
+                    else if (((_buttRead & 0x2000) != 0x2000 && (_buttRead & 0x8000) != 0x8000) && DEBOUNCE[2])
+                        DEBOUNCE[2] = false;
+                }
+
+                var _menuCheck = Hypervisor.Read<ushort>(Variables.ADDR_MenuCount + 0x02);
+
+                // If in a forced battle, and it is not finished, and Sora is dead, and it's in the Continue mode, and if Retry Locking ain't active;
+                if (_bttlByte == 0x02 && _menuPoint != 0x00 && _cutsByte == 0x00 && !RETRY_LOCK)
+                {
+                    while (_menuCheck == 0xEFAC || _menuCheck == 0xCAFE)
+                    _menuCheck = Hypervisor.Read<ushort>(Variables.ADDR_MenuCount + 0x02);
+
+                    if (_menuCheck != 0x00)
+                    {
+                        Helpers.Log("Unknown Death Screen detected! Disabling the Retry function!", 0);
+                        RETRY_MODE = 0x03;
+                    }
+
+                    else
+                    {
+                        // Retry Mode active.
+                        RETRY_MODE = 0x01;
+
+                        Helpers.Log("Death Screen detected! Destroying functions...", 0);
+
+                        // Destroy the functions responsible for switching rooms and reverting story flags.
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
+
+                        // These must be written at death instead of at retry.
+                        // Do not ask me why.
+                        Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
+                    }
+
+                    RETRY_LOCK = true;
+                }
+
+                // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
+                else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _fnshByte == 0x01 || _cutsByte != 0x00) && RETRY_LOCK)
+                {
+                    if (_fnshByte != 0x01)
+                        Helpers.Log("Death screen is not present! Restoring functions...", 0);
+
+                    else
+                        Helpers.Log("End of battle detected! Restoring functions...", 0);
+
+                    // Restore the functions responsible for switching rooms and reverting story flags.
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
-                    RETRY_LOCK = true;
-                }
-
-                else if (_menuRead == 0x00 && _optionRead == 0x02 && _warpRead != 0x90 && RETRY_MODE == 0x01)
-                {
-                    Helpers.Log("User defected from loading! Destroying functions...", 0);
-
-                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
-                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
-
-                    RETRY_LOCK = true;
-                }
-
-                // If D-Pad sides are pressed;
-                if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00 && RETRY_MODE != 0x03)
-                {
-                    // Play the sound so that it seems **authentic**.
-                    Helpers.PlaySFX(Variables.SwitchSFXPath);
-
-                    Helpers.Log(String.Format("Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"), 0);
-
-                    // Retry Mode Switch!
-                    RETRY_MODE = RETRY_MODE == 0x00 ? 0x01 : 0x00;
-
-                    // This handles the "Continue" mode and restores the function to do room switching.
-                    if (RETRY_MODE == 0x00 && _warpRead == 0x90)
+                    if (RETRY_MODE == 0x01 && _cutsByte == 0x00 && _fnshByte != 0x01 && DRIVE_READ != null)
                     {
-                        Helpers.Log("Switched to Continue mode! Restoring functions...", 0);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
+                        while (_pausRead == 0x01)
+                            _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
+
+                        for (int i = 0; i < 4; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
+
+                        for (int i = 0; i < 4; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
+
+                        Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
+
+                        Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
+
+                        Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
+
+                        Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
+                        Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
                     }
 
-                    // This handles the "Retry" mode and destroys the function to do room switching.
-                    else if (RETRY_MODE == 0x01 && _warpRead != 0x90)
-                    {
-                        Helpers.Log("Switched to Retry mode! Destroying functions....", 0);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
-                    }
-
-                    RETRY_LOCK = true;
-                    DEBOUNCE[2] = true;
+                    RETRY_LOCK = false;
                 }
 
-                // Debouncing.
-                else if (((_buttRead & 0x2000) != 0x2000 && (_buttRead & 0x8000) != 0x8000) && DEBOUNCE[2])
-                    DEBOUNCE[2] = false;
+                if (RETRY_BLACKLIST)
+                {
+                    Helpers.Log(String.Format("Out of the Cavern of Remembrance... Unlocking Retry Capabilities..."), 0);
+                    RETRY_BLACKLIST = false;
+                }
             }
 
-            var _menuCheck = Hypervisor.Read<ushort>(Variables.ADDR_MenuCount + 0x02);
-
-            // If in a forced battle, and it is not finished, and Sora is dead, and it's in the Continue mode, and if Retry Locking ain't active;
-            if (_bttlByte == 0x02 && _menuPoint != 0x00 && _cutsByte == 0x00 && !RETRY_LOCK)
+            else if (!RETRY_BLACKLIST)
             {
-                while (_menuCheck == 0xEFAC || _menuCheck == 0xCAFE)
-                   _menuCheck = Hypervisor.Read<ushort>(Variables.ADDR_MenuCount + 0x02);
-
-                if (_menuCheck != 0x00)
-                {
-                    Helpers.Log("Unknown Death Screen detected! Disabling the Retry function!", 0);
-                    RETRY_MODE = 0x03;
-                }
-
-                else
-                {
-                    // Retry Mode active.
-                    RETRY_MODE = 0x01;
-
-                    Helpers.Log("Death Screen detected! Destroying functions...", 0);
-
-                    // Destroy the functions responsible for switching rooms and reverting story flags.
-                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
-                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-                    Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
-
-                    // These must be written at death instead of at retry.
-                    // Do not ask me why.
-                    Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
-                    Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
-                }
-
-                RETRY_LOCK = true;
-            }
-
-            // If in a cutscene, or if not in a forced battle, or the forced battle is finished, and Sora is not dead, and Retry mode is active;
-            else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _fnshByte == 0x01 || _cutsByte != 0x00) && RETRY_LOCK)
-            {
-                if (_fnshByte != 0x01)
-                    Helpers.Log("Death screen is not present! Restoring functions...", 0);
-
-                else
-                    Helpers.Log("End of battle detected! Restoring functions...", 0);
-
-                // Restore the functions responsible for switching rooms and reverting story flags.
-                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
-                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
-                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
-
-                if (RETRY_MODE == 0x01 && _cutsByte == 0x00 && _fnshByte != 0x01 && DRIVE_READ != null)
-                {
-                    while (_pausRead == 0x01)
-                        _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
-
-                    for (int i = 0; i < 4; i++)
-                        Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
-
-                    for (int i = 0; i < 4; i++)
-                        Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
-
-                    Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
-
-                    Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
-                    Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
-
-                    Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
-                    Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
-
-                    Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
-                    Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
-                }
-
-                RETRY_LOCK = false;
+                Helpers.Log(String.Format("Cavern of Remembrance detected! Locking Retry Capabilities..."), 0);
+                    RETRY_BLACKLIST = true;
             }
 
             // If the retry text offset is set, write the text necessary according to the mode.
