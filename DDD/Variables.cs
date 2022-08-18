@@ -23,6 +23,14 @@ namespace ReFixed
     public class Variables
     {
         //
+        // COMPILER OPTIONS!
+        // 
+        // - DualAudio => If set to "true", will cause the Dual Audio feature to activate.
+        //
+
+        public const bool DualAudio = false;
+
+        //
         // CONFIG VARIABLES
         //
         // Variables that will be read from a config file to tell Re:Fixed what to do.
@@ -98,6 +106,8 @@ namespace ReFixed
 
         public static ulong ADDR_MasterVolume = 0x146573EA;
         public static ulong ADDR_VolumeTable = 0xB0842;
+
+        public static ulong ADDR_VoicePath = 0x76F86;
 
         //
         // INSTRUCTION ADDRESSES
