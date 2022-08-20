@@ -113,9 +113,8 @@ namespace ReFixed
                     Hypervisor.WriteString(Variables.ADDR_SystemBAR + _offOffset, _fetchDA[2], false, true);
 
                     Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onDescOffset, _fetchDA[3], false, true);
-                    Hypervisor.WriteArray(Variables.ADDR_SystemBAR + _onDescOffset + _fetchDA[3].Length * 0x02, new byte[] {0x26, 0xE0});
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onDescOffset + _fetchDA[3].Length * 0x2 + 0x02, _fetchDA[4], false, true);
-
+                    Hypervisor.WriteArray(Variables.ADDR_SystemBAR + (ulong)(_onDescOffset + _fetchDA[3].Length * 0x02), new byte[] {0x26, 0xE0});
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + (ulong)(_onDescOffset + _fetchDA[3].Length * 0x2 + 0x02), _fetchDA[4], false, true);
                 }
             }
         }
