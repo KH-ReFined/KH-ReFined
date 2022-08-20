@@ -96,25 +96,28 @@ namespace ReFixed
                 var _onDescOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _subtitleOnDesc);
                 var _offDescOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _subtitleOffDesc);
 
-                var _fetchDA = Strings.DualAudio[LANGUAGE];
-                var _jpOffset = Strings.JPOffset[LANGUAGE];
-
-                if (_onDescOffset != _offDescOffset)
+                if (Variables.DualAudio)
                 {
-                    Hypervisor.Write<ushort>(Variables.ADDR_SystemBAR + _subtitleOff, (ushort)(_offOffset + _jpOffset));
-                    _offOffset += _jpOffset;
+                    var _fetchDA = Strings.DualAudio[LANGUAGE];
+                    var _jpOffset = Strings.JPOffset[LANGUAGE];
 
-                    Hypervisor.Write(Variables.ADDR_SystemBAR + _subtitleOffDesc, _onDescOffset);
+                    if (_onDescOffset != _offDescOffset)
+                    {
+                        Hypervisor.Write<ushort>(Variables.ADDR_SystemBAR + _subtitleOff, (ushort)(_offOffset + _jpOffset));
+                        _offOffset += _jpOffset;
 
-                    _offDescOffset = _onDescOffset;
+                        Hypervisor.Write(Variables.ADDR_SystemBAR + _subtitleOffDesc, _onDescOffset);
 
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _txtOffset, _fetchDA[0], false, true);
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onOffset, _fetchDA[1], false, true);
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _offOffset, _fetchDA[2], false, true);
+                        _offDescOffset = _onDescOffset;
 
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onDescOffset, _fetchDA[3], false, true);
-                    Hypervisor.WriteArray(Variables.ADDR_SystemBAR + (ulong)(_onDescOffset + _fetchDA[3].Length * 0x02), new byte[] {0x26, 0xE0});
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + (ulong)(_onDescOffset + _fetchDA[3].Length * 0x2 + 0x02), _fetchDA[4], false, true);
+                        Hypervisor.WriteString(Variables.ADDR_SystemBAR + _txtOffset, _fetchDA[0], false, true);
+                        Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onOffset, _fetchDA[1], false, true);
+                        Hypervisor.WriteString(Variables.ADDR_SystemBAR + _offOffset, _fetchDA[2], false, true);
+
+                        Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onDescOffset, _fetchDA[3], false, true);
+                        Hypervisor.WriteArray(Variables.ADDR_SystemBAR + (ulong)(_onDescOffset + _fetchDA[3].Length * 0x02), new byte[] {0x26, 0xE0});
+                        Hypervisor.WriteString(Variables.ADDR_SystemBAR + (ulong)(_onDescOffset + _fetchDA[3].Length * 0x2 + 0x02), _fetchDA[4], false, true);
+                    }
                 }
             }
         }
@@ -245,22 +248,202 @@ namespace ReFixed
         }
 
         /*
+            GenerateSave:
+
+            Only to be triggered by AutosaveEngine(), generate and write a save to
+            both RAM and ROM portions, effectively saving the game.
+        */
+        public static void GenerateSave()
+        {
+            // Prepare the pointers.
+            var _pointerBase = Hypervisor.Read<ulong>(Variables.PINT_SaveInformation);
+            var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
+
+            // Prepare the strings.
+            var _saveName = "CTR-P-AKH28-98";
+            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KH3DHD.png";
+
+            // Calculate the Unix Date.
+            var _currDate = DateTime.Now;
+            var _unix = new DateTime(1970, 1, 1);
+            var _writeDate = Convert.ToUInt64((_currDate - _unix).TotalSeconds);
+
+            // Prepare the variables for Save Info.
+            var _saveSlot = 0;
+            var _saveInfoLength = 0x158;
+            var _saveDataLength = 0x16600;
+
+            var _saveInfoStartRAM = _pointerSecond + 0x168;
+            var _saveDataStartRAM = _pointerSecond + 0x8670;
+
+            var _saveInfoStartFILE = 0x1C8;
+            var _saveDataStartFILE = 0x86D0;
+
+            // Read the save from RAM.
+            var _saveData = Hypervisor.ReadArray(Variables.ADDR_TrueData, _saveDataLength - 0x90);
+
+            // Read the save slot.
+            var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+
+            // If the file does not bear a save; terminate the operation.
+            if (!Encoding.Default.GetString(_saveSlotRAM).Contains("AKH28"))
+            {
+                Helpers.Log("File does not bare a save! Autosave aborted to stop corruption!", 1);
+                return;
+            }
+
+            // Seek out the physical slot of the save to make.
+            while (_saveSlotRAM[0] != 0x00 && !Encoding.ASCII.GetString(_saveSlotRAM).Contains("AKH28-98"))
+            {
+                _saveSlot++;
+                _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+            }
+
+            #region RAM Save
+            // Fetch the address for the save info.
+            var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
+            var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
+
+            // Write out the save information.
+            Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
+
+            // Write the date in which the save was made.
+            Hypervisor.Write(_saveInfoAddrRAM + 0x40, _writeDate, true);
+            Hypervisor.Write(_saveInfoAddrRAM + 0x48, _writeDate, true);
+
+            // Write the length of the save.
+            Hypervisor.Write(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
+
+            // Read the header.
+            var _saveHeader = Hypervisor.ReadArray(ADDR_SaveData, 0x90);
+
+            // Write the header.
+            Hypervisor.WriteArray(_saveDataAddrRAM, _saveHeader, true);
+
+            // Overwrite descriptor values.
+            var _timeRead = Hypervisor.Read<int>(0x326CC6);
+
+            Hypervisor.Write<uint>(_saveDataAddrRAM + 0x10, _timeRead, true);
+
+            // Write the save.
+            Hypervisor.WriteArray(_saveDataAddrRAM + 0x90, _saveData, true);
+            #endregion
+
+            #region File Save
+
+            // Fetch the address for the save info.
+            var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
+            var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
+
+            // Create the writer.
+            using (var _stream = new FileStream(_savePath, FileMode.Open))
+            using (var _write = new BinaryWriter(_stream))
+            {
+                // Write out the save information.
+                _stream.Position = _saveInfoAddr;
+                _write.Write(Encoding.ASCII.GetBytes(_saveName));
+
+                // The date in which the save was made.
+                _stream.Position = _saveInfoAddr + 0x40;
+                _write.Write(_writeDate);
+                _stream.Position = _saveInfoAddr + 0x48;
+                _write.Write(_writeDate);
+
+                // The length of the save.
+                _stream.Position = _saveInfoAddr + 0x50;
+                _write.Write(_saveDataLength);
+
+                // Write the header.
+                _stream.Position = _saveDataAddr;
+                _write.Write(_saveHeader);
+
+                // Overwrite the descriptor values.
+                _stream.Position = _saveDataAddr + 0x10;
+                _write.Write(_timeRead);
+
+                // Write, the save.
+                _stream.Position = _saveDataAddr + 0x90;
+                _write.Write(_saveData);
+            }
+            #endregion
+
+            // Play a sound, dictating that the save was a success!
+            if (Variables.sfxToggle)
+                Helpers.PlaySFX(Variables.SaveSFXPath);
+        }
+
+        /*
+            AutosaveEngine:
+
+            As the name suggests, handle the logic behind Autosave functionality.
+        */
+        public static void AutosaveEngine()
+        {
+            var _toggleCheck = Hypervisor.Read<ushort>(Variables.ADDR_Config) & 0x01;
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+
+            var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
+            var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
+
+            if (!CheckTitle() && _loadRead == 0x01)
+            {
+                Thread.Sleep(100);
+
+                var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+                var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
+
+                _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+
+                var _saveConfig = Variables.DualAudio && Variables.saveToggle;
+                var _saveableBool = (_saveConfig ? _saveConfig : _toggleCheck == 0x01) && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _worldCheck >= 0x03;
+
+                if (_saveableBool)
+                {
+                    if (SAVE_WORLD != _worldCheck)
+                    {
+                        Helpers.Log("World condition met! Writing Autosave...", 0);
+
+                        GenerateSave();
+                        SAVE_ITERATOR = 0;
+                    }
+
+                    else if (SAVE_ROOM != _roomCheck)
+                    {
+                        SAVE_ITERATOR++;
+
+                        if (SAVE_ITERATOR == 3)
+                        {
+                            Helpers.Log("Room condition met! Writing Autosave...", 0);
+
+                            GenerateSave();
+                            SAVE_ITERATOR = 0;
+                        }
+                    }
+
+                    SAVE_WORLD = _worldCheck;
+                    SAVE_ROOM = _roomCheck;
+                }
+            }
+        }
+
+        /*
             DiscordEngine:
 
             Handle the Discord Rich Presence of Re:Fixed.
             To be executed on a separate thread.
-
+        */
         public static void DiscordEngine()
         {
-            var _healthValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP);
             var _levelValue = Hypervisor.Read<byte>(0x3237DA);
+            var _charValue = Hypervisor.Read<byte>(0x2CBF06);
 
-            var _charValue = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
+            var _charPoint = Hypervisor.Read<ulong>(Variables.PINT_CharHealth);
+            var _healthValue = Hypervisor.Read<byte>(_charPoint + 0x71C, true);
 
             var _stringState = string.Format(
                 "Level {0} | Character: {1}",
                 _levelValue,
-                Variables.CHRDictionary.ElementAtOrDefault(_formValue)
+                _charValue & 1 == 1 ? "Riku" : "Sora"
             );
 
             var _stringDetail = string.Format("HP: {0}", 0, _magicValue);
@@ -268,7 +451,7 @@ namespace ReFixed
             var _worldID = Hypervisor.Read<byte>(0x2CBF0A);
             var _battleFlag = Hypervisor.Read<byte>(0x323782);
 
-            var _timeValue = Math.Floor(Hypervisor.Read<int>(0x00444FA6) / 60F);
+            var _timeValue = Hypervisor.Read<int>(0x326CC6);
             var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
             var _timeHours = Math.Floor(_timeValue / 3600F);
 
@@ -337,23 +520,65 @@ namespace ReFixed
         */
         public static void Execute()
         {
-            #region High Priority
-            if (!Variables.Initialized)
-                Initialization();
+            try
+            {
+                #region High Priority
+                if (!Variables.Initialized)
+                    Initialization();
 
-            FrameOverride();
-            ResetGame();
-            #endregion
+                FrameOverride();
+                ResetGame();
+                #endregion
 
-            #region Mid Priority
-            TextAdjust();
-            AudioSwap();
-            DropToggle();
-            #endregion
+                #region Mid Priority
+                TextAdjust();
+                AudioSwap();
+                DropToggle();
+                #endregion
+            
+                #region Tasks
+                if (Variables.ASTask == null)
+                {
+                    Variables.ASTask = Task.Factory.StartNew(
 
-            #region Tasks
+                        delegate ()
+                        {
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                AutosaveEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
 
-            #endregion
+                        Variables.Token
+                    );
+                }
+
+                if (Variables.DCTask == null && Variables.rpcToggle)
+                {
+                    Variables.DCTask = Task.Factory.StartNew(
+
+                        delegate ()
+                        {
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                DiscordEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
+
+                        Variables.Token
+                    );
+                }
+                #endregion
+            }
+            
+            catch (Exception _caughtEx)
+            {
+                Helpers.LogException(_caughtEx);
+                Helpers.Log("Re:Fixed terminated with an exception!", 1);
+                Environment.Exit(-1);
+            }
         }
     }
 }
