@@ -41,6 +41,8 @@ namespace ReFixed
             Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_TimeINST, true);
             Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_DrawINST, true);
 
+            Hypervisor.UnlockBlock(Variables.ADDR_VoicePath);
+
             Variables.Initialized = true;
 
             Helpers.Log("Re:Fixed initialized with no errors!", 0);
@@ -69,7 +71,7 @@ namespace ReFixed
                 var _onOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _vibrationOnDesc);
                 var _offOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _vibrationOffDesc);
 
-                var _fetchText = Strings.DropString[LANGUAGE];
+                var _fetchDrop = Strings.DropString[LANGUAGE];
 
                 if (_offOffset != _onOffset)
                 {
@@ -77,8 +79,43 @@ namespace ReFixed
 
                     _offOffset = _onOffset;
 
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _txtOffset, _fetchText[0], false, true);
-                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onOffset, _fetchText[1], false, true);
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _txtOffset, _fetchDrop[0], false, true);
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onOffset, _fetchDrop[1], false, true);
+                }
+
+                var _subtitleText = SYSBAR_HEADER.FindValue<uint>(0x000903A0) - 0x02;
+                var _subtitleOn = SYSBAR_HEADER.FindValue<uint>(0x1C010430) - 0x02;
+                var _subtitleOff = SYSBAR_HEADER.FindValue<uint>(0x1D000430) - 0x02;
+                var _subtitleOnDesc = SYSBAR_HEADER.FindValue<uint>(0x300104F0) - 0x02;
+                var _subtitleOffDesc = SYSBAR_HEADER.FindValue<uint>(0x310004F0) - 0x02;
+
+                _txtOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _subtitleText);
+                _onOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _subtitleOn);
+                _offOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _subtitleOff);
+
+                var _onDescOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _subtitleOnDesc);
+                var _offDescOffset = Hypervisor.Read<ushort>(Variables.ADDR_SystemBAR + _subtitleOffDesc);
+
+                var _fetchDA = Strings.DualAudio[LANGUAGE];
+                var _jpOffset = Strings.JPOffset[LANGUAGE];
+
+                if (_onDescOffset != _offDescOffset)
+                {
+                    Hypervisor.Write<ushort>(Variables.ADDR_SystemBAR + _subtitleOff, (ushort)(_offOffset + _jpOffset));
+                    _offOffset += _jpOffset;
+
+                    Hypervisor.Write(Variables.ADDR_SystemBAR + _subtitleOffDesc, _onDescOffset);
+
+                    _offDescOffset = _onDescOffset;
+
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _txtOffset, _fetchDA[0], false, true);
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onOffset, _fetchDA[1], false, true);
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _offOffset, _fetchDA[2], false, true);
+
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onDescOffset, _fetchDA[3], false, true);
+                    Hypervisor.WriteArray(Variables.ADDR_SystemBAR + _onDescOffset + _fetchDA[3].Length * 0x02, new byte[] {0x26, 0xE0});
+                    Hypervisor.WriteString(Variables.ADDR_SystemBAR + _onDescOffset + _fetchDA[3].Length * 0x2 + 0x02, _fetchDA[4], false, true);
+
                 }
             }
         }
@@ -140,7 +177,35 @@ namespace ReFixed
             }
         }
 
-                /*
+        /*
+            AudioSwap:
+        */
+        public static void AudioSwap()
+        {
+            var _toggleRead = Hypervisor.Read<byte>(Variables.ADDR_Subtitles);
+            var _audioRead = Hypervisor.Read<byte>(Variables.ADDR_VoicePath);
+
+            switch (_toggleRead)
+            {
+                case 0x01:
+                    if (_audioRead == 0x65)
+                    {
+                        Helpers.Log("Dual Audio switching to Japanese", 0);
+                        Hypervisor.WriteArray(Variables.ADDR_VoicePath, new byte[] { 0x6A, 0x70 });
+                    }
+                break;
+                
+                case 0x00:
+                    if (_audioRead != 0x65)
+                    {
+                        Helpers.Log("Dual Audio switching to English", 0);
+                        Hypervisor.WriteArray(Variables.ADDR_VoicePath, new byte[] { 0x65, 0x6E });
+                    }
+                break;
+            }
+        }
+
+        /*
             FrameOverride:
 
             Overwrites the frame limiter, and the instruction forcing it, according
@@ -283,6 +348,7 @@ namespace ReFixed
 
             #region Mid Priority
             TextAdjust();
+            AudioSwap();
             DropToggle();
             #endregion
 

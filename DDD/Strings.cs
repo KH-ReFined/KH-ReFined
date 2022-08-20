@@ -16,6 +16,11 @@ namespace ReFixed
 {
     internal class Strings
     {
+        public static byte[] JPOffset = new byte[]
+        {
+            0x0A
+        };
+
         public static string[][] DropString =
         {
             new string[]
@@ -46,6 +51,18 @@ namespace ReFixed
             {
                 "Timer dell'Auto-Caduta",
                 "Abilita/Disabilità il Timer dell'Auto-Caduta.",
+            }
+        };
+
+        public static string[][] DualAudio = new string[][]
+        {
+            new string[]
+            {
+                "Audio Language\u0000",
+                "English\u0000",
+                "Japanese\u0000",
+                "Shift the Audio Language between English and Japanese.\x0A",
+                "(A Drop is necessary for the changes to take effect.)\u0000"
             }
         };
     }
