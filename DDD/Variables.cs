@@ -67,7 +67,7 @@ namespace ReFixed
         // Everything DiscordRPC uses (except for the RPC itself) resides here.
         //
 
-        public static string[] BTLDictionary = { "safe", "mob", "boss" };
+        public static string[] BTLDictionary = { "safe", "boss" };
         public static string[] WRLDictionary = { "", "di", "mt", "tt", "dc", "ft", "pn", "hb", "cc", "tr", "eh", "wm", "tt" };
         public static string[] MDEDictionary = { "Beginner Mode", "Standard Mode", "Proud Mode", "Critical Mode" };
 
@@ -101,7 +101,7 @@ namespace ReFixed
         public static ulong ADDR_Framerate = 0x146573E0;
         public static ulong ADDR_World = 0x2CBF0A;
 
-        public static ulong ADDR_LoadFlag = 0x274821;
+        public static ulong ADDR_LoadFlag = 0x2C3962;
         public static ulong ADDR_CutsceneFlag = 0x276686;
         public static ulong ADDR_BattleFlag = 0x323782;
 

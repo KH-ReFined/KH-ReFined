@@ -75,7 +75,7 @@ namespace AxaFormBase
                         {
                             Functions.Execute();
 
-                            /*
+                            
                             if (Form.ActiveForm != null && CaptureStatus)
                             {
                                 var _scrPoint = theInstance.PointToScreen(new Point(0, 0));
@@ -84,7 +84,7 @@ namespace AxaFormBase
 
                             else
                                 CaptureStatus = false;
-                            */
+                            
 
                             Thread.Sleep(5);
                         }
