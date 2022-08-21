@@ -52,6 +52,8 @@ namespace ReFixed
 					"discordRPC = true",
 					"autoAttack = false",
 					"saveIndicator = true",
+					"",
+					"# Options: true = Controller, false = Keyboard, auto = Autodetect",
 					"controllerPrompt = auto",
 					"",
 					"[Kingdom Hearts]",
@@ -59,6 +61,10 @@ namespace ReFixed
 					"",
 					"[Kingdom Hearts II]",
 					"festivityEngine = true",
+					"",
+					"# Options: sonic, arcanum, raid, ragnarok",
+					"# Order: [CONFIRM], TRI, SQU, [JUMP]",
+					"# Duplicates are allowed. All 4 slots must be filled.",
 					"limitShortcuts = [sonic, arcanum, raid, ragnarok]"
 				};
 
@@ -67,26 +73,37 @@ namespace ReFixed
 
 			else
 			{
-				var _configIni = new TinyIni("reFixed.ini");	
+				var _fileRead = File.ReadAllText("reFixed.ini");
 
-                Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
-				Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
-				Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
-                Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "General"));
-
-				var _contValue = _configIni.Read("controllerPrompt", "General");
-
-				if (_contValue.ToLower() == "auto")
-					Variables.autoController = true;
-
+				if (!_fileRead.Contains("limitShortcuts"))
+				{
+					File.Delete("reFixed.ini");
+					InitConfig();
+				};
+				
 				else
 				{
-					Variables.autoController = false;
-					Variables.contToggle = Convert.ToBoolean(_contValue);
-				}
+					var _configIni = new TinyIni("reFixed.ini");	
 
-				if (_configIni.KeyExists("debugMode", "General"))
-					Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));
+					Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
+					Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
+					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
+					Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "General"));
+
+					var _contValue = _configIni.Read("controllerPrompt", "General");
+
+					if (_contValue.ToLower() == "auto")
+						Variables.autoController = true;
+
+					else
+					{
+						Variables.autoController = false;
+						Variables.contToggle = Convert.ToBoolean(_contValue);
+					}
+
+					if (_configIni.KeyExists("debugMode", "General"))
+						Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));
+				}
 			}
 		}
 
