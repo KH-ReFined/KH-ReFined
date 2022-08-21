@@ -73,14 +73,34 @@ namespace ReFixed
             var _configIni = new TinyIni("reFixed.ini");
             Variables.chestToggle = Convert.ToBoolean(_configIni.Read("battleChests", "Kingdom Hearts"));
 
-            if (Variables.DualAudio)
-                Variables.fovToggle = Convert.ToBoolean(_configIni.Read("fovEnhanced", "Kingdom Hearts")); 
-
             Hypervisor.UnlockBlock(Variables.ADDR_ChestCheck);
             Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
 
             if (Variables.chestToggle)
                 Hypervisor.Write<byte>(Variables.ADDR_ChestCheck, 0x7D);
+
+            var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
+
+            EPIC_INIT:
+            if (Directory.Exists(_saveDir))
+            {
+                string[] _epicDirs = Directory.GetDirectories(_saveDir, "*", SearchOption.TopDirectoryOnly);
+
+                if (_epicDirs.Length == 0x00)
+                goto EPIC_INIT; 
+
+                foreach (var _str in _epicDirs)
+                {
+                    var _folderName = new DirectoryInfo(_str).Name;
+                    Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _folderName));
+
+                    Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
+                }
+            }
+
+            else
+                goto EPIC_INIT;
 
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
@@ -110,18 +130,10 @@ namespace ReFixed
             var _autoBool = _inputValue == _buttonSeek && _commandRead == 0x00 && _dialogRead != 0x00 && Variables.attackToggle == true;
             var _actionRead = Hypervisor.Read<byte>(Variables.ADDR_ActionFirst);
 
-            if (_autoBool && _actionRead != 0x01 && !ATTACK_SWITCH)
+            if (_autoBool && _actionRead != 0x01)
             {
                 Hypervisor.Write(Variables.ADDR_ActionFirst, 0x01);
                 Hypervisor.Write(Variables.ADDR_ActionSecond, 0x01);
-                ATTACK_SWITCH = true;
-            }
-
-            else if (!_autoBool && _actionRead != 0x00 && ATTACK_SWITCH)
-            {
-                Hypervisor.Write(Variables.ADDR_ActionFirst, 0x00);
-                Hypervisor.Write(Variables.ADDR_ActionSecond, 0x00);
-                ATTACK_SWITCH = false;
             }
         }
         /*
@@ -172,7 +184,7 @@ namespace ReFixed
 
                 else
                 {
-                    var _repText = Variables.DualAudio ? Strings.TextAUDIO[LANGUAGE] : Strings.TextFOV[LANGUAGE];
+                    var _repText = Strings.TextFOV[LANGUAGE];
                     var _ogText = Strings.VibrationOG[LANGUAGE].ToKHSCII();
 
                     var _listText = new List<byte>();
@@ -665,7 +677,7 @@ namespace ReFixed
 		*/
         public static void FieldOfView()
         {
-            if ((!Variables.DualAudio && Hypervisor.Read<int>(Variables.ADDR_Config) == 0x01) || (Variables.DualAudio && Variables.fovToggle))
+            if (Hypervisor.Read<int>(Variables.ADDR_Config) == 0x01)
                 for (int i = 0; i < Variables.ADDR_FieldOfView.Length; i++)
                     Hypervisor.Write(Variables.ADDR_FieldOfView[i], Variables.VALUE_EnhancedFOV[i]);
 
@@ -830,10 +842,6 @@ namespace ReFixed
                 Autoattack();
                 TextAdjust();
                 AdjustControler();
-
-                // if (Variables.DualAudio)
-                    // AudioSwap();
-
                 FieldOfView();
                 AbilityToggle();
                 #endregion
