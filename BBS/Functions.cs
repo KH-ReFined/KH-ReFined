@@ -140,9 +140,19 @@ namespace ReFixed
             var _optionNo = _headerBlock.FindValue(0x34320B00) + 0x04;    
             var _optionYes = _headerBlock.FindValue(0x34320B01) + 0x04;
 
+            var _yesDescVal = Hypervisor.Read<ushort>(_headerBegin + _optionYesDesc, true);
+            var _noDescVal = Hypervisor.Read<ushort>(_headerBegin + _optionNoDesc, true);
+
             if (_headerMagic.SequenceEqual(new byte[] { 0x40, 0x43, 0x54, 0x44 }))
             {
                 var _yesLocation = Hypervisor.Read<ushort>(_headerBegin + _optionYes, true);
+
+                if (Variables.DualAudio && _optionNoDesc != _optionYesDesc)
+                {
+                    Hypervisor.Write<ushort>(_headerBegin + _optionNoDesc, _yesDescVal, true);
+
+                    _optionNoDesc = _optionYesDesc;
+                }
 
                 var _locArray = new ulong[]
                 {
@@ -162,25 +172,10 @@ namespace ReFixed
 
                 else
                 {
-                    for (int i = 0; i < Strings.AutoSave[LANGUAGE].Length; i++)
-                    {
-                        var _str = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
+                    var _strArr = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
 
-                        if (i == Strings.AutoSave[LANGUAGE].Length - 1)
-                        {
-                            var _strLength = Hypervisor.Read<int>(_headerBegin + _optionYesDesc, true) + (Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i - 1].Length : Strings.AutoSave[LANGUAGE][i - 1].Length) + 0x01;
-                            var _noRead = Hypervisor.Read<int>(_headerBegin + _optionNoDesc, true);
-
-                            if (_noRead != _strLength)
-                            {
-                                Hypervisor.Write<int>(_headerBegin + _optionNoDesc, _strLength, true);
-                                Hypervisor.WriteString(_headerBegin + (ulong)_strLength, _str, true);
-                            }
-                        }
-
-                        else
-                            Hypervisor.WriteString(_headerBegin + Hypervisor.Read<uint>(_headerBegin + _locArray[i], true), _str, true);
-                    }
+                    for (int i = 0; i < _strArr.Length; i++)
+                            Hypervisor.WriteString(_headerBegin + Hypervisor.Read<uint>(_headerBegin + _locArray[i], true), _strArr[i], true);
                 }
             }
         }
