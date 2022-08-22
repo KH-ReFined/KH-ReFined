@@ -624,7 +624,7 @@ namespace ReFixed
             try
             {
                 #region High Priority
-                if (Variables.Initialized)
+                if (!Variables.Initialized)
                     Initialization();
 
                 ResetGame();
