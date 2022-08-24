@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/95656963/171788826-e2049957-b00b-4502-87e9-6cf7df9d8efd.png)
+![combined_no_shadow_or_logo](https://user-images.githubusercontent.com/95656963/186497883-c979c51e-8247-4be2-8a5d-a2c7ee27a6cc.png)
 
 ## Download
 
