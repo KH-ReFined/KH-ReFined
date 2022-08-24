@@ -115,6 +115,55 @@ namespace ReFixed
         }
 
         /*
+            FixExit:
+
+            I sorta kinda unknowningly broke the Exit function in KH.
+            To fix this, this function exists.
+        */
+        public static void FixExit()
+        {
+            if (CheckTitle())
+            {
+                var _pointFirst = Hypervisor.Read<ulong>(Variables.PINT_TitleOption);
+
+                if (_pointFirst != 0x00)
+                {
+                    var _pointIterate = Hypervisor.Read<ulong>(_pointFirst + 0x10, true);
+
+                    _pointIterate = Hypervisor.Read<ulong>(_pointIterate + 0x50, true);
+                    _pointIterate = Hypervisor.Read<ulong>(_pointIterate + 0x20, true);
+                    _pointIterate = Hypervisor.Read<ulong>(_pointIterate + 0xC8, true);
+                    _pointIterate = Hypervisor.Read<ulong>(_pointIterate + 0x28, true);
+                    _pointIterate = Hypervisor.Read<ulong>(_pointIterate + 0x40, true);
+
+                    var _selectButton = Hypervisor.Read<byte>(_pointIterate + 0x8E);
+                    var _countButton = Hypervisor.Read<byte>(_pointIterate + 0x8E + 0x04);
+
+                    var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+                    var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
+
+                    var _buttonSeek = (_confirmRead == 0x01 ? 0x2000 : 0x4000);
+                    var _inputValue = _inputRead & _buttonSeek;
+
+                    if (_inputValue == _buttonSeek && _selectButton == _countButton - 0x01)
+                    {
+                        Helpers.Log("Title to Exit detected! 2.5 second limit set! Initating exit...", 0);
+                        Thread.Sleep(2500);
+
+                        if (File.Exists("KINGDOM HEARTS HD 1.5+2.5 Launcher.exe"))
+                        {
+                            Helpers.Log("Launcher found! Launching the launcher...", 0);
+                            Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
+                        }
+                        
+                        Helpers.Log("Re:Fixed terminated with no errors.", 0);
+                        Environment.Exit(0);
+                    }
+                }
+            }
+        }
+
+        /*
             TextAdjust:
             Overwrite the text in certain portions of the game, to give the illusion that
             the features given are Square-made, and not some jank being made by a 20-year-old
@@ -172,10 +221,24 @@ namespace ReFixed
 
                 else
                 {
-                    var _strArr = Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i] : Strings.AutoSave[LANGUAGE][i];
+                    var _strArr = Variables.DualAudio ? Strings.DualAudio[LANGUAGE] : Strings.AutoSave[LANGUAGE];
 
                     for (int i = 0; i < _strArr.Length; i++)
-                            Hypervisor.WriteString(_headerBegin + Hypervisor.Read<uint>(_headerBegin + _locArray[i], true), _strArr[i], true);
+                    {
+                        if (!Variables.DualAudio && i == Strings.AutoSave[LANGUAGE].Length - 1)
+                        {
+                            var _strLength = Hypervisor.Read<int>(_headerBegin + _optionYesDesc, true) + (Variables.DualAudio ? Strings.DualAudio[LANGUAGE][i - 1].Length : Strings.AutoSave[LANGUAGE][i - 1].Length) + 0x01;
+                            var _noRead = Hypervisor.Read<int>(_headerBegin + _optionNoDesc, true);
+
+                            if (_noRead != _strLength)
+                            {
+                                Hypervisor.Write<int>(_headerBegin + _optionNoDesc, _strLength, true);
+                                Hypervisor.WriteString(_headerBegin + (ulong)_strLength, _str, true);
+                            }
+                        }
+                        
+                        Hypervisor.WriteString(_headerBegin + Hypervisor.Read<uint>(_headerBegin + _locArray[i], true), _strArr[i], true);
+                    }
                 }
             }
         }
@@ -628,6 +691,7 @@ namespace ReFixed
                     Initialization();
 
                 ResetGame();
+                FixExit();
                 #endregion
 
                 #region Mid Priority

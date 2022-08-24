@@ -41,6 +41,15 @@ namespace ReFixed
         {
             Helpers.Log("Initializing Re:Fixed...", 0);
 
+            if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
+                Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
+                
+            if (!File.Exists(Variables.SaveSFXPath))
+            {
+                var _saveStream = File.Create(Variables.SaveSFXPath);
+                Variables.SaveSFX.CopyTo(_saveStream);
+            }
+
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
@@ -340,8 +349,8 @@ namespace ReFixed
             var _timeRead = Hypervisor.Read<uint>(0x326CC6);
             var _charRead = Hypervisor.Read<byte>(0x2CBF06);
             var _munnyRead = Hypervisor.Read<uint>(0x2D9162);
-            var _worldRead = Hypervisor.Read<byte>(ADDR_World);
-            var _roomRead = Hypervisor.Read<byte>(ADDR_World + 0x01);
+            var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_World);
+            var _roomRead = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
 
             Hypervisor.Write<uint>(_saveDataAddrRAM + 0x10, _timeRead, true);
             Hypervisor.Write<uint>(_saveDataAddrRAM + 0x14, _munnyRead, true);
@@ -417,7 +426,7 @@ namespace ReFixed
             var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
 
             if (!CheckTitle() && _loadRead == 0x01)
-            {
+            { 
                 Thread.Sleep(100);
 
                 var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
@@ -425,8 +434,7 @@ namespace ReFixed
 
                 _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
-                var _saveConfig = Variables.DualAudio && Variables.saveToggle;
-                var _saveableBool = _saveConfig && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _worldCheck >= 0x03;
+                var _saveableBool = Variables.saveToggle && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _worldCheck >= 0x03;
 
                 if (_saveableBool)
                 {
@@ -558,6 +566,7 @@ namespace ReFixed
 
                 FrameOverride();
                 ResetGame();
+                FixExit();
                 #endregion
 
                 #region Mid Priority

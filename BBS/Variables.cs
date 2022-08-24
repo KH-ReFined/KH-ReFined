@@ -62,7 +62,6 @@ namespace ReFixed
         public static DiscordRpcClient DiscordClient = new DiscordRpcClient("939407076747272203");
 
         public static Stream SaveSFX = ExeAssembly.GetManifestResourceStream("sfxSave.wav");
-        public static Stream DenySFX = ExeAssembly.GetManifestResourceStream("sfxDeny.wav");
         public static Stream ToggleSFX = ExeAssembly.GetManifestResourceStream("sfxToggle.wav");
 
         public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
@@ -101,6 +100,7 @@ namespace ReFixed
 
         public static ulong ADDR_Input = 0x20EA64;
         public static ulong ADDR_Config = 0x1FDB54;
+        public static ulong ADDR_Confirm = 0x10ADCEBA;
         public static ulong ADDR_FinisherName = 0x10994128;
 
         public static ulong ADDR_Limiter = 0x254EDC;
@@ -120,6 +120,7 @@ namespace ReFixed
 
         public static ulong ADDR_VoicePath = 0x023394;
 
+        public static ulong PINT_TitleOption = 0x2550CC;
         public static ulong PINT_StatusMenu = 0x109A3334;
         public static ulong PINT_CommandMenu = 0x109A333C;
         public static ulong PINT_SettingsText = 0x109794EC;

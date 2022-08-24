@@ -52,8 +52,8 @@ namespace AxaFormBase
                 if (BaseSimpleForm.theInstance == null)
                     new BaseSimpleForm(_app, "KINGDOM HEARTS: DREAM DROP DISTANCE [Re:Fixed v3.00]");
 
-                // Cursor.Hide();
-                // theInstance.KeyDown += _keyEvent;
+                Cursor.Hide();
+                theInstance.KeyDown += _keyEvent;
 
                 CaptureStatus = true;
                 _cursorHidden = true;

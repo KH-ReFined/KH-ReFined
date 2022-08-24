@@ -80,8 +80,7 @@ namespace ReFixed
                 "Audio-Sprachausgabe\x00",
                 "Englisch\x00",
                 "Japanisch\x00",
-                "Wechsle in die Englische Sprachausgabe.\x0A\u2219\x59(Aktiviere einen signifikanten Ladevorgang, damit\x000Adie Anderungen in Kraft treten.)\x00",
-                "Wechsle in die Japanische Sprachausgabe.\x0A\u2219\x59(Aktiviere einen signifikanten Ladevorgang, damit\x000Adie Anderungen in Kraft treten.)\x00"
+                "Schalte die Sprachausgabe zwischen Englisch und Japanisch.\x0A\u2219\x59(Aktiviere einen signifikanten Ladevorgang, damit\x000Adie Anderungen in Kraft treten.)\x00",
             },
 
             new string[]
@@ -89,8 +88,7 @@ namespace ReFixed
                 "Idioma de las Voces\x00",
                 "InglÖís\x00",
                 "JaponÖís\x00",
-                "Cambia las voces a InglÖís.\x0A\u2219\x59(Se necesitan cargar múltiples elementos para que surjan los cambios.)\x00",
-                "Cambia las voces a JaponÖís.\x0A\u2219\x59(Se necesitan cargar múltiples elementos para que surjan los cambios.)\x00"
+                "Cambia las voces entre InglÖís y JaponÖís.\x0A\u2219\x59(Se necesitan cargar múltiples elementos para que surjan los cambios.)\x00",
             },
 
             new string[]
@@ -98,8 +96,7 @@ namespace ReFixed
                 "Langue de l'audio\x00",
                 "Anglais\x00",
                 "Japonais\x00",
-                "Passer en mode audio Anglais.\x0A\u2219\x59(Notez un temps de chargement significatif avant\x000Al'application des modifications.)\x00",
-                "Passer en mode audio Japonais.\x0A\u2219\x59(Notez un temps de chargement significatif avant\x000Al'application des modifications.)\x00"
+                "Changement entre les voix Anglaise et Japonaise.\x0A\u2219\x59(Notez un temps de chargement significatif avant\x000Al'application des modifications.)\x00",
             },
 
             new string[]
@@ -107,8 +104,7 @@ namespace ReFixed
                 "Lingua dialoghi\x00",
                 "Inglese\x00",
                 "Giapponese\x00",
-                "Cambia audio dialoghi in Inglese.\x0A\u2219\x59(Il caricamento potrebbe durare a lungo\x0000Aper effettuare i cambiamenti.) \x00",
-                "Cambia audio dialoghi in Giapponese.\x0A\u2219\x59(Il caricamento potrebbe durare a lungo\x000Aper effettuare i cambiamenti.) \x00"
+                "Scambia tra doppiaggio Inglese e Giapponese.\x0A\u2219\x59(Il caricamento potrebbe durare a lungo\x000Aper effettuare i cambiamenti.)\x00",
             }
         };
     }

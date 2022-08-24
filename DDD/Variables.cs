@@ -100,21 +100,23 @@ namespace ReFixed
         public static ulong ADDR_Limiter = 0x354FD8;
         public static ulong ADDR_Framerate = 0x146573E0;
         public static ulong ADDR_World = 0x2CBF0A;
+        public static ulong ADDR_Confirm = 0x146573F4;
 
         public static ulong ADDR_LoadFlag = 0x2C3962;
         public static ulong ADDR_CutsceneFlag = 0x276686;
         public static ulong ADDR_BattleFlag = 0x323782;
 
         public static ulong ADDR_MasterVolume = 0x146573EA;
-        public static ulong ADDR_VolumeTable = 0xB0842;
+        public static ulong ADDR_VolumeTable = 0xB083E;
 
         public static ulong ADDR_VoicePath = 0x76F86;
         public static ulong ADDR_TrueData = 0x2CBF06;
         public static ulong ADDR_SaveData = 0x2E8646;
 
-        public static ulong PINT_SaveInformation = 0x14644596;
+        public static ulong PINT_TitleOption = 0x340F56;
         public static ulong PINT_CharHealth = 0x2C355E;
-        
+        public static ulong PINT_SaveInformation = 0x14644596;
+
         //
         // INSTRUCTION ADDRESSES
         //
