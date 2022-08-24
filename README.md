@@ -10,7 +10,7 @@ Get the latest release by clicking the button below.
 
 This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
   
-Every legacy Kingdom Hearts game will get a Re:Fixed counterpart.
+Every legacy Kingdom Hearts game will get a Re:Fined counterpart.
 
 ## Game Status
 
@@ -48,7 +48,7 @@ _All features indicating a version number will be released in that said version.
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
 | - | :heavy_check_mark: | The MP bar will no longer be present until Sora learns his first magic. [[2]](#reference)| 
 | - | :heavy_check_mark: | Press R1 + L1 + START + SELECT to soft reset. |
-| - | :heavy_check_mark: | Every game has an update agent built-in, so Re:Fixed can keep itself updated. |
+| - | :heavy_check_mark: | Every game has an update agent built-in, so Re:Fined can keep itself updated. |
 | - | :heavy_check_mark: | Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
 
 ### Kingdom Hearts 1
@@ -95,7 +95,7 @@ _All features indicating a version number will be released in that said version.
 5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Tri/Y, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
 6. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games.
 7. The party will wear their Halloween costumes in the days between October 31st and November 2nd (inclusive). Whilst they wear their Christmas costumes in the days between December 24th and January 1st (also inclusive).
-8. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fixed implements this feature to KH2 and it will replace the continue option. To revert back to and from the continue option, you can use the left and right D-Pad buttons.
+8. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fined implements this feature to KH2 and it will replace the continue option. To revert back to and from the continue option, you can use the left and right D-Pad buttons.
 
 ## Installation
 
@@ -110,7 +110,7 @@ _All features indicating a version number will be released in that said version.
 - Download the patch in https://bit.ly/DualAudioBBS for BBS, the one in https://bit.ly/DualAudioKH2 for KH2.  	
 - Download KHPCPatchManager v1.2.0 or higher from https://github.com/AntonioDePau/KHPCPatchManager/releases.
 - Patch both the games with the patches you downloaded. Instructions are at: https://github.com/AntonioDePau/KHPCPatchManager/blob/main/README.md
-- Done! You now have Re:Fixed with Dual Audio!
+- Done! You now have Re:Fined with Dual Audio!
 
 ## Credits
 
