@@ -58,6 +58,29 @@ namespace ReFixed
 
             Hypervisor.UnlockBlock(Variables.ADDR_VoicePath);
 
+            var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
+
+            EPIC_INIT:
+            if (Directory.Exists(_saveDir))
+            {
+                string[] _epicDirs = Directory.GetDirectories(_saveDir, "*", SearchOption.TopDirectoryOnly);
+
+                if (_epicDirs.Length == 0x00)
+                goto EPIC_INIT; 
+
+                foreach (var _str in _epicDirs)
+                {
+                    var _folderName = new DirectoryInfo(_str).Name;
+                    Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _folderName));
+
+                    Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
+                }
+            }
+
+            else
+                goto EPIC_INIT;
+
             Variables.Initialized = true;
 
             Helpers.Log("Re:Fixed initialized with no errors!", 0);
