@@ -20,7 +20,7 @@ You can see which games are supported, and which patches are live below:
 [![Kingdom Hearts II](https://img.shields.io/badge/Kingdom%20Hearts%20II-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH2)  
 ![Chain of Memories](https://img.shields.io/badge/Chain%20of%20Memories-Not%20Present!-red)  
 [![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
-![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Work%20in%20Progress!-yellow)  
+[![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/DDD) 
 
 ## Wiki
 Please refer to the [wiki](https://github.com/TopazTK/KH-ReFixed/wiki/Main-Wiki-Page) for all of your questions.
@@ -86,6 +86,13 @@ _All features indicating a version number will be released in that said version.
 | :heavy_check_mark: | - | Add back the ability to rename finishers. [[5]](#reference) |
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 
+### Kingdom Hearts - Dream Drop Distance
+
+| Error/Bug Fix | Enhancement | Description |
+|---------|-------------|-------------|
+| :heavy_check_mark: | - | Add the ability to toggle the Drop Gauge. [[5]](#reference) |
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
+
 #### Reference
 
 1. Cutscenes will by default lock the game to 30fps. This alleviates that.
@@ -107,7 +114,7 @@ _All features indicating a version number will be released in that said version.
 ### With Dual Audio
 - Drag the EXE unto the game directory.
 - Rename the dragged EXE to the name of the original ones (Ex. "KINGDOM HEARTS II FINAL MIX" for KH2)
-- Download the patch in https://bit.ly/DualAudioBBS for BBS, the one in https://bit.ly/DualAudioKH2 for KH2.  	
+- Download the patch in https://bit.ly/DualAudioBBS for BBS, the one in https://bit.ly/DualAudioKH2 for KH2, and the one in https://bit.ly/DualAudioDDD for DDD.	
 - Download KHPCPatchManager v1.2.0 or higher from https://github.com/AntonioDePau/KHPCPatchManager/releases.
 - Patch both the games with the patches you downloaded. Instructions are at: https://github.com/AntonioDePau/KHPCPatchManager/blob/main/README.md
 - Done! You now have Re:Fined with Dual Audio!
@@ -138,9 +145,11 @@ _All features indicating a version number will be released in that said version.
 - Y2K for his work on the Roxas Skip.
 - TopazTK for everything else.
 
-
 ### Kingdom Hearts - Birth by Sleep
 - TopazTK for everything so far.
+
+### Kingdom Hearts - Dream Drop Distance
+- Explode for his work on Drop Bar Toggling.
 
 ## Third Party Libraries
 
