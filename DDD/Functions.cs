@@ -86,7 +86,7 @@ namespace ReFixed
             Helpers.Log("Re:Fixed initialized with no errors!", 0);
         }
 
-		public static bool CheckTitle() => Hypervisor.Read<uint>(Variables.ADDR_TrueData) == 0x00;
+		public static bool CheckTitle() => Hypervisor.Read<byte>(Variables.ADDR_World) == 0x00;
 
         /*
             TextAdjust:
