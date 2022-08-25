@@ -90,7 +90,7 @@ _All features indicating a version number will be released in that said version.
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
-| :heavy_check_mark: | - | Add the ability to toggle the Drop Gauge. [[5]](#reference) |
+| :heavy_check_mark: | - | Add the ability to toggle the Drop Gauge. (#reference) |
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 
 #### Reference
