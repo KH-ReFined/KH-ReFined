@@ -1129,8 +1129,8 @@ namespace ReFixed
             var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
             var _warpRead = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
-            var _roomRead = Hypervisor.Read<ushort>(Variables.ADDR_World + 0x01);
-            var _worldRead = Hypervisor.Read<ushort>(Variables.ADDR_World);
+            var _roomRead = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
+            var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_World);
 
             var _continueID = Strings.ContinueID;
             var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
