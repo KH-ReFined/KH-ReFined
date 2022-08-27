@@ -33,3 +33,9 @@
 -> Show Forms in the Inventory
     @ 0x348B0C => [0F BA EB 14] to [EB 45 90 90]
     @ 0x348B53 => [CC CC CC CC CC CC CC CC] to [81 C3 00 00 20 00 EB B5]
+
+# This took WAY too long to do.
+-> Remove EpicID Check from Save Files
+    @ 0x470EF8 => [E8 43 0C CD FF] to [90 90 90 90 90]
+    @ 0x470F05 => [75 0B] to [90 90]
+    @ 0x470F10 => [74 30] to [EB 30]
