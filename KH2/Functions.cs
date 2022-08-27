@@ -607,18 +607,22 @@ namespace ReFixed
             Used primarily for accessibility purposes, tied to "autoAttack" in the config.
         */
         public static void Autoattack()
-        {
+        { 
             var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
             var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
             var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
 
-            var _commandRead = Hypervisor.Read<byte>(0x2030B96);
+            var _menuRead = Hypervisor.Read<byte>(0x24AA3A6);
+
+            var _primaryRead = Hypervisor.Read<byte>(0x24A986E);
+            var _secondaryRead = Hypervisor.Read<byte>(0x24A9B6E);
+
             var _dialogRead = Hypervisor.Read<byte>(0x24AF4C2);
 
             var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
             var _inputValue = _inputRead & _buttonSeek;
 
-            var _autoBool = _inputValue == _buttonSeek && _commandRead == 0x00 && _dialogRead == 0x00 && _worldCheck != 0x0F && Variables.attackToggle == true;
+            var _autoBool = _inputValue == _buttonSeek && ((_menuRead == 0x00 && _primaryRead == 0x00) || (_menuRead == 0x06 && _secondaryRead == 0x00)) && _dialogRead == 0x00 && _worldCheck != 0x0F && Variables.attackToggle == true;
             var _actionRead = Hypervisor.Read<byte>(Variables.ADDR_ActionExe);
 
             if (_autoBool && _actionRead != 0x01 && !ATTACK_SWITCH)
