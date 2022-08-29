@@ -48,6 +48,8 @@ namespace ReFixed
         public static bool devMode = false;
 
         public static bool festiveToggle = true;
+        public static bool driveToggle = true;
+
         public static string limitShorts = "";
 
         //
@@ -221,6 +223,10 @@ namespace ReFixed
         public static ulong ADDR_ControllerINST = 0x4E80DA;
         public static ulong[] ADDR_CMDSelectINST = { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
 
+        public static ulong ADDR_ShortListFilterINST = 0x349718;
+        public static ulong ADDR_ShortEquipFilterINST = 0x3C1A46;
+        public static ulong ADDR_ShortCategoryFilterINST = 0x35924F;
+
         //
         // INSTRUCTIONS
         // 
@@ -231,6 +237,20 @@ namespace ReFixed
         public static byte[] INST_RoomWarp = { 0xE8, 0x59, 0x00, 0x00, 0x00 };
         public static byte[] INST_FlagRevert = { 0xE8, 0x05, 0x01, 0x00, 0x00 };
         public static byte[] INST_InvRevert = { 0xE8, 0xA4, 0x1A, 0x0D, 0x00};
+
+        public static byte[][] INST_ShortListFilter = 
+        {
+            new byte[] { 0xEB, 0x4E, 0x90, 0x90 },
+            new byte[] { 0x81, 0xCB, 0x00, 0x00, 0x24, 0x00 },
+            new byte[] { 0xEB, 0xAA }
+        };
+
+        public static byte[][] INST_ShortEquipFilter = 
+        {
+            new byte[] { 0xEB, 0x1B, 0x90, 0x90, 0x90, 0x90, 0x90 },
+            new byte[] { 0x80, 0xF9, 0x15, 0x74, 0xF2 },
+            new byte[] { 0x31, 0xC0, 0x48, 0x83, 0xC4, 0x28, 0xC3 }
+        };
 
         public static byte[][] INST_CMDSelect = 
         {

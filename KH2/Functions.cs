@@ -153,6 +153,10 @@ namespace ReFixed
             
             Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
 
+            Hypervisor.UnlockBlock(Variables.ADDR_ShortListFilterINST);
+            Hypervisor.UnlockBlock(Variables.ADDR_ShortEquipFilterINST);
+            Hypervisor.UnlockBlock(Variables.ADDR_ShortCategoryFilterINST);
+
             var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
 
@@ -597,6 +601,46 @@ namespace ReFixed
                 {
                     Hypervisor.Write<byte>(_msnPointer + 0x08, 0x00, true);
                 }
+            }
+        }
+
+        /*
+            DriveShortcuts:
+
+            Allows Drive Forms to be shortcutted.
+            This was a major pain in the ass to implement. I hope you guys enjoy this one.
+            Tied to "driveShortcuts" in the config.
+        */
+        public static void DriveShortcuts()
+        {
+            var _instCheck = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_ShortCategoryFilterINST, true);
+
+            if (Variables.driveToggle && _instCheck != 0x90)
+            {
+                // Adjustments to the shortcut filter mechanism to show the drives in the list:
+                // This one jumps out to a interrupt block so that we can inject code.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortListFilterINST, Variables.INST_ShortListFilter[0], true);
+                
+                // This one performs an OR operation and inserts the bit value 0x240000 so that
+                // both Drive Forms (0x200000) and Magic (0x40000) can show up.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortListFilterINST + 0x50, Variables.INST_ShortListFilter[1], true);
+
+                // This jumps out of the interrupt block and continues execution.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortListFilterINST + 0x56, Variables.INST_ShortListFilter[2], true);
+
+                // Adjustments to the equip filter mechanism to actually equip the shortcuts.
+                // This one wipes out the false condition and jumps out to a interrupt block so that we can inject code.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortEquipFilterINST, Variables.INST_ShortEquipFilter[0], true);
+                
+                // This one performs a check for Drive Forms, if true, it jumps to the code that 
+                // handles non-magic shortcuts and their memorizaiton. 
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortEquipFilterINST + 0x1D, Variables.INST_ShortEquipFilter[1], true);
+
+                // This re-implements the false condition.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortEquipFilterINST + 0x22, Variables.INST_ShortEquipFilter[2], true);
+
+                // This NOPs a jump statement which causes the equipped drive to be treated as a spell.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortCategoryFilterINST, new byte[] {0x90, 0x90}, true);
             }
         }
 
@@ -1885,6 +1929,7 @@ namespace ReFixed
                 SkipRoxas();
                 ResetGame();
                 MapSkip();
+                DriveShortcuts();
                 AtlanticaUnpause();
                 RetryPrompt();
                 FixExit();
