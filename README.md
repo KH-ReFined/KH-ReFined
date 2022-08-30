@@ -22,9 +22,6 @@ You can see which games are supported, and which patches are live below:
 [![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
 [![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/DDD) 
 
-## Wiki
-Please refer to the [wiki](https://github.com/TopazTK/KH-ReFixed/wiki/Main-Wiki-Page) for all of your questions.
-
 ## Support
 If you wish to support this project, consider becoming a Patron.  
   
@@ -90,7 +87,7 @@ _All features indicating a version number will be released in that said version.
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
-| :heavy_check_mark: | - | Add the ability to toggle the Drop Gauge. (#reference) |
+| - | :heavy_check_mark: | Add the ability to toggle the Drop Gauge. |
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 
 #### Reference
