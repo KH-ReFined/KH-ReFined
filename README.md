@@ -4,7 +4,7 @@
 
 Get the latest release by clicking the button below.
 
-[![KH-ReFixed](https://img.shields.io/badge/KH--ReFixed-Download-blue.svg)](https://github.com/TopazTK/KH-ReFixed/releases)
+[![KH-ReFixed](https://img.shields.io/badge/Kingdom-Hearts-Re:Fined-Download-blue.svg)](https://github.com/TopazTK/KH-ReFixed/releases)
 
 ## Purpose
 
