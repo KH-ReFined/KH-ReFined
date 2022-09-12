@@ -1850,7 +1850,7 @@ namespace ReFined
                 }
             }
 
-            else if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) == 0x00 || Hypervisor.Read<byte>(Variables.ADDR_SoraForm) == 0x03)
+            else if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) == 0x00 || (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) == 0x00 && Hypervisor.Read<byte>(Variables.ADDR_SoraForm) == 0x03))
             {
                 Helpers.Log("A spell or Limit Form detected! Showing the MP Bar...", 0);
 
