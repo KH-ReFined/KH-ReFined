@@ -1,6 +1,6 @@
 /*
 ==================================================
-    KINGDOM HEARTS - RE:FIXED COMMON FILE!
+    KINGDOM HEARTS - RE:FINED COMMON FILE!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -20,7 +20,7 @@ using System.Text.RegularExpressions;
 
 using NAudio.Wave;
 
-namespace ReFixed
+namespace ReFined
 {
     public static class Helpers
     {
@@ -43,7 +43,7 @@ namespace ReFixed
 
 		public static void InitConfig()
 		{			
-			if (!File.Exists("reFixed.ini"))
+			if (!File.Exists("re:Fined.ini"))
 			{
 				var _outIni = new string[]
 				{
@@ -61,6 +61,7 @@ namespace ReFixed
 					"",
 					"[Kingdom Hearts II]",
 					"festivityEngine = true",
+					"driveShortcuts = true",
 					"",
 					"# Options: sonic, arcanum, raid, ragnarok",
 					"# Order: [CONFIRM], TRI, SQU, [JUMP]",
@@ -68,22 +69,22 @@ namespace ReFixed
 					"limitShortcuts = [sonic, arcanum, raid, ragnarok]"
 				};
 
-				File.WriteAllLines("reFixed.ini", _outIni);
+				File.WriteAllLines("re:Fined.ini", _outIni);
 			}
 
 			else
 			{
-				var _fileRead = File.ReadAllText("reFixed.ini");
+				var _fileRead = File.ReadAllText("re:Fined.ini");
 
-				if (!_fileRead.Contains("limitShortcuts"))
+				if (!_fileRead.Contains("driveShortcuts"))
 				{
-					File.Delete("reFixed.ini");
+					File.Delete("re:Fined.ini");
 					InitConfig();
 				};
 				
 				else
 				{
-					var _configIni = new TinyIni("reFixed.ini");	
+					var _configIni = new TinyIni("re:Fined.ini");	
 
 					Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
 					Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
@@ -117,7 +118,7 @@ namespace ReFixed
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
 				var _typeStr = "";
-				var _fileName = "ReFixed-" + _dateStr + ".txt";
+				var _fileName = "ReFined-" + _dateStr + ".txt";
 
 				switch(Type)
 				{
@@ -153,7 +154,7 @@ namespace ReFixed
 				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
-				var _fileName = "ReFixed-" + _dateStr + ".txt";
+				var _fileName = "ReFined-" + _dateStr + ".txt";
 				var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
 
 				using (StreamWriter _write = File.AppendText(_fileName))

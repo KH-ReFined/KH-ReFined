@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 1 FM!
+      KINGDOM HEARTS - RE:FINED FOR 1 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Variables
     {
@@ -33,7 +33,7 @@ namespace ReFixed
         //
         // CONFIG VARIABLES
         //
-        // Variables that will be read from a config file to tell Re:Fixed what to do.
+        // Variables that will be read from a config file to tell Re:Fined what to do.
         //
 
         public static bool sfxToggle = true;
@@ -69,9 +69,9 @@ namespace ReFixed
         public static Stream DenySFX = ExeAssembly.GetManifestResourceStream("sfxDeny.wav");
         public static Stream ToggleSFX = ExeAssembly.GetManifestResourceStream("sfxToggle.wav");
 
-        public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
-        public static string DenySFXPath = Path.GetTempPath() + "ReFixed/denySFX.wav";
-        public static string ToggleSFXPath = Path.GetTempPath() + "ReFixed/toggleSFX.wav";
+        public static string SaveSFXPath = Path.GetTempPath() + "ReFined/saveSFX.wav";
+        public static string DenySFXPath = Path.GetTempPath() + "ReFined/denySFX.wav";
+        public static string ToggleSFXPath = Path.GetTempPath() + "ReFined/toggleSFX.wav";
 
         public static Dictionary<byte, byte> APDictionary = new Dictionary<byte, byte>()
         {

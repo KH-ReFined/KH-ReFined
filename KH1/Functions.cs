@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 1 FM!
+      KINGDOM HEARTS - RE:FINED FOR 1 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -17,7 +17,7 @@ using System.Collections.Generic;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Functions
     {
@@ -54,10 +54,10 @@ namespace ReFixed
         */
         public static void Initialization()
         {
-            Helpers.Log("Initializing Re:Fixed...", 0);
+            Helpers.Log("Initializing Re:Fined...", 0);
 
-            if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
-                Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
+            if (!Directory.Exists(Path.GetTempPath() + "ReFined"))
+                Directory.CreateDirectory(Path.GetTempPath() + "ReFined");
                 
             if (!File.Exists(Variables.ToggleSFXPath))
             {
@@ -70,14 +70,11 @@ namespace ReFixed
                 Variables.ToggleSFX.CopyTo(_toggleStream);
             }
 
-            var _configIni = new TinyIni("reFixed.ini");
+            var _configIni = new TinyIni("reFined.ini");
             Variables.chestToggle = Convert.ToBoolean(_configIni.Read("battleChests", "Kingdom Hearts"));
 
             Hypervisor.UnlockBlock(Variables.ADDR_ChestCheck);
             Hypervisor.UnlockBlock(Variables.ADDR_Viewport);
-
-            if (Variables.chestToggle)
-                Hypervisor.Write<byte>(Variables.ADDR_ChestCheck, 0x7D);
 
             var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
@@ -102,12 +99,15 @@ namespace ReFixed
             else
                 goto EPIC_INIT;
 
+            if (Variables.chestToggle)
+                Hypervisor.Write<byte>(Variables.ADDR_ChestCheck, 0x7D);
+
             Variables.Source = new CancellationTokenSource();
             Variables.Token = Variables.Source.Token;
 
             Variables.Initialized = true;
 
-            Helpers.Log("Re:Fixed initialized with no errors!", 0);
+            Helpers.Log("Re:Fined initialized with no errors!", 0);
         }
 
         /*
@@ -744,7 +744,7 @@ namespace ReFixed
         /*
             DiscordEngine:
 
-            Handle the Discord Rich Presence of Re:Fixed.
+            Handle the Discord Rich Presence of Re:Fined.
             To be executed on a separate thread.
         */
         public static void DiscordEngine()
@@ -770,8 +770,8 @@ namespace ReFixed
             {
                 new DiscordRPC.Button
                 {
-                    Label = "== Powered by Re:Fixed ==",
-                    Url = "https://github.com/TopazTK/KH-ReFixed"
+                    Label = "== Powered by Re:Fined ==",
+                    Url = "https://github.com/TopazTK/KH-ReFined"
                 },
                 new DiscordRPC.Button
                 {
@@ -823,7 +823,7 @@ namespace ReFixed
         /*
             Execute:
 
-            Executes the main logic within Re:Fixed.
+            Executes the main logic within Re:Fined.
         */
         public static void Execute()
         {
@@ -882,7 +882,7 @@ namespace ReFixed
             catch (Exception _caughtEx)
             {
                 Helpers.LogException(_caughtEx);
-                Helpers.Log("Re:Fixed terminated with an exception!", 1);
+                Helpers.Log("Re:Fined terminated with an exception!", 1);
                 Environment.Exit(-1);
             }
         }

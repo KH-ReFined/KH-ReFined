@@ -1,6 +1,6 @@
-/*
+  /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 2 FM!
+      KINGDOM HEARTS - RE:FINED FOR 2 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Variables
     {
@@ -33,7 +33,7 @@ namespace ReFixed
         //
         // CONFIG VARIABLES
         //
-        // Variables that will be read from a config file to tell Re:Fixed what to do.
+        // Variables that will be read from a config file to tell Re:Fined what to do.
         //
 
         public static bool sfxToggle = true;
@@ -85,11 +85,11 @@ namespace ReFixed
             { "sonic", 0x02BA }
         };
 
-        public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
-        public static string SwitchSFXPath = Path.GetTempPath() + "ReFixed/switchSFX.wav";
+        public static string SaveSFXPath = Path.GetTempPath() + "ReFined/saveSFX.wav";
+        public static string SwitchSFXPath = Path.GetTempPath() + "ReFined/switchSFX.wav";
 
-        public static string LibrettoPath = Path.GetTempPath() + "ReFixed/libretto.bin";
-        public static string BarfilePath = Path.GetTempPath() + "ReFixed/barfile.bin";
+        public static string LibrettoPath = Path.GetTempPath() + "ReFined/libretto.bin";
+        public static string BarfilePath = Path.GetTempPath() + "ReFined/barfile.bin";
 
         //
         // RPC ASSET LIBRARY
@@ -226,6 +226,7 @@ namespace ReFixed
         public static ulong ADDR_ShortListFilterINST = 0x349718;
         public static ulong ADDR_ShortEquipFilterINST = 0x3C1A46;
         public static ulong ADDR_ShortCategoryFilterINST = 0x35924F;
+        public static ulong ADDR_ShortIconAssignINST = 0x2E99CA;
 
         //
         // INSTRUCTIONS
@@ -250,6 +251,13 @@ namespace ReFixed
             new byte[] { 0xEB, 0x1B, 0x90, 0x90, 0x90, 0x90, 0x90 },
             new byte[] { 0x80, 0xF9, 0x15, 0x74, 0xF2 },
             new byte[] { 0x31, 0xC0, 0x48, 0x83, 0xC4, 0x28, 0xC3 }
+        };
+
+        public static byte[][] INST_ShortIconAssign =
+        {
+            new byte[] { 0xEB, 0x19 },
+            new byte[] { 0x3C, 0x0B, 0x75, 0x02, 0xB0 },
+            new byte[] { 0x88, 0x47, 0x01, 0xEB, 0xDC }
         };
 
         public static byte[][] INST_CMDSelect = 

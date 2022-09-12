@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 2 FM!
+      KINGDOM HEARTS - RE:FINED FOR 2 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Functions
     {
@@ -100,94 +100,106 @@ namespace ReFixed
 
         public static void Initialization()
         {
-            Helpers.Log("Initializing Re:Fixed...", 0);
-            
-            // Create the TEMP Path to store our sound files.
-            if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
-                Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
+            try
+            {
+                Helpers.Log("Initializing Re:Fined...", 0);
                 
-            // Check if the sound files actually exist.
-            if (!File.Exists(Variables.SwitchSFXPath))
-            {
-                // Should they not, extract the sound files.
-                var _saveStream = File.Create(Variables.SaveSFXPath);
-                var _switchStream = File.Create(Variables.SwitchSFXPath);
-
-                Variables.SaveSFX.CopyTo(_saveStream);
-                Variables.SwitchSFX.CopyTo(_switchStream);
-            }
-            
-            // Open the config file for game-specific configs.
-            var _configIni = new TinyIni("reFixed.ini");
-
-            // Parse the Festive Toggle, and the chosen Limit Form shortcuts.
-            Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
-            Variables.limitShorts = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
-
-            // Should the shortcuts be parsed; Place them accordingly.
-            if (Variables.limitShorts != "")
-            {
-                LIMIT_SHORT = new short[4];
-
-                var _splitArr = Variables.limitShorts.Replace("[", "").Replace("]", "").Replace(", ", ",").Split(',');
-
-                // This code always presumes O is confirm.
-                LIMIT_SHORT[0] = Variables.LMTDictionary[_splitArr[0]];
-                LIMIT_SHORT[1] = Variables.LMTDictionary[_splitArr[1]];
-                LIMIT_SHORT[2] = Variables.LMTDictionary[_splitArr[2]];
-                LIMIT_SHORT[3] = Variables.LMTDictionary[_splitArr[3]];
-            }
-
-            // Unlock all the EXE-Related addresses.
-            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
-            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
-            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
-
-            Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
-            Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
-            Hypervisor.UnlockBlock(Variables.ADDR_BTLFormatter);
-            Hypervisor.UnlockBlock(Variables.ADDR_EVTFormatter);
-
-            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
-            Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
-            
-            Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
-
-            Hypervisor.UnlockBlock(Variables.ADDR_ShortListFilterINST);
-            Hypervisor.UnlockBlock(Variables.ADDR_ShortEquipFilterINST);
-            Hypervisor.UnlockBlock(Variables.ADDR_ShortCategoryFilterINST);
-
-            var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
-
-            EPIC_INIT:
-            if (Directory.Exists(_saveDir))
-            {
-                string[] _epicDirs = Directory.GetDirectories(_saveDir, "*", SearchOption.TopDirectoryOnly);
-
-                if (_epicDirs.Length == 0x00)
-                goto EPIC_INIT; 
-
-                foreach (var _str in _epicDirs)
+                // Create the TEMP Path to store our sound files.
+                if (!Directory.Exists(Path.GetTempPath() + "ReFined"))
+                    Directory.CreateDirectory(Path.GetTempPath() + "ReFined");
+                    
+                // Check if the sound files actually exist.
+                if (!File.Exists(Variables.SwitchSFXPath))
                 {
-                    var _folderName = new DirectoryInfo(_str).Name;
-                    Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _folderName));
+                    // Should they not, extract the sound files.
+                    var _saveStream = File.Create(Variables.SaveSFXPath);
+                    var _switchStream = File.Create(Variables.SwitchSFXPath);
 
-                    Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
+                    Variables.SaveSFX.CopyTo(_saveStream);
+                    Variables.SwitchSFX.CopyTo(_switchStream);
                 }
+                
+                // Open the config file for game-specific configs.
+                var _configIni = new TinyIni("reFined.ini");
+
+                // Parse the Festive Toggle, and the chosen Limit Form shortcuts, and the Drive SHortcut setting.
+                Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
+                Variables.driveToggle = Convert.ToBoolean(_configIni.Read("driveShortcuts", "Kingdom Hearts II"));
+                Variables.limitShorts = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
+
+                // Should the shortcuts be parsed; Place them accordingly.
+                if (Variables.limitShorts != "")
+                {
+                    LIMIT_SHORT = new short[4];
+
+                    var _splitArr = Variables.limitShorts.Replace("[", "").Replace("]", "").Replace(", ", ",").Split(',');
+
+                    // This code always presumes O is confirm.
+                    LIMIT_SHORT[0] = Variables.LMTDictionary[_splitArr[0]];
+                    LIMIT_SHORT[1] = Variables.LMTDictionary[_splitArr[1]];
+                    LIMIT_SHORT[2] = Variables.LMTDictionary[_splitArr[2]];
+                    LIMIT_SHORT[3] = Variables.LMTDictionary[_splitArr[3]];
+                }
+
+                // Unlock all the EXE-Related addresses.
+                Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
+                Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
+                Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
+
+                Hypervisor.UnlockBlock(Variables.ADDR_PAXFormatter);
+                Hypervisor.UnlockBlock(Variables.ADDR_ANBFormatter);
+                Hypervisor.UnlockBlock(Variables.ADDR_BTLFormatter);
+                Hypervisor.UnlockBlock(Variables.ADDR_EVTFormatter);
+
+                Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_LimiterINST, true);
+                Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
+                
+                Hypervisor.UnlockBlock(Variables.ADDR_LimitShortcut);
+
+                Hypervisor.UnlockBlock(Variables.ADDR_ShortListFilterINST);
+                Hypervisor.UnlockBlock(Variables.ADDR_ShortEquipFilterINST);
+                Hypervisor.UnlockBlock(Variables.ADDR_ShortCategoryFilterINST);
+                Hypervisor.UnlockBlock(Variables.ADDR_ShortIconAssignINST);
+
+                var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
+
+                EPIC_INIT:
+                if (Directory.Exists(_saveDir))
+                {
+                    string[] _epicDirs = Directory.GetDirectories(_saveDir, "*", SearchOption.TopDirectoryOnly);
+
+                    if (_epicDirs.Length == 0x00)
+                    goto EPIC_INIT; 
+
+                    foreach (var _str in _epicDirs)
+                    {
+                        var _folderName = new DirectoryInfo(_str).Name;
+                        Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _folderName));
+
+                        Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
+                    }
+                }
+
+                else
+                    goto EPIC_INIT;
+
+                // Initialize the source and the token for secondary tasks.
+                Variables.Source = new CancellationTokenSource();
+                Variables.Token = Variables.Source.Token;
+
+                // Mark the initialization as complete.
+                Variables.Initialized = true;
+
+                Helpers.Log("Re:Fined initialized with no errors!", 0);
             }
 
-            else
-                goto EPIC_INIT;
-
-            // Initialize the source and the token for secondary tasks.
-            Variables.Source = new CancellationTokenSource();
-            Variables.Token = Variables.Source.Token;
-
-            // Mark the initialization as complete.
-            Variables.Initialized = true;
-
-            Helpers.Log("Re:Fixed initialized with no errors!", 0);
+            catch (Exception _caughtEx)
+            {
+                Helpers.LogException(_caughtEx);
+                Helpers.Log("Re:Fined terminated with an exception!", 1);
+                Environment.Exit(-1);
+            }
         }
 
 
@@ -537,7 +549,7 @@ namespace ReFixed
                 #region Form Icon Correction
                     var _iconByte = Hypervisor.Read<byte>(0x2506F7D);
 
-                    if (_iconByte < 0x20 && _iconByte != 0x02)
+                    if (_iconByte == 0x19 && !CheckTitle())
                         for (ulong i = 0; i < 5; i++)
                             Hypervisor.Write<byte>(0x2506F7D + 0x18 * i, 0x02);
                 #endregion
@@ -614,9 +626,26 @@ namespace ReFixed
         public static void DriveShortcuts()
         {
             var _instCheck = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_ShortCategoryFilterINST, true);
+            var _iconByte = Hypervisor.Read<byte>(0x2506F7D);
 
-            if (Variables.driveToggle && _instCheck != 0x90)
+            if (Variables.driveToggle && _instCheck != 0x90 && _iconByte != 0x19 && _iconByte != 0x00)
             {
+                // This reads part of the actual instruction which handles drive icons on shortcuts to move it.
+                var _instRead = Hypervisor.ReadArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x03, 0x19, true);
+
+                // This writes a JMP statement to trigger an alternative condition.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST, Variables.INST_ShortIconAssign[0], true);
+
+                // Move the instruction.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x02, _instRead, true);
+
+                // Write the check for the improper icon, and correct it.
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x1B, Variables.INST_ShortIconAssign[1], true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x21, Variables.INST_ShortIconAssign[2], true);
+
+                // Write what icon it should be corrected to.
+                Hypervisor.Write<byte>(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x20, _iconByte, true);
+
                 // Adjustments to the shortcut filter mechanism to show the drives in the list:
                 // This one jumps out to a interrupt block so that we can inject code.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortListFilterINST, Variables.INST_ShortListFilter[0], true);
@@ -1142,7 +1171,7 @@ namespace ReFixed
                         Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
                     }
                     
-                    Helpers.Log("Re:Fixed terminated with no errors.", 0);
+                    Helpers.Log("Re:Fined terminated with no errors.", 0);
                     Environment.Exit(0);
                 }
             }
@@ -1535,6 +1564,8 @@ namespace ReFixed
             }
         }
 
+        //F_TT140
+
         /*
             GenerateSave:
 
@@ -1831,7 +1862,7 @@ namespace ReFixed
         /*
             DiscordEngine:
 
-            Handle the Discord Rich Presence of Re:Fixed.
+            Handle the Discord Rich Presence of Re:Fined.
             To be executed on a separate thread.
         */
         public static void DiscordEngine()
@@ -1864,8 +1895,8 @@ namespace ReFixed
             {
                 new DiscordRPC.Button
                 {
-                    Label = "== Powered by Re:Fixed ==",
-                    Url = "https://github.com/TopazTK/KH-ReFixed"
+                    Label = "== Powered by Re:Fined ==",
+                    Url = "https://github.com/TopazTK/KH-ReFined"
                 },
 
                 new DiscordRPC.Button
@@ -1916,7 +1947,7 @@ namespace ReFixed
         /*
             Execute:
 
-            Executes the main logic within Re:Fixed.
+            Executes the main logic within Re:Fined.
         */
         public static void Execute()
         {
@@ -1992,7 +2023,7 @@ namespace ReFixed
             catch (Exception _caughtEx)
             {
                 Helpers.LogException(_caughtEx);
-                Helpers.Log("Re:Fixed terminated with an exception!", 1);
+                Helpers.Log("Re:Fined terminated with an exception!", 1);
                 Environment.Exit(-1);
             }
         }
