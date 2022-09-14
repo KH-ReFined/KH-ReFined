@@ -73,6 +73,8 @@ _All features indicating a version number will be released in that said version.
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 | - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) | 
 | - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [[8]](#reference) |
+| - | :heavy_check_mark: | It is now possible to unpause the Atlantica Musical segments. |
+| - | :heavy_check_mark: | Drive Forms will now appear in the inventory. |
 
 
 ### Kingdom Hearts - Birth by Sleep
