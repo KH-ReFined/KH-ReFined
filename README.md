@@ -72,16 +72,16 @@ _All features indicating a version number will be released in that said version.
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting will now display a menu that is more resembling of the menu from the first game. |
 | - | :heavy_check_mark: | Include an option upon selecting `New Game` to skip Roxas' introduction sequence. |
 | - | :heavy_check_mark: | The player is now able to reorganize the Magic menu to their liking. [[4]](#reference) | 
-| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
-| - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) | 
-| - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [[8]](#reference) |
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[5]](#reference) |  
+| - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[6]](#reference) | 
+| - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [[7]](#reference) |
 
 ### Kingdom Hearts - Dream Drop Distance
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
 | - | :heavy_check_mark: | Add the ability to toggle the Drop Gauge. |
-| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
+| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[5]](#reference) |  
 
 #### Reference
 
@@ -89,10 +89,9 @@ _All features indicating a version number will be released in that said version.
 2. Sora/Roxas immediately have MP Bars when the game begins, despite having no magic. This fix will now make said MP bar invisible until the player learns their first magic spell. (Usually Fire in KH1, Blizzard in KH2.)
 3. In the HD remaster of KH2, the localization team changed the translation of certain attacks to contrast with their usual translations from Japanese. E.g. Ragnarok -> Infinity. This fix reverts that awful decision. 
 4. In KH3, the player can reorganize their magic menu. This feature is neat, so now it's in KH2. To do this, highlight your magic command and press L2/LT+DPAD to shift around.
-5. In the PC and Xbox ports of Birth by Sleep, the ability to rename the finishers has been removed. This fix adds that feature back, bound to Tri/Y, popping up a window to allow for renames. (Before you judge me for using a window, this is basically how the PSP goes about doing this, too.)
-6. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games.
-7. The party will wear their Halloween costumes in the days between October 31st and November 2nd (inclusive). Whilst they wear their Christmas costumes in the days between December 24th and January 1st (also inclusive).
-8. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fined implements this feature to KH2 and it will replace the continue option. To revert back to and from the continue option, you can use the left and right D-Pad buttons.
+5. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games.
+6. The party will wear their Halloween costumes in the days between October 31st and November 2nd (inclusive). Whilst they wear their Christmas costumes in the days between December 24th and January 1st (also inclusive).
+7. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fined implements this feature to KH2 and it will replace the continue option. To revert back to and from the continue option, you can use the left and right D-Pad buttons.
 
 ## Installation
 
@@ -134,9 +133,6 @@ _All features indicating a version number will be released in that said version.
 - Drahsid for his work on the 60FPS Framelock Issue.
 - Y2K for his work on the Roxas Skip.
 - TopazTK for everything else.
-
-### Kingdom Hearts - Birth by Sleep
-- TopazTK for everything so far.
 
 ### Kingdom Hearts - Dream Drop Distance
 - Explode for his work on Drop Bar Toggling.
