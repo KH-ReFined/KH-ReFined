@@ -19,7 +19,7 @@ You can see which games are supported, and which patches are live below:
 [![Kingdom Hearts I](https://img.shields.io/badge/Kingdom%20Hearts%20I-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH1)  
 [![Kingdom Hearts II](https://img.shields.io/badge/Kingdom%20Hearts%20II-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/KH2)  
 ![Chain of Memories](https://img.shields.io/badge/Chain%20of%20Memories-Not%20Present!-red)  
-[![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
+[![Birth by Sleep](https://img.shields.io/badge/Birth%20by%20Sleep-Rewrite%20Required!-red)](https://github.com/TopazTK/KH-ReFixed/tree/mother/BBS)  
 [![Dream Drop Distance](https://img.shields.io/badge/Dream%20Drop%20Distance-Live!-brightgreen)](https://github.com/TopazTK/KH-ReFixed/tree/mother/DDD) 
 
 ## Support
@@ -75,16 +75,6 @@ _All features indicating a version number will be released in that said version.
 | - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 | - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[7]](#reference) | 
 | - | :heavy_check_mark: | The player can now retry all forced encounters on command, and can choose to continue via the D-Pad. [[8]](#reference) |
-
-
-
-### Kingdom Hearts - Birth by Sleep
-
-| Error/Bug Fix | Enhancement | Description |
-|---------|-------------|-------------|
-| :heavy_check_mark: | - | Fix an issue with 30fps being forced when talking to people. | 
-| :heavy_check_mark: | - | Add back the ability to rename finishers. [[5]](#reference) |
-| - | :heavy_check_mark: | Dual-Audio capabilities, allowing one to switch from and to English or Japanese vocals. [[6]](#reference) |  
 
 ### Kingdom Hearts - Dream Drop Distance
 
