@@ -28,3 +28,8 @@
 
 -> Voice Channel Mute
     @ 0x3D4EBC => [CD CC CC 3D] to [00 00 00 00]
+
+-> Remove EpicID Check from Save Files
+    @ 0x3834E8 => [E8 E3 A0 D9 FF] to [90 90 90 90 90]
+    @ 0x3834F5 => [75 0B] to [90 90]
+    @ 0x383500 => [74 30] to [EB 30]
