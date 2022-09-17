@@ -83,6 +83,7 @@ namespace ReFined
         static byte[] PARTY_READ;
         static byte[] FORM_STAT_READ;
         static byte[] INVENTORY_READ;
+        static List<byte[]> LVL_READ;
         static List<byte[]> ITEM_READ;
         static List<byte[]> ABILITY_READ;
 
@@ -1270,6 +1271,7 @@ namespace ReFined
                 FORM_STAT_READ = null;
                 INVENTORY_READ = null;
 
+                LVL_READ = new List<byte[]>();
                 ITEM_READ = new List<byte[]>();
                 ABILITY_READ = new List<byte[]>();
 
@@ -1288,14 +1290,18 @@ namespace ReFined
                 // Read the necessary shits at the start of a fight.
                 if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && !CheckTitle())
                 {
+                    LVL_READ = new List<byte[]>();
                     ITEM_READ = new List<byte[]>();
                     ABILITY_READ = new List<byte[]>();
                     
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < 13; i++)
                         ITEM_READ.Add(Hypervisor.ReadArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), 0x10));
 
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < 13; i++)
                         ABILITY_READ.Add(Hypervisor.ReadArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), 0xC0));
+
+                    for (int i = 0; i < 13; i++)
+                        LVL_READ.Add(Hypervisor.ReadArray(Variables.ADDR_LevelStart + (ulong)(0x114 * i), 0x04));
 
                     EXP_READ = Hypervisor.Read<int>(Variables.ADDR_EXPStart);
                     FORM_READ = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
@@ -1332,6 +1338,7 @@ namespace ReFined
                     FORM_STAT_READ = null;
                     INVENTORY_READ = null;
 
+                    LVL_READ = new List<byte[]>();
                     ITEM_READ = new List<byte[]>();
                     ABILITY_READ = new List<byte[]>();
 
@@ -1429,10 +1436,28 @@ namespace ReFined
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
-                        // These must be written at death instead of at retry.
-                        // Do not ask me why.
+                        for (int i = 0; i < 13; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
+
+                        for (int i = 0; i < 13; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
+
+                        for (int i = 0; i < 13; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_LevelStart + (ulong)(0x114 * i), LVL_READ[i]);
+                            
                         Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
                         Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
+
+                        Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
+
+                        Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
+
+                        Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
+
+                        Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
+                        Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
                     }
 
                     RETRY_LOCK = true;
@@ -1456,23 +1481,6 @@ namespace ReFined
                     {
                         while (_pausRead == 0x01)
                             _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
-
-                        for (int i = 0; i < 4; i++)
-                            Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
-
-                        for (int i = 0; i < 4; i++)
-                            Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
-
-                        Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
-
-                        Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
-                        Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
-
-                        Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
-                        Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
-
-                        Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
-                        Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
                     }
 
                     RETRY_LOCK = false;
@@ -1870,7 +1878,7 @@ namespace ReFined
             var _healthValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP);
             var _magicValue = Hypervisor.Read<byte>(Variables.ADDR_SoraHP + 0x180);
 
-            var _levelValue = Hypervisor.Read<byte>(0x00445061);
+            var _levelValue = Hypervisor.Read<byte>(Variables.ADDR_LevelStart);
             var _formValue = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
 
             var _stringState = string.Format(

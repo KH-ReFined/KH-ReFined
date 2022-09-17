@@ -132,6 +132,7 @@ namespace ReFined
         public static ulong ADDR_SoraForm = 0x0446086;
 
         public static ulong ADDR_ContText = 0x2562CA2;
+        public static ulong ADDR_LevelStart = 0x445061;
         public static ulong ADDR_EXPStart = 0x446242;
         public static ulong ADDR_ItemStart = 0x0445086;
         public static ulong ADDR_DriveStart = 0x24BC8FA;
