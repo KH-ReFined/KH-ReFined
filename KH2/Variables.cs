@@ -152,6 +152,7 @@ namespace ReFined
         public static ulong ADDR_TitleCount = 0x5B68A2;
 
         public static ulong ADDR_EpicGamesID = 0x0B90178;
+        public static ulong ADDR_LoadIndicator = 0x385852;
 
         public static ulong ADDR_ControllerMode = 0x25DDFFA;
 
@@ -191,6 +192,7 @@ namespace ReFined
         public static ulong ADDR_Framerate = 0x36550C;
 
         public static ulong ADDR_ActionExe = 0x24F5B48;
+        public static ulong ADDR_ReactionID = 0x24AA314;
 
         public static ulong ADDR_PAXFormatter = 0x61F92;
         public static ulong ADDR_BTLFormatter = 0x5F83A;
@@ -217,6 +219,7 @@ namespace ReFined
         // Addresses for instructions are here.
         //
 
+        public static ulong ADDR_SaveEffectINST = 0x405FEB;
         public static ulong ADDR_LimiterINST = 0x152220;
         public static ulong ADDR_WarpINST = 0x150782;
         public static ulong ADDR_RevertINST = 0x39D8D6;

@@ -93,6 +93,9 @@ namespace ReFined
         static byte[] LIBRETTO_READ;
         static byte[] BARFILE_READ;
 
+        static DateTime SAVE_TIME;
+        static bool SAVE_RESET = true;
+
         /*
             Initialization:
 
@@ -1098,6 +1101,37 @@ namespace ReFined
             }
         }
 
+        public static void ClassicSave()
+        {
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+
+            var _reactionRead = Hypervisor.Read<ushort>(Variables.ADDR_ReactionID);
+
+            if (SAVE_RESET)
+            {
+                Hypervisor.Write<byte>(Hypervisor.PureAddress + Variables.ADDR_SaveEffectINST, 0x75, true);
+                SAVE_RESET = false;
+            }
+
+            if (_loadRead == 0x00 && !SAVE_RESET)
+                SAVE_RESET = true;
+            
+            if (_reactionRead == 0x0037)
+            {
+                var _healthRead = Hypervisor.Read<byte>(Variables.ADDR_SoraHP);
+                var _magicRead = Hypervisor.Read<byte>(Variables.ADDR_SoraHP + 0x180);
+
+                var _healthMax = Hypervisor.Read<byte>(Variables.ADDR_SoraHP + 0x04);
+                var _magicMax = Hypervisor.Read<byte>(Variables.ADDR_SoraHP + 0x184);
+
+                if (_healthRead == _healthMax && _magicRead == _magicMax)
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + Variables.ADDR_SaveEffectINST, 0x74, true);
+                
+                else
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + Variables.ADDR_SaveEffectINST, 0x75, true);
+            }
+        }
+
         /*
             AudioSwap:
 
@@ -1572,8 +1606,6 @@ namespace ReFined
             }
         }
 
-        //F_TT140
-
         /*
             GenerateSave:
 
@@ -1987,6 +2019,7 @@ namespace ReFined
 
                 #region Low Priority
                 MagicHide();
+                ClassicSave();
                 HolidayEngine();
                 LimitOverride();
                 #endregion
