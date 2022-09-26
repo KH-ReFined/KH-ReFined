@@ -27,6 +27,11 @@ If you wish to support this project, consider becoming a Patron.
   
 [![Patreon](https://img.shields.io/endpoint?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%2F%3Fusername%3Dtopaztk%26type%3Dpatrons)](https://www.patreon.com/topaztk)
 
+## Discord
+
+For all kinds of technical support and discussion, join the Discord Server:
+[![Discord](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined-Discord-purple))](https://discord.gg/kh-refined)
+
 ## Features
 
 _Features are separated into two categories: "Error/Bug Fix" or "Enhancement". They are organized as follows:_ 
