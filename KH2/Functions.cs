@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -166,7 +167,9 @@ namespace ReFined
                 Hypervisor.UnlockBlock(Variables.ADDR_ShortIconAssignINST);
 
                 var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
+
+                var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data");
+                var _configDir = Path.Combine(_documentsPath, "Kingdom Hearts/Configuration");
 
                 EPIC_INIT:
                 if (Directory.Exists(_saveDir))
@@ -179,14 +182,31 @@ namespace ReFined
                     foreach (var _str in _epicDirs)
                     {
                         var _folderName = new DirectoryInfo(_str).Name;
-                        Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _folderName));
+                        Directory.CreateDirectory(Path.Combine(_configDir, _folderName));
 
                         Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
                     }
                 }
 
                 else
+                {
+                    Directory.CreateDirectory(_saveDir);
+                    Directory.CreateDirectory(_configDir);
+
+                    var _messageResult = MessageBox.Show(
+                        "Re:Fined has detected the mispresence of the necessary folders,\n" + 
+                        "and has taken necessary action to try and crate them. If you see\n" +
+                        "this message again, ro the game crashes, please restart the game.\n\n" +
+                        "Should the game continue to crash, write about it to the Re:Fined\n" +
+                        "Discord Server immediately.",
+                        "Save Folder Mispresence Detected!", MessageBoxButtons.OKCancel, 
+                        MessageBoxIcon.Warning);
+
+                    if (_messageResult == DialogResult.Cancel)
+                        Environment.Exit(0);
+
                     goto EPIC_INIT;
+                }
 
                 // Initialize the source and the token for secondary tasks.
                 Variables.Source = new CancellationTokenSource();

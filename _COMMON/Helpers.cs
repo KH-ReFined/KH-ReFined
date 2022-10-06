@@ -1,6 +1,6 @@
 /*
 ==================================================
-    KINGDOM HEARTS - RE:FINED COMMON FILE!
+    KINGDOM HEARTS - reFined COMMON FILE!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -43,7 +43,7 @@ namespace ReFined
 
 		public static void InitConfig()
 		{			
-			if (!File.Exists("re:Fined.ini"))
+			if (!File.Exists("reFined.ini"))
 			{
 				var _outIni = new string[]
 				{
@@ -69,22 +69,22 @@ namespace ReFined
 					"limitShortcuts = [sonic, arcanum, raid, ragnarok]"
 				};
 
-				File.WriteAllLines("re:Fined.ini", _outIni);
+				File.WriteAllLines("reFined.ini", _outIni);
 			}
 
 			else
 			{
-				var _fileRead = File.ReadAllText("re:Fined.ini");
+				var _fileRead = File.ReadAllText("reFined.ini");
 
 				if (!_fileRead.Contains("driveShortcuts"))
 				{
-					File.Delete("re:Fined.ini");
+					File.Delete("reFined.ini");
 					InitConfig();
 				};
 				
 				else
 				{
-					var _configIni = new TinyIni("re:Fined.ini");	
+					var _configIni = new TinyIni("reFined.ini");	
 
 					Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
 					Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));

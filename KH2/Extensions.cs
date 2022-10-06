@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 2 FM!
+      KINGDOM HEARTS - RE:FINED FOR 2 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace ReFixed
+namespace ReFined
 {
     public static class Extensions
     {
