@@ -142,6 +142,8 @@ namespace ReFined
         public static ulong ADDR_PartyStart = 0x4460D6;
         public static ulong ADDR_Inventory = 0x4460E2;
 
+        public static ulong ADDR_System03 = 0x24F58A2;
+
         public static ulong ADDR_SummonLevel = 0x446088;
         public static ulong ADDR_SummonEXP = 0x446246;
 
