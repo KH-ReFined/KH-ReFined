@@ -26,9 +26,6 @@ namespace AxaFormBase
 {
     public partial class BaseSimpleForm : Form
     {
-        static bool _cursorHidden;
-        public static bool CaptureStatus;
-
         public static CancellationTokenSource CancelSource;
         public static CancellationToken MainToken;
         public static Task MainTask;
