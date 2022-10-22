@@ -80,7 +80,7 @@ namespace ReFined
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
-				};
+				}
 				
 				else
 				{

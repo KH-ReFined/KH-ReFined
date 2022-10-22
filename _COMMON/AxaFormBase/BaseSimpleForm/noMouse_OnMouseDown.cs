@@ -21,6 +21,9 @@ namespace AxaFormBase
 {
 	public partial class BaseSimpleForm : Form
 	{
+		static bool _cursorHidden;
+        public static bool CaptureStatus;
+
 		private void noMouse_OnMouseDown(object sender, MouseEventArgs e)
 		{
 			if (!CaptureStatus && !_cursorHidden)
