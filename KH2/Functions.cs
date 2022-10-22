@@ -1778,6 +1778,8 @@ namespace ReFined
             var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_World);
             var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_World + 0x01);
 
+            var _pauseCheck = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
+
             if (!CheckTitle() && _loadRead == 0x01)
             {
                 Thread.Sleep(100);
@@ -1788,7 +1790,7 @@ namespace ReFined
                 _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
                 var _saveConfig = Variables.DualAudio && Variables.saveToggle;
-                var _saveableBool = (_saveConfig ? _saveConfig : _toggleCheck == 0x01) && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _worldCheck >= 0x02;
+                var _saveableBool = (_saveConfig ? _saveConfig : _toggleCheck == 0x01) && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _worldCheck >= 0x02 && _pauseCheck == 0x00;
 
                 if (_saveableBool)
                 {
