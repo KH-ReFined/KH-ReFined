@@ -1482,32 +1482,40 @@ namespace ReFined
 
                     else
                     {
-                        // Retry Mode active.
-                        RETRY_MODE = 0x01;
+                        if (Variables.retryDefault)
+                        {
+                            RETRY_MODE = 0x01;
 
-                        Helpers.Log("Death Screen detected! Destroying functions...", 0);
+                            Helpers.Log("Death Screen detected! Retry is default! Destroying functions...", 0);
 
-                        // Destroy the functions responsible for switching rooms and reverting story flags.
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
+                            // Destroy the functions responsible for switching rooms and reverting story flags.
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
+                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
-                        for (int i = 0; i < 13; i++)
-                            Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
+                            for (int i = 0; i < 13; i++)
+                                Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
 
-                        for (int i = 0; i < 13; i++)
-                            Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
+                            for (int i = 0; i < 13; i++)
+                                Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
 
-                        for (int i = 0; i < 13; i++)
-                            Hypervisor.WriteArray(Variables.ADDR_LevelStart + (ulong)(0x114 * i), LVL_READ[i]);
-                            
-                        Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
-                        Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
+                            for (int i = 0; i < 13; i++)
+                                Hypervisor.WriteArray(Variables.ADDR_LevelStart + (ulong)(0x114 * i), LVL_READ[i]);
+                                
+                            Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
+                            Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
 
-                        Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
-                        Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
+                            Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
+                            Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
 
-                        Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
+                            Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
+                        }
+
+                        else
+                        {
+                            RETRY_MODE = 0x00;
+                            Helpers.Log("Death Screen detected! Continue is default! Changing nothing...", 0);
+                        }
                     }
 
                     RETRY_LOCK = true;

@@ -44,6 +44,7 @@ namespace ReFined
 
         public static bool contToggle = true;
         public static bool autoController = true;
+        public static bool retryDefault = true;
 
         public static bool devMode = false;
 

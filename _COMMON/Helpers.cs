@@ -63,6 +63,9 @@ namespace ReFined
 					"festivityEngine = true",
 					"driveShortcuts = true",
 					"",
+					"# Options: retry, continue",
+					"defaultPrompt = retry",
+					"",
 					"# Options: sonic, arcanum, raid, ragnarok",
 					"# Order: [CONFIRM], TRI, SQU, [JUMP]",
 					"# Duplicates are allowed. All 4 slots must be filled.",
@@ -76,7 +79,7 @@ namespace ReFined
 			{
 				var _fileRead = File.ReadAllText("reFined.ini");
 
-				if (!_fileRead.Contains("driveShortcuts"))
+				if (!_fileRead.Contains("defaultPrompt"))
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
