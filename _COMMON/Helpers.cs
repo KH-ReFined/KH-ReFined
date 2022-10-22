@@ -117,8 +117,18 @@ namespace ReFined
 				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
+				var _session = 1;
 				var _typeStr = "";
 				var _fileName = "ReFined-" + _dateStr + ".txt";
+
+				FILE_CHECK:
+				if (File.Exists(_fileName))
+				{
+					_fileName = "ReFined-" + _dateStr + "SESSION_" + _session + ".txt";
+					_session++;
+
+					goto FILE_CHECK;
+				}
 
 				switch(Type)
 				{
@@ -154,7 +164,18 @@ namespace ReFined
 				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
+				var _session = 1;
 				var _fileName = "ReFined-" + _dateStr + ".txt";
+
+				FILE_CHECK:
+				if (File.Exists(_fileName))
+				{
+					_fileName = "ReFined-" + _dateStr + "SESSION_" + _session + ".txt";
+					_session++;
+
+					goto FILE_CHECK;
+				}
+
 				var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
 
 				using (StreamWriter _write = File.AppendText(_fileName))
