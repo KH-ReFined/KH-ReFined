@@ -195,8 +195,8 @@ namespace ReFined
 
                     var _messageResult = MessageBox.Show(
                         "Re:Fined has detected the mispresence of the necessary folders,\n" + 
-                        "and has taken necessary action to try and crate them. If you see\n" +
-                        "this message again, ro the game crashes, please restart the game.\n\n" +
+                        "and has taken necessary action to try and create them. If you see\n" +
+                        "this message again, or the game crashes, please restart the game.\n\n" +
                         "Should the game continue to crash, write about it to the Re:Fined\n" +
                         "Discord Server immediately.",
                         "Save Folder Mispresence Detected!", MessageBoxButtons.OKCancel, 
@@ -956,7 +956,7 @@ namespace ReFined
         {
             if (CheckTitle() && SKIP_STAGE != 0)
             {
-                Helpers.Log("Title screen detected! Resetting Roxas Skip!", 0);
+                Helpers.Log("Title Screen detected! Resetting Roxas Skip!", 0);
                 SKIP_STAGE = 0;
             }
 
@@ -1344,6 +1344,8 @@ namespace ReFined
                 // Read the necessary shits at the start of a fight.
                 if (DRIVE_READ == null && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && !CheckTitle())
                 {
+                    READ_STUFF:
+
                     LVL_READ = new List<byte[]>();
                     ITEM_READ = new List<byte[]>();
                     ABILITY_READ = new List<byte[]>();
@@ -1371,7 +1373,7 @@ namespace ReFined
                     SUMM_EXP_READ = Hypervisor.Read<byte>(Variables.ADDR_SummonEXP);
 
                     if (DRIVE_READ[2] == 0x00)
-                        DRIVE_READ = null;
+                        goto READ_STUFF;
 
                     else
                         Helpers.Log(String.Format("Start of forced fight, reading necessary values into memory..."), 0);
@@ -1502,16 +1504,10 @@ namespace ReFined
                         Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
                         Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
 
-                        Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
-
-                        Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
-                        Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
-
-                        Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
-                        Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
-
                         Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
                         Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
+
+                        Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
                     }
 
                     RETRY_LOCK = true;
@@ -1521,7 +1517,7 @@ namespace ReFined
                 else if (((_bttlByte != 0x02 && _menuPoint == 0x00) || _fnshByte == 0x01 || _cutsByte != 0x00) && RETRY_LOCK)
                 {
                     if (_fnshByte != 0x01)
-                        Helpers.Log("Death screen is not present! Restoring functions...", 0);
+                        Helpers.Log("Death Screen is not present! Restoring functions...", 0);
 
                     else
                         Helpers.Log("End of battle detected! Restoring functions...", 0);
@@ -1535,6 +1531,11 @@ namespace ReFined
                     {
                         while (_pausRead == 0x01)
                             _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
+                        
+                        Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_Inventory, INVENTORY_READ);
+                        Hypervisor.WriteArray(Variables.ADDR_DriveStart, DRIVE_READ);
                     }
 
                     RETRY_LOCK = false;
