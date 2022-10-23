@@ -127,10 +127,11 @@ namespace ReFined
                 // Open the config file for game-specific configs.
                 var _configIni = new TinyIni("reFined.ini");
 
-                // Parse the Festive Toggle, and the chosen Limit Form shortcuts, and the Drive SHortcut setting.
+                // Parse the Festive Toggle, and the chosen Limit Form shortcuts, default Retry Setting, and the Drive SHortcut setting.
                 Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
                 Variables.driveToggle = Convert.ToBoolean(_configIni.Read("driveShortcuts", "Kingdom Hearts II"));
                 Variables.limitShorts = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
+                Variables.retryDefault = _configIni.Read("defaultPrompt", "Kingdom Hearts II") == "retry" ? true : false;
 
                 // Should the shortcuts be parsed; Place them accordingly.
                 if (Variables.limitShorts != "")
