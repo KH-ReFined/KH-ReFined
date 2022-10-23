@@ -21,9 +21,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 using Octokit;
 using Ionic.Zip;
-using ReFixed.Forms;
+using ReFined.Forms;
 
-namespace ReFixed
+namespace ReFined
 {
 	public class UpdateAgent
 	{
@@ -34,13 +34,13 @@ namespace ReFixed
         {
             try
             {
-                var _gitClient = new GitHubClient(new ProductHeaderValue("ReFixed-Updater"));
-                var _latestInfo = _gitClient.Repository.Release.GetLatest("TopazTK", "KH-ReFixed").Result;
+                var _gitClient = new GitHubClient(new ProductHeaderValue("ReFined-Updater"));
+                var _latestInfo = _gitClient.Repository.Release.GetLatest("TopazTK", "KH-ReFined").Result;
 
                 var _latestNumber = Convert.ToDouble(_latestInfo.TagName.Substring(1), CultureInfo.InvariantCulture);
                 var _latestFile = _latestInfo.Assets[0].BrowserDownloadUrl;
 
-                var _downPath = Path.GetTempPath() + "reFixedUpdate.zip";
+                var _downPath = Path.GetTempPath() + "reFinedUpdate.zip";
                 var _exePath = Assembly.GetExecutingAssembly().Location;
 
                 var _nameVersion = "[v{0}].exe";
@@ -53,11 +53,11 @@ namespace ReFixed
 
                 if (_latestNumber > _version)
                 {
-                    var _boxMessage = "A new version of Re:Fixed has been detected!\n" +
+                    var _boxMessage = "A new version of Re:Fined has been detected!\n" +
                                     "[Current: v{0}, Latest: v{1}]\n\n" +
                                     "Do you wish to update the game?";  
 
-                    var _boxTitle = "Re:Fixed Updater";  
+                    var _boxTitle = "Re:Fined Updater";  
                     var _boxButtons = MessageBoxButtons.YesNo;  
 
                     var _boxFormat = String.Format(_boxMessage, _version.ToString("0.00"), _latestNumber.ToString("0.00"));
@@ -127,10 +127,10 @@ namespace ReFixed
 
             catch (Exception)
             {
-                var _boxMessage = "Re:Fixed was not able to check for updates.\n" +
+                var _boxMessage = "Re:Fined was not able to check for updates.\n" +
                                   "Initializing the game normally...";  
 
-                var _boxTitle = "Re:Fixed Updater";  
+                var _boxTitle = "Re:Fined Updater";  
                 var _boxButtons = MessageBoxButtons.OK;  
 
                 MessageBox.Show(_boxMessage, _boxTitle, _boxButtons, MessageBoxIcon.Error);  
