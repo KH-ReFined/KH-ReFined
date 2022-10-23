@@ -1219,12 +1219,6 @@ namespace ReFined
                 {
                     Helpers.Log("Title to Exit detected! 2.5 second limit set! Initating exit...", 0);
                     Thread.Sleep(2500);
-
-                    if (File.Exists("KINGDOM HEARTS HD 1.5+2.5 Launcher.exe"))
-                    {
-                        Helpers.Log("Launcher found! Launching the launcher...", 0);
-                        Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
-                    }
                     
                     Helpers.Log("Re:Fined terminated with no errors.", 0);
                     Environment.Exit(0);
@@ -1270,7 +1264,7 @@ namespace ReFined
             /*
                 Okay, so I wasted a long ass time trying to make this work. But I figure I got it down to a fine art.
                
-                This fuınction messes with in-game functions and the save state, dangerous, but it works very well.
+                This function messes with in-game functions and the save state, dangerous, but it works very well.
                 Basically, when you are in a forced battle, it YEETS the functions responsible for swtiching rooms
                 and reverting flags upon continuing, allowing one to retry the said battle instantly.
 
@@ -1493,22 +1487,7 @@ namespace ReFined
                             Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                             Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
-                            for (int i = 0; i < 13; i++)
-                                Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
-
-                            for (int i = 0; i < 13; i++)
-                                Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
-
-                            for (int i = 0; i < 13; i++)
-                                Hypervisor.WriteArray(Variables.ADDR_LevelStart + (ulong)(0x114 * i), LVL_READ[i]);
-                                
                             Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
-                            Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
-
-                            Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
-                            Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
-
-                            Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
                         }
 
                         else
@@ -1539,6 +1518,22 @@ namespace ReFined
                     {
                         while (_pausRead == 0x01)
                             _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
+
+                        for (int i = 0; i < 13; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_ItemStart + (ulong)(0x114 * i), ITEM_READ[i]);
+
+                        for (int i = 0; i < 13; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_AbilityStart + (ulong)(0x114 * i), ABILITY_READ[i]);
+
+                        for (int i = 0; i < 13; i++)
+                            Hypervisor.WriteArray(Variables.ADDR_LevelStart + (ulong)(0x114 * i), LVL_READ[i]);
+
+                        Hypervisor.WriteArray(Variables.ADDR_PartyStart, PARTY_READ);
+
+                        Hypervisor.Write(Variables.ADDR_SummonLevel, SUMM_LVL_READ);
+                        Hypervisor.Write(Variables.ADDR_SummonEXP, SUMM_EXP_READ);
+
+                        Hypervisor.WriteArray(Variables.ADDR_ChestStart, CHEST_READ);
                         
                         Hypervisor.Write(Variables.ADDR_EXPStart, EXP_READ);
                         Hypervisor.WriteArray(Variables.ADDR_FormStart, FORM_STAT_READ);
