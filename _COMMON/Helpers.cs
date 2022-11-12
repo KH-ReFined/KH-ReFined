@@ -24,6 +24,8 @@ namespace ReFined
 {
     public static class Helpers
     {
+	    static string _logFileName = "";
+
         public static void PlaySFX(string Input)
 		{
 			var _output = new DirectSoundOut();
@@ -122,15 +124,19 @@ namespace ReFined
 
 				var _session = 1;
 				var _typeStr = "";
-				var _fileName = "ReFined-" + _dateStr + ".txt";
 
-				FILE_CHECK:
-				if (File.Exists(_fileName))
+				if (_logFileName == "")
 				{
-					_fileName = "ReFined-" + _dateStr + "SESSION_" + _session + ".txt";
-					_session++;
+					_logFileName = "ReFined-" + _dateStr + ".txt";
 
-					goto FILE_CHECK;
+					FILE_CHECK:
+					if (File.Exists(_logFileName))
+					{
+						_logFileName = "ReFined-" + _dateStr + "_SESSION_" + _session + ".txt";
+						_session++;
+
+						goto FILE_CHECK;
+					}
 				}
 
 				switch(Type)
@@ -148,7 +154,7 @@ namespace ReFined
 						break;
 				}
 
-				using (StreamWriter _write = File.AppendText(_fileName))
+				using (StreamWriter _write = File.AppendText(_logFileName))
 					_write.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
 
 				if (Variables.devMode)
@@ -168,20 +174,24 @@ namespace ReFined
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
 				var _session = 1;
-				var _fileName = "ReFined-" + _dateStr + ".txt";
 
-				FILE_CHECK:
-				if (File.Exists(_fileName))
+				if (_logFileName == "")
 				{
-					_fileName = "ReFined-" + _dateStr + "SESSION_" + _session + ".txt";
-					_session++;
+					_logFileName = "ReFined-" + _dateStr + ".txt";
 
-					goto FILE_CHECK;
+					FILE_CHECK:
+					if (File.Exists(_logFileName))
+					{
+						_logFileName = "ReFined-" + _dateStr + "SESSION_" + _session + ".txt";
+						_session++;
+
+						goto FILE_CHECK;
+					}
 				}
 
 				var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
 
-				using (StreamWriter _write = File.AppendText(_fileName))
+				using (StreamWriter _write = File.AppendText(_logFileName))
 					_write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
 
 				if (Variables.devMode)
