@@ -242,7 +242,7 @@ namespace ReFined
             if (Variables.driveToggle && _instCheck != 0x90 && _iconByte != 0x00)
             {
                 // This reads part of the actual instruction which handles drive icons on shortcuts to move it.
-                var _instRead = Hypervisor.ReadArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x03, 0xCE, true);
+                var _instRead = Hypervisor.ReadArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x03, 0x19, true);
 
                 // This writes a JMP statement to trigger an alternative condition.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST, Variables.INST_ShortIconAssign[0], true);
