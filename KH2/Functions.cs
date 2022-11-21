@@ -239,10 +239,10 @@ namespace ReFined
             var _instCheck = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_ShortCategoryFilterINST, true);
             var _iconByte = Hypervisor.Read<byte>(0x2506F7D);
 
-            if (Variables.driveToggle && _instCheck != 0x90 && _iconByte != 0x19 && _iconByte != 0x00)
+            if (Variables.driveToggle && _instCheck != 0x90 && _iconByte != 0x00)
             {
                 // This reads part of the actual instruction which handles drive icons on shortcuts to move it.
-                var _instRead = Hypervisor.ReadArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x03, 0x19, true);
+                var _instRead = Hypervisor.ReadArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x03, 0xCE, true);
 
                 // This writes a JMP statement to trigger an alternative condition.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST, Variables.INST_ShortIconAssign[0], true);
@@ -255,7 +255,7 @@ namespace ReFined
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x21, Variables.INST_ShortIconAssign[2], true);
 
                 // Write what icon it should be corrected to.
-                Hypervisor.Write<byte>(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x20, _iconByte, true);
+                Hypervisor.Write<byte>(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x20, 0xCE, true);
 
                 // Adjustments to the shortcut filter mechanism to show the drives in the list:
                 // This one jumps out to a interrupt block so that we can inject code.
@@ -1612,9 +1612,7 @@ namespace ReFined
 
                 SkipRoxas();
                 ResetGame();
-                MapSkip();
                 DriveShortcuts();
-                AtlanticaUnpause();
                 RetryPrompt();
                 FixExit();
                 #endregion
@@ -1626,7 +1624,6 @@ namespace ReFined
                 Autoattack();
                 SortMagic();
                 AdjustControler();
-                TextAdjust();
                 FrameOverride();
                 #endregion
 

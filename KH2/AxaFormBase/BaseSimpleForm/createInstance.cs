@@ -47,7 +47,7 @@ namespace AxaFormBase
                 UpdateAgent.UpdateCheck();
 
                 if (BaseSimpleForm.theInstance == null)
-                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fined v3.10]");
+                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fined v4.00]");
 
                 Cursor.Hide();
                 theInstance.KeyDown += _keyEvent;
