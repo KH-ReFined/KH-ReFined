@@ -55,6 +55,9 @@ namespace ReFined
 					"autoAttack = false",
 					"saveIndicator = true",
 					"",
+					"# Options: vanilla, remastered",
+					"musicMode = remastered",
+					"",
 					"# Options: true = Controller, false = Keyboard, auto = Autodetect",
 					"controllerPrompt = auto",
 					"",
@@ -81,7 +84,7 @@ namespace ReFined
 			{
 				var _fileRead = File.ReadAllText("reFined.ini");
 
-				if (!_fileRead.Contains("defaultPrompt"))
+				if (!_fileRead.Contains("musicMode"))
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
@@ -95,6 +98,8 @@ namespace ReFined
 					Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
 					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
 					Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "General"));
+
+					Variables.vanillaMusic = _configIni.Read("musicMode", "General") == "vanilla" ? true : false;
 
 					var _contValue = _configIni.Read("controllerPrompt", "General");
 

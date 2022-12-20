@@ -41,7 +41,9 @@ namespace ReFined
         public static bool saveToggle = true;
 
         public static bool attackToggle = false;
-
+        public static bool vanillaMusic = false;
+        public static bool vanillaEnemy = true;
+        
         public static bool contToggle = true;
         public static bool autoController = true;
         public static bool retryDefault = true;
@@ -77,6 +79,60 @@ namespace ReFined
 
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
+
+        public static string[] BOSSObjentry =
+        {
+            "B_BB100",
+            "B_BB100_GM",
+            "B_BB100_TSURU",
+            "B_CA000",
+            "B_CA050",
+            "B_CA050_GM",
+            "B_LK120",
+            "B_LK120_GM",
+            "B_MU120",
+            "B_MU120_GM",
+        };
+
+        public static string[] ENEMYObjentry = 
+        {
+            "M_EX010",
+            "M_EX010_NM",
+            "M_EX050",
+            "M_EX060",
+            "M_EX200",
+            "M_EX200_NM",
+            "M_EX500",
+            "M_EX500_GM",
+            "M_EX500_HB",
+            "M_EX500_HB_GM",
+            "M_EX500_NM",
+            "M_EX510",
+            "M_EX520",
+            "M_EX520_AL",
+            "M_EX530",
+            "M_EX540",
+            "M_EX550",
+            "M_EX560",
+            "M_EX570",
+            "M_EX590",
+            "M_EX620",
+            "M_EX620_AL",
+            "M_EX630",
+            "M_EX640",
+            "M_EX650",
+            "M_EX670",
+            "M_EX690",
+            "M_EX710",
+            "M_EX720",
+            "M_EX730",
+            "M_EX750",
+            "M_EX750_NM",
+            "M_EX780",
+            "M_EX790",
+            "M_EX790_HALLOWEEN",
+            "M_EX790_HALLOWEEN_NM"
+        };
 
         public static Dictionary<string, short> LMTDictionary = new Dictionary<string, short>()
         {
@@ -128,6 +184,7 @@ namespace ReFined
         public static ulong ADDR_MagicLV2 = 0x446131;
 
         public static ulong ADDR_DeadSora = 0x553FC6;
+        public static ulong ADDR_MusicPath = 0x04E6B6;
 
         public static ulong ADDR_SoraHP = 0x024BC74A;
         public static ulong ADDR_SoraForm = 0x0446086;
@@ -156,6 +213,8 @@ namespace ReFined
         public static ulong ADDR_LoadIndicator = 0x385852;
 
         public static ulong ADDR_ControllerMode = 0x25DDFFA;
+
+        public static ulong ADDR_ObjentryBASE = 0x24BE682;
 
         public static ulong[] ADDR_Objentry = { 0x24BFA72, 0x24BFD72, 0x24E7852 };
         public static ulong[] ADDR_MagicMenu = { 0x24AA2CA, 0x24AA33A, 0x24A98EE };

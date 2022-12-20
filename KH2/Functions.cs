@@ -94,6 +94,8 @@ namespace ReFined
         static byte[] LIBRETTO_READ;
         static byte[] BARFILE_READ;
 
+        static byte[] OBJENTRY_READ;
+
         static DateTime SAVE_TIME;
         static bool SAVE_RESET = true;
 
@@ -127,12 +129,12 @@ namespace ReFined
                 // Open the config file for game-specific configs.
                 var _configIni = new TinyIni("reFined.ini");
 
-                // Parse the Festive Toggle, and the chosen Limit Form shortcuts, default Retry Setting, and the Drive SHortcut setting.
+                // Parse the Festive Toggle, and the chosen Limit Form shortcuts, default Retry Setting, and the Drive Shortcut setting.
                 Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
                 Variables.driveToggle = Convert.ToBoolean(_configIni.Read("driveShortcuts", "Kingdom Hearts II"));
                 Variables.limitShorts = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
                 Variables.retryDefault = _configIni.Read("defaultPrompt", "Kingdom Hearts II") == "retry" ? true : false;
-
+                
                 // Should the shortcuts be parsed; Place them accordingly.
                 if (Variables.limitShorts != "")
                 {
@@ -224,6 +226,62 @@ namespace ReFined
                 Helpers.LogException(_caughtEx);
                 Helpers.Log("Re:Fined terminated with an exception!", 1);
                 Environment.Exit(-1);
+            }
+        }
+
+        /*
+            MusicAdjust:
+
+            Changes the music to their PS2 variants if commanded.
+        */
+        public static void MusicAdjust()
+        {
+            if (Variables.vanillaMusic)
+                Hypervisor.WriteArray(Variables.ADDR_MusicPath, new byte[] { 0x70, 0x73, 0x32, 0x6D, 0x64 });
+        }
+
+        public static void EnemyAdjust()
+        {
+            if (OBJENTRY_READ == null)
+            {
+                var _headerCheck = Hypervisor.Read<byte>(Variables.ADDR_ObjentryBASE);
+                var _itemCount = Hypervisor.Read<int>(Variables.ADDR_ObjentryBASE + 0x04);
+
+                if (_headerCheck == 0x03)
+                    OBJENTRY_READ = Hypervisor.ReadArray(Variables.ADDR_ObjentryBASE + 0x08, 0x60 * _itemCount);
+            }
+
+            if (OBJENTRY_READ != null && Variables.vanillaEnemy)
+            {
+                foreach (var _name in Variables.BOSSObjentry)
+                {
+                    var _strArr = BitConverter.GetBytes(_name);
+                    var _searchOffset = OBJENTRY_READ.FindValue(_strArr);
+
+                    if (_searchOffset != 0xFFFFFFFFFFFFFFFF)
+                        Hypervisor.Write<byte>(Variables.ADDR_ObjentryBASE + 0x08 + _searchOffset, 0x56);
+
+                    else
+                    {
+                        Variables.vanillaEnemy = false;
+                        break;
+                    }
+                }
+
+                foreach(var _name in Variables.ENEMYObjentry)
+                {
+                    var _strArr = BitConverter.GetBytes(_name);
+                    var _searchOffset = OBJENTRY_READ.FindValue<string>(_strArr);
+                    
+                    if (_searchOffset != 0xFFFFFFFFFFFFFFFF)
+                        Hypervisor.Write<byte>(Variables.ADDR_ObjentryBASE + 0x08 + _searchOffset, 0x56);
+                    
+                    else
+                    {
+                        Variables.vanillaEnemy = false;
+                        break;
+                    }
+                }
             }
         }
 
@@ -1623,6 +1681,7 @@ namespace ReFined
 
                 Autoattack();
                 SortMagic();
+                MusicAdjust();
                 AdjustControler();
                 FrameOverride();
                 #endregion
