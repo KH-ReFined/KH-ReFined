@@ -30,7 +30,7 @@ If you wish to support this project, consider becoming a Patron.
 ## Discord
 
 For all kinds of technical support and discussion, join the Discord Server:
-[![Discord](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined-Discord-purple))](https://discord.gg/kh-refined)
+[![Discord](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined-Discord-purple))](https://discord.com/invite/kh-refined)
 
 ## Features
 
