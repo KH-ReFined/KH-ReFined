@@ -1,22 +1,18 @@
-  /*
+/*
 ==================================================
-      KINGDOM HEARTS - RE:FINED FOR 2 FM!
-       COPYRIGHT TOPAZ WHITELOCK - 2022
- LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
+   KINGDOM HEARTS - RE:FINED FOR II FM!
+     COPYRIGHT TOPAZ WHITELOCK - 2022
+LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
 */
 
-using System;
 using System.IO;
-using System.Media;
 using System.Threading;
 using System.Reflection;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
-using DiscordRPC;
+using Binarysharp.MSharp;
 
 namespace ReFined
 {
@@ -36,15 +32,18 @@ namespace ReFined
         // Variables that will be read from a config file to tell Re:Fined what to do.
         //
 
-        public static bool sfxToggle = true;
+        public static byte indToggle = 2;
         public static bool rpcToggle = true;
         public static bool saveToggle = true;
 
         public static bool attackToggle = false;
+
+        public static bool japaneseAudio = false;
         public static bool vanillaMusic = false;
-        public static bool vanillaEnemy = true;
-        
+        public static bool vanillaEnemy = false;
+
         public static bool contToggle = true;
+        public static bool resetPrompt = true;
         public static bool autoController = true;
         public static bool retryDefault = true;
 
@@ -69,13 +68,8 @@ namespace ReFined
         // Reserved for static resources, or initialization of APIs
         //
 
-        public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
-
         public static Stream SaveSFX = ExeAssembly.GetManifestResourceStream("sfxSave.wav");
         public static Stream SwitchSFX = ExeAssembly.GetManifestResourceStream("sfxSwitch.wav");
-
-        public static Stream LibrettoCA = ExeAssembly.GetManifestResourceStream("libretto-ca");
-        public static Stream BarfileCA;
 
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
@@ -94,7 +88,7 @@ namespace ReFined
             "B_MU120_GM",
         };
 
-        public static string[] ENEMYObjentry = 
+        public static string[] ENEMYObjentry =
         {
             "M_EX010",
             "M_EX010_NM",
@@ -142,12 +136,6 @@ namespace ReFined
             { "sonic", 0x02BA }
         };
 
-        public static string SaveSFXPath = Path.GetTempPath() + "ReFined/saveSFX.wav";
-        public static string SwitchSFXPath = Path.GetTempPath() + "ReFined/switchSFX.wav";
-
-        public static string LibrettoPath = Path.GetTempPath() + "ReFined/libretto.bin";
-        public static string BarfilePath = Path.GetTempPath() + "ReFined/barfile.bin";
-
         //
         // RPC ASSET LIBRARY
         //
@@ -166,6 +154,8 @@ namespace ReFined
         //
 
         public static bool Initialized = false;
+
+        public static MemorySharp SharpHook;
 
         public static Task DCTask;
         public static Task ASTask;
@@ -209,6 +199,9 @@ namespace ReFined
         public static ulong ADDR_TitleSelect = 0x5B6896;
         public static ulong ADDR_TitleCount = 0x5B68A2;
 
+        public static ulong ADDR_DeadSelect = 0x39C242;
+        public static ulong ADDR_DeadCount = 0x39C258;
+
         public static ulong ADDR_EpicGamesID = 0x0B90178;
         public static ulong ADDR_LoadIndicator = 0x385852;
 
@@ -229,17 +222,7 @@ namespace ReFined
         public static ulong ADDR_BattleFlag = 0x24AA5B6;
         public static ulong ADDR_InventoryFlag = 0x444F00;
 
-        public static ulong[] ADDR_LibrettoCA = 
-        {
-            0x9223D2,
-            0x923BD2,
-            0x922BD2,
-            0x9233D2,
-            0x922BD2
-        };
-
-        public static ulong ADDR_MenuSelect = 0x39C242;
-        public static ulong ADDR_MenuCount = 0x39C258;
+        public static ulong ADDR_SubMenu = 0x6877DE;
 
         public static ulong ADDR_Limiter = 0x553EBA;
         public static ulong ADDR_FinishFlag = 0x572672;
@@ -266,12 +249,15 @@ namespace ReFined
         public static ulong ADDR_LimitShortcut = 0x06306A;
 
         public static ulong PINT_SystemBAR = 0x24AA82A;
-        public static ulong PINT_BarfileCA = 0x24AA83A;
         public static ulong PINT_LoadedMSN = 0x24A9122;
 
         public static ulong PINT_DeadMenu = 0x68863A;
         public static ulong PINT_SaveInformation = 0x25A5972;
         public static ulong PINT_SoraVSB = 0x261ABD2;
+        public static ulong PINT_EnemyInfo = 0x24A5F22;
+
+        public static ulong PINT_SubMenuSelect = 0x687E6A;
+        public static ulong PINT_SubOptionSelect = 0x39BAFA;
 
         //
         // INSTRUCTION ADDRESSES
@@ -301,16 +287,16 @@ namespace ReFined
         public static byte[] INST_FrameLimiter = { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
         public static byte[] INST_RoomWarp = { 0xE8, 0x59, 0x00, 0x00, 0x00 };
         public static byte[] INST_FlagRevert = { 0xE8, 0x05, 0x01, 0x00, 0x00 };
-        public static byte[] INST_InvRevert = { 0xE8, 0xA4, 0x1A, 0x0D, 0x00};
+        public static byte[] INST_InvRevert = { 0xE8, 0xA4, 0x1A, 0x0D, 0x00 };
 
-        public static byte[][] INST_ShortListFilter = 
+        public static byte[][] INST_ShortListFilter =
         {
             new byte[] { 0xEB, 0x4E, 0x90, 0x90 },
             new byte[] { 0x81, 0xCB, 0x00, 0x00, 0x24, 0x00 },
             new byte[] { 0xEB, 0xAA }
         };
 
-        public static byte[][] INST_ShortEquipFilter = 
+        public static byte[][] INST_ShortEquipFilter =
         {
             new byte[] { 0xEB, 0x1B, 0x90, 0x90, 0x90, 0x90, 0x90 },
             new byte[] { 0x80, 0xF9, 0x15, 0x74, 0xF2 },
@@ -324,7 +310,7 @@ namespace ReFined
             new byte[] { 0x88, 0x47, 0x01, 0xEB, 0xDC }
         };
 
-        public static byte[][] INST_CMDSelect = 
+        public static byte[][] INST_CMDSelect =
         {
             new byte[] { 0x89, 0x4B, 0x74 },
             new byte[] { 0x89, 0x53, 0x74 },
@@ -338,6 +324,17 @@ namespace ReFined
         //
         // The values themselves, which will be written to shit, are stored here.
         //
+
+        public static byte[] HASH_SwapEnemy = { 0x82, 0x99, 0xD3, 0x20, 0xC6, 0x70, 0xC4, 0x9F, 0x7C, 0x02, 0x94, 0x06, 0xAC, 0x19, 0x53, 0xBD };
+        public static byte[] HASH_SwapMusic = { 0x84, 0x7F, 0x72, 0x02, 0x21, 0xE0, 0xBC, 0x89, 0x70, 0xEC, 0x27, 0xE2, 0x25, 0x2D, 0x2E, 0x26 };
+
+        public static List<sbyte> VALUE_ConfigIndex = new List<sbyte>() { 0x00, 0x01, 0x02, 0x03, 0x04 };
+
+        public static ushort[] VALUE_ConfigTitle = { 0x371A, 0x4D6F, 0x4D70, 0x4D71, 0x4D72 };
+        public static ushort[] VALUE_ConfigDesc = { 0x372C, 0x4D73,0x4D74, 0x4D75, 0x4D76 };
+
+        public static ushort[] VALUE_ConfigOption1 = { 0x372A, 0x01BC, 0x01BE, 0x01C0, 0x01C2 };
+        public static ushort[] VALUE_ConfigOption2 = { 0x3752, 0x01BD, 0x01BF, 0x01C1, 0x01C3 };
 
         public static byte[] VALUE_MPSEQD = { 0x7A, 0x78, 0x18, 0x79 };
         public static byte[] VALUE_StoryFlag = { 0x01, 0x00, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0, 0x05, 0x08, 0x01, 0x00, 0x00, 0x81 };

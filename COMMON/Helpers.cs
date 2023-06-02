@@ -1,6 +1,6 @@
 /*
 ==================================================
-    KINGDOM HEARTS - reFined COMMON FILE!
+    KINGDOM HEARTS - RE:FINED COMMON FILE!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -13,35 +13,15 @@ using System.Windows;
 using System.Runtime;
 using System.Reflection;
 using System.Diagnostics;
-using System.Windows.Forms;
 using System.Security.Principal;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-
-using NAudio.Wave;
 
 namespace ReFined
 {
     public static class Helpers
     {
 	    static string _logFileName = "";
-
-        public static void PlaySFX(string Input)
-		{
-			var _output = new DirectSoundOut();
-			var _wavRead = new AudioFileReader(Input);
-
-            var _volumeMaster = Hypervisor.Read<byte>(Variables.ADDR_MasterVolume);
-            var _volumeSFX = Hypervisor.Read<byte>(Variables.ADDR_MasterVolume + 0x04);
-
-			var _sfxValue = Hypervisor.Read<float>(Variables.ADDR_VolumeTable + (ulong)(0x04 * _volumeSFX));
-			var _masterValue = Hypervisor.Read<float>(Variables.ADDR_VolumeTable + (ulong)(0x04 * _volumeMaster));
-
-			_wavRead.Volume = _sfxValue * _masterValue;
-
-			_output.Init(_wavRead);
-			_output.Play();
-		}
 
 		public static void InitConfig()
 		{			
@@ -53,10 +33,16 @@ namespace ReFined
 					"autoSave = true",
 					"discordRPC = true",
 					"autoAttack = false",
-					"saveIndicator = true",
+					"saveIndicator = infobar",
 					"",
 					"# Options: vanilla, remastered",
 					"musicMode = remastered",
+					"",
+					"# Options: classic, special",
+					"heartlessColors = classic",
+					"",
+					"# Options: english, japanese",
+					"audioLanguage = english",
 					"",
 					"# Options: true = Controller, false = Keyboard, auto = Autodetect",
 					"controllerPrompt = auto",
@@ -69,7 +55,8 @@ namespace ReFined
 					"driveShortcuts = true",
 					"",
 					"# Options: retry, continue",
-					"defaultPrompt = retry",
+					"deathPrompt = retry",
+					"resetPrompt = true",
 					"",
 					"# Options: sonic, arcanum, raid, ragnarok",
 					"# Order: [CONFIRM], TRI, SQU, [JUMP]",
@@ -84,7 +71,7 @@ namespace ReFined
 			{
 				var _fileRead = File.ReadAllText("reFined.ini");
 
-				if (!_fileRead.Contains("musicMode"))
+				if (!_fileRead.Contains("heartlessColors"))
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
@@ -97,9 +84,12 @@ namespace ReFined
 					Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
 					Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
 					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
-					Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "General"));
+					
+					var _indFetch = _configIni.Read("saveIndicator", "General");
+					Variables.indToggle = (_indFetch == "infobar" ? (byte)2 : (_indFetch == "soundcue" ? (byte)1 : (byte)0));
 
 					Variables.vanillaMusic = _configIni.Read("musicMode", "General") == "vanilla" ? true : false;
+					Variables.vanillaEnemy = _configIni.Read("heartlessColors", "General") == "classic" ? true : false;
 
 					var _contValue = _configIni.Read("controllerPrompt", "General");
 
@@ -122,12 +112,16 @@ namespace ReFined
 		{
 			try
 			{
-				var _formatStr = "[{0}] {1}: {2}";
+                var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var _logDir = Path.Combine(_documentsPath, "Kingdom Hearts/Logs");
+
+                var _formatStr = "{0}{1}: {2}";
 
 				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
-				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
+				var _timeStr = "[" + DateTime.Now.ToString("hh:mm:ss") + "] ";
 
 				var _session = 1;
+
 				var _typeStr = "";
 
 				if (_logFileName == "")
@@ -148,18 +142,18 @@ namespace ReFined
 				{
 					case 0:
 						_typeStr = "MESSAGE";
-						break;
+                        break;
 
 					case 1:
 						_typeStr = "WARNING";
-						break;
+                        break;
 
 					case 2:
 						_typeStr = "ERROR";
-						break;
+                        break;
 				}
 
-				using (StreamWriter _write = File.AppendText(_logFileName))
+				using (StreamWriter _write = File.AppendText(Path.Combine(_logDir, _logFileName)))
 					_write.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
 
 				if (Variables.devMode)

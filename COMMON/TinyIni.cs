@@ -1,6 +1,6 @@
 /*
 ==================================================
-     KINGDOM HEARTS - RE:FIXED COMMON FILE
+     KINGDOM HEARTS - RE:FINED COMMON FILE
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ReFixed
+namespace ReFined
 {
     class TinyIni
     {

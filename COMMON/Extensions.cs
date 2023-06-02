@@ -1,6 +1,6 @@
 /*
 ==================================================
-    KINGDOM HEARTS - RE:FIXED COMMON FILE!
+    KINGDOM HEARTS - RE:FINED COMMON FILE!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -11,9 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using NAudio.Wave;
 
-namespace ReFixed
+namespace ReFined
 {
     public static class Extensions
     {
