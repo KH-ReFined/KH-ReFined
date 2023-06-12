@@ -30,10 +30,10 @@ namespace ReFined
 				var _outIni = new string[]
 				{
 					"[General]",
-					"autoSave = true",
+                    "# Options: infobar, silent, off",
+                    "autoSave = infobar",
 					"discordRPC = true",
 					"autoAttack = false",
-					"saveIndicator = infobar",
 					"",
 					"# Options: vanilla, remastered",
 					"musicMode = remastered",
@@ -79,28 +79,18 @@ namespace ReFined
 				
 				else
 				{
-					var _configIni = new TinyIni("reFined.ini");	
+					var _configIni = new TinyIni("reFined.ini");
 
-					Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
-					Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
+                    var _indFetch = _configIni.Read("autoSave", "General");
+                    Variables.saveToggle = (_indFetch == "silent" ? (byte)1 : (_indFetch == "infobar" ? (byte)0 : (byte)2));
+                    Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
 					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
 					
-					var _indFetch = _configIni.Read("saveIndicator", "General");
-					Variables.indToggle = (_indFetch == "infobar" ? (byte)2 : (_indFetch == "soundcue" ? (byte)1 : (byte)0));
-
 					Variables.vanillaMusic = _configIni.Read("musicMode", "General") == "vanilla" ? true : false;
 					Variables.vanillaEnemy = _configIni.Read("heartlessColors", "General") == "classic" ? true : false;
 
 					var _contValue = _configIni.Read("controllerPrompt", "General");
-
-					if (_contValue.ToLower() == "auto")
-						Variables.autoController = true;
-
-					else
-					{
-						Variables.autoController = false;
-						Variables.contToggle = Convert.ToBoolean(_contValue);
-					}
+                    Variables.autoController = (_contValue == "keyboard" ? (byte)1 : (_indFetch == "controller" ? (byte)0 : (byte)2));
 
 					if (_configIni.KeyExists("debugMode", "General"))
 						Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));

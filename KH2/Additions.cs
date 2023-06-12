@@ -61,6 +61,20 @@ namespace ReFined
         }
 
         /// <summary>
+        /// Shows the Small Obtained Window in-game, with the given raw text.
+        /// </summary>
+        /// <param name="String">The text to be shown.</param>
+        public static void ShowSmallObtainedRAW(string Input)
+        {
+            if (!Operations.CheckTitle())
+            {
+                var _convString = Input.ToKHSCII();
+                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x800000, _convString, true);
+                Variables.SharpHook[(IntPtr)0x1571D0].Execute((long)(Hypervisor.PureAddress + 0x800000));
+            }
+        }
+
+        /// <summary>
         /// Plays a sound effect according to the ID given.
         /// </summary>
         /// <param name="SoundID">The ID of the sound to be played.</param>

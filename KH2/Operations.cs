@@ -100,7 +100,7 @@ namespace ReFined
             var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
 
             if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                throw new InvalidDataException("FetchPointerMSG: The given file was NOT an MSG -- Magic and Type Error!");
+                return null;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
             var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
@@ -143,7 +143,7 @@ namespace ReFined
             var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
 
             if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                throw new InvalidDataException("FetchPointerMSG: The given file was NOT an MSG -- Magic and Type Error!");
+                return 0x00;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
             var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
@@ -169,7 +169,7 @@ namespace ReFined
             var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
 
             if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                throw new InvalidDataException("FetchPointerMSG: The given file was NOT an MSG -- Magic and Type Error!");
+                return 0x00;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
             var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
@@ -195,7 +195,7 @@ namespace ReFined
             var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
 
             if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                throw new InvalidDataException("FetchPointerMSG: The given file was NOT an MSG -- Magic and Type Error!");
+                return 0x00;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
             var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
@@ -381,7 +381,7 @@ namespace ReFined
             {
                 Helpers.Log("File does not bare a save! Autosave aborted to stop corruption!", 1);
 
-                if (Variables.indToggle == 0x02)
+                if (Variables.saveToggle == 0x00)
                     Additions.ShowInformation(0x4D6D);
 
                 return;
@@ -467,10 +467,7 @@ namespace ReFined
             }
             #endregion
 
-            if (Variables.indToggle == 0x01)
-                Additions.PlaySFX(40);
-
-            else if (Variables.indToggle == 0x02)
+            if (Variables.saveToggle == 0x00)
             {
                 Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x18BA09, 0x28, true);
                 Additions.ShowInformation(0x4D6C);

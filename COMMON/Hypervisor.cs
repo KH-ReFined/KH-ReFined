@@ -238,7 +238,7 @@ namespace ReFined
                 _address = (IntPtr)(Address);
 
             int _oldProtect = 0;
-            VirtualProtectEx(Handle, _address, 0x100, 0x40, ref _oldProtect);
+            VirtualProtectEx(Handle, _address, 0x100000, 0x40, ref _oldProtect);
         }
     }
 }

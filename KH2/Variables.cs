@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
+using DiscordRPC;
 using Binarysharp.MSharp;
 
 namespace ReFined
@@ -19,22 +20,13 @@ namespace ReFined
     public class Variables
     {
         //
-        // COMPILER OPTIONS!
-        // 
-        // - DualAudio => If set to "true", will cause the Dual Audio feature to activate.
-        //
-
-        public const bool DualAudio = false;
-
-        //
         // CONFIG VARIABLES
         //
         // Variables that will be read from a config file to tell Re:Fined what to do.
         //
 
-        public static byte indToggle = 2;
         public static bool rpcToggle = true;
-        public static bool saveToggle = true;
+        public static byte saveToggle = 0x20;
 
         public static bool attackToggle = false;
 
@@ -42,9 +34,8 @@ namespace ReFined
         public static bool vanillaMusic = false;
         public static bool vanillaEnemy = false;
 
-        public static bool contToggle = true;
         public static bool resetPrompt = true;
-        public static bool autoController = true;
+        public static byte autoController = 0x02;
         public static bool retryDefault = true;
 
         public static bool devMode = false;
@@ -68,8 +59,7 @@ namespace ReFined
         // Reserved for static resources, or initialization of APIs
         //
 
-        public static Stream SaveSFX = ExeAssembly.GetManifestResourceStream("sfxSave.wav");
-        public static Stream SwitchSFX = ExeAssembly.GetManifestResourceStream("sfxSwitch.wav");
+        public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
 
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
@@ -234,6 +224,8 @@ namespace ReFined
         public static ulong ADDR_Confirm = 0x365520;
         public static ulong ADDR_Framerate = 0x36550C;
 
+        public static ulong ADDR_ConfigMenu = 0x2BBAB2;
+
         public static ulong ADDR_ActionExe = 0x24F5B48;
         public static ulong ADDR_ReactionID = 0x24AA314;
 
@@ -258,6 +250,10 @@ namespace ReFined
 
         public static ulong PINT_SubMenuSelect = 0x687E6A;
         public static ulong PINT_SubOptionSelect = 0x39BAFA;
+
+        public static ulong PINT_ConfigSetting = 0x6892E2;
+
+        public static ulong PINT_CommandSEQD = 0x453DFA;
 
         //
         // INSTRUCTION ADDRESSES
@@ -325,16 +321,29 @@ namespace ReFined
         // The values themselves, which will be written to shit, are stored here.
         //
 
+        public static List<ushort[]> ARRY_ConfigMenu = new List<ushort[]>
+        {
+            new ushort[] { 0x0002, 0xB717, 0xB71E, 0xB71F, 0x0000, 0x0000, 0xB720, 0xB721, 0x0000, 0x0000  },
+            new ushort[] { 0x0002, 0xC2F5, 0xC2F8, 0xC2F9, 0x0000, 0x0000, 0xC2FA, 0xC2FB, 0x0000, 0x0000  },
+            new ushort[] { 0x0002, 0xC2F6, 0xC2FC, 0xC2FD, 0x0000, 0x0000, 0xC2FE, 0xC2FF, 0x0000, 0x0000  },
+            new ushort[] { 0x0003, 0xC2F7, 0xC302, 0xC300, 0xC301, 0x0000, 0xC305, 0xC303, 0xC304, 0x0000  },
+            new ushort[] { 0x0002, 0xB719, 0xB726, 0xB727, 0x0000, 0x0000, 0xB728, 0xB729, 0x0000, 0x0000  },
+            new ushort[] { 0x0003, 0x01BC, 0x01C1, 0x01C2, 0x01C3, 0x0000, 0x01CD, 0x01CE, 0x01CF, 0x0000  },
+            new ushort[] { 0x0002, 0x01BD, 0x01C4, 0x01C5, 0x0000, 0x0000, 0x01D0, 0x01D1, 0x0000, 0x0000  },
+            new ushort[] { 0x0002, 0x01BE, 0x01C6, 0x01C7, 0x0000, 0x0000, 0x01D2, 0x01D3, 0x01D4, 0x0000  },
+            new ushort[] { 0x0002, 0x01BF, 0x01C8, 0x01C9, 0x0000, 0x0000, 0x01D4, 0x01D5, 0x0000, 0x0000  },
+            new ushort[] { 0x0003, 0x01C0, 0x01CA, 0x01CB, 0x01CC, 0x0000, 0x01D6, 0x01D7, 0x01D8, 0x0000  },
+            new ushort[] { 0x0002, 0xB71A, 0xB72A, 0xB752, 0x0000, 0x0000, 0xB72C, 0xB72D, 0x0000, 0x0000  },
+            new ushort[] { 0x0002, 0xB71C, 0xB734, 0xB735, 0x0000, 0x0000, 0xB736, 0xB737, 0x0000, 0x0000  },
+            new ushort[] { 0x0001, 0xB71D, 0xB738, 0xB739, 0xB73A, 0xCE30, 0xB73B, 0xB73C, 0xB73D, 0xCE31  }
+        };
+
+        public static byte[] HASH_SwapAudio = { 0x26, 0x72, 0x0C, 0xDE, 0xD5, 0x68, 0x39, 0x0F, 0x18, 0x5A, 0x98, 0x8E, 0xD0, 0x8C, 0x90, 0xC5 };
         public static byte[] HASH_SwapEnemy = { 0x82, 0x99, 0xD3, 0x20, 0xC6, 0x70, 0xC4, 0x9F, 0x7C, 0x02, 0x94, 0x06, 0xAC, 0x19, 0x53, 0xBD };
         public static byte[] HASH_SwapMusic = { 0x84, 0x7F, 0x72, 0x02, 0x21, 0xE0, 0xBC, 0x89, 0x70, 0xEC, 0x27, 0xE2, 0x25, 0x2D, 0x2E, 0x26 };
 
-        public static List<sbyte> VALUE_ConfigIndex = new List<sbyte>() { 0x00, 0x01, 0x02, 0x03, 0x04 };
-
-        public static ushort[] VALUE_ConfigTitle = { 0x371A, 0x4D6F, 0x4D70, 0x4D71, 0x4D72 };
-        public static ushort[] VALUE_ConfigDesc = { 0x372C, 0x4D73,0x4D74, 0x4D75, 0x4D76 };
-
-        public static ushort[] VALUE_ConfigOption1 = { 0x372A, 0x01BC, 0x01BE, 0x01C0, 0x01C2 };
-        public static ushort[] VALUE_ConfigOption2 = { 0x3752, 0x01BD, 0x01BF, 0x01C1, 0x01C3 };
+        public static ushort[] VALUE_ConfigTitle = { 0x3738, 0x3739, 0x373A, 0x4E30 };
+        public static ushort[] VALUE_ConfigDesc = { 0x373B, 0x373C, 0x373D, 0x4E31 };
 
         public static byte[] VALUE_MPSEQD = { 0x7A, 0x78, 0x18, 0x79 };
         public static byte[] VALUE_StoryFlag = { 0x01, 0x00, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0, 0x05, 0x08, 0x01, 0x00, 0x00, 0x81 };
