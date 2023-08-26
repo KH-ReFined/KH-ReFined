@@ -198,7 +198,7 @@ namespace ReFined
 
             ReadProcessMemory(Handle, _address, _outArray, _length, ref _outRead);
 
-            return Encoding.GetEncoding(437).GetString(_outArray);
+            return Encoding.Default.GetString(_outArray);
         }
 
         /// <summary>

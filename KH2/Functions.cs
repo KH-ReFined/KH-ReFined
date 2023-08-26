@@ -11,7 +11,6 @@ using DiscordRPC;
 using Binarysharp.MSharp;
 
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
-using System.Text.RegularExpressions;
 
 namespace ReFined
 {
@@ -24,13 +23,14 @@ namespace ReFined
         static byte SAVE_ROOM;
         static byte SAVE_WORLD;
         static byte SKIP_STAGE;
-        static sbyte CURR_CONFIG;
-        static sbyte CONF_INDEX;
         static byte SAVE_ITERATOR;
 
         static bool CONF_ENTER;
+        static bool DETECT_DUB;
+        static bool SETTING_LOAD;
 
         static bool PAST_ENEMY;
+        static bool PAST_MUSIC;
         static bool SAVE_RESET;
         static bool ROOM_LOADED;
         static bool ATTACK_SWITCH;
@@ -44,6 +44,11 @@ namespace ReFined
 
         static int OFFSET_TITLE;
         static int OFFSET_DESC;
+
+
+        static int PAST_FORM = -1;
+
+        static ulong[] LOAD_LIST;
 
         static int RETRY_MODE = 0x00;
         static bool RETRY_LOCK;
@@ -62,13 +67,12 @@ namespace ReFined
         static byte[] MAGIC_STORE;
         static byte[] OBJENTRY_READ;
 
-        static byte[] RETRY_TEXT;
-        static byte[] CONTINUE_TEXT;
+        static byte CONFIG_COUNT;
 
         static ushort ROXAS_BLADE;
 
-        static int EXP_READ;
         static byte FORM_READ;
+        static int EXP_READ;
         static byte[] DRIVE_READ;
         static byte[] CHEST_READ;
         static byte[] PARTY_READ;
@@ -101,21 +105,24 @@ namespace ReFined
 
                 Helpers.Log("Initializing Re:Fined...", 0);
 
-                // Create the TEMP Path to store our sound files.
-                if (!Directory.Exists(Path.GetTempPath() + "ReFined"))
-                    Directory.CreateDirectory(Path.GetTempPath() + "ReFined");
-
                 // Open the config file for game-specific configs.
                 var _configIni = new TinyIni("reFined.ini");
 
+                Helpers.Log("Initializing SharpHook...", 0);
+
                 Variables.SharpHook = new MemorySharp(Hypervisor.Process);
+
+                Helpers.Log("Initializing Configuration...", 0);
 
                 // Parse the Festive Toggle, and the chosen Limit Form shortcuts, default Retry Setting, and the Drive Shortcut setting.
                 Variables.festiveToggle = Convert.ToBoolean(_configIni.Read("festivityEngine", "Kingdom Hearts II"));
                 Variables.driveToggle = Convert.ToBoolean(_configIni.Read("driveShortcuts", "Kingdom Hearts II"));
                 Variables.resetPrompt = Convert.ToBoolean(_configIni.Read("resetPrompt", "Kingdom Hearts II"));
+                Variables.adjustRatio = Convert.ToBoolean(_configIni.Read("adjustRatio", "Kingdom Hearts II"));
                 Variables.limitShorts = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
                 Variables.retryDefault = _configIni.Read("deathPrompt", "Kingdom Hearts II") == "retry" ? true : false;
+
+                Helpers.Log("Initializing Limit Shortcuts...", 0);
 
                 // Should the shortcuts be parsed; Place them accordingly.
                 if (Variables.limitShorts != "")
@@ -130,6 +137,8 @@ namespace ReFined
                     LIMIT_SHORT[2] = Variables.LMTDictionary[_splitArr[2]];
                     LIMIT_SHORT[3] = Variables.LMTDictionary[_splitArr[3]];
                 }
+
+                Helpers.Log("Unlocking Memory Regions...", 0);
 
                 // Unlock all the EXE-Related addresses.
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, true);
@@ -157,6 +166,8 @@ namespace ReFined
 
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x39EF31, true);                
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x39EF36, true);
+
+                Helpers.Log("Initializing Save/Config/Log Directories...", 0);
 
                 var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
@@ -204,6 +215,8 @@ namespace ReFined
 
                 var _pathPrefix = Path.Combine(Path.GetDirectoryName(Hypervisor.Process.MainModule.FileName), "Image", "en");
 
+                Helpers.Log("Scanning for Additional Features...", 0);
+
                 // Remove the config options if the optionals are not patched in.
 
                 var _audioItem = Variables.ARRY_ConfigMenu.First(x => x[1] == 0x01BD);
@@ -212,26 +225,45 @@ namespace ReFined
 
                 if (!Operations.ScanHash(Path.Combine(_pathPrefix, "kh2_first.hed"), Variables.HASH_SwapAudio))
                 {
-                    Helpers.Log("Audio Addon not found! Removing from config...", 1);
+                    Helpers.Log("The Audio Add-On was not found! Removing the option from all menus...", 1);
                     Variables.ARRY_ConfigMenu.Remove(_audioItem);
                     REMOVED_LIST[0] = 0x01;
                 }
 
+                else if (Operations.ScanHash(Path.Combine(_pathPrefix, "kh2_fifth.hed"), Variables.HASH_SwapExtra))
+                {
+                    Helpers.Log("An additional Dub Patch was detected! Accommodating the config menu...", 1);
+
+                    var _audioName = Operations.FetchPointerMSG(Variables.PINT_SystemBAR, 0x01D9);
+                    var _audioDesc = Operations.FetchPointerMSG(Variables.PINT_SystemBAR, 0x01DA);
+
+                    var _indexAudio = Variables.ARRY_ConfigMenu.IndexOf(_audioItem);
+                    Variables.ARRY_ConfigMenu[_indexAudio] = Variables.VALUE_ConfigAudio;
+                }
+
                 if (!Operations.ScanHash(Path.Combine(_pathPrefix, "kh2_first.hed"), Variables.HASH_SwapMusic))
                 {
-                    Helpers.Log("Music Addon not found! Removing from config...", 1);
+                    Helpers.Log("The BGM Add-On was not found! Removing the option from all menus...", 1);
                     Variables.ARRY_ConfigMenu.Remove(_musicItem);
                     REMOVED_LIST[1] = 0x01;
                 }
 
                 if (!Operations.ScanHash(Path.Combine(_pathPrefix, "kh2_fifth.hed"), Variables.HASH_SwapEnemy))
                 {
-                    Helpers.Log("Heartless Addon not found! Removing from config...", 1);
+                    Helpers.Log("The Enemy Palette Add-On was not found! Removing the option from all menus...", 1);
                     Variables.ARRY_ConfigMenu.Remove(_heartItem);
                     REMOVED_LIST[2] = 0x01;
                 }
 
+
+                Helpers.Log("Writing the Game Over Menu...", 0);
+
+                var _optionsPoint = Hypervisor.Read<ulong>(Variables.PINT_DeadData);
+                Hypervisor.WriteArray(_optionsPoint + 0x848, new byte[] { 0x20, 0x00, 0x04, 0x00, 0x02, 0x00, 0xB0, 0x8A, 0x03, 0x00, 0xB1, 0x8A, 0x0C, 0x00, 0x3A, 0xAF, 0x04, 0x00, 0xB2, 0x8A, 0x00, 0x00 }, true);
+
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x350000, true);
+
+                Helpers.Log("Constructing the Configuration Menu...", 0);
 
                 Hypervisor.Write(Hypervisor.PureAddress + 0x3624C3, (byte)(Variables.ARRY_ConfigMenu.Count - 1), true);
                 Hypervisor.Write(Hypervisor.PureAddress + 0x362FFB, (byte)(Variables.ARRY_ConfigMenu.Count - 1), true);
@@ -246,11 +278,15 @@ namespace ReFined
                 Hypervisor.Write(Hypervisor.PureAddress + 0x363050, (byte)Variables.ARRY_ConfigMenu.Count, true);
                 Hypervisor.Write(Hypervisor.PureAddress + 0x36306F, (byte)Variables.ARRY_ConfigMenu.Count, true);
 
+                CONFIG_COUNT = (byte)Variables.ARRY_ConfigMenu.Count;
+
                 if (Variables.ARRY_ConfigMenu.Count != 14)
                 {
                     for (int i = Variables.ARRY_ConfigMenu.Count; i < 14; i++)
                     Variables.ARRY_ConfigMenu.Add(new ushort[10]);
                 }
+
+                Helpers.Log("Writing the Configuration Menu...", 0);
 
                 for (int i = 0; i < Variables.ARRY_ConfigMenu.Count; i++)
                 {
@@ -376,12 +412,16 @@ namespace ReFined
 
             if (_confirmRead == 0x00 && _shortRead != LIMIT_SHORT[0])
             {
+                Helpers.Log("Overriding Limits for the Japanese scheme.", 0);
+
                 Hypervisor.Write(Variables.ADDR_LimitShortcut, LIMIT_SHORT[0]);
                 Hypervisor.Write(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[3]);
             }
 
             else if (_confirmRead == 0x01 && _shortRead != LIMIT_SHORT[3] && _modeRead == 0)
             {
+                Helpers.Log("Overriding Limits for the English Scheme", 0);
+
                 Hypervisor.Write(Variables.ADDR_LimitShortcut, LIMIT_SHORT[3]);
                 Hypervisor.Write(Variables.ADDR_LimitShortcut + 0x06, LIMIT_SHORT[0]);
             }
@@ -715,6 +755,8 @@ namespace ReFined
 
             if (Variables.driveToggle && _instCheck != 0x90 && _iconByte != 0x00)
             {
+                Helpers.Log("Allowing Drive Forms to be shortcutted...", 0);
+
                 // This reads part of the actual instruction which handles drive icons on shortcuts to move it.
                 var _instRead = Hypervisor.ReadArray(Hypervisor.PureAddress + Variables.ADDR_ShortIconAssignINST + 0x03, 0x19, true);
 
@@ -755,6 +797,8 @@ namespace ReFined
 
                 // This NOPs a jump statement which causes the equipped drive to be treated as a spell.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ShortCategoryFilterINST, new byte[] { 0x90, 0x90 }, true);
+
+                Helpers.Log("Success! Drive Forms can now be shortcutted!", 0);
             }
         }
 
@@ -764,6 +808,7 @@ namespace ReFined
         /// </summary>
         public static void ConfigHandler()
         {
+            var _configRead = Hypervisor.Read<ushort>(Variables.ADDR_Config);
             var _selectPoint = Hypervisor.Read<ulong>(Variables.PINT_SubMenuSelect);
 
             var _menuRead = Hypervisor.Read<byte>(Variables.ADDR_SubMenu);
@@ -779,16 +824,38 @@ namespace ReFined
             var _findTitle = Operations.FetchOffsetMSG(Variables.PINT_SystemBAR, Variables.VALUE_ConfigTitle[_difficultyRead]);
             var _findDesc = Operations.FetchOffsetMSG(Variables.PINT_SystemBAR, Variables.VALUE_ConfigDesc[_difficultyRead]);
 
+            var _layoutPointer = Hypervisor.Read<ulong>(0x3A0952);
+
             if (_difficultyRead == 0x00)
             {
                 _findTitle = OFFSET_TITLE;
                 _findDesc = OFFSET_DESC;
             }
 
-            if (_menuRead == 0x24 && _pauseRead == 0x01 && _loadRead == 0x01 && _selectPoint != 0x00)
+            if (!Operations.CheckTitle() && !SETTING_LOAD)
+            {
+                Helpers.Log("Fetching the current configuration from Save Data...", 0);
+
+                Variables.audioMode = (byte)((_configRead & 0x0800) == 0x0800 ? 0x01 : ((_configRead & 0x1000) == 0x1000 ? 0x02 : 0x0000));
+                Variables.vanillaMusic = (_configRead & 0x0020) == 0x0020;
+                Variables.vanillaEnemy = (_configRead & 0x8000) == 0x8000;
+                Variables.saveToggle = (byte)((_configRead & 0x0002) == 0x0002 ? 0x01 : ((_configRead & 0x0004) == 0x0004 ? 0x00 : 0x02));
+                Variables.autoController = (byte)((_configRead & 0x2000) == 0x2000 ? 0x00 : ((_configRead & 0x4000) == 0x4000 ? 0x01 : 0x02));
+
+                Helpers.Log("Configuration fetched!", 0);
+
+                SETTING_LOAD = true;
+            }
+
+            else if (Operations.CheckTitle() && SETTING_LOAD)
+                SETTING_LOAD = false;
+
+            if (_menuRead == 0x24 && _pauseRead == 0x01 && _selectPoint != 0x00)
             {
                 if (_settingsPoint != 0x00 && !DEBOUNCE[6])
                 {
+                    Helpers.Log("Config Menu Detected! Setting the necessary values...", 0);
+
                     var _naviMap = Variables.SharpHook[(IntPtr)0x2E2E00].Execute<byte>();
                     var _cameraAuto = Variables.SharpHook[(IntPtr)0x2E2D60].Execute<byte>();
                     var _cameraHRev = Variables.SharpHook[(IntPtr)0x2E2D80].Execute<byte>();
@@ -797,6 +864,12 @@ namespace ReFined
                     var _vibrationOn = Variables.SharpHook[(IntPtr)0x2E2E40].Execute<byte>();
                     var _summonEffect = Variables.SharpHook[(IntPtr)0x2E29F0].Execute<byte>();
 
+                    var _musicClassic = (_configRead & 0x0020) == 0x0020 ? 0x00 : 0x01;
+                    var _heartlessClassic = (_configRead & 0x8000) == 0x8000 ? 0x00 : 0x01;
+                    var _autoSave = (_configRead & 0x0002) == 0x0002 ? 0x01 : ((_configRead & 0x0004) == 0x0004 ? 0x00 : 0x02);
+                    var _promptMode = (_configRead & 0x2000) == 0x2000 ? 0x00 : ((_configRead & 0x4000) == 0x4000 ? 0x01 : 0x02);
+                    var _langAudio = (_configRead & 0x0800) == 0x0800 ? (DETECT_DUB ? 0x02 : 0x01) : ((_configRead & 0x1000) == 0x1000 ? 0x01 : 0x00);
+
                     var _settingsArray = new List<byte>
                     {
                         (byte)(_cameraAuto == 0x01 ? 0x00 : 0x01),
@@ -804,11 +877,11 @@ namespace ReFined
                         _cameraHRev,
                         (byte)(_summonEffect == 0x02 ? 0x00 : (_summonEffect == 0x01 ? 0x01 : 0x02)),
                         (byte)(_naviMap == 0x01 ? 0x00 : 0x01),
-                        Variables.saveToggle,
-                        Convert.ToByte(Variables.japaneseAudio),
-                        (byte)(Convert.ToByte(Variables.vanillaMusic) == 0x01 ? 0x00 : 0x01),
-                        (byte)(Convert.ToByte(Variables.vanillaEnemy) == 0x01 ? 0x00 : 0x01),
-                        Variables.autoController,
+                        Convert.ToByte(_autoSave),
+                        Convert.ToByte(_langAudio),
+                        Convert.ToByte(_musicClassic),
+                        Convert.ToByte(_heartlessClassic),
+                        Convert.ToByte(_promptMode),
                         (byte)(_vibrationOn == 0x01 ? 0x00 : 0x01),
                         (byte)(_commandKH2 == 0x01 ? 0x00 : 0x01),
                         0x00
@@ -825,18 +898,42 @@ namespace ReFined
 
                     Hypervisor.WriteArray(_settingsPoint, _settingsArray.ToArray(), true);
 
+                    Helpers.Log("Options set! Correcting the Difficulty...", 0);
+
                     Hypervisor.Write(_offsetTitle, _findTitle, true);
                     Hypervisor.Write(_offsetDesc, _findDesc, true);
 
                     Variables.SharpHook[(IntPtr)0x363380].Execute();
                     Variables.SharpHook[(IntPtr)0x363340].Execute();
 
+                    Helpers.Log("Difficulty corrected!", 0);
+
                     DEBOUNCE[6] = true;
                 }
 
-                CONF_ENTER = true;
+                if (_loadRead == 0x01)
+                    CONF_ENTER = true;
 
                 var _settingRead = Hypervisor.ReadArray(_settingsPoint, 0x10, true);
+
+                var _pageIndex = Hypervisor.Read<byte>(_selectPoint + 0x12, true);
+
+                var _pageCount = (CONFIG_COUNT - 0x09);
+                var _pageFactor = 0x18 * _pageCount;
+
+                var _pageOffset = (_pageFactor / _pageCount) * _pageIndex;
+
+                Hypervisor.Write(_layoutPointer + 0x21498, 0x64 + _pageOffset, true);
+                Hypervisor.Write(_layoutPointer + 0x2149C, 0x64 + _pageOffset, true);
+
+                Hypervisor.Write(_layoutPointer + 0x21528, 0x64 + _pageOffset, true);
+                Hypervisor.Write(_layoutPointer + 0x2152C, 0x64 + _pageOffset, true);
+
+                Hypervisor.Write(_layoutPointer + 0x215B8, 0x64 - (_pageFactor + 1) + _pageOffset, true);
+                Hypervisor.Write(_layoutPointer + 0x215BC, 0x64 - (_pageFactor + 1) + _pageOffset, true);
+
+                Hypervisor.Write(_layoutPointer + 0x21568, (0xC0 - _pageFactor) * 0.01F, true);
+                Hypervisor.Write(_layoutPointer + 0x2156C, (0xC0 - _pageFactor) * 0.01F, true);
 
                 if (REMOVED_LIST[2] == 0x00)
                     Variables.vanillaEnemy = Convert.ToBoolean(_settingRead[0x08 - REMOVED_LIST[1] + REMOVED_LIST[0]] == 0x00 ? 0x01 : 0x00);
@@ -845,7 +942,7 @@ namespace ReFined
                     Variables.vanillaMusic = Convert.ToBoolean(_settingRead[0x07 - REMOVED_LIST[0]] == 0x00 ? 0x01 : 0x00);
 
                 if (REMOVED_LIST[0] == 0x00)
-                    Variables.japaneseAudio = Convert.ToBoolean(_settingRead[0x06]);
+                    Variables.audioMode = _settingRead[0x06];
 
                 var _configOffset = REMOVED_LIST[0] + REMOVED_LIST[1] + REMOVED_LIST[2];
 
@@ -853,21 +950,27 @@ namespace ReFined
                 Variables.autoController = _settingRead[0x09 - _configOffset];
 
                 var _configBitwise =
-                    (_settingRead[0x00] == 0x01 ? 0x0010 : 0x0000) +
-                    (_settingRead[0x01] == 0x01 ? 0x0100 : 0x0000) +
-                    (_settingRead[0x02] == 0x01 ? 0x0080 : 0x0000) +
-                    (_settingRead[0x03] == 0x01 ? 0x0200 : (_settingRead[0x03] == 0x00 ? 0x0400 : 0x0000)) +
-                    (_settingRead[0x04] == 0x00 ? 0x0008 : 0x0000) +
-                    (_settingRead[0x0A - _configOffset] == 0x00 ? 0x0001 : 0x0000) +
-                    (_settingRead[0x0B - _configOffset] == 0x01 ? 0x0040 : 0x0000);
+                    (_settingRead[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF) |
+                    (_settingRead[0x01] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF) |
+                    (_settingRead[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_H : Variables.CONFIG_BITWISE.OFF) |
+                    (_settingRead[0x03] == 0x01 ? Variables.CONFIG_BITWISE.SUMMON_PARTIAL : (_settingRead[0x03] == 0x00 ? Variables.CONFIG_BITWISE.SUMMON_FULL : Variables.CONFIG_BITWISE.OFF)) | 
+                    (_settingRead[0x04] == 0x00 ? Variables.CONFIG_BITWISE.NAVI_MAP : Variables.CONFIG_BITWISE.OFF) |
+                    (_settingRead[0x05] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR : (_settingRead[0x05] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF)) |
+                    (REMOVED_LIST[0] == 0x00 ? (_settingRead[0x06] == (DETECT_DUB ? 0x02 : 0x01) ? Variables.CONFIG_BITWISE.AUDIO_JAPANESE : (_settingRead[0x06] == 0x01 ? Variables.CONFIG_BITWISE.AUDIO_OTHER : Variables.CONFIG_BITWISE.OFF)) : Variables.CONFIG_BITWISE.OFF) |
+                    (REMOVED_LIST[1] == 0x00 ? (_settingRead[0x07 - REMOVED_LIST[0]] == 0x00 ? Variables.CONFIG_BITWISE.MUSIC_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) |
+                    (REMOVED_LIST[2] == 0x00 ? (_settingRead[0x08 - REMOVED_LIST[1] + REMOVED_LIST[0]] == 0x00 ? Variables.CONFIG_BITWISE.HEARTLESS_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) | 
+                    (_settingRead[0x09 - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER : (_settingRead[0x09 - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF)) |
+                    (_settingRead[0x0A - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF) |
+                    (_settingRead[0x0B - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.COMMAND_KH2 : Variables.CONFIG_BITWISE.OFF); 
 
                 Hypervisor.Write(Variables.ADDR_Config, (ushort)_configBitwise);
-
-                var _iniFetch = new TinyIni("reFined.ini");
             }
 
             else if (_selectPoint == 0x00 && CONF_ENTER)
             {
+                Helpers.Log("Configuration Menu closed! Initializing full reload!", 0);
+                Helpers.Log("THE GAME MAY CRASH DURING THIS PROCESS!", 1);
+
                 var _soraPoint = Hypervisor.Read<ulong>(0x55629A);
                 CONF_ENTER = false;
 
@@ -885,11 +988,15 @@ namespace ReFined
                 }
 
                 // Give time for the Menu to close.
-                Thread.Sleep(250);
+                while(Hypervisor.Read<byte>(0x399952) != 0);
+
+                Helpers.Log("Killing the BGM and Fade Handlers...", 0);
 
                 // Unblock the fade handler and shut the music down.
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x15493A, true);
                 Variables.SharpHook[(IntPtr)0x1305F0].Execute();
+
+                Helpers.Log("Noting down the current world...", 0);
 
                 // Read the current world and event data.
                 if (WORLD_READ == null)
@@ -898,9 +1005,11 @@ namespace ReFined
                 // Make a new world data to be: Twilight Town - The Empty Realm.
                 var _newArray = new byte[] { 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-                // If already in TT, change the target world to HB.
+                // If already in TT, change the target world to OC.
                 if (WORLD_READ[0] == 0x02)
-                    _newArray[0] = 0x06;
+                    _newArray[0] = 0x01;
+
+                Helpers.Log("Jumping into a DUMMY world!", 0);
 
                 // Initiate the jump.
                 Hypervisor.WriteArray(Variables.ADDR_World, _newArray);
@@ -911,10 +1020,13 @@ namespace ReFined
 
                 // Destroy the fade handler so it does not cause issues.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + 0x15493A, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
+                Hypervisor.Write<byte>(0x55472D, 0x80);
 
                 // Whilst not loaded, constantly shut off the music.
                 while (Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) != 1)
                     Variables.SharpHook[(IntPtr)0x1305F0].Execute();
+
+                Helpers.Log("Jump complete! Jumping back!", 0);
 
                 // Atfer load, jump back to where we came from.
                 Hypervisor.WriteArray(Variables.ADDR_World, WORLD_READ);
@@ -925,6 +1037,8 @@ namespace ReFined
 
                 // Restore the fade initiater after load.
                 Hypervisor.WriteArray(Hypervisor.PureAddress + 0x15493A, new byte[] { 0xF3, 0x0F, 0x11, 0x8F, 0x0C, 0x01, 0x00, 0x00 }, true);
+
+                Helpers.Log("Jump complete! Writing Sora's Position...", 0);
 
                 // Wait until the fade is completed.
                 while (Hypervisor.Read<byte>(0x55472D) != 0x00)
@@ -937,6 +1051,8 @@ namespace ReFined
                         Hypervisor.Write(_soraPoint + 0x7A8, POS_READ[3], true);
                     }
                 }
+
+                Helpers.Log("If you can see this, the jump was successful without a crash!", 0);
 
                 // Flush the world data.
                 WORLD_READ = null;
@@ -956,7 +1072,7 @@ namespace ReFined
                 SKIP_STAGE = 0;
             }
 
-            var _vibRead = Hypervisor.Read<ushort>(Variables.ADDR_Config) & 0x01;
+            var _vibRead = Hypervisor.Read<ushort>(0x5B6AC6);
             var _diffRead = Hypervisor.Read<byte>(Variables.ADDR_Difficulty);
 
             var _countButton = Hypervisor.Read<byte>(Variables.ADDR_TitleCount);
@@ -972,7 +1088,7 @@ namespace ReFined
 
                 if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck == 0x38 && SKIP_STAGE == 0)
                 {
-                    if (_vibRead == 0x00)
+                    if (_vibRead == 0x01)
                     {
                         Helpers.Log("Room and Settings are correct! Initiating Roxas Skip's First Phase...", 0);
 
@@ -982,9 +1098,6 @@ namespace ReFined
 
                         Hypervisor.Write<uint>(0x444832, 0x1FF00001);
                         Hypervisor.Write<uint>(0x444832 + 0x04, 0x00000000);
-
-                        Hypervisor.Write(Variables.ADDR_Config, (ushort)(_vibRead + 0x01));
-
 
                         SKIP_STAGE = 1;
                     }
@@ -1015,6 +1128,8 @@ namespace ReFined
                             0x4450A6,
                             new byte[]
                             {
+                                0xF8,
+                                0x00,
                                 0x89,
                                 0x01,
                                 0x88,
@@ -1071,29 +1186,103 @@ namespace ReFined
         }
 
         /// <summary>
+        /// Handles the crown on Sora's HUD corresponding to the crown he wears on his model.
+        /// Only works on English Audio for now.
+        /// </summary>
+        public static void CrownManager()
+        {
+            if (Variables.audioMode == 0x00)
+            { 
+            var _formRead = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
+            var _loadList = Hypervisor.Read<ulong>(Variables.PINT_LoadList);
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+            var _cutsByte = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
+
+            if (Operations.CheckTitle() || _loadRead == 0x00 || PAST_FORM != _formRead)
+            {
+                LOAD_LIST = null;
+                PAST_FORM = _formRead;
+            }
+
+            RELOAD_POINT:
+
+                if (!Operations.CheckTitle() && _loadList != 0x00 && _loadRead == 0x01 && _cutsByte == 0x00)
+                {
+                    var _readData = Hypervisor.ReadArray(_loadList, 0x85000, true);
+
+                    LOAD_LIST = new ulong[]
+                    {
+                    _readData.FindValue(Encoding.Default.GetBytes("obj/P_EX100.a")),
+                    _readData.FindValue(Encoding.Default.GetBytes("obj/P_EX100_BTLF.a")),
+                    _readData.FindValue(Encoding.Default.GetBytes("obj/P_EX100_MAGF.a")),
+                    _readData.FindValue(Encoding.Default.GetBytes("obj/P_EX100_KH1F.a")),
+                    _readData.FindValue(Encoding.Default.GetBytes("obj/P_EX100_TRIF.a")),
+                    _readData.FindValue(Encoding.Default.GetBytes("obj/P_EX100_ULTF.a")),
+                    _readData.FindValue(Encoding.Default.GetBytes("obj/P_EX100_HTLF.a")),
+                    };
+
+                    var _soraPoints = new ulong[]
+                    {
+                    LOAD_LIST[0] != ULONG_MINIMAL ? Hypervisor.Read<ulong>(_loadList + LOAD_LIST[0] + 0x54, true) : 0x00,
+                    LOAD_LIST[1] != ULONG_MINIMAL ? Hypervisor.Read<ulong>(_loadList + LOAD_LIST[1] + 0x54, true) : 0x00,
+                    LOAD_LIST[2] != ULONG_MINIMAL ? Hypervisor.Read<ulong>(_loadList + LOAD_LIST[2] + 0x54, true) : 0x00,
+                    LOAD_LIST[3] != ULONG_MINIMAL ? Hypervisor.Read<ulong>(_loadList + LOAD_LIST[3] + 0x54, true) : 0x00,
+                    LOAD_LIST[4] != ULONG_MINIMAL ? Hypervisor.Read<ulong>(_loadList + LOAD_LIST[4] + 0x54, true) : 0x00,
+                    LOAD_LIST[5] != ULONG_MINIMAL ? Hypervisor.Read<ulong>(_loadList + LOAD_LIST[5] + 0x54, true) : 0x00,
+                    LOAD_LIST[6] != ULONG_MINIMAL ? Hypervisor.Read<ulong>(_loadList + LOAD_LIST[6] + 0x54, true) : 0x00,
+                    };
+
+                    var _crownRead = Hypervisor.ReadArray(0x442B62 + 0x36B2, 0x03);
+                    var _crownSum = _crownRead[0] + _crownRead[1] + _crownRead[2];
+
+                    if (LOAD_LIST[_formRead] == ULONG_MINIMAL || _soraPoints[_formRead] > 0x7FFF00000000)
+                    {
+                        LOAD_LIST = null;
+                        goto RELOAD_POINT;
+                    }
+
+                    foreach (var _point in _soraPoints)
+                    {
+                        if (_point != 0x00)
+                        {
+                            var _barOffset = Hypervisor.Read<uint>(_point + 0x08, true);
+                            var _soraOffset = Hypervisor.Read<uint>(_point + 0x38, true) - _barOffset;
+
+                            var _faceCheck = Hypervisor.Read<uint>(_point + 0x24, true);
+
+                            if (_faceCheck != 0x65636166)
+                                return;
+
+                            var _topValue = 0x00 + _crownSum * 0x5A;
+                            var _bottomValue = 0x5D + _crownSum * 0x5A;
+
+                            for (uint i = 0; i < 3; i++)
+                            {
+                                Hypervisor.Write(_point + _soraOffset + 0x38 + (0x2C * i), _topValue, true);
+                                Hypervisor.Write(_point + _soraOffset + 0x40 + (0x2C * i), _bottomValue, true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Adds the option to retry a past fight.
         /// </summary>
         public static void RetryPrompt()
         {
-            if (CONTINUE_TEXT == null)
-            {
-                RETRY_TEXT = Operations.FetchStringMSG(Variables.PINT_SystemBAR, 0x0AB1);
-                CONTINUE_TEXT = Operations.FetchStringMSG(Variables.PINT_SystemBAR, 0x0AB4);
-            }
-
             // So, we initialize all of this shit just to determine whether Retry will show up or not.
             var _menuPoint = Hypervisor.Read<ulong>(Variables.PINT_DeadMenu);
+            var _optionsPoint = Hypervisor.Read<ulong>(Variables.PINT_DeadData);
 
             var _menuRead = Hypervisor.Read<byte>(Variables.ADDR_DeadSelect);
             var _optionRead = Hypervisor.Read<byte>(Variables.ADDR_DeadCount);
 
             var _bttlByte = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
             var _cutsByte = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
-            var _loadByte = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
             var _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
-
-            var _formByte = Hypervisor.Read<byte>(Variables.ADDR_SoraForm);
             var _fnshByte = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
 
             var _buttRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
@@ -1114,9 +1303,6 @@ namespace ReFined
                 But I also need to revert the save to the point where you first began the battle as well, or your entire
                 save state will be reverted to when you were in the room before and that's a no-no and can cause massive
                 issues such as missed items and what not.
-
-                This currently DOES NOT work for alternative lose conditions. Oh well, that can be fixed another day I suppose.
-                But hey! At least this is currently Mickey Compliant!
             */
 
 
@@ -1193,6 +1379,11 @@ namespace ReFined
 
                     ROXAS_BLADE = Hypervisor.Read<ushort>(Hypervisor.BaseAddress + 0x445052, true);
 
+                    byte[] _tempArray = new byte[18];
+                    Buffer.BlockCopy(Variables.ARRY_ContinueOptions[Variables.retryDefault ? 0x01 : 0x02], 0, _tempArray, 0, 18);
+
+                    Hypervisor.WriteArray(_optionsPoint + 0x34A, _tempArray, true);
+
                     if (DRIVE_READ[2] == 0x00)
                         goto READ_STUFF;
 
@@ -1219,6 +1410,11 @@ namespace ReFined
                     ITEM_READ = new List<byte[]>();
                     ABILITY_READ = new List<byte[]>();
 
+                    byte[] _tempArray = new byte[18];
+                    Buffer.BlockCopy(Variables.ARRY_ContinueOptions[0x00], 0, _tempArray, 0, 18);
+
+                    Hypervisor.WriteArray(_optionsPoint + 0x34A, _tempArray, true);
+
                     SUMM_LVL_READ = 0xFF;
                     SUMM_EXP_READ = 0xFF;
 
@@ -1229,7 +1425,7 @@ namespace ReFined
                 // and only runs if Sora is dead and some sort of a menu is present.
                 if (_menuPoint != 0x00 && _bttlByte == 0x02)
                 {
-                    if (_menuRead == 0x01 && _warpRead == 0x90 && RETRY_MODE == 0x01)
+                    if (_menuRead == 0x02 && _warpRead == 0x90 && RETRY_MODE == 0x01)
                     {
                         Helpers.Log("User is going to load the game! Restoring ..", 0);
 
@@ -1240,55 +1436,29 @@ namespace ReFined
                         RETRY_LOCK = true;
                     }
 
-                    else if (_menuRead == 0x00 && _optionRead == 0x02 && _warpRead != 0x90 && RETRY_MODE == 0x01)
+                    else if ((Variables.retryDefault ? _menuRead == 0x00 : _menuRead == 0x01) && _warpRead != 0x90)
                     {
-                        Helpers.Log("User defected from loading! Destroying ..", 0);
+                        Helpers.Log("Switched to Retry mode! Destroying ...", 0);
 
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
 
+                        RETRY_MODE = 0x01;
                         RETRY_LOCK = true;
                     }
 
-                    // If D-Pad sides are pressed;
-                    if (((_buttRead & 0x2000) == 0x2000 || (_buttRead & 0x8000) == 0x8000) && !DEBOUNCE[2] && _menuRead == 0x00 && RETRY_MODE != 0x03)
+                    else if ((!Variables.retryDefault ? _menuRead == 0x00 : _menuRead == 0x01) && _warpRead == 0x90)
                     {
-                        // Play the sound so that it seems **authentic**.
-                        Additions.PlaySFX(0x01);
+                        Helpers.Log("Switched to Continue mode! Restoring ..", 0);
 
-                        Helpers.Log(String.Format("Switching to \"{0}\" mode.", RETRY_MODE == 0x00 ? "Retry" : "Continue"), 0);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
 
-                        // Retry Mode Switch!
-                        RETRY_MODE = RETRY_MODE == 0x00 ? 0x01 : 0x00;
-
-                        // This handles the "Continue" mode and restores the function to do room switching.
-                        if (RETRY_MODE == 0x00 && _warpRead == 0x90)
-                        {
-                            Helpers.Log("Switched to Continue mode! Restoring ..", 0);
-
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, Variables.INST_FlagRevert, true);
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
-                        }
-
-                        // This handles the "Retry" mode and destroys the function to do room switching.
-                        else if (RETRY_MODE == 0x01 && _warpRead != 0x90)
-                        {
-                            Helpers.Log("Switched to Retry mode! Destroying ...", 0);
-
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
-                        }
-
+                        RETRY_MODE = 0x00;
                         RETRY_LOCK = true;
-                        DEBOUNCE[2] = true;
                     }
-
-                    // Debouncing.
-                    else if (((_buttRead & 0x2000) != 0x2000 && (_buttRead & 0x8000) != 0x8000) && DEBOUNCE[2])
-                        DEBOUNCE[2] = false;
                 }
 
                 var _menuCheck = Hypervisor.Read<ushort>(Variables.ADDR_DeadCount + 0x02);
@@ -1307,26 +1477,6 @@ namespace ReFined
 
                     else
                     {
-                        if (Variables.retryDefault)
-                        {
-                            RETRY_MODE = 0x01;
-
-                            Helpers.Log("Death Screen detected! Retry is default! Destroying ..", 0);
-
-                            // Destroy the functions responsible for switching rooms and reverting story flags.
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_RevertINST, _nullArray, true);
-                            Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, _nullArray, true);
-
-                            Hypervisor.Write(Variables.ADDR_SoraForm, FORM_READ);
-                        }
-
-                        else
-                        {
-                            RETRY_MODE = 0x00;
-                            Helpers.Log("Death Screen detected! Continue is default! Changing nothing...", 0);
-                        }
-
                         var _roxasTemp = Hypervisor.Read<ushort>(0x445052);
 
                         if (_roxasTemp != ROXAS_BLADE)
@@ -1395,24 +1545,13 @@ namespace ReFined
                 Helpers.Log(String.Format("Cavern of Remembrance detected! Locking Retry Capabilities..."), 0);
                 RETRY_BLACKLIST = true;
             }
-
-            // If the retry text offset is set, write the text necessary according to the mode.
-            if (RETRY_MODE != 0x03 && CONTINUE_TEXT != null)
-            {
-                var _continuePointer = (ulong)Operations.FetchPointerMSG(Variables.PINT_SystemBAR, 0x0AB0);
-
-                if (_menuPoint == 0x00 || _cutsByte != 0x00 || _bttlByte != 0x02)
-                    Hypervisor.WriteArray(_continuePointer, CONTINUE_TEXT, true);
-
-                else
-                    Hypervisor.WriteArray(_continuePointer, RETRY_MODE == 0x01 ? RETRY_TEXT : CONTINUE_TEXT, true);
-            }
         }
 
         #endregion
 
         #region Additional In-Game Functionality
 
+        /*
         public static void AchievementSeek()
         {
             var _struggleOrb = Hypervisor.Read<byte>(0x24A8BFA);
@@ -1452,6 +1591,7 @@ namespace ReFined
                 DEBOUNCE[5] = false;
             }
         }
+        */
 
         /// <summary>
         /// The logic code for the Encounter Plus ability.
@@ -1541,6 +1681,10 @@ namespace ReFined
 
         #region Visual Enhancements
 
+        /// <summary>
+        /// Code to adjust the Aspect Ratio for Ultrawide users.
+        /// May require tweaking. WIP, locked behind a config option.
+        /// </summary>
         public static void AspectAdjust()
         {
             Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x100000, true);
@@ -1548,6 +1692,9 @@ namespace ReFined
 
             var _baseRatio = 16 / 9;
             ulong _widthPaxAddr = 0x89E9B0 - 0x56454E;
+
+            ulong _widthWindowAddr = 0x89E9B8 - 0x56454E;
+            ulong _heightWindowAddr = 0x89E9BC - 0x56454E;
 
             ulong _widthRenderAddr = 0x89EB04 - 0x56454E;
             ulong _heightRenderAddr = 0x89E9B4 - 0x56454E;
@@ -1561,7 +1708,19 @@ namespace ReFined
             var _widthRender = Hypervisor.Read<float>(_widthRenderAddr);
             var _heightRender = Hypervisor.Read<float>(_heightRenderAddr);
 
-            if (PAST_WIDTH != _widthRender || PAST_HEIGHT != _heightRender)
+            if (_widthRender == 0x00)
+            {
+                _widthRender = Hypervisor.Read<float>(_widthWindowAddr);
+                Hypervisor.Write(_widthRenderAddr, _widthRender);
+            }
+            
+            if (_heightRender == 0x00)
+            {
+                _heightRender = Hypervisor.Read<float>(_heightWindowAddr);
+                Hypervisor.Write(_heightRenderAddr, _heightRender);
+            }
+
+            if ((PAST_WIDTH != _widthRender || PAST_HEIGHT != _heightRender))
             {
                 var _widthExpect = 0.0F;
                 var _heightExpect = (float)Math.Floor(_widthRender / _baseRatio + 0.5F);
@@ -1766,7 +1925,7 @@ namespace ReFined
             var _stringEVT = "voice/{0}/event";
             var _stringBTL = "voice/{0}/battle";
 
-            if (Variables.japaneseAudio && _stringCheck != "obj/%s.a.jp")
+            if (Variables.audioMode == 0x01 && _stringCheck != "obj/%s.a.jp")
             {
                 Helpers.Log("Switching to Japanese Audio...", 0);
 
@@ -1775,7 +1934,16 @@ namespace ReFined
                 FM_SUFF = "jp";
             }
 
-            else if (!Variables.japaneseAudio && _stringCheck != "obj/%s.a.%s")
+            if (Variables.audioMode == 0x02 && _stringCheck != "obj/%s.a.xx")
+            {
+                Helpers.Log("Switching to Extra Audio...", 0);
+
+                WL_SUFF = "xx";
+                US_SUFF = "xx";
+                FM_SUFF = "xx";
+            }
+
+            else if (Variables.audioMode == 0x00 && _stringCheck != "obj/%s.a.%s")
             {
                 Helpers.Log("Switching to English Audio...", 0);
 
@@ -1802,8 +1970,15 @@ namespace ReFined
         /// </summary>
         public static void SwitchMusic()
         {
-            var _musicPrefix = Variables.vanillaMusic ? new byte[] { 0x70, 0x73, 0x32, 0x6D, 0x64 } : new byte[] { 0x6D, 0x75, 0x73, 0x69, 0x63 };
-            Hypervisor.WriteArray(Variables.ADDR_MusicPath, _musicPrefix);
+            if (Variables.vanillaMusic != PAST_MUSIC)
+            {
+                Helpers.Log(String.Format("Switching Music to {0}...", Variables.vanillaMusic ? "Vanilla" : "Remastered"), 0);
+
+                var _musicPrefix = Variables.vanillaMusic ? new byte[] { 0x70, 0x73, 0x32, 0x6D, 0x64 } : new byte[] { 0x6D, 0x75, 0x73, 0x69, 0x63 };
+                Hypervisor.WriteArray(Variables.ADDR_MusicPath, _musicPrefix);
+
+                PAST_MUSIC = Variables.vanillaMusic;
+            }
         }
 
         /// <summary>
@@ -1830,6 +2005,8 @@ namespace ReFined
 
                 else if (Variables.vanillaEnemy != PAST_ENEMY)
                 {
+                    Helpers.Log(String.Format("Switching Enemies to the {0} Palette...", Variables.vanillaEnemy ? "Classic" : "Special"), 0);
+
                     foreach (var _name in Variables.BOSSObjentry)
                     {
                         var _stringArr1 = Encoding.Default.GetBytes(_name);
@@ -1842,7 +2019,7 @@ namespace ReFined
                             break;
 
                         else
-                            Hypervisor.Write(Variables.ADDR_ObjentryBASE + 0x08 + (_searchClassic == ULONG_MINIMAL ? _searchRemastered : _searchClassic), _enemyPrefix);
+                            Hypervisor.Write(Variables.ADDR_ObjentryBASE + 0x08 + (_searchClassic == ULONG_MINIMAL ? _searchRemastered : _searchClassic), _bossPrefix);
                     }
 
                     foreach (var _name in Variables.ENEMYObjentry)
@@ -1870,15 +2047,23 @@ namespace ReFined
         public static void Execute()
         {
             if (!Variables.Initialized)
+            {
                 Initialization();
+                Thread.Sleep(10000);
+            }
 
             else
             {
                 PromptSelector();
 
-                SwitchAudio();
-                SwitchMusic();
-                SwitchEnemies();
+                if (REMOVED_LIST[0] == 0x00)
+                    SwitchAudio();
+
+                if (REMOVED_LIST[1] == 0x00)
+                    SwitchMusic();
+
+                if (REMOVED_LIST[2] == 0x00)
+                    SwitchEnemies();
 
                 ExitFix();
                 LogicEP();
@@ -1888,37 +2073,15 @@ namespace ReFined
                 ShortcutForms();
                 OverrideLimits();
                 OverrideLimiter();
-
-                AchievementSeek();
-
+                
                 MagicHide();
                 RetryPrompt();
-                AspectAdjust();
+                
+                if (Variables.adjustRatio)
+                    AspectAdjust();
 
                 ResetGame();
                 ConfigHandler();
-                
-                /*
-                    var _readFirst = Hypervisor.Read<ulong>(Variables.PINT_CommandSEQD);
-
-                    var _readSecond = Hypervisor.Read<uint>(_readFirst + 0x28, true);
-                    var _readThird = Hypervisor.Read<uint>(_readFirst + 0x2C, true);
-
-                    var _readPrompt = Hypervisor.Read<byte>(0x36551E);
-
-                    if (_readThird == 0xCE20)
-                    {
-                        byte[] _fileRead;
-
-                        if (_readPrompt == 0x00)
-                            _fileRead = File.ReadAllBytes("_commXbox");
-
-                        else
-                            _fileRead = File.ReadAllBytes("_commVanilla");
-
-                        Hypervisor.WriteArray((_readFirst & 0xFFFFFF000000) + (_readSecond & 0x00FFFFFF), _fileRead, true);
-                    }
-                */
 
                 #region Tasks
                 if (Variables.ASTask == null)
@@ -1947,6 +2110,23 @@ namespace ReFined
                             while (!Variables.Token.IsCancellationRequested)
                             {
                                 DiscordEngine();
+                                Thread.Sleep(5);
+                            }
+                        },
+
+                        Variables.Token
+                    );
+                }
+
+                if (Variables.CRTask == null)
+                {
+                    Variables.CRTask = Task.Factory.StartNew(
+
+                        delegate ()
+                        {
+                            while (!Variables.Token.IsCancellationRequested)
+                            {
+                                CrownManager();
                                 Thread.Sleep(5);
                             }
                         },

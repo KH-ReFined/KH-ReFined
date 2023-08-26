@@ -26,22 +26,24 @@ namespace ReFined
         //
 
         public static bool rpcToggle = true;
-        public static byte saveToggle = 0x20;
+        public static byte saveToggle = 0x00;
 
         public static bool attackToggle = false;
 
-        public static bool japaneseAudio = false;
+        public static byte audioMode = 0x00;
         public static bool vanillaMusic = false;
         public static bool vanillaEnemy = false;
+
+        public static bool adjustRatio = false;
 
         public static bool resetPrompt = true;
         public static byte autoController = 0x02;
         public static bool retryDefault = true;
 
         public static bool devMode = false;
-
         public static bool festiveToggle = true;
         public static bool driveToggle = true;
+        public static bool achievementToggle = false;
 
         public static string limitShorts = "";
 
@@ -149,6 +151,7 @@ namespace ReFined
 
         public static Task DCTask;
         public static Task ASTask;
+        public static Task CRTask;
         public static CancellationToken Token;
         public static CancellationTokenSource Source;
 
@@ -254,6 +257,9 @@ namespace ReFined
         public static ulong PINT_ConfigSetting = 0x6892E2;
 
         public static ulong PINT_CommandSEQD = 0x453DFA;
+        public static ulong PINT_DeadData = 0x24AA512;
+
+        public static ulong PINT_LoadList = 0x248C3DA;
 
         //
         // INSTRUCTION ADDRESSES
@@ -319,7 +325,9 @@ namespace ReFined
         // VALUE DUMP
         //
         // The values themselves, which will be written to shit, are stored here.
-        //
+        // 
+
+        public static ushort[] VALUE_ConfigAudio = new ushort[] { 0x0003, 0x01BD, 0x01C4, 0x01D9, 0x01C5, 0x0000, 0x01D0, 0x01DA, 0x01D1, 0x0000 };
 
         public static List<ushort[]> ARRY_ConfigMenu = new List<ushort[]>
         {
@@ -338,14 +346,57 @@ namespace ReFined
             new ushort[] { 0x0001, 0xB71D, 0xB738, 0xB739, 0xB73A, 0xCE30, 0xB73B, 0xB73C, 0xB73D, 0xCE31  }
         };
 
+        public static List<ushort[]> ARRY_ContinueOptions = new List<ushort[]>
+        {
+            new ushort[] { 0x0002, 0x0002, 0x8AB0, 0x0001, 0x8AAF, 0x0000, 0x0000, 0x0000, 0x0000 }, // No Retry
+            new ushort[] { 0x0003, 0x0002, 0x8AB1, 0x0002, 0x8AB0, 0x0001, 0x8AAF, 0x0000, 0x0000 }, // Retry Default
+            new ushort[] { 0x0003, 0x0002, 0x8AB0, 0x0002, 0x8AB0, 0x0001, 0x8AAF, 0x0000, 0x0000 }, // Continue Default
+        };
+
+        public static List<uint[]> ARRY_NewGameMenu = new List<uint[]>
+        {
+            new uint[] { 0x00000004, 0x0000C330, 0x0000C380, 0x0000C331, 0x0000C332, 0x0000C333, 0x0000CE33, 0x0000C334, 0x0000C335, 0x0000C336, 0x0000CE34 }, // Difficulty
+            new uint[] { 0x00000002, 0x0000C337, 0x0000C381, 0x0000C338, 0x0000C339, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000C33A, 0x0000C33B, 0xFFFFFFFF, 0xFFFFFFFF }, // Vibration
+            new uint[] { 0x00000004, 0x00004D71, 0x00004D76, 0x00004D72, 0x00004D73, 0xFFFFFFFF, 0xFFFFFFFF, 0x00004D74, 0x00004D75, 0xFFFFFFFF, 0xFFFFFFFF }, // Skip Roxas
+        };
+
         public static byte[] HASH_SwapAudio = { 0x26, 0x72, 0x0C, 0xDE, 0xD5, 0x68, 0x39, 0x0F, 0x18, 0x5A, 0x98, 0x8E, 0xD0, 0x8C, 0x90, 0xC5 };
+        public static byte[] HASH_SwapExtra = { 0x79, 0x57, 0x31, 0x9B, 0xB3, 0xDC, 0x23, 0x1D, 0x8D, 0xF5, 0x54, 0x23, 0x08, 0xB8, 0x03, 0xA1 };
         public static byte[] HASH_SwapEnemy = { 0x82, 0x99, 0xD3, 0x20, 0xC6, 0x70, 0xC4, 0x9F, 0x7C, 0x02, 0x94, 0x06, 0xAC, 0x19, 0x53, 0xBD };
         public static byte[] HASH_SwapMusic = { 0x84, 0x7F, 0x72, 0x02, 0x21, 0xE0, 0xBC, 0x89, 0x70, 0xEC, 0x27, 0xE2, 0x25, 0x2D, 0x2E, 0x26 };
 
-        public static ushort[] VALUE_ConfigTitle = { 0x3738, 0x3739, 0x373A, 0x4E30 };
+        public static ushort[] VALUE_ConfigTitle = { 0x3738, 0x3739, 0x373A, 0x4E32 };
         public static ushort[] VALUE_ConfigDesc = { 0x373B, 0x373C, 0x373D, 0x4E31 };
 
         public static byte[] VALUE_MPSEQD = { 0x7A, 0x78, 0x18, 0x79 };
         public static byte[] VALUE_StoryFlag = { 0x01, 0x00, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0, 0x05, 0x08, 0x01, 0x00, 0x00, 0x81 };
+
+        //
+        // ENUM AREA
+        //
+        // The various enums which will be used.
+        //
+
+        public enum CONFIG_BITWISE : ushort
+        {
+            OFF = 0x0000,
+            VIBRATION = 0x0001,
+            AUTOSAVE_SILENT = 0x0002,
+            AUTOSAVE_INDICATOR = 0x0004,
+            NAVI_MAP = 0x0008,
+            FIELD_CAM = 0x0010,
+            MUSIC_VANILLA = 0x0020,
+            COMMAND_KH2 = 0x0040,
+            CAMERA_H = 0x0080,
+            CAMERA_V = 0x0100,
+            SUMMON_PARTIAL = 0x0200,
+            SUMMON_FULL = 0x0400,
+            AUDIO_JAPANESE = 0x0800,
+            AUDIO_OTHER = 0x1000,
+            PROMPT_CONTROLLER = 0x2000,
+            PROMPT_KEYBOARD = 0x4000,
+            HEARTLESS_VANILLA = 0x8000
+        }
+
     }
 }

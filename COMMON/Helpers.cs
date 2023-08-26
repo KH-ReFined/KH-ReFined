@@ -30,27 +30,14 @@ namespace ReFined
 				var _outIni = new string[]
 				{
 					"[General]",
-                    "# Options: infobar, silent, off",
-                    "autoSave = infobar",
 					"discordRPC = true",
 					"autoAttack = false",
-					"",
-					"# Options: vanilla, remastered",
-					"musicMode = remastered",
-					"",
-					"# Options: classic, special",
-					"heartlessColors = classic",
-					"",
-					"# Options: english, japanese",
-					"audioLanguage = english",
-					"",
-					"# Options: true = Controller, false = Keyboard, auto = Autodetect",
-					"controllerPrompt = auto",
 					"",
 					"[Kingdom Hearts]",
 					"battleChests = true",
 					"",
 					"[Kingdom Hearts II]",
+					"adjustRatio = false",
 					"festivityEngine = true",
 					"driveShortcuts = true",
 					"",
@@ -71,7 +58,7 @@ namespace ReFined
 			{
 				var _fileRead = File.ReadAllText("reFined.ini");
 
-				if (!_fileRead.Contains("heartlessColors"))
+				if (!_fileRead.Contains("adjustRatio"))
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
@@ -81,16 +68,9 @@ namespace ReFined
 				{
 					var _configIni = new TinyIni("reFined.ini");
 
-                    var _indFetch = _configIni.Read("autoSave", "General");
-                    Variables.saveToggle = (_indFetch == "silent" ? (byte)1 : (_indFetch == "infobar" ? (byte)0 : (byte)2));
                     Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
 					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
-					
-					Variables.vanillaMusic = _configIni.Read("musicMode", "General") == "vanilla" ? true : false;
-					Variables.vanillaEnemy = _configIni.Read("heartlessColors", "General") == "classic" ? true : false;
-
-					var _contValue = _configIni.Read("controllerPrompt", "General");
-                    Variables.autoController = (_contValue == "keyboard" ? (byte)1 : (_indFetch == "controller" ? (byte)0 : (byte)2));
+                    Variables.achievementToggle = Convert.ToBoolean(_configIni.Read("achievementEngine", "Kingdom Hearts II"));
 
 					if (_configIni.KeyExists("debugMode", "General"))
 						Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));
