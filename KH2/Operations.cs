@@ -5,6 +5,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
+using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
+
 
 namespace ReFined
 {
@@ -54,35 +56,6 @@ namespace ReFined
                 checksum = array[(checksum >> 24) ^ data[i]] ^ (checksum << 8);
 
             return checksum ^ uint.MaxValue;
-        }
-
-        /// <summary>
-        /// Scans the given header file to see if the given hash exists.
-        /// </summary>
-        /// <param name="Target">The target to scan.</param>
-        /// <param name="Input">The hash to find.</param>
-        /// <returns>"True" if the hash exists, "False" otherwise.</returns>
-
-        public static bool ScanHash(string Target, byte[] Input)
-        {
-            using (var _stream = new FileStream(Target, FileMode.Open))
-            {
-                using (var _reader = new BinaryReader(_stream))
-                {
-                    while (_reader.BaseStream.Position < _reader.BaseStream.Length)
-                    {
-                        var _readArray = _reader.ReadBytes(0x10);
-
-                        if (_readArray.Length == Input.Length && memcmp(_readArray, Input, _readArray.Length) == 0)
-                            return true;
-
-                        else
-                            _reader.BaseStream.Position += 0x10;
-                    }
-
-                    return false;
-                }
-            }
         }
 
         /// <summary>
@@ -341,6 +314,25 @@ namespace ReFined
             return _outList.ToArray();
         }
 
+        /// <summary>
+        /// Finds a file in the Buffer Cache.
+        /// </summary>
+        /// <param name="Input">The name of the file.</param>
+        /// <returns>The absolute position of the file indicator in memory. "0" if not found.</returns>
+        public static ulong FindFile(string Input)
+        {
+            var _memoryOffset = Hypervisor.PureAddress & 0x7FFF00000000;
+            var _returnValue = Variables.SharpHook[(IntPtr)0x39A820].Execute<uint>(BSharpConvention.MicrosoftX64, Input, -1);
+            return _returnValue == 0x00 ? 0x00 : _memoryOffset + _returnValue;
+        }
+
+        /// <summary>
+        /// Gets the size of the file, used primarily to check if a file actually exists.
+        /// </summary>
+        /// <param name="Input">The name of the file.</param>
+        /// <returns>A 32-bit integer containing the size in bytes, "0" if the file is not found.</returns>
+        public static int GetFileSize(string Input) => Variables.SharpHook[(IntPtr)0x39E2F0].Execute<int>(Input);
+        
         /// <summary>
         /// Generates and writes the current game state to both RAM and ROM Save Files.
         /// </summary>

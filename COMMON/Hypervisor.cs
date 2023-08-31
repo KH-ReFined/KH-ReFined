@@ -33,6 +33,7 @@ namespace ReFined
 
         public static ulong BaseAddress;
         public static ulong PureAddress;
+        public static ulong MemoryOffset;
 
         public static ProcessModule DLLModule;
         public static ulong DLLAddress;
@@ -49,8 +50,9 @@ namespace ReFined
             Handle = Input.Handle;
             PureAddress = (ulong)Input.MainModule.BaseAddress;
             BaseAddress = PureAddress + Offset;
+            MemoryOffset = PureAddress & 0x7FFF00000000;
 
-			foreach (ProcessModule _module in Input.Modules)
+            foreach (ProcessModule _module in Input.Modules)
 			{
 				if (_module.ModuleName == "EOSSDK-Win64-Shipping.dll")
 				{

@@ -270,8 +270,7 @@ namespace ReFined
         public static ulong ADDR_SaveEffectINST = 0x405FEB;
         public static ulong ADDR_LimiterINST = 0x152220;
         public static ulong ADDR_WarpINST = 0x150782;
-        public static ulong ADDR_RevertINST = 0x39D8D6;
-        public static ulong ADDR_InventoryINST = 0x39D8EF;
+        public static ulong ADDR_InventoryINST = 0x39DEC4;
         public static ulong ADDR_ControllerINST = 0x4E80DA;
         public static ulong[] ADDR_CMDSelectINST = { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
 
@@ -289,7 +288,7 @@ namespace ReFined
         public static byte[] INST_FrameLimiter = { 0x89, 0x1D, 0xE2, 0x61, 0x96, 0x00 };
         public static byte[] INST_RoomWarp = { 0xE8, 0x59, 0x00, 0x00, 0x00 };
         public static byte[] INST_FlagRevert = { 0xE8, 0x05, 0x01, 0x00, 0x00 };
-        public static byte[] INST_InvRevert = { 0xE8, 0xA4, 0x1A, 0x0D, 0x00 };
+        public static byte[] INST_InvRevert = { 0x48, 0x8D, 0x15, 0xB5, 0xAD, 0x65, 0x02 };
 
         public static byte[][] INST_ShortListFilter =
         {
@@ -349,8 +348,8 @@ namespace ReFined
         public static List<ushort[]> ARRY_ContinueOptions = new List<ushort[]>
         {
             new ushort[] { 0x0002, 0x0002, 0x8AB0, 0x0001, 0x8AAF, 0x0000, 0x0000, 0x0000, 0x0000 }, // No Retry
-            new ushort[] { 0x0003, 0x0002, 0x8AB1, 0x0002, 0x8AB0, 0x0001, 0x8AAF, 0x0000, 0x0000 }, // Retry Default
-            new ushort[] { 0x0003, 0x0002, 0x8AB0, 0x0002, 0x8AB0, 0x0001, 0x8AAF, 0x0000, 0x0000 }, // Continue Default
+            new ushort[] { 0x0004, 0x0002, 0x8AB1, 0x0002, 0x01DE, 0x0002, 0x8AB0, 0x0001, 0x8AAF }, // Retry Default
+            new ushort[] { 0x0004, 0x0002, 0x8AB0, 0x0002, 0x8AB1, 0x0002, 0x01DE, 0x0001, 0x8AAF }, // Continue Default
         };
 
         public static List<uint[]> ARRY_NewGameMenu = new List<uint[]>

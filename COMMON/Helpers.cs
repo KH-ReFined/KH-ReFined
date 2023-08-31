@@ -70,7 +70,6 @@ namespace ReFined
 
                     Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
 					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
-                    Variables.achievementToggle = Convert.ToBoolean(_configIni.Read("achievementEngine", "Kingdom Hearts II"));
 
 					if (_configIni.KeyExists("debugMode", "General"))
 						Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));
