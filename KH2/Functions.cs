@@ -1285,11 +1285,8 @@ namespace ReFined
 
             var _pausRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
             var _fnshByte = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
-
-            var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
-            var _confirmRead = Hypervisor.Read<byte>(Variables.ADDR_Confirm);
-
-            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+            
+            var _allocator = Hypervisor.Read<ulong>(0x453BD2);
 
             var _warpRead = Hypervisor.Read<byte>(Hypervisor.PureAddress + Variables.ADDR_WarpINST, true);
 
@@ -1363,7 +1360,7 @@ namespace ReFined
                 // ====================================================================== //
 
                 // Read the necessary shits at the start of a fight.
-                if (RETRY_ALLOC == 0x00 && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && !Operations.CheckTitle())
+                if (RETRY_ALLOC == 0x00 && _bttlByte == 0x02 && _cutsByte == 0x00 && _pausRead == 0x00 && _allocator != 0x00 && !Operations.CheckTitle())
                 {
                     Helpers.Log("Start of forced fight, making a copy of the current state...", 0);
 
@@ -1441,6 +1438,9 @@ namespace ReFined
 
                         else if ((Variables.retryDefault ? _menuRead == 0x01 : _menuRead == 0x02) && PREPARE_MODE != 0x01)
                         {
+                            var _currData = Hypervisor.ReadArray(Hypervisor.MemoryOffset + RETRY_ALLOC, 0x10FC0, true);
+                            Hypervisor.WriteArray(Variables.ADDR_SaveData, _currData);
+
                             Helpers.Log("Switched to Prepare Mode! Destroying...", 0);
 
                             Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
