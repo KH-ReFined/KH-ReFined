@@ -3,11 +3,11 @@ We will be looking on how to correctly install </b>Kingdom Hearts II - Re:Fined 
 
 To start, you will need the following downloaded:
 
-<li>KINGDOM HEARTS HD 1.5+2.5 ReMIX  
+<li>KINGDOM HEARTS HD 1.5+2.5 ReMIX</li>  
 
 _If you are using an unofficial copy, please make sure your vanilla game works before installing Re:Fined! Re:Fined does work as long as your unofficial copy works normally!_
 
-<li>Kingdom Hearts II - Re:Fined
+<li>Kingdom Hearts II - Re:Fined</li>
 <li>OpenKH - Mod Manager</li>
     
 Please also have the following downloaded and installed already if you do not already:
