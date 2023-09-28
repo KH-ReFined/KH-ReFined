@@ -36,7 +36,7 @@ TBA.
 
 ## Installation
 
-Please follow the guide <p style="color:#dd83f5" id="install">here</p> for installation!
+Please follow the guide <a style="color:#dd83f5" href="#install">here</a> for installation!
 
 ## Credits
 
