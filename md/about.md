@@ -1,4 +1,4 @@
-<img src="https://user-images.githubusercontent.com/95656963/171788826-e2049957-b00b-4502-87e9-6cf7df9d8efd.png" width="75%" height="75%"/>
+<img src="https://user-images.githubusercontent.com/95656963/271180424-482d02f4-66f6-4b7e-8b73-06c1635da2ef.png" width="75%" height="75%"/>
 
 ## Purpose
 
@@ -20,11 +20,11 @@ This project relies solely on Patrons for development. The Patrons' contribution
 
 And of course, the contributions of these Patrons need acknowledgement specifically, since their lifetime support exceeds 200€ [As of 09.28.23]:  
 
-- <a style="color:#dd83f5">Xendra</a> 
-- <a style="color:#dd83f5">Snappygus</a> 
-- <a style="color:#dd83f5">Draxie</a> 
-- <a style="color:#dd83f5">Explode</a> 
-- <a style="color:#dd83f5">oli1428</a> 
+<li><a style="color:#dd83f5">Xendra</a></li>
+<li><a style="color:#dd83f5">Snappygus</a></li>
+<li><a style="color:#dd83f5">Draxie</a></li>
+<li><a style="color:#dd83f5">Explode</a></li>
+<li><a style="color:#dd83f5">oli1428</a></li> 
 
 If you wish to support this project, consider becoming  
 a Patron at  It really helps a lot!
@@ -36,7 +36,7 @@ TBA.
 
 ## Installation
 
-Please follow the guide <a style="color:#dd83f5" href="https://topaztk.github.io/KH-ReFined/#install">here</a> for installation!
+Please follow the guide <p style="color:#dd83f5" id="install">here</a> for installation!
 
 ## Credits
 
