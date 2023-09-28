@@ -1,17 +1,17 @@
 ---
 name: Bug Reports
-about: Create a bug-report for Re:Fixed
-title: "[BUG] "
+about: Create a bug-report for Re:Fined.
+title: "[BUG] Name of the bug."
 labels: Bug
 assignees: ''
 
 ---
 
-**Re:Fixed Version:**
-_Enter in the version of Re:Fixed where the bug occurs [Ex. v0.75]_
+**Re:Fined Version:**
+_Enter in the version of Re:Fined where the bug occurs [Ex. v4.10]_
 
 **Game in Question:**
-_Enter in the game where this is happening [Ex. Kingdom Hearts I]_
+_Enter in the game where this is happening [Ex. Kingdom Hearts II]_
 
 **Bug Description:**
 _What is the bug like? What does it do? Etc. [Ex. Magic Sorting locks the Command Menu]_
