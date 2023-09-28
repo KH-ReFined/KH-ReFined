@@ -36,7 +36,7 @@ TBA.
 
 ## Installation
 
-Please follow the guide <a style="color:#dd83f5" href="https://www.patreon.com/topaztk">here</a> for installation!
+Please follow the guide <a style="color:#dd83f5" href="https://topaztk.github.io/KH-ReFined/#install">here</a> for installation!
 
 ## Credits
 

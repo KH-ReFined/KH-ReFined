@@ -11,7 +11,7 @@ async function changePage()
         window.location.hash = "Main_Page";
     }
 
-    document.title = "Kingdom Hearts - Re:Fixed | " + _fetchHash.substring(1).replace("_", " ");
+    document.title = "Kingdom Hearts - Re:Fined | " + _fetchHash.substring(1).replace("_", " ");
 
     _currActive = document.querySelectorAll(".linkActive");
     _inactive = document.querySelectorAll("a[href='" + _fetchHash + "']")[0];
@@ -29,7 +29,7 @@ async function changePage()
 
     if (window.getComputedStyle(_firstContent).getPropertyValue("opacity") != 0)
     {
-        await fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
+        await fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFined/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
         .then(response=> response.text())
         .then(text=> _secondContent.innerHTML = md.render(text))
         
@@ -46,7 +46,7 @@ async function changePage()
 
     else if (window.getComputedStyle(_secondContent).getPropertyValue("opacity") != 0)
     {
-        await fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFixed/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
+        await fetch('https://raw.githubusercontent.com/TopazTK/KH-ReFined/website/md/' + _fetchHash.substring(1).toLowerCase().replace("_", "") +'.md')
         .then(response=> response.text())
         .then(text=> _firstContent.innerHTML = md.render(text))
 
