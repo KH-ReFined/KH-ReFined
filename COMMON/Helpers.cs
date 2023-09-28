@@ -8,14 +8,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Windows;
-using System.Runtime;
-using System.Reflection;
-using System.Diagnostics;
-using System.Security.Principal;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace ReFined
 {
@@ -31,11 +23,8 @@ namespace ReFined
 				{
 					"[General]",
 					"discordRPC = true",
-					"autoAttack = false",
-					"",
-					"[Kingdom Hearts]",
-					"battleChests = true",
-					"",
+                    "resetCombo = 0x0003",
+                    "",
 					"[Kingdom Hearts II]",
 					"adjustRatio = false",
 					"festivityEngine = true",
@@ -58,7 +47,7 @@ namespace ReFined
 			{
 				var _fileRead = File.ReadAllText("reFined.ini");
 
-				if (!_fileRead.Contains("adjustRatio"))
+				if (!_fileRead.Contains("resetCombo"))
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
@@ -68,11 +57,11 @@ namespace ReFined
 				{
 					var _configIni = new TinyIni("reFined.ini");
 
-                    Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
-					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
+                    Variables.DISCORD_TOGGLE = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
+                    Variables.RESET_COMBO = Convert.ToUInt16(_configIni.Read("resetCombo", "General"), 16);
 
-					if (_configIni.KeyExists("debugMode", "General"))
-						Variables.devMode = Convert.ToBoolean(_configIni.Read("debugMode", "General"));
+                    if (_configIni.KeyExists("debugMode", "General"))
+						Variables.DEV_MODE = Convert.ToBoolean(_configIni.Read("debugMode", "General"));
 				}
 			}
 		}
@@ -125,8 +114,14 @@ namespace ReFined
 				using (StreamWriter _write = File.AppendText(Path.Combine(_logDir, _logFileName)))
 					_write.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
 
-				if (Variables.devMode)
-					Console.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
+				if (Variables.DEV_MODE)
+				{
+					Console.Write(_timeStr);
+					Console.ForegroundColor = Type == 0x00 ? ConsoleColor.Green : (Type == 0x01 ? ConsoleColor.Yellow : ConsoleColor.Red);
+					Console.Write(_typeStr + ": ");
+					Console.ForegroundColor = ConsoleColor.Gray;
+					Console.WriteLine(Input);
+				}
 			}
 
 			catch (Exception) {}
@@ -136,7 +131,10 @@ namespace ReFined
 		{
 			try
 			{
-				var _formatStr = "[{0}] {1}";
+                var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var _logDir = Path.Combine(_documentsPath, "Kingdom Hearts/Logs");
+
+                var _formatStr = "[{0}] {1}";
 
 				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
@@ -150,7 +148,7 @@ namespace ReFined
 					FILE_CHECK:
 					if (File.Exists(_logFileName))
 					{
-						_logFileName = "ReFined-" + _dateStr + "SESSION_" + _session + ".txt";
+						_logFileName = "ReFined-" + _dateStr + "_SESSION_" + _session + ".txt";
 						_session++;
 
 						goto FILE_CHECK;
@@ -159,12 +157,18 @@ namespace ReFined
 
 				var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
 
-				using (StreamWriter _write = File.AppendText(_logFileName))
-					_write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
+                using (StreamWriter _write = File.AppendText(Path.Combine(_logDir, _logFileName)))
+                    _write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
 
-				if (Variables.devMode)
-					Console.WriteLine(String.Format(_formatStr, _timeStr, _exString));
-			}
+                if (Variables.DEV_MODE)
+                {
+                    Console.Write("[" + _timeStr + "] ");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("EXCEPTION: ");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine(_exString);
+                }
+            }
 
 			catch (Exception) {}
 		}

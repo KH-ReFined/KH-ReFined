@@ -27,7 +27,7 @@ namespace ReFined
         {
             if (!Operations.CheckTitle())
             {
-                var _pointString = Operations.FetchPointerMSG(Variables.PINT_SystemBAR, StringID);
+                var _pointString = Operations.FetchPointerMSG(Variables.PINT_SystemMSG, StringID);
                 Variables.SharpHook[(IntPtr)0x179310].Execute(_pointString);
             }
         }
@@ -55,7 +55,7 @@ namespace ReFined
         {
             if (!Operations.CheckTitle())
             {
-                var _pointString = Operations.FetchPointerMSG(Variables.PINT_SystemBAR, StringID);
+                var _pointString = Operations.FetchPointerMSG(Variables.PINT_SystemMSG, StringID);
                 Variables.SharpHook[(IntPtr)0x1571D0].Execute(_pointString);
             }
         }

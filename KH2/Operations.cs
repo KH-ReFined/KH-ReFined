@@ -36,8 +36,8 @@ namespace ReFined
         /// </summary>
         /// <returns>"True" if it's in the title, "False" otherwise.</returns>
         public static bool CheckTitle() =>
-            Hypervisor.Read<uint>(Variables.ADDR_World) == 0x00FFFFFF
-         || Hypervisor.Read<uint>(Variables.ADDR_World) == 0x00000101
+            Hypervisor.Read<uint>(Variables.ADDR_Area) == 0x00FFFFFF
+         || Hypervisor.Read<uint>(Variables.ADDR_Area) == 0x00000101
          || Hypervisor.Read<uint>(Variables.ADDR_Title) == 0x00000001
          || Hypervisor.Read<uint>(Variables.ADDR_Reset) == 0x00000001;
 
@@ -373,7 +373,7 @@ namespace ReFined
             {
                 Helpers.Log("File does not bare a save! Autosave aborted to stop corruption!", 1);
 
-                if (Variables.saveToggle == 0x00)
+                if (Variables.SAVE_MODE == 0x00)
                     Additions.ShowInformation(0x4D6D);
 
                 return;
@@ -459,7 +459,7 @@ namespace ReFined
             }
             #endregion
 
-            if (Variables.saveToggle == 0x00)
+            if (Variables.SAVE_MODE == 0x00)
             {
                 Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x18BA09, 0x28, true);
                 Additions.ShowInformation(0x4D6C);
