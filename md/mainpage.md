@@ -1,12 +1,7 @@
-# A Welcoming Message!
+# Website is being updated again!
 
-Heya, this is TopazTK. If you are seeing this **work**, it means that the Markdown parser *finally* decided to do it's job!
-
-So yea, this is the official website for Re:Fixed, where all updates regarding it, now and future, will be posted and uploaded to for all of you to enjoy!
-
-I gotta admit, I am not a wizard of web development but eh, if I can make a nice lookin' website I sure am satisfied.
-
-Welp, nothing more to say for now, go over to the <a style="color:#dd83f5" href="https://twitter.com/KH_ReFixed">Re:Fixed Twitter Page</a> for more updates, or join the <a style="color:#dd83f5" href="https://discord.gg/aGc7CyEJgv">Re:Fixed Discord Server</a> for 24/7 interaction with others!
+Well, apparently this thing has it's uses. What can I say, the people like it, so I will oblige.  
+Please enjoy Re:Fined as it matures, there are more in store so stay tuned!
 
 ---
 
@@ -23,3 +18,17 @@ Kinda gamechanging, extremely useful for those who are forgetful and don't stack
 Along with the introduction of DDD comes many fixes, tweaks, and some new features to both KH1 and KH2! I am excited to share them all with you in the near future.
 
 I hope that all of you will be able to enjoy what's in store for Re:Fixed v3.00!
+
+---
+
+# A Welcoming Message!
+
+Heya, this is TopazTK. If you are seeing this **work**, it means that the Markdown parser *finally* decided to do it's job!
+
+So yea, this is the official website for Re:Fixed, where all updates regarding it, now and future, will be posted and uploaded to for all of you to enjoy!
+
+I gotta admit, I am not a wizard of web development but eh, if I can make a nice lookin' website I sure am satisfied.
+
+Welp, nothing more to say for now, go over to the <a style="color:#dd83f5" href="https://twitter.com/KH_ReFixed">Re:Fixed Twitter Page</a> for more updates, or join the <a style="color:#dd83f5" href="https://discord.gg/aGc7CyEJgv">Re:Fixed Discord Server</a> for 24/7 interaction with others!
+
+---
