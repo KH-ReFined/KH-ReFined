@@ -343,6 +343,19 @@ namespace ReFined
 
         #region Base Functionality
 
+        public static void AllowGOA()
+        {
+            var _flagRead = Hypervisor.Read<byte>(0x444A58);
+            var _goaVisit = Hypervisor.Read<byte>(0x444E7D);
+            var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_Area);
+            
+            if (_worldRead == 0x0F && (_goaVisit & 0x04) == 0x04 && (_flagRead & 0x40) == 0x00)
+                Hypervisor.Write(0x444A58, (byte)(_flagRead + 0x40));
+
+            else if (_worldRead != 0x0F && (_flagRead & 0x40) == 0x40)
+                Hypervisor.Write(0x444A58, (byte)(_flagRead - 0x40));
+        }
+
         /// <summary>
         /// When the proper input is given, returns to the title screen.
         /// When the option for it is toggled, prompts the user for a cancellation.
@@ -942,7 +955,6 @@ namespace ReFined
         public static void ConfigHandler()
         {
             // Read a LOT of shit.
-
             var _configRead = Hypervisor.Read<ushort>(Variables.ADDR_Config);
             var _selectPoint = Hypervisor.Read<ulong>(Variables.PINT_SubMenuOptionSelect);
 
@@ -988,6 +1000,8 @@ namespace ReFined
                 if (_settingsPoint != 0x00 && !DEBOUNCE[6])
                 {
                     Helpers.Log("Config Menu Detected! Setting the necessary values...", 0);
+
+                    Variables.SharpHook = new MemorySharp(Hypervisor.Process);
 
                     // Read the config:
                     var _naviMap = Variables.SharpHook[(IntPtr)0x2E2E00].Execute<byte>();
@@ -1134,6 +1148,8 @@ namespace ReFined
             // If we have exited the menu:
             else if (_selectPoint == 0x00 && ENTER_CONFIG)
             {
+                Variables.SharpHook = new MemorySharp(Hypervisor.Process);
+
                 Helpers.Log("Configuration Menu closed! Initializing full reload!", 0);
                 Helpers.Log("THE GAME MAY CRASH DURING THIS PROCESS!", 1);
 
@@ -1444,6 +1460,7 @@ namespace ReFined
             var _subMenuRead = Hypervisor.Read<byte>(Variables.ADDR_SubMenuType);
             var _finishRead = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
 
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
             var _pauseRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
             var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
             var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
@@ -1508,8 +1525,9 @@ namespace ReFined
                 {
                     // Restore Roxas' Keyblade.
                     var _roxasTemp = Hypervisor.Read<ushort>(0x445052);
+                    var _charRead = Hypervisor.Read<ushort>(0x24BE4B2);
 
-                    if (_roxasTemp != ROXAS_KEYBLADE)
+                    if (_roxasTemp != ROXAS_KEYBLADE && _charRead == 0x5A)
                     {
                         Hypervisor.Write(0x446B4C, _roxasTemp);
                         Hypervisor.Write(0x445052, ROXAS_KEYBLADE);
@@ -1566,9 +1584,6 @@ namespace ReFined
                     {
                         Helpers.Log("Switched to Prepare Mode! Destroying...", 0);
 
-                        var _currentSave = Hypervisor.ReadArray(Hypervisor.PureAddress + 0x7A0000, 0x10FC0, true);
-                        Hypervisor.WriteArray(Variables.ADDR_SaveData, _currentSave);
-
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, new byte[] { 0x48, 0x8D, 0x15 }, true);
 
@@ -1590,9 +1605,17 @@ namespace ReFined
                     else if (_menuRead == 0x08 && PREPARE_MODE == 0x01)
                         PREPARE_MODE = 0x02;
 
-                    // If the menu was closed, re-write the edited save.
                     else if (PREPARE_MODE == 0x02 && _menuRead != 0x08)
                     {
+                        Helpers.Log("Prepare finished! First copy of the save state...", 0);
+                        var _currentSave = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x10FC0);
+                        Hypervisor.WriteArray(Hypervisor.PureAddress + 0x7A0000, _currentSave, true);
+                        PREPARE_MODE = 0x03;
+                    }
+
+                    else if (PREPARE_MODE == 0x02 && _menuRead != 0x08 && _pauseRead == 0x00 && _loadRead == 0x01)
+                    {
+                        Helpers.Log("Prepare concluded! Last copy of the save state...", 0);
                         var _currentSave = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x10FC0);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + 0x7A0000, _currentSave, true);
                         PREPARE_MODE = 0x00;
@@ -2046,6 +2069,7 @@ namespace ReFined
 
                 else
                 {
+                    AllowGOA();
                     PromptSelector();
 
                     if (CONFIG_REMOVE[0] == 0x00)
