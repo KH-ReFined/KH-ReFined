@@ -1584,6 +1584,9 @@ namespace ReFined
                     {
                         Helpers.Log("Switched to Prepare Mode! Destroying...", 0);
 
+                        var _currentSave = Hypervisor.ReadArray(Hypervisor.PureAddress + 0x7A0000, 0x10FC0, true);
+                        Hypervisor.WriteArray(Variables.ADDR_SaveData, _currentSave);
+
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, _nullArray, true);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, new byte[] { 0x48, 0x8D, 0x15 }, true);
 
