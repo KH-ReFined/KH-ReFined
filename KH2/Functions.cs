@@ -1469,13 +1469,15 @@ namespace ReFined
 
             var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_Area);
             var _roomRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
+            var _eventRead = Hypervisor.Read<ushort>(Variables.ADDR_Area + 0x04);
 
             var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
 
-            // Cavern of Remembrance Blacklist.
+            // Cavern of Remembrance and The Underdrome Blacklist.
             var _cavernCheck = _worldRead == 0x04 && (_roomRead >= 0x15 && _roomRead <= 0x1A);
+            var _olympusCheck = _worldRead == 0x06 && _roomRead == 0x09 && (_eventRead >= 0xBD && _roomRead <= 0xC4);
 
-            if (!_cavernCheck && !Operations.CheckTitle())
+            if (!_cavernCheck && !_olympusCheck && !Operations.CheckTitle())
             {
                 var _battleState = _battleRead == 0x02 && _cutsceneRead == 0x00;
 
@@ -1646,7 +1648,7 @@ namespace ReFined
             // If in the Cavern of Remembrance: Do not run Retry.
             else if (!RETRY_BLOCK)
             {
-                Helpers.Log(String.Format("Cavern of Remembrance detected! Locking Retry Capabilities..."), 0);
+                Helpers.Log(String.Format("Cavern of Remembrance or The Underdrome detected! Locking Retry Capabilities..."), 0);
                 RETRY_BLOCK = true;
             }
         }
