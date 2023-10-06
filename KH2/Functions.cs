@@ -608,6 +608,10 @@ namespace ReFined
 
             var _worldID = Hypervisor.Read<byte>(Variables.ADDR_Area);
 
+            var _roomRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
+            var _roundRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x02);
+            var _eventRead = Hypervisor.Read<ushort>(Variables.ADDR_Area + 0x04);
+
             var _formValue = Hypervisor.Read<byte>(Variables.ADDR_PlayerForm);
             var _healthValue = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP);
             var _magicValue = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x180);
@@ -634,21 +638,43 @@ namespace ReFined
             // If the game is NOT in the Title Screen, apply the detailed presence.
             if (!Operations.CheckTitle())
             {
-                Variables.DiscordClient.SetPresence(
-                    new RichPresence
-                    {
-                        Details = _stringDetail,
-                        State = _stringState,
-                        Assets = new Assets
+                if (_worldID == 0x06 && _roomRead == 0x09 && (_eventRead >= 0xBD && _eventRead <= 0xC4))
+                {
+                    Variables.DiscordClient.SetPresence(
+                        new RichPresence
                         {
-                            LargeImageText = _timeText,
+                            Details = _stringDetail,
+                            State = _stringState + " | Round: " + _roundRead,
+                            Assets = new Assets
+                            {
+                                LargeImageText = _timeText,
 
-                            LargeImageKey = Variables.DICTIONARY_WRL.ElementAtOrDefault(_worldID),
-                            SmallImageText = Variables.DICTIONARY_MDE.ElementAtOrDefault(_diffValue),
-                            SmallImageKey = Variables.DICTIONARY_BTL.ElementAtOrDefault(_battleFlag)
-                        },
-                    }
-                );
+                                LargeImageKey = Variables.DICTIONARY_CPS.ElementAtOrDefault(_eventRead < 0xC1 ? _eventRead - 0xBD : _eventRead - 0xC1),
+                                SmallImageText = Variables.DICTIONARY_MDE.ElementAtOrDefault(_diffValue),
+                                SmallImageKey = Variables.DICTIONARY_BTL.ElementAtOrDefault(_battleFlag)
+                            },
+                        }
+                    );
+                }
+
+                else
+                {
+                    Variables.DiscordClient.SetPresence(
+                        new RichPresence
+                        {
+                            Details = _stringDetail,
+                            State = _stringState,
+                            Assets = new Assets
+                            {
+                                LargeImageText = _timeText,
+
+                                LargeImageKey = Variables.DICTIONARY_WRL.ElementAtOrDefault(_worldID),
+                                SmallImageText = Variables.DICTIONARY_MDE.ElementAtOrDefault(_diffValue),
+                                SmallImageKey = Variables.DICTIONARY_BTL.ElementAtOrDefault(_battleFlag)
+                            },
+                        }
+                    );
+                }
             }
 
             // If the game is in the Title Screen, apply the simple presence.
@@ -1475,7 +1501,7 @@ namespace ReFined
 
             // Cavern of Remembrance and The Underdrome Blacklist.
             var _cavernCheck = _worldRead == 0x04 && (_roomRead >= 0x15 && _roomRead <= 0x1A);
-            var _olympusCheck = _worldRead == 0x06 && _roomRead == 0x09 && (_eventRead >= 0xBD && _roomRead <= 0xC4);
+            var _olympusCheck = _worldRead == 0x06 && _roomRead == 0x09 && (_eventRead >= 0xBD && _eventRead <= 0xC4);
 
             if (!_cavernCheck && !_olympusCheck && !Operations.CheckTitle())
             {
@@ -1640,7 +1666,7 @@ namespace ReFined
 
                 if (RETRY_BLOCK)
                 {
-                    Helpers.Log(String.Format("Out of the Cavern of Remembrance... Unlocking Retry Capabilities..."), 0);
+                    Helpers.Log(String.Format("Out of the problematic area... Unlocking Retry Capabilities..."), 0);
                     RETRY_BLOCK = false;
                 }
             }
@@ -1648,7 +1674,7 @@ namespace ReFined
             // If in the Cavern of Remembrance: Do not run Retry.
             else if (!RETRY_BLOCK)
             {
-                Helpers.Log(String.Format("Cavern of Remembrance or The Underdrome detected! Locking Retry Capabilities..."), 0);
+                Helpers.Log(String.Format("Problematic area detected! Locking Retry Capabilities..."), 0);
                 RETRY_BLOCK = true;
             }
         }

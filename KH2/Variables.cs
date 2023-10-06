@@ -227,6 +227,7 @@ namespace ReFined
 
         public static string[] DICTIONARY_BTL = { "safe", "mob", "boss" };
         public static string[] DICTIONARY_WRL = { "", "", "tt", "", "hb", "bb", "he", "al", "mu", "po", "lk", "lm", "dc", "wi", "nm", "wm", "ca", "tr", "eh" };
+        public static string[] DICTIONARY_CPS = { "cup_pp", "cup_cerb", "cup_titan", "cup_god", "cup_hades" };
         public static string[] DICTIONARY_FRM = { "None", "Valor", "Wisdom", "Limit", "Master", "Final", "Anti" };
         public static string[] DICTIONARY_MDE = { "Beginner Mode", "Standard Mode", "Proud Mode", "Critical Mode" };
 
