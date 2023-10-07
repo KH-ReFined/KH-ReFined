@@ -46,6 +46,11 @@ namespace ReFined
         static bool CONFIG_WRITTEN;
         static Variables.CONFIG_BITWISE CONFIG_BIT;
 
+        static bool LOCK_AUTOSAVE;
+
+        static List<byte> SETTINGS_FIRST;
+        static byte[] SETTINGS_SECOND;
+
         static ulong[] LOAD_LIST;
         static int PAST_FORM = -1;
 
@@ -505,8 +510,11 @@ namespace ReFined
 
             var _pauseCheck = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
 
-            // If the game is loaded, and Sora is in the map:
-            if (!Operations.CheckTitle() && _loadRead == 0x01)
+            // Please refrain from saving in these rooms kthxbye!
+            var _blacklistCheck = (_worldCheck == 0x08 && _roomCheck == 0x03) || (_worldCheck == 0x12 && _roomCheck >= 0x13 && _roomCheck <= 0x1D);
+
+            // If the game is loaded, and Sora is in the map, and the Blacklist isn't in effect:
+            if (!Operations.CheckTitle() && _loadRead == 0x01 && !_blacklistCheck)
             {
                 // Wait for a bit.
                 Thread.Sleep(100);
@@ -1027,8 +1035,6 @@ namespace ReFined
                 {
                     Helpers.Log("Config Menu Detected! Setting the necessary values...", 0);
 
-                    Variables.SharpHook = new MemorySharp(Hypervisor.Process);
-
                     // Read the config:
                     var _naviMap = Variables.SharpHook[(IntPtr)0x2E2E00].Execute<byte>();
                     var _cameraAuto = Variables.SharpHook[(IntPtr)0x2E2D60].Execute<byte>();
@@ -1045,7 +1051,7 @@ namespace ReFined
                     var _langAudio = (_configRead & 0x0800) == 0x0800 ? (DETECTED_EXTRA_DUB ? 0x02 : 0x01) : ((_configRead & 0x1000) == 0x1000 ? 0x01 : 0x00);
 
                     // Shape the array in which the menu will use.
-                    var _settingsArray = new List<byte>
+                    SETTINGS_FIRST = new List<byte>
                     {
                         (byte)(_cameraAuto == 0x01 ? 0x00 : 0x01),
                         _cameraVRev,
@@ -1065,17 +1071,17 @@ namespace ReFined
                     // Remove addons accordingly.
 
                     if (CONFIG_REMOVE[2] == 0x01)
-                        _settingsArray.RemoveAt(0x08);
+                        SETTINGS_FIRST.RemoveAt(0x08);
 
                     if (CONFIG_REMOVE[1] == 0x01)
-                        _settingsArray.RemoveAt(0x07);
+                        SETTINGS_FIRST.RemoveAt(0x07);
 
                     if (CONFIG_REMOVE[0] == 0x01)
-                        _settingsArray.RemoveAt(0x06);
+                        SETTINGS_FIRST.RemoveAt(0x06);
 
                     // Write said config to the menu.
 
-                    Hypervisor.WriteArray(_settingsPoint, _settingsArray.ToArray(), true);
+                    Hypervisor.WriteArray(_settingsPoint, SETTINGS_FIRST.ToArray(), true);
 
                     Helpers.Log("Options set! Correcting the Difficulty...", 0);
 
@@ -1097,7 +1103,7 @@ namespace ReFined
                     ENTER_CONFIG = true;
 
 
-                var _settingRead = Hypervisor.ReadArray(_settingsPoint, 0x10, true);
+                SETTINGS_SECOND = Hypervisor.ReadArray(_settingsPoint, SETTINGS_FIRST.Count(), true);
 
                 /*
                  *
@@ -1137,109 +1143,121 @@ namespace ReFined
 
                 // If the addons are present: Set them up accordingly.
                 if (CONFIG_REMOVE[2] == 0x00)
-                    Variables.ENEMY_VANILLA = Convert.ToBoolean(_settingRead[0x08 - CONFIG_REMOVE[1] + CONFIG_REMOVE[0]] == 0x00 ? 0x01 : 0x00);
+                    Variables.ENEMY_VANILLA = Convert.ToBoolean(SETTINGS_SECOND[0x08 - CONFIG_REMOVE[1] + CONFIG_REMOVE[0]] == 0x00 ? 0x01 : 0x00);
 
                 if (CONFIG_REMOVE[1] == 0x00)
-                    Variables.MUSIC_VANILLA = Convert.ToBoolean(_settingRead[0x07 - CONFIG_REMOVE[0]] == 0x00 ? 0x01 : 0x00);
+                    Variables.MUSIC_VANILLA = Convert.ToBoolean(SETTINGS_SECOND[0x07 - CONFIG_REMOVE[0]] == 0x00 ? 0x01 : 0x00);
 
                 if (CONFIG_REMOVE[0] == 0x00)
-                    Variables.AUDIO_MODE = _settingRead[0x06];
+                    Variables.AUDIO_MODE = SETTINGS_SECOND[0x06];
 
                 // Calculate the offset for removed addons.
                 var _configOffset = CONFIG_REMOVE[0] + CONFIG_REMOVE[1] + CONFIG_REMOVE[2];
 
                 // Set the variables.
-                Variables.SAVE_MODE = _settingRead[0x05];
-                Variables.CONTROLLER_MODE = _settingRead[0x09 - _configOffset];
+                Variables.SAVE_MODE = SETTINGS_SECOND[0x05];
+                Variables.CONTROLLER_MODE = SETTINGS_SECOND[0x09 - _configOffset];
 
                 // Calculate the bitwise to write.
                 var _configBitwise =
-                    (_settingRead[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF) |
-                    (_settingRead[0x01] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF) |
-                    (_settingRead[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_H : Variables.CONFIG_BITWISE.OFF) |
-                    (_settingRead[0x03] == 0x01 ? Variables.CONFIG_BITWISE.SUMMON_PARTIAL : (_settingRead[0x03] == 0x00 ? Variables.CONFIG_BITWISE.SUMMON_FULL : Variables.CONFIG_BITWISE.OFF)) |
-                    (_settingRead[0x04] == 0x00 ? Variables.CONFIG_BITWISE.NAVI_MAP : Variables.CONFIG_BITWISE.OFF) |
-                    (_settingRead[0x05] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR : (_settingRead[0x05] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF)) |
-                    (CONFIG_REMOVE[0] == 0x00 ? (_settingRead[0x06] == (DETECTED_EXTRA_DUB ? 0x02 : 0x01) ? Variables.CONFIG_BITWISE.AUDIO_JAPANESE : (_settingRead[0x06] == 0x01 ? Variables.CONFIG_BITWISE.AUDIO_OTHER : Variables.CONFIG_BITWISE.OFF)) : Variables.CONFIG_BITWISE.OFF) |
-                    (CONFIG_REMOVE[1] == 0x00 ? (_settingRead[0x07 - CONFIG_REMOVE[0]] == 0x00 ? Variables.CONFIG_BITWISE.MUSIC_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) |
-                    (CONFIG_REMOVE[2] == 0x00 ? (_settingRead[0x08 - (CONFIG_REMOVE[1] + CONFIG_REMOVE[0])] == 0x00 ? Variables.CONFIG_BITWISE.HEARTLESS_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) |
-                    (_settingRead[0x09 - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER : (_settingRead[0x09 - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF)) |
-                    (_settingRead[0x0A - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF) |
-                    (_settingRead[0x0B - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.COMMAND_KH2 : Variables.CONFIG_BITWISE.OFF);
+                    (SETTINGS_SECOND[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF) |
+                    (SETTINGS_SECOND[0x01] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF) |
+                    (SETTINGS_SECOND[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_H : Variables.CONFIG_BITWISE.OFF) |
+                    (SETTINGS_SECOND[0x03] == 0x01 ? Variables.CONFIG_BITWISE.SUMMON_PARTIAL : (SETTINGS_SECOND[0x03] == 0x00 ? Variables.CONFIG_BITWISE.SUMMON_FULL : Variables.CONFIG_BITWISE.OFF)) |
+                    (SETTINGS_SECOND[0x04] == 0x00 ? Variables.CONFIG_BITWISE.NAVI_MAP : Variables.CONFIG_BITWISE.OFF) |
+                    (SETTINGS_SECOND[0x05] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR : (SETTINGS_SECOND[0x05] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF)) |
+                    (CONFIG_REMOVE[0] == 0x00 ? (SETTINGS_SECOND[0x06] == (DETECTED_EXTRA_DUB ? 0x02 : 0x01) ? Variables.CONFIG_BITWISE.AUDIO_JAPANESE : (SETTINGS_SECOND[0x06] == 0x01 ? Variables.CONFIG_BITWISE.AUDIO_OTHER : Variables.CONFIG_BITWISE.OFF)) : Variables.CONFIG_BITWISE.OFF) |
+                    (CONFIG_REMOVE[1] == 0x00 ? (SETTINGS_SECOND[0x07 - CONFIG_REMOVE[0]] == 0x00 ? Variables.CONFIG_BITWISE.MUSIC_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) |
+                    (CONFIG_REMOVE[2] == 0x00 ? (SETTINGS_SECOND[0x08 - (CONFIG_REMOVE[1] + CONFIG_REMOVE[0])] == 0x00 ? Variables.CONFIG_BITWISE.HEARTLESS_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) |
+                    (SETTINGS_SECOND[0x09 - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER : (SETTINGS_SECOND[0x09 - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF)) |
+                    (SETTINGS_SECOND[0x0A - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF) |
+                    (SETTINGS_SECOND[0x0B - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.COMMAND_KH2 : Variables.CONFIG_BITWISE.OFF);
 
                 // Write the current config to the save file.
                 Hypervisor.Write(Variables.ADDR_Config, (ushort)_configBitwise);
             }
 
             // If we have exited the menu:
-            else if (_selectPoint == 0x00 && ENTER_CONFIG)
+            else if (_selectPoint == 0x00 && ENTER_CONFIG && SETTINGS_FIRST != null && SETTINGS_SECOND != null)
             {
-                Variables.SharpHook = new MemorySharp(Hypervisor.Process);
+                if (!SETTINGS_SECOND.SequenceEqual(SETTINGS_FIRST.ToArray()))
+                {
+                    LOCK_AUTOSAVE = true;
 
-                Helpers.Log("Configuration Menu closed! Initializing full reload!", 0);
-                Helpers.Log("THE GAME MAY CRASH DURING THIS PROCESS!", 1);
+                    Helpers.Log("Configuration Menu closed! Initializing full reload!", 0);
+                    Helpers.Log("THE GAME MAY CRASH DURING THIS PROCESS!", 1);
 
-                ENTER_CONFIG = false;
-                DEBOUNCE[6] = false;
+                    ENTER_CONFIG = false;
+                    DEBOUNCE[6] = false;
 
-                // Give time for the Menu to close.
-                while (Hypervisor.Read<byte>(0x399952) != 0) ;
+                    // Give time for the Menu to close.
+                    while (Hypervisor.Read<byte>(0x399952) != 0) ;
 
-                Helpers.Log("Killing the BGM and Fade Handlers...", 0);
+                    Helpers.Log("Killing the BGM and Fade Handlers...", 0);
 
-                // Unblock the fade handler and shut the music down.
-                Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x15493A, true);
-                Variables.SharpHook[(IntPtr)0x1305F0].Execute();
-
-                Helpers.Log("Noting down the current world...", 0);
-
-                // Read the current world and event data.
-                if (AREA_READ == null)
-                    AREA_READ = Hypervisor.ReadArray(Variables.ADDR_Area, 0x0A);
-
-                // Make a new world data to be: Twilight Town - The Empty Realm.
-                var _newArray = new byte[] { 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
-                // If already in TT, change the target world to OC.
-                if (AREA_READ[0] == 0x02)
-                    _newArray[0] = 0x01;
-
-                Helpers.Log("Jumping into a DUMMY world!", 0);
-
-                // Initiate the jump.
-                Hypervisor.WriteArray(Variables.ADDR_Area, _newArray);
-                Variables.SharpHook[(IntPtr)0x150590].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.BaseAddress + Variables.ADDR_Area), 2, 0, 0, 0);
-
-                // Wait until the fade has been completed.
-                while (Hypervisor.Read<byte>(0x55472D) != 0x80) ;
-
-                // Destroy the fade handler so it does not cause issues.
-                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x15493A, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
-                Hypervisor.Write<byte>(0x55472D, 0x80);
-
-                // Whilst not loaded, constantly shut off the music.
-                while (Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) != 1)
+                    // Unblock the fade handler and shut the music down.
+                    Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x15493A, true);
                     Variables.SharpHook[(IntPtr)0x1305F0].Execute();
 
-                // Execute the function for JumpEffect again so we are stuck.
-                Variables.SharpHook[(IntPtr)0x154120].Execute(0x02);
+                    Helpers.Log("Noting down the current world...", 0);
 
-                Helpers.Log("Jump complete! Jumping back!", 0);
+                    // Read the current world and event data.
+                    if (AREA_READ == null)
+                        AREA_READ = Hypervisor.ReadArray(Variables.ADDR_Area, 0x0A);
 
-                // Atfer load, jump back to where we came from.
-                Hypervisor.WriteArray(Variables.ADDR_Area, AREA_READ);
-                Variables.SharpHook[(IntPtr)0x150590].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.BaseAddress + Variables.ADDR_Area), 2, 0, 0, 0);
+                    // Make a new world data to be: Twilight Town - The Empty Realm.
+                    var _newArray = new byte[] { 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-                // Wait until load.
-                while (Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) != 1) ;
+                    // If already in TT, change the target world to OC.
+                    if (AREA_READ[0] == 0x02)
+                        _newArray[0] = 0x01;
 
-                // Restore the fade initiater after load.
-                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x15493A, new byte[] { 0xF3, 0x0F, 0x11, 0x8F, 0x0C, 0x01, 0x00, 0x00 }, true);
+                    Helpers.Log("Jumping into a DUMMY world!", 0);
 
-                Helpers.Log("If you can see this, the jump was successful without a crash!", 0);
+                    // Initiate the jump.
+                    Hypervisor.WriteArray(Variables.ADDR_Area, _newArray);
+                    Variables.SharpHook[(IntPtr)0x150590].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.BaseAddress + Variables.ADDR_Area), 2, 0, 0, 0);
 
-                // Flush the world data.
-                AREA_READ = null;
+                    // Wait until the fade has been completed.
+                    while (Hypervisor.Read<byte>(0x55472D) != 0x80) ;
+
+                    // Destroy the fade handler so it does not cause issues.
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + 0x15493A, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
+                    Hypervisor.Write<byte>(0x55472D, 0x80);
+
+                    // Whilst not loaded, constantly shut off the music.
+                    while (Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) != 1)
+                        Variables.SharpHook[(IntPtr)0x1305F0].Execute();
+
+                    // Execute the function for JumpEffect again so we are stuck.
+                    Variables.SharpHook[(IntPtr)0x154120].Execute(0x02);
+
+                    Helpers.Log("Jump complete! Jumping back!", 0);
+
+                    // Atfer load, jump back to where we came from.
+                    Hypervisor.WriteArray(Variables.ADDR_Area, AREA_READ);
+                    Variables.SharpHook[(IntPtr)0x150590].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.BaseAddress + Variables.ADDR_Area), 2, 0, 0, 0);
+
+                    // Wait until load.
+                    while (Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) != 1) ;
+
+                    // Restore the fade initiater after load.
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + 0x15493A, new byte[] { 0xF3, 0x0F, 0x11, 0x8F, 0x0C, 0x01, 0x00, 0x00 }, true);
+
+                    Helpers.Log("If you can see this, the jump was successful without a crash!", 0);
+
+                    // Flush the world data.
+                    AREA_READ = null;
+                    LOCK_AUTOSAVE = false;
+                }
+
+                else
+                {
+                    ENTER_CONFIG = false;
+                    DEBOUNCE[6] = false;
+                    AREA_READ = null;
+                    LOCK_AUTOSAVE = false;
+                }
             }
         }
 
@@ -1499,13 +1517,17 @@ namespace ReFined
 
             var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
 
-            // Cavern of Remembrance and The Underdrome Blacklist.
-            var _cavernCheck = _worldRead == 0x04 && (_roomRead >= 0x15 && _roomRead <= 0x1A);
-            var _olympusCheck = _worldRead == 0x06 && _roomRead == 0x09 && (_eventRead >= 0xBD && _eventRead <= 0xC4);
+            // No-No Areas for Retry.
+            var _blacklistCheck = 
+               (_worldRead == 0x04 && _roomRead >= 0x15 && _roomRead <= 0x1A) // Cavern of Remembrance
+            || (_worldRead == 0x12 && _roomRead >= 0x13 && _roomRead <= 0x1D) // Final Battles
+            || (_worldRead == 0x06 && _roomRead == 0x09 && _eventRead >= 0xBD && _eventRead <= 0xC4) // Olympus Cups
+            || (_worldRead == 0x0C && _roomRead == 0x00 && _eventRead == 0x33); // Minnie Escort
 
-            if (!_cavernCheck && !_olympusCheck && !Operations.CheckTitle())
+            if (!_blacklistCheck && !Operations.CheckTitle())
             {
-                var _battleState = _battleRead == 0x02 && _cutsceneRead == 0x00;
+                // The battle state will also check **specifically** for Hades Escape.
+                var _battleState = (_battleRead == 0x02 && _cutsceneRead == 0x00) || (_worldRead == 0x06 && _roomRead == 0x05 && _eventRead == 0x6F);
 
                 // Read the necessary shits at the start of a fight.
                 if (_battleState && _pauseRead == 0x00 && !STATE_COPIED)
@@ -1638,18 +1660,10 @@ namespace ReFined
 
                     else if (PREPARE_MODE == 0x02 && _menuRead != 0x08)
                     {
-                        Helpers.Log("Prepare finished! First copy of the save state...", 0);
+                        Helpers.Log("Prepare finished! Copying the save state...", 0);
                         var _currentSave = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x10FC0);
                         Hypervisor.WriteArray(Hypervisor.PureAddress + 0x7A0000, _currentSave, true);
                         PREPARE_MODE = 0x03;
-                    }
-
-                    else if (PREPARE_MODE == 0x02 && _menuRead != 0x08 && _pauseRead == 0x00 && _loadRead == 0x01)
-                    {
-                        Helpers.Log("Prepare concluded! Last copy of the save state...", 0);
-                        var _currentSave = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x10FC0);
-                        Hypervisor.WriteArray(Hypervisor.PureAddress + 0x7A0000, _currentSave, true);
-                        PREPARE_MODE = 0x00;
                     }
                 }
 
@@ -2143,7 +2157,9 @@ namespace ReFined
                             {
                                 while (!Variables.Token.IsCancellationRequested)
                                 {
-                                    AutosaveEngine();
+                                    if (!LOCK_AUTOSAVE)
+                                        AutosaveEngine();
+                                    
                                     Thread.Sleep(5);
                                 }
                             },
