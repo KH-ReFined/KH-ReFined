@@ -6,6 +6,12 @@ Get the latest release by clicking the button below.
 
 [![KH-ReFixed](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined-Download-blue.svg)](https://github.com/TopazTK/KH-ReFined/releases)
 
+### Installation
+
+Installing Re:Fined is easy, even though it may seem like a monumential task. Please refer to [this page](SETUP.md) for full instructions.
+
+If you're installing a pre-v4.xx version of Re:Fined, simply extract the archive into the folder with your game and rename the exe's to the vanilla names. Support for them is not provided per https://github.com/KH-ReFined/KH-ReFined/issues/117.
+
 ## Purpose
 
 This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.  
@@ -44,12 +50,6 @@ For all kinds of technical support and discussion, join the Discord Server:
 ## Features
 
 T.B.A.
-
-## Installation
-
-Installing Re:Fined is easy, even though it may seem like a monumential task. Please refer to [this page](SETUP.md) for full instructions.
-
-If you're installing a pre-v4.xx version of Re:Fined, simply extract the archive into the folder with your game and rename the exe's to the vanilla names. Support for them is not provided per https://github.com/KH-ReFined/KH-ReFined/issues/117.
 
 ## Credits
 
