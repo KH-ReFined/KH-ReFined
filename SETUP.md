@@ -28,12 +28,16 @@ In this section, we will be setting up OpenKH's Mods Manager to patch the necess
    - You are going to click `Next >`, select `PC Release via Epic Game Store`, and then you are going to click the little folder icon to select the location of your game.
    - If you do not know where you have `KINGDOM HEARTS HD 1.5+2.5 ReMIX` installed, open up Epic Games Store, go into your library, right click `KINGDOM HEARTS HD 1.5+2.5 ReMIX`, click `Manage`, and then click the folder icon next to `Installation`. This will bring you to where it is downloaded.
 
-- Step 4: Click `Next >` and choose wether you want to install OpenKH Panacea. For this tutorial, we ***will*** be installing and using Panacea.
+- Step 4: Click `Next >` and choose whether you want to install OpenKH Panacea. For this tutorial, we ***will*** be installing and using Panacea.
    - OpenKH Panacea allows you to load your mods without modifying the game files.
+
+ Note:
+- If you install Panacea and then later plan to install LuaBackend and you get a `DBGHELP.dll` with it - rename it to `LuaBackend.dll` before dropping it into the folder, as `DBGHELP.dll` is already used by Panacea.
 
 - Step 5: - On the next screen, you may choose to `Launch via Epic Games`. If you would like to, check this and then click `Next >`.
 
 - Step 6:
+
 - Make sure `KH2-25GB` is checked, and then click `Extract game data`. This may take roughly fifteen minutes.
    - If you have already used OpenKH in the past, I recommend doing this step again with a completely fresh install of the game, that way any extracted data is guaranteed to not be accidently modified by a pre-existing modification.
    - If you encounter any errors extracting the game files, please either try again, or re-download your game!
@@ -82,7 +86,7 @@ In this section, we will be placing our new Re:Fined v4.00 installation files in
 - Step 3: Extract the Re:Fined .zip downloaded earlier, and place `KINGDOM HEARTS II FINAL MIX.exe` and `keystone.dll` into your game directory folder.
    - If you get a box asking you if you would like to overwrite any data, select `Yes`
 
-Notes:
+Note:
 - The .exe's game icon may not update right away. This is due to Windows Icon caching and in no way affects Re:Fined.
 
 This is what your game installation folder should now look like
@@ -94,6 +98,9 @@ This is what your game installation folder should now look like
 Congratulations! Now you can just boot the game as you would normally and it will be there. You will know if it has worked when you select `NEW GAME` and you get the new options to select your controller prompts and skip the prologue! 
 
 And there you go! Re:Fined v4.xx has been successfully installed!
+
+Note:
+- If you plan to install LuaBackend and you get a `DBGHELP.dll` with it - rename it to `LuaBackend.dll` before dropping it into the folder, as `DBGHELP.dll` is already used by Panacea.
 
 ## Updating Re:Fined v4.xx:
 
