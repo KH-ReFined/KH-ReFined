@@ -104,7 +104,7 @@ Updating is not a trivial task and does not take long to perform.
 ![image](https://github.com/SandeMC/KH-ReFined/assets/70141395/13287440-ee99-460d-85bd-4d2aea58aac4)
 
 - Step 2:
-- If the note *does exist*, open OpenKH, update the necessary patches (you can see them by looking for the `Update available` note) and [build the patch as you did previously](##downloading-and-patching-in-refined-v4xxs-files-using-openkh).
+- If the note *does exist*, open OpenKH, update the necessary patches (you can see them by looking for the `Update available` note) and [build the patch as you did previously](#downloading-and-patching-in-refined-v4xxs-files-using-openkh).
   - After that, download the updated version release and [extract the files again](#setting-up-the-exe).
 
 - If the note *does not exist*, only download the updated version release and [extract the files again](#setting-up-the-exe).
