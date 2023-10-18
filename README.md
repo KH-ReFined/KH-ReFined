@@ -47,7 +47,9 @@ T.B.A.
 
 ## Installation
 
-Installing Re:Fined is easy, even though it may seem like a monumential task. Please refer to <a href="https://topaztk.github.io/KH-ReFined/#install">**this page**</a> for full instructions.
+Installing Re:Fined is easy, even though it may seem like a monumential task. Please refer to [this page](SETUP.md) for full instructions.
+
+If you're installing a pre-v4.xx version of Re:Fined, simply extract the archive into the folder with your game and rename the exe's to the vanilla names. Support for them is not provided per https://github.com/KH-ReFined/KH-ReFined/issues/117.
 
 ## Credits
 
