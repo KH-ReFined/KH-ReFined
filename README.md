@@ -104,7 +104,6 @@ For all kinds of technical support and discussion, join the Discord Server:
 | - | :heavy_check_mark: | Limit Form's Shortcuts can now be reorganized through the config file. |
 | - | :heavy_check_mark: | In-game config options will now persist on a per-save basis. |
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting is now more resembling of the menu from the first game. |
-| - | :heavy_check_mark: | The party will now switch up their attire at appropriate times. [[11]](#reference) | 
 | - | :heavy_check_mark: | Added the ability to enforce either Controller or MKB Prompts through the config menu. |
 | - | :heavy_check_mark: | Implemented the Resource Pack Engine. Peers can now make 3 types of Resource Packs for Re:Fined. |
 
@@ -127,7 +126,6 @@ For all kinds of technical support and discussion, join the Discord Server:
 8. In KH1, there was a convenient "Encounter Plus" ability to make the grinding experience more bearable. Re:Fined implements this ability into KH2.
 9. CrazyCatz00's English Patch for Kingdom Hearts 2 - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games. There's also extra patches to have a 3rd language - it can be German, French or Spanish.
 10. In KH3, the player can reorganize their magic menu. This feature is neat, so now it's in KH2. To do this, highlight your magic command and press L2+DPAD to shift around.
-11. The party will wear their Halloween costumes in the days between October 31st and November 2nd (inclusive). Whilst they wear their Christmas costumes in the days between December 24th and January 1st (also inclusive).
 
 ## Credits
 
