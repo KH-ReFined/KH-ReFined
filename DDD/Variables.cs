@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR DDD!
+      KINGDOM HEARTS - RE:FINED FOR DDD!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Variables
     {
@@ -33,7 +33,7 @@ namespace ReFixed
         //
         // CONFIG VARIABLES
         //
-        // Variables that will be read from a config file to tell Re:Fixed what to do.
+        // Variables that will be read from a config file to tell Re:Fined what to do.
         //
 
         public static bool sfxToggle = true;

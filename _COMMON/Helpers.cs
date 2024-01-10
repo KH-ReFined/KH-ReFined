@@ -1,6 +1,6 @@
 /*
 ==================================================
-    KINGDOM HEARTS - RE:FIXED COMMON FILE!
+    KINGDOM HEARTS - reFined COMMON FILE!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -20,10 +20,12 @@ using System.Text.RegularExpressions;
 
 using NAudio.Wave;
 
-namespace ReFixed
+namespace ReFined
 {
     public static class Helpers
     {
+	    static string _logFileName = "";
+
         public static void PlaySFX(string Input)
 		{
 			var _output = new DirectSoundOut();
@@ -43,15 +45,18 @@ namespace ReFixed
 
 		public static void InitConfig()
 		{			
-			if (!File.Exists("reFixed.ini"))
+			if (!File.Exists("reFinedLegacy.ini"))
 			{
 				var _outIni = new string[]
 				{
 					"[General]",
-					"autoSave = true",
+					"autoSave = false",
 					"discordRPC = true",
 					"autoAttack = false",
 					"saveIndicator = true",
+					"",
+					"# Options: vanilla, remastered",
+					"musicMode = remastered",
 					"",
 					"# Options: true = Controller, false = Keyboard, auto = Autodetect",
 					"controllerPrompt = auto",
@@ -61,6 +66,10 @@ namespace ReFixed
 					"",
 					"[Kingdom Hearts II]",
 					"festivityEngine = true",
+					"driveShortcuts = true",
+					"",
+					"# Options: retry, continue",
+					"defaultPrompt = retry",
 					"",
 					"# Options: sonic, arcanum, raid, ragnarok",
 					"# Order: [CONFIRM], TRI, SQU, [JUMP]",
@@ -68,27 +77,29 @@ namespace ReFixed
 					"limitShortcuts = [sonic, arcanum, raid, ragnarok]"
 				};
 
-				File.WriteAllLines("reFixed.ini", _outIni);
+				File.WriteAllLines("reFinedLegacy.ini", _outIni);
 			}
 
 			else
 			{
-				var _fileRead = File.ReadAllText("reFixed.ini");
+				var _fileRead = File.ReadAllText("reFinedLegacy.ini");
 
-				if (!_fileRead.Contains("limitShortcuts"))
+				if (!_fileRead.Contains("musicMode"))
 				{
-					File.Delete("reFixed.ini");
+					File.Delete("reFinedLegacy.ini");
 					InitConfig();
-				};
+				}
 				
 				else
 				{
-					var _configIni = new TinyIni("reFixed.ini");	
+					var _configIni = new TinyIni("reFinedLegacy.ini");	
 
 					Variables.saveToggle = Convert.ToBoolean(_configIni.Read("autoSave", "General"));
 					Variables.rpcToggle = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
 					Variables.attackToggle = Convert.ToBoolean(_configIni.Read("autoAttack", "General"));
 					Variables.sfxToggle = Convert.ToBoolean(_configIni.Read("saveIndicator", "General"));
+
+					Variables.vanillaMusic = _configIni.Read("musicMode", "General") == "vanilla" ? true : false;
 
 					var _contValue = _configIni.Read("controllerPrompt", "General");
 
@@ -116,8 +127,22 @@ namespace ReFixed
 				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
+				var _session = 1;
 				var _typeStr = "";
-				var _fileName = "ReFixed-" + _dateStr + ".txt";
+
+				if (_logFileName == "")
+				{
+					_logFileName = "ReFined-" + _dateStr + ".txt";
+
+					FILE_CHECK:
+					if (File.Exists(_logFileName))
+					{
+						_logFileName = "ReFined-" + _dateStr + "_SESSION_" + _session + ".txt";
+						_session++;
+
+						goto FILE_CHECK;
+					}
+				}
 
 				switch(Type)
 				{
@@ -134,7 +159,7 @@ namespace ReFixed
 						break;
 				}
 
-				using (StreamWriter _write = File.AppendText(_fileName))
+				using (StreamWriter _write = File.AppendText(_logFileName))
 					_write.WriteLine(String.Format(_formatStr, _timeStr, _typeStr, Input));
 
 				if (Variables.devMode)
@@ -153,10 +178,25 @@ namespace ReFixed
 				var _dateStr = DateTime.Now.ToString("dd-MM-yyyy");
 				var _timeStr = DateTime.Now.ToString("hh:mm:ss");
 
-				var _fileName = "ReFixed-" + _dateStr + ".txt";
+				var _session = 1;
+
+				if (_logFileName == "")
+				{
+					_logFileName = "ReFined-" + _dateStr + ".txt";
+
+					FILE_CHECK:
+					if (File.Exists(_logFileName))
+					{
+						_logFileName = "ReFined-" + _dateStr + "SESSION_" + _session + ".txt";
+						_session++;
+
+						goto FILE_CHECK;
+					}
+				}
+
 				var _exString = Input.ToString().Replace("   ", "").Replace(System.Environment.NewLine, " ");
 
-				using (StreamWriter _write = File.AppendText(_fileName))
+				using (StreamWriter _write = File.AppendText(_logFileName))
 					_write.WriteLine(String.Format(_formatStr, _timeStr, _exString));
 
 				if (Variables.devMode)

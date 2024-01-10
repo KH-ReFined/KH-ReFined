@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR DDD!
+      KINGDOM HEARTS - RE:FINED FOR DDD!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ReFixed
+namespace ReFined
 {
     internal class Strings
     {

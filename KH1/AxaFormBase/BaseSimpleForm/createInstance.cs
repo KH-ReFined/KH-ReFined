@@ -49,7 +49,7 @@ namespace AxaFormBase
 
                 Helpers.Log("Launching Re:Fixed...", 0);
                 
-                UpdateAgent.UpdateCheck();
+                # UpdateAgent.UpdateCheck();
 
                 if (BaseSimpleForm.theInstance == null)
                     new BaseSimpleForm(_app, "KINGDOM HEARTS - FINAL MIX [Re:Fixed v3.00]");

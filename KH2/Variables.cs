@@ -1,6 +1,6 @@
-/*
+  /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 2 FM!
+      KINGDOM HEARTS - RE:FINED FOR 2 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Variables
     {
@@ -33,7 +33,7 @@ namespace ReFixed
         //
         // CONFIG VARIABLES
         //
-        // Variables that will be read from a config file to tell Re:Fixed what to do.
+        // Variables that will be read from a config file to tell Re:Fined what to do.
         //
 
         public static bool sfxToggle = true;
@@ -41,13 +41,18 @@ namespace ReFixed
         public static bool saveToggle = true;
 
         public static bool attackToggle = false;
-
+        public static bool vanillaMusic = false;
+        public static bool vanillaEnemy = true;
+        
         public static bool contToggle = true;
         public static bool autoController = true;
+        public static bool retryDefault = true;
 
         public static bool devMode = false;
 
         public static bool festiveToggle = true;
+        public static bool driveToggle = true;
+
         public static string limitShorts = "";
 
         //
@@ -75,6 +80,60 @@ namespace ReFixed
         public static string[] FRIENDObjentry = { "P_EX020{0}", "P_EX030{0}" };
         public static string[] SORAObjentry = { "P_EX100{0}", "P_EX100{0}_BTLF", "P_EX100{0}_MAGF", "P_EX100{0}_TRIF", "P_EX100{0}_ULTF", "P_EX100{0}_HTLF" };
 
+        public static string[] BOSSObjentry =
+        {
+            "B_BB100",
+            "B_BB100_GM",
+            "B_BB100_TSURU",
+            "B_CA000",
+            "B_CA050",
+            "B_CA050_GM",
+            "B_LK120",
+            "B_LK120_GM",
+            "B_MU120",
+            "B_MU120_GM",
+        };
+
+        public static string[] ENEMYObjentry = 
+        {
+            "M_EX010",
+            "M_EX010_NM",
+            "M_EX050",
+            "M_EX060",
+            "M_EX200",
+            "M_EX200_NM",
+            "M_EX500",
+            "M_EX500_GM",
+            "M_EX500_HB",
+            "M_EX500_HB_GM",
+            "M_EX500_NM",
+            "M_EX510",
+            "M_EX520",
+            "M_EX520_AL",
+            "M_EX530",
+            "M_EX540",
+            "M_EX550",
+            "M_EX560",
+            "M_EX570",
+            "M_EX590",
+            "M_EX620",
+            "M_EX620_AL",
+            "M_EX630",
+            "M_EX640",
+            "M_EX650",
+            "M_EX670",
+            "M_EX690",
+            "M_EX710",
+            "M_EX720",
+            "M_EX730",
+            "M_EX750",
+            "M_EX750_NM",
+            "M_EX780",
+            "M_EX790",
+            "M_EX790_HALLOWEEN",
+            "M_EX790_HALLOWEEN_NM"
+        };
+
         public static Dictionary<string, short> LMTDictionary = new Dictionary<string, short>()
         {
             { "ragnarok", 0x02AB },
@@ -83,11 +142,11 @@ namespace ReFixed
             { "sonic", 0x02BA }
         };
 
-        public static string SaveSFXPath = Path.GetTempPath() + "ReFixed/saveSFX.wav";
-        public static string SwitchSFXPath = Path.GetTempPath() + "ReFixed/switchSFX.wav";
+        public static string SaveSFXPath = Path.GetTempPath() + "ReFined/saveSFX.wav";
+        public static string SwitchSFXPath = Path.GetTempPath() + "ReFined/switchSFX.wav";
 
-        public static string LibrettoPath = Path.GetTempPath() + "ReFixed/libretto.bin";
-        public static string BarfilePath = Path.GetTempPath() + "ReFixed/barfile.bin";
+        public static string LibrettoPath = Path.GetTempPath() + "ReFined/libretto.bin";
+        public static string BarfilePath = Path.GetTempPath() + "ReFined/barfile.bin";
 
         //
         // RPC ASSET LIBRARY
@@ -125,11 +184,13 @@ namespace ReFixed
         public static ulong ADDR_MagicLV2 = 0x446131;
 
         public static ulong ADDR_DeadSora = 0x553FC6;
+        public static ulong ADDR_MusicPath = 0x04E6B6;
 
         public static ulong ADDR_SoraHP = 0x024BC74A;
         public static ulong ADDR_SoraForm = 0x0446086;
 
         public static ulong ADDR_ContText = 0x2562CA2;
+        public static ulong ADDR_LevelStart = 0x445061;
         public static ulong ADDR_EXPStart = 0x446242;
         public static ulong ADDR_ItemStart = 0x0445086;
         public static ulong ADDR_DriveStart = 0x24BC8FA;
@@ -149,8 +210,11 @@ namespace ReFixed
         public static ulong ADDR_TitleCount = 0x5B68A2;
 
         public static ulong ADDR_EpicGamesID = 0x0B90178;
+        public static ulong ADDR_LoadIndicator = 0x385852;
 
         public static ulong ADDR_ControllerMode = 0x25DDFFA;
+
+        public static ulong ADDR_ObjentryBASE = 0x24BE682;
 
         public static ulong[] ADDR_Objentry = { 0x24BFA72, 0x24BFD72, 0x24E7852 };
         public static ulong[] ADDR_MagicMenu = { 0x24AA2CA, 0x24AA33A, 0x24A98EE };
@@ -188,6 +252,7 @@ namespace ReFixed
         public static ulong ADDR_Framerate = 0x36550C;
 
         public static ulong ADDR_ActionExe = 0x24F5B48;
+        public static ulong ADDR_ReactionID = 0x24AA314;
 
         public static ulong ADDR_PAXFormatter = 0x61F92;
         public static ulong ADDR_BTLFormatter = 0x5F83A;
@@ -214,12 +279,18 @@ namespace ReFixed
         // Addresses for instructions are here.
         //
 
+        public static ulong ADDR_SaveEffectINST = 0x405FEB;
         public static ulong ADDR_LimiterINST = 0x152220;
         public static ulong ADDR_WarpINST = 0x150782;
         public static ulong ADDR_RevertINST = 0x39D8D6;
         public static ulong ADDR_InventoryINST = 0x39D8EF;
         public static ulong ADDR_ControllerINST = 0x4E80DA;
         public static ulong[] ADDR_CMDSelectINST = { 0x3AEC01, 0x3AECE5, 0x3AED8C, 0x3AED0D, 0x3AED5C };
+
+        public static ulong ADDR_ShortListFilterINST = 0x349718;
+        public static ulong ADDR_ShortEquipFilterINST = 0x3C1A46;
+        public static ulong ADDR_ShortCategoryFilterINST = 0x35924F;
+        public static ulong ADDR_ShortIconAssignINST = 0x2E99CA;
 
         //
         // INSTRUCTIONS
@@ -231,6 +302,27 @@ namespace ReFixed
         public static byte[] INST_RoomWarp = { 0xE8, 0x59, 0x00, 0x00, 0x00 };
         public static byte[] INST_FlagRevert = { 0xE8, 0x05, 0x01, 0x00, 0x00 };
         public static byte[] INST_InvRevert = { 0xE8, 0xA4, 0x1A, 0x0D, 0x00};
+
+        public static byte[][] INST_ShortListFilter = 
+        {
+            new byte[] { 0xEB, 0x4E, 0x90, 0x90 },
+            new byte[] { 0x81, 0xCB, 0x00, 0x00, 0x24, 0x00 },
+            new byte[] { 0xEB, 0xAA }
+        };
+
+        public static byte[][] INST_ShortEquipFilter = 
+        {
+            new byte[] { 0xEB, 0x1B, 0x90, 0x90, 0x90, 0x90, 0x90 },
+            new byte[] { 0x80, 0xF9, 0x15, 0x74, 0xF2 },
+            new byte[] { 0x31, 0xC0, 0x48, 0x83, 0xC4, 0x28, 0xC3 }
+        };
+
+        public static byte[][] INST_ShortIconAssign =
+        {
+            new byte[] { 0xEB, 0x19 },
+            new byte[] { 0x3C, 0x0B, 0x75, 0x02, 0xB0 },
+            new byte[] { 0x88, 0x47, 0x01, 0xEB, 0xDC }
+        };
 
         public static byte[][] INST_CMDSelect = 
         {

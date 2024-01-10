@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 1 FM!
+      KINGDOM HEARTS - RE:FINED FOR COM !
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -17,7 +17,7 @@ using System.Collections.Generic;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Functions
     {
@@ -37,10 +37,10 @@ namespace ReFixed
         */
         public static void Initialization()
         {
-            Helpers.Log("Initializing Re:Fixed...", 0);
+            Helpers.Log("Initializing Re:Fined...", 0);
 
-            if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
-                Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
+            if (!Directory.Exists(Path.GetTempPath() + "ReFined"))
+                Directory.CreateDirectory(Path.GetTempPath() + "ReFined");
                 
             if (!File.Exists(Variables.SaveSFXPath))
             {
@@ -53,7 +53,7 @@ namespace ReFixed
 
             Variables.Initialized = true;
 
-            Helpers.Log("Re:Fixed initialized with no errors!", 0);
+            Helpers.Log("Re:Fined initialized with no errors!", 0);
         }
 
         /*
@@ -139,7 +139,7 @@ namespace ReFixed
                         Process.Start("KINGDOM HEARTS HD 1.5+2.5 Launcher");
                     }
                     
-                    Helpers.Log("Re:Fixed terminated with no errors.", 0);
+                    Helpers.Log("Re:Fined terminated with no errors.", 0);
                     Environment.Exit(0);
                 }
             }
@@ -148,7 +148,7 @@ namespace ReFixed
         /*
             Execute:
 
-            Executes the main logic within Re:Fixed.
+            Executes the main logic within Re:Fined.
         */
         public static void Execute()
         {

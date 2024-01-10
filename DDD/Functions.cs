@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR DDD!
+      KINGDOM HEARTS - REFINED FOR DDD!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -17,7 +17,7 @@ using System.Collections.Generic;
 
 using DiscordRPC;
 
-namespace ReFixed
+namespace ReFined
 {
     public class Functions
     {
@@ -39,10 +39,10 @@ namespace ReFixed
         */
         public static void Initialization()
         {
-            Helpers.Log("Initializing Re:Fixed...", 0);
+            Helpers.Log("Initializing Re:Fined...", 0);
 
-            if (!Directory.Exists(Path.GetTempPath() + "ReFixed"))
-                Directory.CreateDirectory(Path.GetTempPath() + "ReFixed");
+            if (!Directory.Exists(Path.GetTempPath() + "ReFined"))
+                Directory.CreateDirectory(Path.GetTempPath() + "ReFined");
                 
             if (!File.Exists(Variables.SaveSFXPath))
             {
@@ -58,12 +58,35 @@ namespace ReFixed
 
             Hypervisor.UnlockBlock(Variables.ADDR_VoicePath);
 
+            var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data/");
+
+            EPIC_INIT:
+            if (Directory.Exists(_saveDir))
+            {
+                string[] _epicDirs = Directory.GetDirectories(_saveDir, "*", SearchOption.TopDirectoryOnly);
+
+                if (_epicDirs.Length == 0x00)
+                goto EPIC_INIT; 
+
+                foreach (var _str in _epicDirs)
+                {
+                    var _folderName = new DirectoryInfo(_str).Name;
+                    Directory.CreateDirectory(Path.Combine(_documentsPath, "Kingdom Hearts/Configuration/" + _folderName));
+
+                    Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
+                }
+            }
+
+            else
+                goto EPIC_INIT;
+
             Variables.Initialized = true;
 
-            Helpers.Log("Re:Fixed initialized with no errors!", 0);
+            Helpers.Log("Re:Fined initialized with no errors!", 0);
         }
 
-		public static bool CheckTitle() => Hypervisor.Read<uint>(Variables.ADDR_TrueData) == 0x00;
+		public static bool CheckTitle() => Hypervisor.Read<byte>(Variables.ADDR_World) == 0x00;
 
         /*
             TextAdjust:
@@ -468,7 +491,7 @@ namespace ReFixed
         /*
             DiscordEngine:
 
-            Handle the Discord Rich Presence of Re:Fixed.
+            Handle the Discord Rich Presence of Re:Fined.
             To be executed on a separate thread.
         */
         public static void DiscordEngine()
@@ -497,21 +520,6 @@ namespace ReFixed
             var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
             var _diffValue = Hypervisor.Read<byte>(0x2CBF08);
 
-            var _rpcButtons = new DiscordRPC.Button[]
-            {
-                new DiscordRPC.Button
-                {
-                    Label = "== Powered by Re:Fixed ==",
-                    Url = "https://github.com/TopazTK/KH-ReFixed"
-                },
-
-                new DiscordRPC.Button
-                {
-                    Label = "== Icons by Televo ==",
-                    Url = "https://github.com/Televo/kingdom-hearts-recollection"
-                }
-            };
-
             if (!CheckTitle())
             {
                 Variables.DiscordClient.SetPresence(
@@ -526,7 +534,6 @@ namespace ReFixed
                             SmallImageKey = Variables.BTLDictionary.ElementAtOrDefault(_battleFlag),
                             SmallImageText = Variables.MDEDictionary.ElementAtOrDefault(_diffValue)
                         },
-                        Buttons = _rpcButtons
                     }
                 );
             }
@@ -544,7 +551,6 @@ namespace ReFixed
                             SmallImageKey = null,
                             SmallImageText = null
                         },
-                        Buttons = _rpcButtons
                     }
                 );
             }
@@ -554,7 +560,7 @@ namespace ReFixed
         /*
             Execute:
 
-            Executes the main logic within Re:Fixed.
+            Executes the main logic within Re:Fined.
         */
         public static void Execute()
         {
@@ -615,7 +621,7 @@ namespace ReFixed
             catch (Exception _caughtEx)
             {
                 Helpers.LogException(_caughtEx);
-                Helpers.Log("Re:Fixed terminated with an exception!", 1);
+                Helpers.Log("Re:Fined terminated with an exception!", 1);
                 Environment.Exit(-1);
             }
         }

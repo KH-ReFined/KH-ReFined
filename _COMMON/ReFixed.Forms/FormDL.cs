@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 
 
-namespace ReFixed.Forms
+namespace ReFined.Forms
 {
     partial class FormDL
     {

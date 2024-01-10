@@ -1,6 +1,6 @@
 /*
 ==================================================
-      KINGDOM HEARTS - RE:FIXED FOR 2 FM!
+      KINGDOM HEARTS - RE:FINED FOR 2 FM!
        COPYRIGHT TOPAZ WHITELOCK - 2022
  LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
 ==================================================
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.ExceptionServices;
 
 using Axa;
-using ReFixed;
+using ReFined;
 
 using DiscordRPC;
 
@@ -26,9 +26,6 @@ namespace AxaFormBase
 {
     public partial class BaseSimpleForm : Form
     {
-        static bool _cursorHidden;
-        public static bool CaptureStatus;
-
         public static CancellationTokenSource CancelSource;
         public static CancellationToken MainToken;
         public static Task MainTask;
@@ -45,12 +42,12 @@ namespace AxaFormBase
                 if (Variables.devMode)
                 AllocConsole();
 
-                Helpers.Log("Launching Re:Fixed...", 0);
+                Helpers.Log("Launching Re:Fined...", 0);
                 
                 UpdateAgent.UpdateCheck();
 
                 if (BaseSimpleForm.theInstance == null)
-                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fixed v3.00]");
+                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fined v4.00]");
 
                 Cursor.Hide();
                 theInstance.KeyDown += _keyEvent;
@@ -90,7 +87,7 @@ namespace AxaFormBase
                     MainToken
                 );
 
-                Helpers.Log("Re:Fixed launched with no errors!", 0);
+                Helpers.Log("Re:Fined launched with no errors!", 0);
 
                 return BaseSimpleForm.theInstance;
             }
@@ -98,7 +95,7 @@ namespace AxaFormBase
             catch (Exception _caughtEx)
             {
                 Helpers.LogException(_caughtEx);
-                Helpers.Log("Re:Fixed failed to launch because of an exception!", 1);
+                Helpers.Log("Re:Fined failed to launch because of an exception!", 1);
                 Environment.Exit(-1);
                 return null;
             }

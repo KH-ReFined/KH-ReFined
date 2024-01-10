@@ -1,2 +1,6 @@
 
 *.dll
+compileOutput.cs
+testOut.txt
+_PATCHES\*
+
