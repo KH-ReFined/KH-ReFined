@@ -1,0 +1,71 @@
+name: Bug report
+description: Create a bug report for Re:Fined.
+body:
+
+  - type: dropdown
+    id: refinedver
+    validations:
+      required: true
+    attributes:
+      label: What Re:Fined version are you using? (versions other than listed are not supported)
+      options:
+        - v3.15
+        - Latest v4.xx
+
+  - type: input
+    id: workingrefinedver
+    attributes:
+      label: Was the issue non-existant in some previous version?
+      placeholder: v4.20
+      description: It could help the investigation if the issue didn't exist before.
+
+  - type: dropdown
+    id: game
+    validations:
+      required: true
+    attributes:
+      label: In which game is the bug happening?
+      options:
+        - Kingdom Hearts I Final Mix
+        - Kingdom Hearts II Final Mix
+        - Kingdom Hearts Birth by Sleep Final Mix
+        - Kingdom Hearts Dream Drop Distance HD
+
+  - type: textarea
+    id: bugdetails
+    validations:
+      required: true
+    attributes:
+      label: The bug & it's reproduction steps
+      placeholder: |
+        When my HP hits zero I die:
+        [bugreport.mp4]
+
+        Here's the savefile where it occurs (if the issue doesn't occur normally):
+        [KHFM.png]
+      description: Please try to include as much information as you can - could help in attempts to reproduce the issue.
+
+  - type: textarea
+    id: expected
+    validations:
+      required: true
+    attributes:
+      label: What should've hapepned instead
+      placeholder: i should have become sephiroth and kill everything instead
+      description: Not necessary to explain if the problem is obvious.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      placeholder: ReFinedLog.txt
+      description: If there was a crash, there should be a log next to the game's files.
+
+  - type: checkboxes
+    attributes:
+      label: I did the following:
+      options:
+        - label: "Make sure the Re:Fined .exe and OpenKH are up-to-date."
+          required: true
+        - label: "[See if the issue has been mentioned before](https://github.com/KH-ReFined/KH-ReFined/issues)."
+          required: true
