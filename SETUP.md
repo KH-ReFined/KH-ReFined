@@ -18,7 +18,7 @@ Guide on how to setup Kingdom Hearts 1.5+2.5 HD ReMix on Windows, Steam Deck, an
 ## With Dual Audio
 - Backup the original exe (by renaming it to a `GAMENAME-bac.exe` format or similar).
 - Drag the Re:Fined EXE unto the game directory and remove the `DualAudio-` part from it's name.
-- Download the patch for [BBS](https://bit.ly/DualAudioBBS) or the one for [DDD](https://bit.ly/DualAudioDDD).
+- Download the patch for [DDD](https://bit.ly/DualAudioDDD) if you plan to play that.
 - Download latest [KHPCPatchManager](https://github.com/AntonioDePau/KHPCPatchManager/releases).
 - Patch both the games with the patches you downloaded. [Instructions](https://github.com/AntonioDePau/KHPCPatchManager/blob/main/README.md).
 - Done! You now have Re:Fined v3.15 with Dual Audio!
