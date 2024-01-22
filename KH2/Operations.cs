@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
 
-
 namespace ReFined
 {
     public static class Operations
@@ -367,17 +366,6 @@ namespace ReFined
 
             // Read the save slot.
             var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
-
-            // If the file does not bear a save; terminate the operation.
-            if (!Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM"))
-            {
-                Helpers.Log("File does not bare a save! Autosave aborted to stop corruption!", 1);
-
-                if (Variables.SAVE_MODE == 0x00)
-                    Additions.ShowInformation(0x4D6D);
-
-                return;
-            }
 
             // Seek out the physical slot of the save to make.
             while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM-98"))

@@ -1,11 +1,3 @@
-/*
-==================================================
-      KINGDOM HEARTS - RE:FINED FOR 2 FM!
-       COPYRIGHT TOPAZ WHITELOCK - 2022
- LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
-==================================================
-*/
-
 using System;
 using System.IO;
 using System.Drawing;
@@ -24,13 +16,32 @@ using DiscordRPC;
 
 namespace AxaFormBase
 {
-    public partial class BaseSimpleForm : Form
-    {
-        public static CancellationTokenSource CancelSource;
+	public partial class BaseSimpleForm : Form
+	{
+		public static void _keyEvent(object s, KeyEventArgs e)
+		{
+			if ((e.Control && e.Alt) || (e.Control && e.KeyCode == Keys.Escape))
+				CaptureStatus = !CaptureStatus;
+
+			if (CaptureStatus && !_cursorHidden)
+			{
+				Cursor.Hide();
+                _cursorHidden = true;
+			}
+
+			else if (!CaptureStatus && _cursorHidden)
+			{
+				Cursor.Show();
+                _cursorHidden = false;
+			}
+		}
+
+		public static CancellationTokenSource CancelSource;
         public static CancellationToken MainToken;
         public static Task MainTask;
 
-        [DllImport("kernel32")]
+
+	    [DllImport("kernel32")]
 		static extern bool AllocConsole();
 
         public unsafe static BaseSimpleForm createInstance(AppInterface* _app, string title)
@@ -39,15 +50,13 @@ namespace AxaFormBase
             {
                 Helpers.InitConfig();
 
-                if (Variables.devMode)
+                if (Variables.DEV_MODE)
                 AllocConsole();
 
                 Helpers.Log("Launching Re:Fined...", 0);
                 
-                UpdateAgent.UpdateCheck();
-
                 if (BaseSimpleForm.theInstance == null)
-                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fined v4.00]");
+                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fined v5.00]");
 
                 Cursor.Hide();
                 theInstance.KeyDown += _keyEvent;
@@ -55,13 +64,13 @@ namespace AxaFormBase
                 CaptureStatus = true;
                 _cursorHidden = true;
 
-                if (Variables.rpcToggle)
+                if (Variables.DISCORD_TOGGLE)
                     Variables.DiscordClient.Initialize();
                     
                 CancelSource = new CancellationTokenSource();
                 MainToken = BaseSimpleForm.CancelSource.Token;
 
-                Hypervisor.AttachProcess(Process.GetCurrentProcess(), Variables.BASE_ADDRESS);
+                Hypervisor.AttachProcess(Process.GetCurrentProcess(), 0x56454E);
 
                 theInstance.timer1.Start();
 
@@ -100,5 +109,5 @@ namespace AxaFormBase
                 return null;
             }
         }
-    }
+	}
 }

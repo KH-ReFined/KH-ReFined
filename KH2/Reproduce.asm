@@ -45,7 +45,29 @@
     @ 0x3616EA => [12 DD 4B 00]
     @ 0x361D4E => [AE D6 4B 00]
     @ 0x361D64 => [98 D6 4B 00]
+    @ 0x361DF6 => [12 D6 4B 00]
     @ 0x3625A6 => [56 CE 4B 00]
+    @ 0x36276A => [9E CC 4B 00]
     @ 0x3627FB => [01 CC 4B 00] 
     @ 0x36283F => [BD CB 4B 00]
     @ 0x36295D => [9F CA 4B 00]
+
+-> Config Menu Counts:
+    @ 0x361899 => 0x08 to 0x09
+    @ 0x3619BE => 0x08 to 0x09
+    @ 0x3620FA => 0x08 to 0x10
+    @ 0x3627A7 => 0x08 to 0x09
+
+    # No, I don't really know WHY this is necessary.
+    @ 0x361A97 => 0x20 to 0x24 
+    @ 0x362A71 => 0x20 to 0x24
+
+-> New Game Options Redirect:
+    @ 0x2B59A2 => [3E 04 10 82] 
+    @ 0x2B59C2 => [3E 00 10 82]
+    @ 0x2B59E6 => [0C 10 82 00]
+    @ 0x2B5B76 => [1C 10 82 00]
+    @ 0x2B6020 => [F8 A3 56 00]
+
+-> Disengage RS Config
+    @ 0x2E2429 => [B0 01 90 90 90 90 90 90 90 90 90 90 90]

@@ -6,14 +6,17 @@ LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE!
 ==================================================
 */
 
-using System.IO;
 using System.Threading;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
 using DiscordRPC;
 using Binarysharp.MSharp;
+
+using DualSenseAPI;
+using DualShockAPI;
+using Nefarius.ViGEm.Client;
+using Nefarius.ViGEm.Client.Targets;
 
 namespace ReFined
 {
@@ -29,6 +32,12 @@ namespace ReFined
         public static bool ATTACK_TOGGLE;
         public static bool DISCORD_TOGGLE = true;
 
+        public static bool DUALSENSE_TOGGLE = true;
+        public static bool DUALSENSE_TRIGGERS = false;
+        public static bool DUALSENSE_NOTIFICATIONS = false;
+        public static byte DUALSENSE_MODE = 0x00;
+
+        public static bool REGISTER_MAGIC = false;
         public static bool RESET_PROMPT = true;
         public static ushort RESET_COMBO = 0x0003;
 
@@ -131,6 +140,11 @@ namespace ReFined
         public static CancellationToken Token;
         public static CancellationTokenSource Source;
 
+
+        public static Task INTask;
+        public static Task RCTask;
+        public static Task OUTTask;
+
         //
         // ADDRESSES
         //
@@ -211,6 +225,7 @@ namespace ReFined
         public static ulong PINT_SubOptionSelect = 0x39BAFA;
 
         public static ulong PINT_ConfigMenu = 0x6892E2;
+        public static ulong PINT_SystemFile = 0x257F002;
         public static ulong PINT_SystemMSG = 0x24AA82A;
 
         public static ulong PINT_GameOver = 0x68863A;
@@ -218,6 +233,21 @@ namespace ReFined
 
         public static ulong PINT_EnemyInfo = 0x24A5F22;
         public static ulong PINT_SaveInformation = 0x25A5972;
+
+        //
+        // CONTROLLER INTERFACE VARIABLES
+        //
+        // This was the bane of my existence please help me.
+        //
+
+        public static bool CONTROLLER_FOUND;
+        public static ViGEmClient CONTROLLER_CLIENT;
+
+        public static DualSense CONTROLLER_SENSE;
+        public static DualShock CONTROLLER_SHOCK;
+        public static IXbox360Controller CONTROLLER_FAKE;
+
+        public static float[] SENSE_COLOR = new float[] { 0.0F, 0.0F, 1.0F };
 
         //
         // RPC ASSET LIBRARY

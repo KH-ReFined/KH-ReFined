@@ -7,7 +7,9 @@
 */
 
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace ReFined
 {
@@ -24,6 +26,12 @@ namespace ReFined
 					"[General]",
 					"discordRPC = true",
                     "resetCombo = 0x0003",
+                    "dualSenseIntegration = true",
+                    "dualSenseNotifications = false",
+                    "dualSenseTriggers = false",
+                    "",
+                    "# Options: 0 = HP Tracking, 1 = MP Tracking, 2 = Battle State Tracking, 3 = Form Tracking",
+                    "dualSenseMode = 0",
                     "",
 					"[Kingdom Hearts II]",
 					"adjustRatio = false",
@@ -37,8 +45,11 @@ namespace ReFined
 					"# Options: sonic, arcanum, raid, ragnarok",
 					"# Order: [CONFIRM], TRI, SQU, [JUMP]",
 					"# Duplicates are allowed. All 4 slots must be filled.",
-					"limitShortcuts = [sonic, arcanum, raid, ragnarok]"
-				};
+					"limitShortcuts = [sonic, arcanum, raid, ragnarok]",
+					"",
+                    "[Kingdom Hearts]",
+                    "battleChests = true",
+                };
 
 				File.WriteAllLines("reFined.ini", _outIni);
 			}
@@ -47,7 +58,7 @@ namespace ReFined
 			{
 				var _fileRead = File.ReadAllText("reFined.ini");
 
-				if (!_fileRead.Contains("resetCombo"))
+				if (!_fileRead.Contains("dualSenseTriggers"))
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
@@ -56,6 +67,21 @@ namespace ReFined
 				else
 				{
 					var _configIni = new TinyIni("reFined.ini");
+
+					var _isWindows = Process.GetProcessesByName("winlogon").Count() > 0x00;
+
+					if (_isWindows)
+					{
+						Variables.DUALSENSE_TOGGLE = Convert.ToBoolean(_configIni.Read("dualSenseIntegration", "General"));
+						Variables.DUALSENSE_MODE = Convert.ToByte(_configIni.Read("dualSenseMode", "General"));
+						Variables.DUALSENSE_NOTIFICATIONS = Convert.ToBoolean(_configIni.Read("dualSenseNotifications", "General"));
+					}
+
+					else
+					{
+						Variables.DUALSENSE_TOGGLE = false;
+                        Variables.DUALSENSE_NOTIFICATIONS = false;
+                    }
 
                     Variables.DISCORD_TOGGLE = Convert.ToBoolean(_configIni.Read("discordRPC", "General"));
                     Variables.RESET_COMBO = Convert.ToUInt16(_configIni.Read("resetCombo", "General"), 16);

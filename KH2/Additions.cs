@@ -7,13 +7,6 @@
 */
 
 using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-using Binarysharp.MSharp;
-using System.Runtime.InteropServices;
 
 namespace ReFined
 {

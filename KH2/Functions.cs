@@ -8,8 +8,14 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 
 using DiscordRPC;
-using Binarysharp.MSharp;
+using HidLibrary;
+using DualShockAPI;
+using DualSenseAPI;
+using Nefarius.ViGEm.Client;
+using Nefarius.ViGEm.Client.Exceptions;
+using Nefarius.ViGEm.Client.Targets.Xbox360;
 
+using Binarysharp.MSharp;
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
 
 namespace ReFined
@@ -20,6 +26,10 @@ namespace ReFined
 
         static bool[] DEBOUNCE = new bool[0x20];
         static ulong ULONG_MINIMAL = 0xFFFFFFFFFFFFFFFF;
+
+        static List<ulong?> MAGIC_MEMORY = new List<ulong?>();
+        static uint MAGIC_OLD = 0x00;
+        static uint MAGIC_COUNT = 0x00;
 
         static short[] LIMIT_SHORT;
 
@@ -40,8 +50,24 @@ namespace ReFined
         static byte[] AREA_READ;
         static byte[] CONFIG_REMOVE = new byte[3];
 
+        static ulong ZERO_EXP_LOCATION;
+
+        public static float BIG_MOTOR;
+        public static float SMALL_MOTOR;
+        public static short TICK_COUNT;
+
+        static float PAST_BIG;
+        static float[] PAST_COLOR;
+
+        static float PLAYER_HP;
+        static float PLAYER_MP;
+        static byte BATTLE_STATE;
+        static byte FORM_STATE;
+
         static bool SKIP_ROXAS;
         static byte SKIP_STAGE;
+
+        static byte HADES_COUNT;
 
         static bool CONFIG_WRITTEN;
         static Variables.CONFIG_BITWISE CONFIG_BIT;
@@ -75,6 +101,10 @@ namespace ReFined
         static string US_SUFF;
         static string FM_SUFF;
 
+        static uint[] HARDCORE_OPTION = new uint[] { 0x00000002, 0x0000E00A, 0xFFFFFFFF, 0x0000E001, 0x0000E002, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000E00B, 0x0000E00B, 0xFFFFFFFF, 0xFFFFFFFF };
+        static bool HARDCORE_SHOWN;
+        static bool HARDCORE_ENABLED;
+
         static bool DISABLE_SKIP;
 
         #endregion
@@ -87,6 +117,92 @@ namespace ReFined
             try
             {
                 Helpers.InitConfig();
+
+                // === MOVE TO THE VERY BEGINNING OF CREATEINSTANCE CLASS WHEN BUILDING === //
+
+                if (!Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+                {
+                    var _senseList = DualSense.EnumerateControllers();
+
+                    if (_senseList.Count() != 0x00)
+                    {
+                        Helpers.Log("Found a DualSense Controller! Initializing...", 0);
+                        Variables.CONTROLLER_SENSE = _senseList.First();
+                        Variables.CONTROLLER_SENSE.Acquire();
+
+                        if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
+                            Helpers.Log("DualSense is connected via Bluetooth.", 0);
+
+                        else
+                            Helpers.Log("DualSense is connected via USB.", 0);
+
+                        Variables.CONTROLLER_FOUND = true;
+                    }
+
+                    else
+                        Helpers.Log("DualSense is not detected! Looking for other types of controllers...", 1);
+                }
+
+                if (!Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+                {
+                    var _shockList = HidDevices.Enumerate(0x054C, 0x05C4, 0x09CC);
+
+                    if (_shockList.Count() != 0x00)
+                    {
+                        var _hidDevice = _shockList.First();
+                        _hidDevice.OpenDevice(false);
+
+                        Helpers.Log("Found a DualShock 4 Controller! Initializing...", 0);
+                        Variables.CONTROLLER_SHOCK = new DualShock(_hidDevice, 0);
+
+                        if (Variables.CONTROLLER_SHOCK.Device.Capabilities.InputReportByteLength == 64)
+                            Helpers.Log("DualShock 4 is connected via USB.", 0);
+
+                        else
+                            Helpers.Log("DualShock 4 is connected via Bluetooth.", 0);
+
+
+                        Variables.CONTROLLER_FOUND = true;
+                    }
+
+                    else
+                        Helpers.Log("DualShock 4 is not detected! Looking for other types of controllers...", 1);
+                }
+
+                if (Variables.DUALSENSE_TOGGLE)
+                {
+                    Helpers.Log("Initializing ViGEm...", 0);
+
+                    try
+                    {
+                        Variables.CONTROLLER_CLIENT = new ViGEmClient();
+                        Variables.CONTROLLER_FAKE = Variables.CONTROLLER_CLIENT.CreateXbox360Controller();
+                        Variables.CONTROLLER_FAKE.Connect();
+
+                        Variables.CONTROLLER_FAKE.FeedbackReceived += delegate (object s, Xbox360FeedbackReceivedEventArgs a)
+                        {
+                            BIG_MOTOR = a.LargeMotor;
+                            SMALL_MOTOR = a.SmallMotor;
+                            TICK_COUNT = 0;
+                        };
+                    }
+
+                    catch (VigemBusNotFoundException)
+                    {
+                        Helpers.Log("ViGEmBUS Driver not installed! ERR504", 2);
+
+                        var _messageResult = MessageBox.Show(
+                            "The ViGEmBUS Driver is not installed! Please install this driver to play Re:Fined!\n\n" +
+                            "Re:Fined will now be terminated.",
+                            "Error #504: ViGEmBUS Driver not installed!", MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+
+                        if (_messageResult == DialogResult.Cancel || _messageResult == DialogResult.OK)
+                            Environment.Exit(-2);
+                    }
+                }
+
+                // ========================================================================= //
 
                 Helpers.Log("Initializing Re:Fined...", 0);
 
@@ -151,12 +267,18 @@ namespace ReFined
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x39EF31, true);
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x39EF36, true);
 
+                // Check if the patch is actually installed before proceeding.
+
                 if (Operations.GetFileSize("itempic/item-271.imd") == 0x00)
                 {
+                    // Axa.GX.GXDevice.suspendDevice();
+
+                    Helpers.Log("Re:Fined Main Patch was not detected! ERR404", 2);
+
                     var _messageResult = MessageBox.Show(
                         "Re:Fined could not detect the main patch in this game. Please reinstall! If you think this is a mistake, contact the Re:Fined Discord Server for assistance!\n\n" +
                         "Re:Fined will now be terminated.",
-                        "Patch Not Found!", MessageBoxButtons.OK,
+                        "Error #404: Patch Not Found!", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
 
                     if (_messageResult == DialogResult.Cancel || _messageResult == DialogResult.OK)
@@ -170,6 +292,8 @@ namespace ReFined
                 var _logsDir = Path.Combine(_documentsPath, "Kingdom Hearts/Logs");
                 var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data");
                 var _configDir = Path.Combine(_documentsPath, "Kingdom Hearts/Configuration");
+
+                // Check the save file stuff.
 
             EPIC_INIT:
                 if (Directory.Exists(_logsDir))
@@ -220,6 +344,23 @@ namespace ReFined
                 var _musicWindow = Variables.ARRY_NewGameMenu.First(x => x[1] == 0x0000E007);
                 var _heartWindow = Variables.ARRY_NewGameMenu.First(x => x[1] == 0x0000E008);
 
+                // I had to add this after a total of 5 hours of troubleshooting people.
+
+                if (Operations.GetFileSize("03system.bin") == 0x00)
+                {
+                    Helpers.Log("03system is too small! It is most likely corrupted! ERR430", 2);
+                    var _messageResult = MessageBox.Show(
+                        "03SYSTEM.BIN is corrupt! Please repatch the game correctly.\n" +
+                        "Re:Fined will now be terminated.",
+                        "Error #430: 03SYSTEM.BIN is corrupt.", MessageBoxButtons.OKCancel,
+                        MessageBoxIcon.Error);
+
+                    if (_messageResult == DialogResult.Cancel || _messageResult == DialogResult.OK)
+                        Environment.Exit(-3);
+                }
+
+                // Check the Re:Fined add-ons.
+
                 if (Operations.GetFileSize("obj/P_EX110.a.jp") == 0x00)
                 {
                     Helpers.Log("The Audio Add-On was not found! Removing the option from all menus...", 1);
@@ -228,7 +369,7 @@ namespace ReFined
                     CONFIG_REMOVE[0] = 0x01;
                 }
 
-                else if (Operations.GetFileSize("voice/xx/battle/abu.win32.scd") != 0x00)
+                else if (Operations.GetFileSize("voice/ks/battle/abu.win32.scd") != 0x00)
                 {
                     Helpers.Log("An additional Dub Patch was detected! Accommodating the config menu...", 1);
 
@@ -255,6 +396,38 @@ namespace ReFined
                     CONFIG_REMOVE[2] = 0x01;
                 }
 
+                // Fetch the location of No Experience in 03system.
+
+                while (ZERO_EXP_LOCATION == 0x00)
+                {
+                    var _systemFile = Hypervisor.Read<ulong>(Variables.PINT_SystemFile);
+
+                    if (_systemFile != 0x00)
+                    {
+                        var _barStart = Hypervisor.Read<uint>(_systemFile + 0x08, true);
+
+                        var _itemStart = Hypervisor.Read<uint>(_systemFile + 0x68, true) - _barStart;
+                        var _itemLength = Hypervisor.Read<int>(_systemFile + 0x6C, true);
+
+                        var _fileRead = Hypervisor.ReadArray(_systemFile + _itemStart, _itemLength, true);
+                        var _findArray = new byte[] { 0x94, 0x01, 0x13, 0x00 };
+
+                        var limit = _itemLength - 0x04;
+
+                        for (uint i = 0; i <= limit; i++)
+                        {
+                            var k = 0;
+
+                            for (; k < 0x04; k++)
+                                if (_findArray[k] != _fileRead[i + k]) break;
+
+                            if (k == 0x04)
+                                ZERO_EXP_LOCATION = _systemFile + _itemStart + i;
+                        }
+                    }
+                }
+
+                // Preapre the Game Over Menu for Retry/Hardcore.
 
                 Helpers.Log("Writing the Game Over Menu...", 0);
 
@@ -262,6 +435,8 @@ namespace ReFined
                 Hypervisor.WriteArray(_optionsPoint + 0x848, new byte[] { 0x20, 0x00, 0x04, 0x00, 0x02, 0x00, 0xB0, 0x8A, 0x03, 0x00, 0xB1, 0x8A, 0x0C, 0x00, 0x3A, 0xAF, 0x04, 0x00, 0xB2, 0x8A, 0x00, 0x00 }, true);
 
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x350000, true);
+
+                // Construct and write the Config Menu.
 
                 Helpers.Log("Constructing the Configuration Menu...", 0);
 
@@ -296,6 +471,8 @@ namespace ReFined
                         Hypervisor.WriteArray(_address, BitConverter.GetBytes(Variables.ARRY_ConfigMenu[i][z]));
                     }
                 }
+
+                // Construct and write the New Game Menu.
 
                 Helpers.Log("Writing the New Game Menu...", 0);
 
@@ -348,6 +525,9 @@ namespace ReFined
 
         #region Base Functionality
 
+        /// <summary>
+        /// Allow a warp to the Garden of Assemblage from the World Map.
+        /// </summary>
         public static void AllowGOA()
         {
             var _flagRead = Hypervisor.Read<byte>(0x444A58);
@@ -705,6 +885,113 @@ namespace ReFined
         }
 
         /// <summary>
+        /// Registers the magic spells.
+        /// Prone to instability?
+        /// </summary>
+        public static void RegisterMagic()
+        {
+            if (Variables.REGISTER_MAGIC)
+            {
+                var _magicRead = Hypervisor.Read<uint>(0x4460F6) + Hypervisor.Read<ushort>(0x446131);
+
+                if ((Operations.CheckTitle() || Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) == 0x00) && MAGIC_MEMORY.Count() > 0x00)
+                {
+                    Helpers.Log("Resetting Magic Memory! The game may crash!", 1);
+                    MAGIC_MEMORY.Clear();
+                }
+
+                if (MAGIC_OLD != _magicRead && Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) == 0x01)
+                {
+                    MAGIC_COUNT = 0;
+                    var _tableMagic = new byte[] { 0x31, 0x33, 0x32, 0x34, 0xAE, 0xB1 };
+
+                    for (ulong i = 0; i < 0x05; i++)
+                    {
+                        var _magicPointer = Variables.SharpHook[(IntPtr)0x3C3240].Execute<uint>((long)i);
+
+                        if (_magicPointer != 0x00)
+                        {
+                            var _magNameAddr = Hypervisor.MemoryOffset + _magicPointer + 0x04;
+                            var _magFileName = Hypervisor.ReadArray(_magNameAddr, 0x20, true);
+
+                            if (Hypervisor.Read<ulong>(0x24BCC7A + (0x50 * i)) == Hypervisor.MemoryOffset + _magicPointer)
+                                continue;
+
+                            Helpers.Log("Found Magic File: " + Encoding.Default.GetString(_magFileName), 1);
+
+                            var _magFileSize = Variables.SharpHook[(IntPtr)0x39E2F0].Execute<int>((long)_magNameAddr);
+                            var _magAllocMemory = Variables.SharpHook[(IntPtr)0x150030].Execute<int>(_magFileSize + 0x800) + 0x100000000;
+
+                            Helpers.Log("Allocated Region for Magic at 0x" + (Hypervisor.MemoryOffset + (uint)_magAllocMemory).ToString("X12"), 1);
+
+                            Variables.SharpHook[(IntPtr)0x39E4E0].ExecuteJMP(BSharpConvention.MicrosoftX64, (long)_magNameAddr, (long)(Hypervisor.MemoryOffset + (uint)_magAllocMemory));
+
+                            Helpers.Log("Loaded .MAG File to 0x" + (Hypervisor.MemoryOffset + (uint)_magAllocMemory).ToString("X12"), 1);
+
+                            var _offsetBAR = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x08, true);
+                            var _offsetPAX = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x18, true) - _offsetBAR;
+                            var _offsetMAG = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x28, true) - _offsetBAR;
+
+                            Hypervisor.Write(0x24BCC7A + (0x50 * i), Hypervisor.MemoryOffset + _magicPointer);
+                            Hypervisor.Write(0x24BCC32 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory);
+                            Hypervisor.Write(0x24BCC3A + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetMAG);
+                            Hypervisor.Write(0x24BCC42 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetMAG);
+                            Hypervisor.Write(0x24BCC52 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetPAX + 0x10);
+
+                            Helpers.Log("Magic Details loaded to 0x" + (Hypervisor.BaseAddress + 0x24BCC32 + (0x50 * i)).ToString("X12"), 1);
+
+                            var _execOffset = Hypervisor.PureAddress + 0x2A21198 + (0x50 * i);
+
+                            for (int z = 0; z < 5; z++)
+                            {
+                                if (MAGIC_MEMORY.ElementAtOrDefault(z) == _execOffset)
+                                    break;
+
+                                if (MAGIC_MEMORY.ElementAtOrDefault(z) == null)
+                                {
+                                    MAGIC_MEMORY.Add(_execOffset);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    Hypervisor.Write<ulong>(0x24AA33A, 0x00);
+                    ulong _magicOffset = 0x00;
+
+                    for (ulong i = 0; i < 0x05; i++)
+                    {
+                        var _magicPointer = Variables.SharpHook[(IntPtr)0x3C3240].Execute<uint>((long)i);
+
+                        if (_magicPointer != 0x00)
+                        {
+                            Hypervisor.Write(0x24AA33A + (0x02 * _magicOffset), _tableMagic[i]);
+                            Helpers.Log("Command Written to 0x" + (Hypervisor.BaseAddress + 0x24AA33A + (0x02 * i)).ToString("X12"), 1);
+                            _magicOffset++;
+                        }
+                    }
+
+                    for (int i = 0; i < 0x05; i++)
+                    {
+                        if (MAGIC_MEMORY.ElementAtOrDefault(i) != null)
+                        {
+                            var _barOffset = Hypervisor.Read<ulong>(MAGIC_MEMORY.ElementAtOrDefault(i).Value - 0x18, true);
+
+                            Variables.SharpHook[(IntPtr)0x2C1AB0].Execute((long)MAGIC_MEMORY.ElementAtOrDefault(i).Value);
+                            Variables.SharpHook[(IntPtr)0x2C3D80].Execute(BSharpConvention.MicrosoftX64, (long)MAGIC_MEMORY.ElementAtOrDefault(i).Value, (long)(_barOffset + 0x40));
+
+                            Helpers.Log("Loaded PAX at 0x" + (_barOffset + 0x40).ToString("X12") + " for 0x" + MAGIC_MEMORY.ElementAtOrDefault(i).Value.ToString("X12"), 1);
+                        }
+                    }
+
+                    Hypervisor.WriteArray(Hypervisor.PureAddress + 0x3C314A, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
+                    MAGIC_OLD = _magicRead;
+                }
+            }
+        }
+
+
+        /// <summary>
         /// Shifts the chosen spell in the Magic menu up or down,
         /// depending on the input. Executed with L2 + DOWN or L2 + UP.
         /// </summary>
@@ -928,24 +1215,73 @@ namespace ReFined
             }
         }
 
+        /// <summary>
+        /// Reconstructs and handles the New Game menu.
+        /// </summary>
         public static void NewGameHandler()
         {
             var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
 
             if (Operations.CheckTitle())
             {
+                if (Hypervisor.Read<byte>(0x5B6AC2) == 0x03 && Variables.ARRY_NewGameMenu.Contains(HARDCORE_OPTION) == false)
+                {
+                    Variables.ARRY_NewGameMenu.Insert(1, HARDCORE_OPTION);
+                    HARDCORE_SHOWN = true;
+
+                    for (int i = 0; i < Variables.ARRY_NewGameMenu.Count; i++)
+                    {
+                        for (int z = 0; z < Variables.ARRY_NewGameMenu[i].Length; z++)
+                        {
+                            var _address = Variables.ADDR_NewGameMenu + (ulong)(i * 0x2C) + (ulong)(z * 4);
+                            Hypervisor.WriteArray(_address, BitConverter.GetBytes(Variables.ARRY_NewGameMenu[i][z]));
+                        }
+                    }
+                }
+
+                if (Hypervisor.Read<byte>(0x5B6AC2) != 0x03 && Variables.ARRY_NewGameMenu.Contains(HARDCORE_OPTION))
+                {
+                    Variables.ARRY_NewGameMenu.Remove(HARDCORE_OPTION);
+                    HARDCORE_SHOWN = false;
+
+                    for (int i = 0; i < Variables.ARRY_NewGameMenu.Count; i++)
+                    {
+                        for (int z = 0; z < Variables.ARRY_NewGameMenu[i].Length; z++)
+                        {
+                            var _address = Variables.ADDR_NewGameMenu + (ulong)(i * 0x2C) + (ulong)(z * 4);
+                            Hypervisor.WriteArray(_address, BitConverter.GetBytes(Variables.ARRY_NewGameMenu[i][z]));
+                        }
+                    }
+                }
+
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B5595, (byte)Variables.ARRY_NewGameMenu.Count, true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B58D1, (byte)Variables.ARRY_NewGameMenu.Count, true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B5A8F, (byte)Variables.ARRY_NewGameMenu.Count, true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B5437, (byte)Variables.ARRY_NewGameMenu.Count, true);
+
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B542E, (byte)(Variables.ARRY_NewGameMenu.Count - 1), true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B6B8B, (byte)(Variables.ARRY_NewGameMenu.Count - 1), true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B6767, (byte)(Variables.ARRY_NewGameMenu.Count - 1), true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x2B6C11, (byte)(Variables.ARRY_NewGameMenu.Count - 1), true);
+            }
+
+            if (Operations.CheckTitle())
+            {
                 CONFIG_WRITTEN = false;
 
                 ulong _configOffset = (ulong)((CONFIG_REMOVE[0] + CONFIG_REMOVE[1] + CONFIG_REMOVE[2]) * 0x04);
+                var _hardcoreOffset = (ulong)(HARDCORE_SHOWN ? 1 : 0) * 0x04;
 
-                var _vibration = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x04);
-                var _autoSave = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x08);
-                var _audioLanguage = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x0C);
-                var _musicSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x10 - _configOffset);
-                var _heartlessSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x14 - _configOffset);
-                var _controlPrompt = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x18 - _configOffset);
+                HARDCORE_ENABLED = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x04) == 0x00 ? true : false;
 
-                SKIP_ROXAS = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x1C - _configOffset) == 0x00 ? false : true;
+                var _vibration = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x04 + _hardcoreOffset);
+                var _autoSave = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x08 + _hardcoreOffset);
+                var _audioLanguage = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x0C + _hardcoreOffset);
+                var _musicSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x10 - _configOffset + _hardcoreOffset);
+                var _heartlessSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x14 - _configOffset + _hardcoreOffset);
+                var _controlPrompt = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x18 - _configOffset + _hardcoreOffset);
+
+                SKIP_ROXAS = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x1C - _configOffset + _hardcoreOffset) == 0x00 ? false : true;
 
                 CONFIG_BIT =
                     Variables.CONFIG_BITWISE.SUMMON_FULL | Variables.CONFIG_BITWISE.NAVI_MAP |
@@ -962,8 +1298,11 @@ namespace ReFined
                 if (Hypervisor.Read<uint>(Variables.ADDR_Area) == 0x0102)
                 {
                     Helpers.Log("Start of a new game detected! Writing configuration...", 0);
-                    
+
                     Hypervisor.Write(Variables.ADDR_Config, (ushort)CONFIG_BIT);
+
+                    if (HARDCORE_ENABLED)
+                        Hypervisor.WriteArray(Variables.ADDR_SaveData + 0x10, BitConverter.GetBytes(DateTime.Now.Ticks));
 
                     Variables.AUDIO_MODE = (byte)(((ushort)CONFIG_BIT & 0x0800) == 0x0800 ? 0x01 : (((ushort)CONFIG_BIT & 0x1000) == 0x1000 ? 0x02 : 0x0000));
                     Variables.MUSIC_VANILLA = ((ushort)CONFIG_BIT & 0x0020) == 0x0020;
@@ -1004,6 +1343,9 @@ namespace ReFined
 
             var _findTitle = Operations.FetchOffsetMSG(Variables.PINT_SystemMSG, Variables.VALUE_ConfigTitle[_difficultyRead]);
             var _findDesc = Operations.FetchOffsetMSG(Variables.PINT_SystemMSG, Variables.VALUE_ConfigDescription[_difficultyRead]);
+
+            var _hardTitle = Operations.FetchOffsetMSG(Variables.PINT_SystemMSG, 0x600C);
+            var _hardDesc = Operations.FetchOffsetMSG(Variables.PINT_SystemMSG, 0x600E);
 
             var _layoutPointer = Hypervisor.Read<ulong>(0x3A0952);
 
@@ -1084,11 +1426,21 @@ namespace ReFined
                     Hypervisor.WriteArray(_settingsPoint, SETTINGS_FIRST.ToArray(), true);
 
                     Helpers.Log("Options set! Correcting the Difficulty...", 0);
+                    var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
 
                     // Correct the difficulty text because I broke that somehow.
 
-                    Hypervisor.Write(_offsetTitle, _findTitle, true);
-                    Hypervisor.Write(_offsetDesc, _findDesc, true);
+                    if (_hardCoreFlag == 0x00)
+                    {
+                        Hypervisor.Write(_offsetTitle, _findTitle, true);
+                        Hypervisor.Write(_offsetDesc, _findDesc, true);
+                    }
+
+                    else
+                    {
+                        Hypervisor.Write(_offsetTitle, _hardTitle, true);
+                        Hypervisor.Write(_offsetDesc, _hardDesc, true);
+                    }
 
                     Variables.SharpHook[(IntPtr)0x363380].Execute();
                     Variables.SharpHook[(IntPtr)0x363340].Execute();
@@ -1325,10 +1677,46 @@ namespace ReFined
                     Hypervisor.Write<byte>(Variables.ADDR_InventoryFlag, 0x9F);
                     Hypervisor.WriteArray(Variables.ADDR_StoryFlag, Variables.VALUE_StoryFlag);
 
+                    var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
+
                     if (_diffRead == 0x03)
                     {
                         Hypervisor.Write<byte>(0x445056, 0x18);
                         Hypervisor.Write<byte>(0x445056 + 0x01, 0x18);
+
+                        if (_hardCoreFlag != 0x00)
+                        {
+                            Hypervisor.WriteArray(
+                            0x4450A6,
+                            new byte[]
+                            {
+                                0xF8,
+                                0x00,
+                                0x89,
+                                0x01,
+                                0x88,
+                                0x01,
+                                0xA5,
+                                0x01,
+                                0x94,
+                                0x81,
+                                0x97,
+                                0x01,
+                                0x97,
+                                0x01,
+                                0x95,
+                                0x01,
+                                0x52,
+                                0x00,
+                                0x8A,
+                                0x00,
+                                0x9E,
+                                0x00
+                            }
+                            );
+                        }
+
+                        else
                         Hypervisor.WriteArray(
                             0x4450A6,
                             new byte[]
@@ -1517,17 +1905,22 @@ namespace ReFined
 
             var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
 
+            // Check for Hades Escape
+            var _isEscape = _worldRead == 0x06 && _roomRead == 0x05 && _eventRead == 0x6F;
+
             // No-No Areas for Retry.
             var _blacklistCheck = 
                (_worldRead == 0x04 && _roomRead >= 0x15 && _roomRead <= 0x1A) // Cavern of Remembrance
-            || (_worldRead == 0x12 && _roomRead >= 0x13 && _roomRead <= 0x1D) // Final Battles
+            || (_worldRead == 0x12 && _roomRead >= 0x13 && _roomRead <= 0x1D && _roomRead != 0x15) // Final Battles
             || (_worldRead == 0x06 && _roomRead == 0x09 && _eventRead >= 0xBD && _eventRead <= 0xC4) // Olympus Cups
             || (_worldRead == 0x0C && _roomRead == 0x00 && _eventRead == 0x33); // Minnie Escort
 
-            if (!_blacklistCheck && !Operations.CheckTitle())
+            var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
+
+            if (_hardCoreFlag == 0x00 && !_blacklistCheck && !Operations.CheckTitle())
             {
                 // The battle state will also check **specifically** for Hades Escape.
-                var _battleState = (_battleRead == 0x02 && _cutsceneRead == 0x00) || (_worldRead == 0x06 && _roomRead == 0x05 && _eventRead == 0x6F);
+                var _battleState = _battleRead == 0x02 && _cutsceneRead == 0x00;
 
                 // Read the necessary shits at the start of a fight.
                 if (_battleState && _pauseRead == 0x00 && !STATE_COPIED)
@@ -1536,6 +1929,12 @@ namespace ReFined
 
                     byte[] _tempArray = new byte[18];
                     Buffer.BlockCopy(Variables.ARRY_ContinueOptions[Variables.RETRY_DEFAULT ? 0x01 : 0x02], 0, _tempArray, 0, 18);
+
+                    if (_isEscape)
+                    {
+                        HADES_COUNT = 0;
+                        Helpers.Log("Hades Escape Detected! Adjusting Retry Logic!", 0);
+                    }
 
                     Hypervisor.WriteArray(_gameOverOptions + 0x34A, _tempArray, true);
 
@@ -1549,7 +1948,7 @@ namespace ReFined
                 }
 
                 // Flush the memory post-fight.
-                else if (!_battleState && _pauseRead == 0x00 && STATE_COPIED)
+                else if (!_battleState && _pauseRead == 0x00 && STATE_COPIED && !(_isEscape && _battleRead == 0x01))
                 {
                     Helpers.Log("The player is out of battle. Flushing memory...", 0);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + 0x7A0000, new byte[0x10FC0], true);
@@ -1569,6 +1968,18 @@ namespace ReFined
                     STATE_COPIED = false;
                     ROXAS_KEYBLADE = 0x0000;
                 }
+
+
+                // Count the amount of "done" battles in Hades Escape.
+                if (_isEscape && _battleRead == 0x01 && !DEBOUNCE[7])
+                {
+                    HADES_COUNT += 1;
+                    DEBOUNCE[7] = true;
+                    Helpers.Log("Hades Escape: Incrementing Clear Count!", 0);
+                }
+
+                if (_isEscape && _battleRead == 0x02 && DEBOUNCE[7])
+                    DEBOUNCE[7] = false;
 
                 // If the game is over and the state is copied beforehand:
                 if (_gameOverRead != 0x00 && STATE_COPIED)
@@ -1667,10 +2078,16 @@ namespace ReFined
                     }
                 }
 
-                // If the battle has ended (Death, Kill, or Cutscene), restore the functions.
-                if ((_finishRead == 0x01 || _cutsceneRead != 0x00) && RETRY_MODE != 0x00)
+                // If the battle has ended (Death, Kill, Hades Clear, or Cutscene), restore the functions.
+                if (((_finishRead == 0x01 || _cutsceneRead != 0x00) && RETRY_MODE != 0x00) || (_isEscape && HADES_COUNT == 3))
                 {
                     Helpers.Log("End of battle detected! Restoring...", 0);
+
+                    if (_isEscape)
+                    {
+                        HADES_COUNT = 255;
+                        Helpers.Log("Battle ended on a special case: Hades Escape.", 0);
+                    }
 
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_WarpINST, Variables.INST_RoomWarp, true);
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_InventoryINST, Variables.INST_InvRevert, true);
@@ -1685,11 +2102,103 @@ namespace ReFined
                 }
             }
 
-            // If in the Cavern of Remembrance: Do not run Retry.
-            else if (!RETRY_BLOCK)
+            // If in the blacklisted areas and/or hardcore mode: Do not run Retry.
+            else if (!RETRY_BLOCK && !Operations.CheckTitle())
             {
-                Helpers.Log(String.Format("Problematic area detected! Locking Retry Capabilities..."), 0);
+                if (_hardCoreFlag != 0x00)
+                {
+                    Helpers.Log(String.Format("Hardcore Mode Detected! Retry cannot run!"), 0);
+
+                    byte[] _tempArray = new byte[18];
+                    Buffer.BlockCopy(new ushort[] { 0x0001, 0x0001, 0xE00D, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 }, 0, _tempArray, 0, 18);
+
+                    Hypervisor.WriteArray(_gameOverOptions + 0x34A, _tempArray, true);
+                }
+
+                else
+                    Helpers.Log(String.Format("Problematic area detected! Locking Retry Capabilities..."), 0);
+
                 RETRY_BLOCK = true;
+            }
+        }
+
+        /// <summary>
+        /// The game reseting logic behind Hardcore Mode.
+        /// Highly experimental.
+        /// </summary>
+        public static void HardcoreReset()
+        {
+            var _gameOverRead = Hypervisor.Read<ulong>(Variables.PINT_GameOver);
+            var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
+
+            if (_hardCoreFlag != 0x00 && !Operations.CheckTitle())
+                Hypervisor.Write<byte>(ZERO_EXP_LOCATION + 0x07, 0x00, true);
+
+            else
+                Hypervisor.Write<byte>(ZERO_EXP_LOCATION + 0x07, 0x01, true);
+
+            if (_hardCoreFlag != 0x00 && _gameOverRead != 0x00 && !Operations.CheckTitle())
+            {
+                // Prepare the pointers.
+                var _pointerBase = Hypervisor.Read<ulong>(Variables.PINT_SaveInformation);
+                var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
+
+                // Prepare the variables for Save Info.
+                var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM.png";
+
+                var _saveSlot = 0;
+                var _saveInfoLength = 0x158;
+                var _saveDataLength = 0x10FC0;
+
+                var _saveInfoStartRAM = _pointerSecond + 0x168;
+                var _saveDataStartRAM = _pointerSecond + 0x19630;
+
+                var _saveInfoStartFILE = 0x1C8;
+                var _saveDataStartFILE = 0x19690;
+
+                // Read the save slot.
+                var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+
+                // Seek out the physical slot of the save to make.
+                while (_saveSlotRAM[0] != 0x00)
+                {
+                    Helpers.Log("Checking Save for Deletion #" + _saveSlot, 1);
+
+                    var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
+                    var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
+
+                    var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
+                    var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
+
+                    var _hardCoreCode = Hypervisor.ReadArray(_saveDataAddrRAM + 0x10, 0x08, true);
+
+                    if (BitConverter.ToInt64(_hardCoreCode, 0) == _hardCoreFlag)
+                    {
+                        Helpers.Log("Match Found! Deleting Save #" + _saveSlot, 1);
+
+                        Hypervisor.WriteArray(_saveInfoAddrRAM, new byte[_saveInfoLength], true);
+                        Hypervisor.WriteArray(_saveDataAddrRAM, new byte[_saveDataLength], true);
+
+                        using (var _stream = new FileStream(_savePath, FileMode.Open))
+                        using (var _write = new BinaryWriter(_stream))
+                        {
+                            _stream.Position = _saveInfoAddr;
+                            _write.Write(new byte[_saveInfoLength]);
+                            _stream.Position = _saveDataAddr;
+                            _write.Write(new byte[_saveInfoLength]);
+                        }
+                    }
+
+                    _saveSlot++;
+                    _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+                }
+
+                var _buttonRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+                var _confirmRead = Hypervisor.Read<ushort>(Variables.ADDR_Confirm);
+                var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
+
+                if (_buttonRead == _buttonSeek)
+                Hypervisor.Write<byte>(Variables.ADDR_Reset, 0x01);
             }
         }
 
@@ -1995,13 +2504,13 @@ namespace ReFined
                 FM_SUFF = "jp";
             }
 
-            if (Variables.AUDIO_MODE == 0x02 && _stringCheck != "voice/xx/event/")
+            if (Variables.AUDIO_MODE == 0x02 && _stringCheck != "voice/ks/event/")
             {
                 Helpers.Log("Switching to Extra Audio...", 0);
 
-                WL_SUFF = "xx";
-                US_SUFF = "xx";
-                FM_SUFF = "xx";
+                WL_SUFF = "ks";
+                US_SUFF = "ks";
+                FM_SUFF = "ks";
             }
 
             if (Variables.AUDIO_MODE == 0x00 && _stringCheck != "voice/us/event/")
@@ -2021,6 +2530,12 @@ namespace ReFined
                 Hypervisor.WriteString(Variables.ADDR_ANBFormatter, String.Format(_stringANM, US_SUFF));
                 Hypervisor.WriteString(Variables.ADDR_ANBFormatter + 0x08, String.Format(_stringANM, FM_SUFF));
 
+                if (Variables.AUDIO_MODE == 0x02)
+                {
+                    Hypervisor.WriteString(Variables.ADDR_ANBFormatter, String.Format(_stringANM, "us"));
+                    Hypervisor.WriteString(Variables.ADDR_ANBFormatter + 0x08, String.Format(_stringANM, "fm"));
+                }
+                
                 Hypervisor.WriteString(Variables.ADDR_BTLFormatter, String.Format(_stringBTL, US_SUFF));
                 Hypervisor.WriteString(Variables.ADDR_EVTFormatter, String.Format(_stringEVT, US_SUFF));
             }
@@ -2105,6 +2620,407 @@ namespace ReFined
 
         #endregion
 
+        #region Controller Adaptation
+
+        /// <summary>
+        /// Handles the external controllers in a better way than the game can.
+        /// Supports: DualSense, DualShock 4
+        /// </summary>
+        public static void HandleControllerInput()
+        {
+            if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+            {
+                try
+                {
+                    if (Variables.CONTROLLER_SENSE != null)
+                    {
+                        byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+                        byte _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuActive);
+
+                        if (Variables.CONTROLLER_SENSE.IoMode == IoMode.USB)
+                        {
+                            var _senseIn = Variables.CONTROLLER_SENSE.ReadOnce();
+
+                            if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
+                            {
+
+                                if (_senseIn.BatteryStatus.Level <= 1 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
+                                {
+                                    Additions.ShowInformation(0x6012);
+                                    DEBOUNCE[8] = true;
+                                }
+
+                                else if (Operations.CheckTitle() && DEBOUNCE[8])
+                                    DEBOUNCE[8] = false;
+                            }
+                                
+                            // Fetch the buttons, fetch the analogs, and interpret them to the 360 false controller.
+
+                            var _senseButtonArray = new bool[]
+                            {
+                            _senseIn.DPadUpButton, _senseIn.DPadDownButton, _senseIn.DPadLeftButton, _senseIn.DPadRightButton,
+                            _senseIn.MenuButton, _senseIn.TouchpadButton,
+                            _senseIn.L3Button, _senseIn.R3Button, _senseIn.L1Button, _senseIn.R1Button, false,
+                            _senseIn.CrossButton, _senseIn.CircleButton, _senseIn.SquareButton, _senseIn.TriangleButton
+                            };
+
+                            var _senseAxisArray = new short[]
+                            {
+                            (short)(_senseIn.LeftAnalogStick.X * 32766F),
+                            (short)(_senseIn.LeftAnalogStick.Y * 32766F),
+                            (short)(_senseIn.RightAnalogStick.X * 32766F),
+                            (short)(_senseIn.RightAnalogStick.Y * 32766F)
+                            };
+
+                            for (int i = 0; i < _senseButtonArray.Length; i++)
+                                Variables.CONTROLLER_FAKE.SetButtonState(i, _senseButtonArray[i]);
+
+                            for (int i = 0; i < _senseAxisArray.Length; i++)
+                                Variables.CONTROLLER_FAKE.SetAxisValue(i, _senseAxisArray[i]);
+
+                            Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, (byte)(_senseIn.L2 * 255F));
+                            Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, (byte)(_senseIn.R2 * 255F));
+                        }
+
+                    }
+
+                    // Controller Handling for the DualSense protocol. Latency -> 10ms on both.
+
+                    else if (Variables.CONTROLLER_SHOCK != null)
+                    {
+                        Variables.CONTROLLER_SHOCK.retrieveData();
+
+                        var _stateShock = Variables.CONTROLLER_SHOCK.currentState();
+
+                        if (!Variables.CONTROLLER_SHOCK.IsUSB)
+                        {
+                            byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+                            byte _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuActive);
+
+                            if (Variables.CONTROLLER_SHOCK.Charge <= 10 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
+                            {
+                                Additions.ShowInformation(0x6022);
+                                DEBOUNCE[8] = true;
+                            }
+
+                            else if (Operations.CheckTitle() && DEBOUNCE[8])
+                                DEBOUNCE[8] = false;
+                        }
+
+                        var _shockButtonArray = new bool[]
+                        {
+                            _stateShock.DpadUp, _stateShock.DpadDown, _stateShock.DpadLeft, _stateShock.DpadRight,
+                            _stateShock.Options, _stateShock.Share,
+                            _stateShock.L3, _stateShock.R3, _stateShock.L1, _stateShock.R1, false,
+                            _stateShock.Cross, _stateShock.Circle, _stateShock.Square, _stateShock.Triangle
+                        };
+
+                        var _shockAxisArray = new short[]
+                        {
+                            (short)(_stateShock.LX >= 128 ? ((128F - _stateShock.LX) * -255F) : (_stateShock.LX - 128F) * 255F),
+                            (short)(_stateShock.LY >= 128 ? ((_stateShock.LY - 128F) * -255F) : (128F - _stateShock.LY) * 255F),
+                            (short)(_stateShock.RX >= 128 ? ((128F - _stateShock.RX) * -255F) : (_stateShock.RX - 128F) * 255F),
+                            (short)(_stateShock.RY >= 128 ? ((_stateShock.RY - 128F) * -255F) : (128F - _stateShock.RY) * 255F),
+                        };
+
+                        for (var i = 0; i < _shockButtonArray.Length; i++)
+                            Variables.CONTROLLER_FAKE.SetButtonState(i, _shockButtonArray[i]);
+
+                        for (var i = 0; i < _shockAxisArray.Length; i++)
+                            Variables.CONTROLLER_FAKE.SetAxisValue(i, _shockAxisArray[i]);
+
+                        Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, _stateShock.L2);
+                        Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, _stateShock.R2);
+
+                        // Handle the controller disconnecting.
+
+                        if (!Variables.CONTROLLER_SHOCK.Device.IsConnected || Variables.CONTROLLER_SHOCK.Device.IsTimedOut)
+                        {
+                            Variables.CONTROLLER_SHOCK = null;
+                            Helpers.Log("DualShock 4 Controller has been disconnected.", 1);
+
+                            if (Variables.DUALSENSE_NOTIFICATIONS)
+                                Additions.ShowInformation(0x6020);
+
+                            Variables.CONTROLLER_FOUND = false;
+                        }
+                    }
+                }
+
+                // This is only thrown if the DualSense controller unexpectedly disconnects.
+
+                catch (System.AggregateException)
+                {
+                    if (Variables.CONTROLLER_SENSE != null)
+                    {
+                        Variables.CONTROLLER_SENSE.Release();
+                        Variables.CONTROLLER_SENSE = null;
+                        Helpers.Log("DualSense Controller has been disconnected.", 1);
+
+                        if (Variables.DUALSENSE_NOTIFICATIONS)
+                            Additions.ShowInformation(0x6010);
+                    }
+
+                    Variables.CONTROLLER_FOUND = false;
+                }
+            }
+        }
+
+        public static void HandleControllerOutput()
+        {
+            if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+            {
+                try
+                {
+                    float _hpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP);
+                    float _hpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x04);
+
+                    float _mpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x180);
+                    float _mpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x184);
+
+                    byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+                    byte _formRead = Hypervisor.Read<byte>(Variables.ADDR_PlayerForm);
+                    byte _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+
+                    // This entire region determines what the Lightbar color will be.
+
+                    if (!Operations.CheckTitle())
+                    {
+                        switch (Variables.DUALSENSE_MODE)
+                        {
+
+                            case 0:
+                                {
+                                    if (_hpCurrent != PLAYER_HP)
+                                    {
+                                        PLAYER_HP = _hpCurrent;
+
+                                        float _healthPercent = _hpCurrent / _hpMaximum;
+                                        Variables.SENSE_COLOR = new float[] { 1.0F - _healthPercent, _healthPercent, 0.0F };
+                                    }
+
+                                    break;
+                                }
+
+                            case 1:
+                                {
+                                    if (_mpCurrent != PLAYER_MP && Variables.DUALSENSE_MODE == 0x01)
+                                    {
+                                        PLAYER_MP = _mpCurrent;
+
+                                        float _magicPercent = _mpCurrent / _mpMaximum;
+                                        float _magicDeduct = 0.8F * _magicPercent;
+
+                                        Variables.SENSE_COLOR = new float[] { 0.8F - _magicDeduct, 0.0F, 0.8F };
+                                    }
+
+                                    break;
+                                }
+
+                            case 2:
+                                {
+                                    if (_battleRead != BATTLE_STATE)
+                                    {
+                                        BATTLE_STATE = _battleRead;
+
+                                        switch (_battleRead)
+                                        {
+                                            case 0:
+                                                Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 1.0F };
+                                                break;
+                                            case 1:
+                                                Variables.SENSE_COLOR = new float[] { 1.0F, 0.8F, 0.0F };
+                                                break;
+                                            case 2:
+                                                Variables.SENSE_COLOR = new float[] { 0.9F, 0.0F, 0.0F };
+                                                break;
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case 3:
+                                {
+                                    if (_formRead != FORM_STATE)
+                                    {
+                                        switch (_formRead)
+                                        {
+                                            case 0:
+                                                Variables.SENSE_COLOR = new float[] { 0.5F, 0.5F, 0.5F };
+                                                break;
+                                            case 1:
+                                                Variables.SENSE_COLOR = new float[] { 1.0F, 0.0F, 0.0F };
+                                                break;
+                                            case 2:
+                                                Variables.SENSE_COLOR = new float[] { 0.0F, 1.0F, 0.0F };
+                                                break;
+                                            case 3:
+                                                Variables.SENSE_COLOR = new float[] { 1.0F, 0.5F, 0.0F };
+                                                break;
+                                            case 4:
+                                                Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 0.0F };
+                                                break;
+                                            case 5:
+                                                Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 1.0F };
+                                                break;
+                                            case 6:
+                                                Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 0.0F };
+                                                break;
+                                        }
+                                    }
+
+                                    break;
+                                }
+                        }
+                    }
+
+                    else
+                        Variables.SENSE_COLOR = new float[] { 0.00F, 0.75F, 1.00F };
+
+                    // Controller Handling for the DualSense protocol. Latency -> BT : 0.5ms, USB: 250ms
+                    // For some reason, laggy as shit on USB. I was not able to determine why yet.
+
+                    if (Variables.CONTROLLER_SENSE != null)
+                    {
+                        var _outState = Variables.CONTROLLER_SENSE.OutputState;
+
+                        _outState.LightbarBehavior = LightbarBehavior.CustomColor;
+                        _outState.LightbarColor = new LightbarColor(Variables.SENSE_COLOR[0], Variables.SENSE_COLOR[1], Variables.SENSE_COLOR[2]);
+
+                        // Both rumbles will play the highest of both rumble inputs.
+                        // The KH port normally only plays the BIG_MOTOR, cancelling about half of the rumble.
+
+                        _outState.RightRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
+                        _outState.LeftRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
+
+                        // This section is highly experimental and is subject to change.
+
+                        if (Variables.DUALSENSE_TRIGGERS)
+                        {
+                            _outState.L2Effect = new TriggerEffect.Section(0.3F, 0.4F);
+                            _outState.R2Effect = new TriggerEffect.Section(0.3F, 0.4F);
+                        }
+
+                        // This section may no longer be necessary.
+                        // I am not taking my chances yet.
+
+                        PAST_BIG = BIG_MOTOR;
+                        TICK_COUNT += 1;
+
+                        if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
+                        {
+                            _outState.RightRumble = 0F;
+                            _outState.LeftRumble = 0F;
+                        }
+
+                        Variables.CONTROLLER_SENSE.OutputState = _outState;
+                        Variables.CONTROLLER_SENSE.WriteOnce();
+                    }
+
+                    // Controller Handling for the DualSense protocol. Latency -> 10ms on both.
+
+                    else if (Variables.CONTROLLER_SHOCK != null)
+                    {
+                        Variables.CONTROLLER_SHOCK.setLedColor((byte)(Variables.SENSE_COLOR[0] * 0xFF), (byte)(Variables.SENSE_COLOR[1] * 0xFF), (byte)(Variables.SENSE_COLOR[2] * 0xFF));
+
+                        Variables.CONTROLLER_SHOCK.BigRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
+                        Variables.CONTROLLER_SHOCK.SmallRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
+
+                        PAST_BIG = BIG_MOTOR;
+                        TICK_COUNT += 1;
+
+                        if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
+                        {
+                            Variables.CONTROLLER_SHOCK.BigRumble = 0x00;
+                            Variables.CONTROLLER_SHOCK.SmallRumble = 0x00;
+                        }
+
+                        Variables.CONTROLLER_SHOCK.sendOutputReport();
+                    }
+                }
+
+                // This is only thrown if the DualSense controller unexpectedly disconnects.
+
+                catch (System.AggregateException)
+                {
+                    if (Variables.CONTROLLER_SENSE != null)
+                    {
+                        Variables.CONTROLLER_SENSE.Release();
+                        Variables.CONTROLLER_SENSE = null;
+                        Helpers.Log("DualSense Controller has been disconnected.", 1);
+
+                        if (Variables.DUALSENSE_NOTIFICATIONS)
+                            Additions.ShowInformation(0x6010);
+                    }
+
+                    Variables.CONTROLLER_FOUND = false;
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// This function is called from a separate task. It handles controller reconnection.
+        /// </summary>
+        public static void HandleReconnect()
+        {
+            if (!Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+            {
+                if (Variables.CONTROLLER_SENSE == null)
+                {
+                    var _devices = DualSense.EnumerateControllers();
+
+                    if (_devices.Count() != 0x00)
+                    {
+                        Variables.CONTROLLER_SENSE = _devices.First();
+                        Variables.CONTROLLER_SENSE.Acquire();
+
+                        Helpers.Log("DualSense Controller has been reconnected.", 0);
+
+                        if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
+                            Helpers.Log("DualSense is connected via Bluetooth", 0);
+
+                        else
+                            Helpers.Log("DualSense is connected via USB.", 0);
+
+                        if (Variables.DUALSENSE_NOTIFICATIONS)
+                            Additions.ShowInformation(0x6011);
+
+                        Variables.CONTROLLER_FOUND = true;
+                    }
+                }
+
+                if (Variables.CONTROLLER_SHOCK == null)
+                {
+
+                    var _shockList = HidDevices.Enumerate(0x054C, 0x05C4);
+
+                    if (_shockList.Count() != 0x00)
+                    {
+                        var _hidDevice = _shockList.First();
+                        _hidDevice.OpenDevice(false);
+
+                        Helpers.Log("Found a DualShock 4 Controller! Initializing...", 0);
+                        Variables.CONTROLLER_SHOCK = new DualShock(_hidDevice, 0);
+
+                        if (Variables.CONTROLLER_SHOCK.Device.Capabilities.InputReportByteLength == 64)
+                            Helpers.Log("DualShock 4 is connected via USB.", 0);
+
+                        else
+                            Helpers.Log("DualShock 4 is connected via Bluetooth.", 0);
+
+                        if (Variables.DUALSENSE_NOTIFICATIONS)
+                            Additions.ShowInformation(0x6021); 
+
+                        Variables.CONTROLLER_FOUND = true;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         public static void Execute()
         {
             try
@@ -2126,6 +3042,8 @@ namespace ReFined
                     if (CONFIG_REMOVE[2] == 0x00)
                         SwitchEnemies();
 
+                    RegisterMagic();
+
                     ExitFix();
                     LogicEP();
                     MagicSorting();
@@ -2137,6 +3055,8 @@ namespace ReFined
                     ShortcutForms();
                     OverrideLimits();
                     OverrideLimiter();
+
+                    HardcoreReset();
 
                     MagicHide();
                     RetryPrompt();
@@ -2201,6 +3121,55 @@ namespace ReFined
                             Variables.Token
                         );
                     }
+
+                    if (Variables.INTask == null || Variables.INTask.IsFaulted || Variables.INTask.IsCanceled)
+                    {
+                        Variables.INTask = Task.Factory.StartNew(
+
+                            delegate ()
+                            {
+                                while (!Variables.Token.IsCancellationRequested)
+                                {
+                                    HandleControllerInput();
+                                }
+                            },
+
+                            Variables.Token
+                        );
+                    }
+
+                    if (Variables.OUTTask == null || Variables.OUTTask.IsFaulted || Variables.OUTTask.IsCanceled)
+                    {
+                        Variables.OUTTask = Task.Factory.StartNew(
+
+                            delegate ()
+                            {
+                                while (!Variables.Token.IsCancellationRequested)
+                                {
+                                    HandleControllerOutput();
+                                }
+                            },
+
+                            Variables.Token
+                        );
+                    }
+
+                    if (Variables.RCTask == null || Variables.RCTask.IsFaulted || Variables.RCTask.IsCanceled)
+                    {
+                        Variables.RCTask = Task.Factory.StartNew(
+
+                            delegate ()
+                            {
+                                while (!Variables.Token.IsCancellationRequested)
+                                {
+                                    HandleReconnect();
+                                    Thread.Sleep(500);
+                                }
+                            },
+
+                            Variables.Token
+                        );
+                    }
                     #endregion
                 }
             }
@@ -2208,6 +3177,17 @@ namespace ReFined
             catch (Exception ERROR)
             {
                 Helpers.LogException(ERROR);
+
+                var _messageResult = MessageBox.Show(
+                    "Re:Fined has encountered a critical error and needs to be closed.\n" +
+                    "Please send the log present in Documents/Kingdom Hearts/Logs for troubleshooting.\n" + 
+                    "Re:Fined will now be terminated.",
+                    "Error #005: Fatal Error.", MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Error);
+
+                if (_messageResult == DialogResult.Cancel || _messageResult == DialogResult.OK)
+                    Environment.Exit(-3);
+
                 Helpers.Log("Re:Fined terminated with an exception!", 1);
                 Environment.Exit(-1);
             }
