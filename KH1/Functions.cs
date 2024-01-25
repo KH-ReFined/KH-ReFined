@@ -834,8 +834,8 @@ namespace ReFined
 
                 if (Variables.chestToggle)
                 {
-                    Hypervisor.UnlockBlock(Variables.ADDR_ChestCheck);
-                    Hypervisor.Write<byte>(Variables.ADDR_ChestCheck, 0x7D);
+                    Hypervisor.UnlockBlock(Variables.ADDR_ChestCheck, false);
+                    Hypervisor.Write<byte>(Variables.ADDR_ChestCheck, 125, false);
                 }
 
                 if (Variables.ASTask == null)
