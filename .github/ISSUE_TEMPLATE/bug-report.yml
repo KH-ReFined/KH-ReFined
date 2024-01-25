@@ -9,8 +9,8 @@ body:
     attributes:
       label: What Re:Fined version are you using? (versions other than listed are not supported)
       options:
-        - v3.15
-        - Latest v4.xx
+        - v3.20
+        - Latest release
 
   - type: input
     id: workingrefinedver
@@ -24,11 +24,10 @@ body:
     validations:
       required: true
     attributes:
-      label: In which game is the bug happening?
+      label: In which game is the bug happening?  (games other than listed are not supported)
       options:
         - Kingdom Hearts I Final Mix
         - Kingdom Hearts II Final Mix
-        - Kingdom Hearts Birth by Sleep Final Mix
         - Kingdom Hearts Dream Drop Distance HD
 
   - type: textarea

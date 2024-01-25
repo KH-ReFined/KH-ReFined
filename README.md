@@ -4,13 +4,13 @@ This project aims to improve the game in many ways whilst fixing the errors that
 
 ## Download
 
-If you're going to play Kingdom Hearts I or Dream Drop Distance, get the v3.15 release by clicking the button below:
+If you're going to play Kingdom Hearts I or Dream Drop Distance, get the v3.20 release by clicking the button below:
 
-[![KH-ReFined](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined_v3.15-Download-blue.svg)](https://github.com/TopazTK/KH-ReFined/releases/tag/v3.15)
+[![KH-ReFined](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined_v3.20-Download-blue.svg)](https://github.com/TopazTK/KH-ReFined/releases/tag/v3.20)
 
-If you're going to play Kingdom Hearts II, get the latest v4.xx release instead:
+If you're going to play Kingdom Hearts II, get the latest release instead:
 
-[![KH-ReFined](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined_Latest-Download-blue.svg)](https://github.com/TopazTK/KH-ReFined/releases/tag/v4.00).
+[![KH-ReFined](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined_Latest-Download-blue.svg)](https://github.com/TopazTK/KH-ReFined/releases/latest)
 
 ### Installation
 
@@ -31,7 +31,7 @@ You can see which games are supported, and which patches are live below:
 
 For all kinds of technical support and discussion, join the Discord Server:
 
-[![Discord](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined-Discord-purple)](https://discord.gg/8JWQjuxqbB)
+[![Discord](https://img.shields.io/badge/Kingdom_Hearts_Re:Fined-Discord-purple)](https://discord.gg/6r7yeDBaFx)
 
 ## Features
 
@@ -54,20 +54,21 @@ For all kinds of technical support and discussion, join the Discord Server:
 | - | :heavy_check_mark: | Native support for DualSense and DualShock 4 Controllers. |
 
 
-### Kingdom Hearts 1 (v3.15, v4.00 is T.B.A.)
+### Kingdom Hearts 1 (v3.20, v4.00 is T.B.A.)
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
 | :heavy_check_mark: | - | Fixed an issue with cutscenes, preventing pausing + skipping during a fade effect. |
 | :heavy_check_mark: | - | Fixed the `Title Screen` option in the save menu so it no longer crashes the game. |
 | :heavy_check_mark: | - | Restore the ability to exit the game from the title screen. |
+| - | :heavy_check_mark: | Added the ability to open chests during battles, similarly to how it works in other KH games. Toggleable through the config file. |
 | - | :heavy_check_mark: | Added a toggle in the Camp Menu to switch between original and a KH2-like improved field of view. |
 | - | :heavy_check_mark: | Abilities can now be toggled with Triangle just like in KH2. |
 | - | :heavy_check_mark: | Autodetect the correct screen aspect ratio when in fullscreen. |
-| - | :heavy_check_mark: | Added the ability to Auto Attack by holding down the configured attack button. It will trigger everywhere except the World Map. Toggleable through the config file. |
+| - | :heavy_check_mark: | Added the ability to Auto Attack by holding down the configured attack button. Toggleable through the config file. |
 | - | :heavy_check_mark: | Added the ability to enforce either Controller or MKB Prompts through the config file. |
 
-### Kingdom Hearts 2 (v4.xx)
+### Kingdom Hearts 2 (v5.00)
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
@@ -92,7 +93,7 @@ For all kinds of technical support and discussion, join the Discord Server:
 | - | :heavy_check_mark: | The `Kingdom Hearts` Command Menu setting is now more resembling of the menu from the first game. |
 | - | :heavy_check_mark: | Added the ability to enforce either Controller or MKB Prompts through the config menu. |
 
-### Kingdom Hearts - Dream Drop Distance (v3.15, v4.00 is T.B.A.)
+### Kingdom Hearts - Dream Drop Distance (v3.20, v4.00 is T.B.A.)
 
 | Error/Bug Fix | Enhancement | Description |
 |---------|-------------|-------------|
