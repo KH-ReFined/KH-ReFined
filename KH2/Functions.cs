@@ -890,106 +890,119 @@ namespace ReFined
         /// </summary>
         public static void RegisterMagic()
         {
-            if (Variables.REGISTER_MAGIC)
+            var _canLoad = !Operations.CheckTitle() && Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) == 0x01;
+            var _magicRead = Hypervisor.Read<uint>(Variables.ADDR_MagicLV1) + Hypervisor.Read<ushort>(Variables.ADDR_MagicLV2); 
+
+            if (!_canLoad && MAGIC_MEMORY.Count() > 0x00)
             {
-                var _magicRead = Hypervisor.Read<uint>(0x4460F6) + Hypervisor.Read<ushort>(0x446131);
+                Helpers.Log("Flushing the current Magic Memory!", 0);
+                MAGIC_MEMORY.Clear();
+            }
+            
+            if (MAGIC_OLD != _magicRead && _canLoad)
+            {
+                MAGIC_COUNT = 0;
+                var _tableMagic = new byte[] { 0x31, 0x33, 0x32, 0x34, 0xAE, 0xB1 };
 
-                if ((Operations.CheckTitle() || Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) == 0x00) && MAGIC_MEMORY.Count() > 0x00)
+                for (ulong i = 0; i < 0x06; i++)
                 {
-                    Helpers.Log("Resetting Magic Memory! The game may crash!", 1);
-                    MAGIC_MEMORY.Clear();
-                }
+                    var _magicPointer = Variables.SharpHook[(IntPtr)0x3C3240].Execute<uint>((long)i);
 
-                if (MAGIC_OLD != _magicRead && Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) == 0x01)
-                {
-                    MAGIC_COUNT = 0;
-                    var _tableMagic = new byte[] { 0x31, 0x33, 0x32, 0x34, 0xAE, 0xB1 };
-
-                    for (ulong i = 0; i < 0x05; i++)
+                    if (_magicPointer != 0x00)
                     {
-                        var _magicPointer = Variables.SharpHook[(IntPtr)0x3C3240].Execute<uint>((long)i);
+                        var _magNameAddr = Hypervisor.MemoryOffset + _magicPointer + 0x04;
+                        var _magFileName = Hypervisor.ReadArray(_magNameAddr, 0x20, true);
 
-                        if (_magicPointer != 0x00)
+                        var _currentDetails = Hypervisor.Read<ulong>(0x24BCC7A + (0x50 * i));
+
+                        if (_currentDetails == Hypervisor.MemoryOffset + _magicPointer)
+                            continue;
+
+                        else if (_currentDetails != 0x00)
                         {
-                            var _magNameAddr = Hypervisor.MemoryOffset + _magicPointer + 0x04;
-                            var _magFileName = Hypervisor.ReadArray(_magNameAddr, 0x20, true);
+                            var _currentName = Encoding.Default.GetString(Hypervisor.ReadArray(_currentDetails + 0x04, 0x20, true));
+                            var _newName = Encoding.Default.GetString(_magFileName);
 
-                            if (Hypervisor.Read<ulong>(0x24BCC7A + (0x50 * i)) == Hypervisor.MemoryOffset + _magicPointer)
+                            var _fromString = _newName.IndexOf('/') + 1;
+                            var _toString = _newName.IndexOf('_');
+
+                            var _magicType = _newName.Substring(_fromString, _toString - _fromString);
+
+                            if (_currentName.Contains(_magicType))
                                 continue;
+                        }
 
-                            Helpers.Log("Found Magic File: " + Encoding.Default.GetString(_magFileName), 1);
+                        Helpers.Log("Found Magic File: " + Encoding.Default.GetString(_magFileName), 0);
 
-                            var _magFileSize = Variables.SharpHook[(IntPtr)0x39E2F0].Execute<int>((long)_magNameAddr);
-                            var _magAllocMemory = Variables.SharpHook[(IntPtr)0x150030].Execute<int>(_magFileSize + 0x800) + 0x100000000;
+                        var _magFileSize = Variables.SharpHook[(IntPtr)0x39E2F0].Execute<int>((long)_magNameAddr);
+                        var _magAllocMemory = Variables.SharpHook[(IntPtr)0x150030].Execute<int>(_magFileSize + 0x800) + 0x100000000;
 
-                            Helpers.Log("Allocated Region for Magic at 0x" + (Hypervisor.MemoryOffset + (uint)_magAllocMemory).ToString("X12"), 1);
+                        Helpers.Log("Allocated Region for Magic at 0x" + (Hypervisor.MemoryOffset + (uint)_magAllocMemory).ToString("X12"), 1);
 
-                            Variables.SharpHook[(IntPtr)0x39E4E0].ExecuteJMP(BSharpConvention.MicrosoftX64, (long)_magNameAddr, (long)(Hypervisor.MemoryOffset + (uint)_magAllocMemory));
+                        Variables.SharpHook[(IntPtr)0x39E4E0].ExecuteJMP(BSharpConvention.MicrosoftX64, (long)_magNameAddr, (long)(Hypervisor.MemoryOffset + (uint)_magAllocMemory));
 
-                            Helpers.Log("Loaded .MAG File to 0x" + (Hypervisor.MemoryOffset + (uint)_magAllocMemory).ToString("X12"), 1);
+                        Helpers.Log("Loaded Magic File to 0x" + (Hypervisor.MemoryOffset + (uint)_magAllocMemory).ToString("X12"), 0);
 
-                            var _offsetBAR = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x08, true);
-                            var _offsetPAX = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x18, true) - _offsetBAR;
-                            var _offsetMAG = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x28, true) - _offsetBAR;
+                        var _offsetBAR = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x08, true);
+                        var _offsetPAX = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x18, true) - _offsetBAR;
+                        var _offsetMAG = Hypervisor.Read<uint>(Hypervisor.MemoryOffset + (uint)_magAllocMemory + 0x28, true) - _offsetBAR;
 
-                            Hypervisor.Write(0x24BCC7A + (0x50 * i), Hypervisor.MemoryOffset + _magicPointer);
-                            Hypervisor.Write(0x24BCC32 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory);
-                            Hypervisor.Write(0x24BCC3A + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetMAG);
-                            Hypervisor.Write(0x24BCC42 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetMAG);
-                            Hypervisor.Write(0x24BCC52 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetPAX + 0x10);
+                        Hypervisor.Write(0x24BCC7A + (0x50 * i), Hypervisor.MemoryOffset + _magicPointer);
+                        Hypervisor.Write(0x24BCC32 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory);
+                        Hypervisor.Write(0x24BCC3A + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetMAG);
+                        Hypervisor.Write(0x24BCC42 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetMAG);
+                        Hypervisor.Write(0x24BCC52 + (0x50 * i), Hypervisor.MemoryOffset + (uint)_magAllocMemory + _offsetPAX + 0x10);
 
-                            Helpers.Log("Magic Details loaded to 0x" + (Hypervisor.BaseAddress + 0x24BCC32 + (0x50 * i)).ToString("X12"), 1);
+                        Helpers.Log("Magic Details loaded to 0x" + (Hypervisor.BaseAddress + 0x24BCC32 + (0x50 * i)).ToString("X12"), 1);
 
-                            var _execOffset = Hypervisor.PureAddress + 0x2A21198 + (0x50 * i);
+                        var _execOffset = Hypervisor.PureAddress + 0x2A21198 + (0x50 * i);
 
-                            for (int z = 0; z < 5; z++)
+                        for (int z = 0; z < 6; z++)
+                        {
+                            if (MAGIC_MEMORY.ElementAtOrDefault(z) == _execOffset)
+                                break;
+
+                            if (MAGIC_MEMORY.ElementAtOrDefault(z) == null)
                             {
-                                if (MAGIC_MEMORY.ElementAtOrDefault(z) == _execOffset)
-                                    break;
-
-                                if (MAGIC_MEMORY.ElementAtOrDefault(z) == null)
-                                {
-                                    MAGIC_MEMORY.Add(_execOffset);
-                                    break;
-                                }
+                                MAGIC_MEMORY.Add(_execOffset);
+                                break;
                             }
                         }
                     }
-
-                    Hypervisor.Write<ulong>(0x24AA33A, 0x00);
-                    ulong _magicOffset = 0x00;
-
-                    for (ulong i = 0; i < 0x05; i++)
-                    {
-                        var _magicPointer = Variables.SharpHook[(IntPtr)0x3C3240].Execute<uint>((long)i);
-
-                        if (_magicPointer != 0x00)
-                        {
-                            Hypervisor.Write(0x24AA33A + (0x02 * _magicOffset), _tableMagic[i]);
-                            Helpers.Log("Command Written to 0x" + (Hypervisor.BaseAddress + 0x24AA33A + (0x02 * i)).ToString("X12"), 1);
-                            _magicOffset++;
-                        }
-                    }
-
-                    for (int i = 0; i < 0x05; i++)
-                    {
-                        if (MAGIC_MEMORY.ElementAtOrDefault(i) != null)
-                        {
-                            var _barOffset = Hypervisor.Read<ulong>(MAGIC_MEMORY.ElementAtOrDefault(i).Value - 0x18, true);
-
-                            Variables.SharpHook[(IntPtr)0x2C1AB0].Execute((long)MAGIC_MEMORY.ElementAtOrDefault(i).Value);
-                            Variables.SharpHook[(IntPtr)0x2C3D80].Execute(BSharpConvention.MicrosoftX64, (long)MAGIC_MEMORY.ElementAtOrDefault(i).Value, (long)(_barOffset + 0x40));
-
-                            Helpers.Log("Loaded PAX at 0x" + (_barOffset + 0x40).ToString("X12") + " for 0x" + MAGIC_MEMORY.ElementAtOrDefault(i).Value.ToString("X12"), 1);
-                        }
-                    }
-
-                    Hypervisor.WriteArray(Hypervisor.PureAddress + 0x3C314A, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
-                    MAGIC_OLD = _magicRead;
                 }
+
+                Hypervisor.Write<ulong>(0x24AA33A, 0x00);
+                ulong _magicOffset = 0x00;
+
+                for (ulong i = 0; i < 0x06; i++)
+                {
+                    var _magicPointer = Variables.SharpHook[(IntPtr)0x3C3240].Execute<uint>((long)i);
+
+                    if (_magicPointer != 0x00)
+                    {
+                        Hypervisor.Write(0x24AA33A + (0x02 * _magicOffset), _tableMagic[i]);
+                        Helpers.Log("Command Written to 0x" + (Hypervisor.BaseAddress + 0x24AA33A + (0x02 * i)).ToString("X12"), 1);
+                        _magicOffset++;
+                    }
+                }
+
+                for (int i = 0; i < 0x06; i++)
+                {
+                    if (MAGIC_MEMORY.ElementAtOrDefault(i) != null)
+                    {
+                        var _barOffset = Hypervisor.Read<ulong>(MAGIC_MEMORY.ElementAtOrDefault(i).Value - 0x18, true);
+
+                        Variables.SharpHook[(IntPtr)0x2C1AB0].Execute((long)MAGIC_MEMORY.ElementAtOrDefault(i).Value);
+                        Variables.SharpHook[(IntPtr)0x2C3D80].Execute(BSharpConvention.MicrosoftX64, (long)MAGIC_MEMORY.ElementAtOrDefault(i).Value, (long)(_barOffset + 0x40));
+
+                        Helpers.Log("Loaded PAX at 0x" + (_barOffset + 0x40).ToString("X12") + " for 0x" + MAGIC_MEMORY.ElementAtOrDefault(i).Value.ToString("X12"), 0);
+                    }
+                }
+
+                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x3C314A, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 }, true);
+                MAGIC_OLD = _magicRead;
             }
         }
-
 
         /// <summary>
         /// Shifts the chosen spell in the Magic menu up or down,
@@ -2628,334 +2641,319 @@ namespace ReFined
         /// </summary>
         public static void HandleControllerInput()
         {
-            if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+            try
             {
-                try
+                if (Variables.CONTROLLER_SENSE != null)
                 {
-                    if (Variables.CONTROLLER_SENSE != null)
+                    byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+                    byte _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuActive);
+
+                    var _senseIn = Variables.CONTROLLER_SENSE.ReadOnce();
+
+                    if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
+                    {
+
+                        if (_senseIn.BatteryStatus.Level <= 1 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
+                        {
+                            Additions.ShowInformation(0x6012);
+                            DEBOUNCE[8] = true;
+                        }
+
+                        else if (Operations.CheckTitle() && DEBOUNCE[8])
+                            DEBOUNCE[8] = false;
+                    }
+
+                    // Fetch the buttons, fetch the analogs, and interpret them to the 360 false controller.
+
+                    var _senseButtonArray = new bool[]
+                    {
+                        _senseIn.DPadUpButton, _senseIn.DPadDownButton, _senseIn.DPadLeftButton, _senseIn.DPadRightButton,
+                        _senseIn.MenuButton, _senseIn.TouchpadButton,
+                        _senseIn.L3Button, _senseIn.R3Button, _senseIn.L1Button, _senseIn.R1Button, false,
+                        _senseIn.CrossButton, _senseIn.CircleButton, _senseIn.SquareButton, _senseIn.TriangleButton
+                    };
+
+                    var _senseAxisArray = new short[]
+                    {
+                        (short)(_senseIn.LeftAnalogStick.X * 32766F),
+                        (short)(_senseIn.LeftAnalogStick.Y * 32766F),
+                        (short)(_senseIn.RightAnalogStick.X * 32766F),
+                        (short)(_senseIn.RightAnalogStick.Y * 32766F)
+                    };
+
+                    for (int i = 0; i < _senseButtonArray.Length; i++)
+                        Variables.CONTROLLER_FAKE.SetButtonState(i, _senseButtonArray[i]);
+
+                    for (int i = 0; i < _senseAxisArray.Length; i++)
+                        Variables.CONTROLLER_FAKE.SetAxisValue(i, _senseAxisArray[i]);
+
+                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, (byte)(_senseIn.L2 * 255F));
+                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, (byte)(_senseIn.R2 * 255F));
+                }
+
+                else if (Variables.CONTROLLER_SHOCK != null)
+                {
+                    Variables.CONTROLLER_SHOCK.retrieveData();
+
+                    var _stateShock = Variables.CONTROLLER_SHOCK.currentState();
+
+                    if (!Variables.CONTROLLER_SHOCK.IsUSB)
                     {
                         byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
                         byte _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuActive);
 
-                        if (Variables.CONTROLLER_SENSE.IoMode == IoMode.USB)
+                        if (Variables.CONTROLLER_SHOCK.Charge <= 10 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
                         {
-                            var _senseIn = Variables.CONTROLLER_SENSE.ReadOnce();
-
-                            if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
-                            {
-
-                                if (_senseIn.BatteryStatus.Level <= 1 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
-                                {
-                                    Additions.ShowInformation(0x6012);
-                                    DEBOUNCE[8] = true;
-                                }
-
-                                else if (Operations.CheckTitle() && DEBOUNCE[8])
-                                    DEBOUNCE[8] = false;
-                            }
-                                
-                            // Fetch the buttons, fetch the analogs, and interpret them to the 360 false controller.
-
-                            var _senseButtonArray = new bool[]
-                            {
-                            _senseIn.DPadUpButton, _senseIn.DPadDownButton, _senseIn.DPadLeftButton, _senseIn.DPadRightButton,
-                            _senseIn.MenuButton, _senseIn.TouchpadButton,
-                            _senseIn.L3Button, _senseIn.R3Button, _senseIn.L1Button, _senseIn.R1Button, false,
-                            _senseIn.CrossButton, _senseIn.CircleButton, _senseIn.SquareButton, _senseIn.TriangleButton
-                            };
-
-                            var _senseAxisArray = new short[]
-                            {
-                            (short)(_senseIn.LeftAnalogStick.X * 32766F),
-                            (short)(_senseIn.LeftAnalogStick.Y * 32766F),
-                            (short)(_senseIn.RightAnalogStick.X * 32766F),
-                            (short)(_senseIn.RightAnalogStick.Y * 32766F)
-                            };
-
-                            for (int i = 0; i < _senseButtonArray.Length; i++)
-                                Variables.CONTROLLER_FAKE.SetButtonState(i, _senseButtonArray[i]);
-
-                            for (int i = 0; i < _senseAxisArray.Length; i++)
-                                Variables.CONTROLLER_FAKE.SetAxisValue(i, _senseAxisArray[i]);
-
-                            Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, (byte)(_senseIn.L2 * 255F));
-                            Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, (byte)(_senseIn.R2 * 255F));
+                            Additions.ShowInformation(0x6022);
+                            DEBOUNCE[8] = true;
                         }
 
+                        else if (Operations.CheckTitle() && DEBOUNCE[8])
+                            DEBOUNCE[8] = false;
                     }
 
-                    // Controller Handling for the DualSense protocol. Latency -> 10ms on both.
-
-                    else if (Variables.CONTROLLER_SHOCK != null)
+                    var _shockButtonArray = new bool[]
                     {
-                        Variables.CONTROLLER_SHOCK.retrieveData();
+                        _stateShock.DpadUp, _stateShock.DpadDown, _stateShock.DpadLeft, _stateShock.DpadRight,
+                        _stateShock.Options, _stateShock.Share,
+                        _stateShock.L3, _stateShock.R3, _stateShock.L1, _stateShock.R1, false,
+                        _stateShock.Cross, _stateShock.Circle, _stateShock.Square, _stateShock.Triangle
+                    };
 
-                        var _stateShock = Variables.CONTROLLER_SHOCK.currentState();
-
-                        if (!Variables.CONTROLLER_SHOCK.IsUSB)
-                        {
-                            byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
-                            byte _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuActive);
-
-                            if (Variables.CONTROLLER_SHOCK.Charge <= 10 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
-                            {
-                                Additions.ShowInformation(0x6022);
-                                DEBOUNCE[8] = true;
-                            }
-
-                            else if (Operations.CheckTitle() && DEBOUNCE[8])
-                                DEBOUNCE[8] = false;
-                        }
-
-                        var _shockButtonArray = new bool[]
-                        {
-                            _stateShock.DpadUp, _stateShock.DpadDown, _stateShock.DpadLeft, _stateShock.DpadRight,
-                            _stateShock.Options, _stateShock.Share,
-                            _stateShock.L3, _stateShock.R3, _stateShock.L1, _stateShock.R1, false,
-                            _stateShock.Cross, _stateShock.Circle, _stateShock.Square, _stateShock.Triangle
-                        };
-
-                        var _shockAxisArray = new short[]
-                        {
-                            (short)(_stateShock.LX >= 128 ? ((128F - _stateShock.LX) * -255F) : (_stateShock.LX - 128F) * 255F),
-                            (short)(_stateShock.LY >= 128 ? ((_stateShock.LY - 128F) * -255F) : (128F - _stateShock.LY) * 255F),
-                            (short)(_stateShock.RX >= 128 ? ((128F - _stateShock.RX) * -255F) : (_stateShock.RX - 128F) * 255F),
-                            (short)(_stateShock.RY >= 128 ? ((_stateShock.RY - 128F) * -255F) : (128F - _stateShock.RY) * 255F),
-                        };
-
-                        for (var i = 0; i < _shockButtonArray.Length; i++)
-                            Variables.CONTROLLER_FAKE.SetButtonState(i, _shockButtonArray[i]);
-
-                        for (var i = 0; i < _shockAxisArray.Length; i++)
-                            Variables.CONTROLLER_FAKE.SetAxisValue(i, _shockAxisArray[i]);
-
-                        Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, _stateShock.L2);
-                        Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, _stateShock.R2);
-
-                        // Handle the controller disconnecting.
-
-                        if (!Variables.CONTROLLER_SHOCK.Device.IsConnected || Variables.CONTROLLER_SHOCK.Device.IsTimedOut)
-                        {
-                            Variables.CONTROLLER_SHOCK = null;
-                            Helpers.Log("DualShock 4 Controller has been disconnected.", 1);
-
-                            if (Variables.DUALSENSE_NOTIFICATIONS)
-                                Additions.ShowInformation(0x6020);
-
-                            Variables.CONTROLLER_FOUND = false;
-                        }
-                    }
-                }
-
-                // This is only thrown if the DualSense controller unexpectedly disconnects.
-
-                catch (System.AggregateException)
-                {
-                    if (Variables.CONTROLLER_SENSE != null)
+                    var _shockAxisArray = new short[]
                     {
-                        Variables.CONTROLLER_SENSE.Release();
-                        Variables.CONTROLLER_SENSE = null;
-                        Helpers.Log("DualSense Controller has been disconnected.", 1);
+                        (short)(_stateShock.LX >= 128 ? ((128F - _stateShock.LX) * -255F) : (_stateShock.LX - 128F) * 255F),
+                        (short)(_stateShock.LY >= 128 ? ((_stateShock.LY - 128F) * -255F) : (128F - _stateShock.LY) * 255F),
+                        (short)(_stateShock.RX >= 128 ? ((128F - _stateShock.RX) * -255F) : (_stateShock.RX - 128F) * 255F),
+                        (short)(_stateShock.RY >= 128 ? ((_stateShock.RY - 128F) * -255F) : (128F - _stateShock.RY) * 255F),
+                    };
+
+                    for (var i = 0; i < _shockButtonArray.Length; i++)
+                        Variables.CONTROLLER_FAKE.SetButtonState(i, _shockButtonArray[i]);
+
+                    for (var i = 0; i < _shockAxisArray.Length; i++)
+                        Variables.CONTROLLER_FAKE.SetAxisValue(i, _shockAxisArray[i]);
+
+                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, _stateShock.L2);
+                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, _stateShock.R2);
+
+                    // Handle the controller disconnecting.
+
+                    if (!Variables.CONTROLLER_SHOCK.Device.IsConnected || Variables.CONTROLLER_SHOCK.Device.IsTimedOut)
+                    {
+                        Variables.CONTROLLER_SHOCK = null;
+                        Helpers.Log("DualShock 4 Controller has been disconnected.", 1);
 
                         if (Variables.DUALSENSE_NOTIFICATIONS)
-                            Additions.ShowInformation(0x6010);
-                    }
+                            Additions.ShowInformation(0x6020);
 
-                    Variables.CONTROLLER_FOUND = false;
+                        Variables.CONTROLLER_FOUND = false;
+                    }
                 }
+            }
+
+            catch (System.AggregateException)
+            {
+                if (Variables.CONTROLLER_SENSE != null)
+                {
+                    Variables.CONTROLLER_SENSE.Release();
+                    Variables.CONTROLLER_SENSE = null;
+                    Helpers.Log("DualSense Controller has been disconnected.", 1);
+
+                    if (Variables.DUALSENSE_NOTIFICATIONS)
+                        Additions.ShowInformation(0x6010);
+                }
+
+                Variables.CONTROLLER_FOUND = false;
             }
         }
 
         public static void HandleControllerOutput()
         {
-            if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+            try
             {
-                try
+                float _hpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP);
+                float _hpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x04);
+
+                float _mpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x180);
+                float _mpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x184);
+
+                byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+                byte _formRead = Hypervisor.Read<byte>(Variables.ADDR_PlayerForm);
+                byte _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+
+
+                if (!Operations.CheckTitle())
                 {
-                    float _hpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP);
-                    float _hpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x04);
-
-                    float _mpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x180);
-                    float _mpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x184);
-
-                    byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
-                    byte _formRead = Hypervisor.Read<byte>(Variables.ADDR_PlayerForm);
-                    byte _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
-
-                    // This entire region determines what the Lightbar color will be.
-
-                    if (!Operations.CheckTitle())
+                    switch (Variables.DUALSENSE_MODE)
                     {
-                        switch (Variables.DUALSENSE_MODE)
-                        {
 
-                            case 0:
+                        case 0:
+                            {
+                                if (_hpCurrent != PLAYER_HP)
                                 {
-                                    if (_hpCurrent != PLAYER_HP)
-                                    {
-                                        PLAYER_HP = _hpCurrent;
+                                    PLAYER_HP = _hpCurrent;
 
-                                        float _healthPercent = _hpCurrent / _hpMaximum;
-                                        Variables.SENSE_COLOR = new float[] { 1.0F - _healthPercent, _healthPercent, 0.0F };
-                                    }
-
-                                    break;
+                                    float _healthPercent = _hpCurrent / _hpMaximum;
+                                    Variables.SENSE_COLOR = new float[] { 1.0F - _healthPercent, _healthPercent, 0.0F };
                                 }
 
-                            case 1:
+                                break;
+                            }
+
+                        case 1:
+                            {
+                                if (_mpCurrent != PLAYER_MP && Variables.DUALSENSE_MODE == 0x01)
                                 {
-                                    if (_mpCurrent != PLAYER_MP && Variables.DUALSENSE_MODE == 0x01)
-                                    {
-                                        PLAYER_MP = _mpCurrent;
+                                    PLAYER_MP = _mpCurrent;
 
-                                        float _magicPercent = _mpCurrent / _mpMaximum;
-                                        float _magicDeduct = 0.8F * _magicPercent;
+                                    float _magicPercent = _mpCurrent / _mpMaximum;
+                                    float _magicDeduct = 0.8F * _magicPercent;
 
-                                        Variables.SENSE_COLOR = new float[] { 0.8F - _magicDeduct, 0.0F, 0.8F };
-                                    }
-
-                                    break;
+                                    Variables.SENSE_COLOR = new float[] { 0.8F - _magicDeduct, 0.0F, 0.8F };
                                 }
 
-                            case 2:
+                                break;
+                            }
+
+                        case 2:
+                            {
+                                if (_battleRead != BATTLE_STATE)
                                 {
-                                    if (_battleRead != BATTLE_STATE)
+                                    BATTLE_STATE = _battleRead;
+
+                                    switch (_battleRead)
                                     {
-                                        BATTLE_STATE = _battleRead;
-
-                                        switch (_battleRead)
-                                        {
-                                            case 0:
-                                                Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 1.0F };
-                                                break;
-                                            case 1:
-                                                Variables.SENSE_COLOR = new float[] { 1.0F, 0.8F, 0.0F };
-                                                break;
-                                            case 2:
-                                                Variables.SENSE_COLOR = new float[] { 0.9F, 0.0F, 0.0F };
-                                                break;
-                                        }
+                                        case 0:
+                                            Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 1.0F };
+                                            break;
+                                        case 1:
+                                            Variables.SENSE_COLOR = new float[] { 1.0F, 0.8F, 0.0F };
+                                            break;
+                                        case 2:
+                                            Variables.SENSE_COLOR = new float[] { 0.9F, 0.0F, 0.0F };
+                                            break;
                                     }
-
-                                    break;
                                 }
 
-                            case 3:
+                                break;
+                            }
+
+                        case 3:
+                            {
+                                if (_formRead != FORM_STATE)
                                 {
-                                    if (_formRead != FORM_STATE)
+                                    switch (_formRead)
                                     {
-                                        switch (_formRead)
-                                        {
-                                            case 0:
-                                                Variables.SENSE_COLOR = new float[] { 0.5F, 0.5F, 0.5F };
-                                                break;
-                                            case 1:
-                                                Variables.SENSE_COLOR = new float[] { 1.0F, 0.0F, 0.0F };
-                                                break;
-                                            case 2:
-                                                Variables.SENSE_COLOR = new float[] { 0.0F, 1.0F, 0.0F };
-                                                break;
-                                            case 3:
-                                                Variables.SENSE_COLOR = new float[] { 1.0F, 0.5F, 0.0F };
-                                                break;
-                                            case 4:
-                                                Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 0.0F };
-                                                break;
-                                            case 5:
-                                                Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 1.0F };
-                                                break;
-                                            case 6:
-                                                Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 0.0F };
-                                                break;
-                                        }
+                                        case 0:
+                                            Variables.SENSE_COLOR = new float[] { 0.5F, 0.5F, 0.5F };
+                                            break;
+                                        case 1:
+                                            Variables.SENSE_COLOR = new float[] { 1.0F, 0.0F, 0.0F };
+                                            break;
+                                        case 2:
+                                            Variables.SENSE_COLOR = new float[] { 0.0F, 1.0F, 0.0F };
+                                            break;
+                                        case 3:
+                                            Variables.SENSE_COLOR = new float[] { 1.0F, 0.5F, 0.0F };
+                                            break;
+                                        case 4:
+                                            Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 0.0F };
+                                            break;
+                                        case 5:
+                                            Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 1.0F };
+                                            break;
+                                        case 6:
+                                            Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 0.0F };
+                                            break;
                                     }
-
-                                    break;
                                 }
-                        }
-                    }
 
-                    else
-                        Variables.SENSE_COLOR = new float[] { 0.00F, 0.75F, 1.00F };
-
-                    // Controller Handling for the DualSense protocol. Latency -> BT : 0.5ms, USB: 250ms
-                    // For some reason, laggy as shit on USB. I was not able to determine why yet.
-
-                    if (Variables.CONTROLLER_SENSE != null)
-                    {
-                        var _outState = Variables.CONTROLLER_SENSE.OutputState;
-
-                        _outState.LightbarBehavior = LightbarBehavior.CustomColor;
-                        _outState.LightbarColor = new LightbarColor(Variables.SENSE_COLOR[0], Variables.SENSE_COLOR[1], Variables.SENSE_COLOR[2]);
-
-                        // Both rumbles will play the highest of both rumble inputs.
-                        // The KH port normally only plays the BIG_MOTOR, cancelling about half of the rumble.
-
-                        _outState.RightRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
-                        _outState.LeftRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
-
-                        // This section is highly experimental and is subject to change.
-
-                        if (Variables.DUALSENSE_TRIGGERS)
-                        {
-                            _outState.L2Effect = new TriggerEffect.Section(0.3F, 0.4F);
-                            _outState.R2Effect = new TriggerEffect.Section(0.3F, 0.4F);
-                        }
-
-                        // This section may no longer be necessary.
-                        // I am not taking my chances yet.
-
-                        PAST_BIG = BIG_MOTOR;
-                        TICK_COUNT += 1;
-
-                        if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
-                        {
-                            _outState.RightRumble = 0F;
-                            _outState.LeftRumble = 0F;
-                        }
-
-                        Variables.CONTROLLER_SENSE.OutputState = _outState;
-                        Variables.CONTROLLER_SENSE.WriteOnce();
-                    }
-
-                    // Controller Handling for the DualSense protocol. Latency -> 10ms on both.
-
-                    else if (Variables.CONTROLLER_SHOCK != null)
-                    {
-                        Variables.CONTROLLER_SHOCK.setLedColor((byte)(Variables.SENSE_COLOR[0] * 0xFF), (byte)(Variables.SENSE_COLOR[1] * 0xFF), (byte)(Variables.SENSE_COLOR[2] * 0xFF));
-
-                        Variables.CONTROLLER_SHOCK.BigRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
-                        Variables.CONTROLLER_SHOCK.SmallRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
-
-                        PAST_BIG = BIG_MOTOR;
-                        TICK_COUNT += 1;
-
-                        if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
-                        {
-                            Variables.CONTROLLER_SHOCK.BigRumble = 0x00;
-                            Variables.CONTROLLER_SHOCK.SmallRumble = 0x00;
-                        }
-
-                        Variables.CONTROLLER_SHOCK.sendOutputReport();
+                                break;
+                            }
                     }
                 }
 
-                // This is only thrown if the DualSense controller unexpectedly disconnects.
+                else
+                    Variables.SENSE_COLOR = new float[] { 0.00F, 0.75F, 1.00F };
 
-                catch (System.AggregateException)
+                // Controller Handling for the DualSense protocol. Latency -> BT : 0.5ms, USB: 250ms
+                // For some reason, laggy as shit on USB. I was not able to determine why yet.
+
+                if (Variables.CONTROLLER_SENSE != null)
                 {
-                    if (Variables.CONTROLLER_SENSE != null)
-                    {
-                        Variables.CONTROLLER_SENSE.Release();
-                        Variables.CONTROLLER_SENSE = null;
-                        Helpers.Log("DualSense Controller has been disconnected.", 1);
+                    var _outState = Variables.CONTROLLER_SENSE.OutputState;
 
-                        if (Variables.DUALSENSE_NOTIFICATIONS)
-                            Additions.ShowInformation(0x6010);
+                    _outState.LightbarBehavior = LightbarBehavior.CustomColor;
+                    _outState.LightbarColor = new LightbarColor(Variables.SENSE_COLOR[0], Variables.SENSE_COLOR[1], Variables.SENSE_COLOR[2]);
+
+                    // Both rumbles will play the highest of both rumble inputs.
+                    // The KH port normally only plays the BIG_MOTOR, cancelling about half of the rumble.
+
+                    _outState.RightRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
+                    _outState.LeftRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
+
+                    // This section is highly experimental and is subject to change.
+
+                    if (Variables.DUALSENSE_TRIGGERS)
+                    {
+                        _outState.L2Effect = new TriggerEffect.Section(0.3F, 0.4F);
+                        _outState.R2Effect = new TriggerEffect.Section(0.3F, 0.4F);
                     }
 
-                    Variables.CONTROLLER_FOUND = false;
+                    // This section may no longer be necessary.
+                    // I am not taking my chances yet.
+
+                    PAST_BIG = BIG_MOTOR;
+                    TICK_COUNT += 1;
+
+                    if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
+                    {
+                        _outState.RightRumble = 0F;
+                        _outState.LeftRumble = 0F;
+                    }
+
+                    Variables.CONTROLLER_SENSE.OutputState = _outState;
+                    Variables.CONTROLLER_SENSE.WriteOnce();
                 }
+
+                // Controller Handling for the DualSense protocol. Latency -> 10ms on both.
+
+                else if (Variables.CONTROLLER_SHOCK != null)
+                {
+                    Variables.CONTROLLER_SHOCK.setLedColor((byte)(Variables.SENSE_COLOR[0] * 0xFF), (byte)(Variables.SENSE_COLOR[1] * 0xFF), (byte)(Variables.SENSE_COLOR[2] * 0xFF));
+
+                    Variables.CONTROLLER_SHOCK.BigRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
+                    Variables.CONTROLLER_SHOCK.SmallRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
+
+                    PAST_BIG = BIG_MOTOR;
+                    TICK_COUNT += 1;
+
+                    if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
+                    {
+                        Variables.CONTROLLER_SHOCK.BigRumble = 0x00;
+                        Variables.CONTROLLER_SHOCK.SmallRumble = 0x00;
+                    }
+
+                    Variables.CONTROLLER_SHOCK.sendOutputReport();
+                }
+            }
+
+            // This is only thrown if the DualSense controller unexpectedly disconnects.
+
+            catch (System.AggregateException)
+            {
+                if (Variables.CONTROLLER_SENSE != null)
+                {
+                    Variables.CONTROLLER_SENSE.Release();
+                    Variables.CONTROLLER_SENSE = null;
+                    Helpers.Log("DualSense Controller has been disconnected.", 1);
+
+                    if (Variables.DUALSENSE_NOTIFICATIONS)
+                        Additions.ShowInformation(0x6010);
+                }
+
+                Variables.CONTROLLER_FOUND = false;
             }
 
         }
@@ -2993,7 +2991,6 @@ namespace ReFined
 
                 if (Variables.CONTROLLER_SHOCK == null)
                 {
-
                     var _shockList = HidDevices.Enumerate(0x054C, 0x05C4);
 
                     if (_shockList.Count() != 0x00)
@@ -3069,25 +3066,6 @@ namespace ReFined
                     ConfigHandler();
 
                     #region Tasks
-                    if (Variables.ASTask == null || Variables.ASTask.IsFaulted || Variables.ASTask.IsCanceled)
-                    {
-                        Variables.ASTask = Task.Factory.StartNew(
-
-                            delegate ()
-                            {
-                                while (!Variables.Token.IsCancellationRequested)
-                                {
-                                    if (!LOCK_AUTOSAVE)
-                                        AutosaveEngine();
-                                    
-                                    Thread.Sleep(5);
-                                }
-                            },
-
-                            Variables.Token
-                        );
-                    }
-
                     if (Variables.DCTask == null || Variables.DCTask.IsFaulted || Variables.DCTask.IsCanceled)
                     {
                         Variables.DCTask = Task.Factory.StartNew(
@@ -3096,25 +3074,13 @@ namespace ReFined
                             {
                                 while (!Variables.Token.IsCancellationRequested)
                                 {
+                                    if (!LOCK_AUTOSAVE)
+                                        AutosaveEngine();
+
                                     DiscordEngine();
-                                    Thread.Sleep(5);
-                                }
-                            },
-
-                            Variables.Token
-                        );
-                    }
-
-                    if (Variables.CRTask == null || Variables.CRTask.IsFaulted || Variables.CRTask.IsCanceled)
-                    {
-                        Variables.CRTask = Task.Factory.StartNew(
-
-                            delegate ()
-                            {
-                                while (!Variables.Token.IsCancellationRequested)
-                                {
                                     CrownManager();
-                                    Thread.Sleep(5);
+
+                                    Thread.Sleep(100);
                                 }
                             },
 
@@ -3130,7 +3096,14 @@ namespace ReFined
                             {
                                 while (!Variables.Token.IsCancellationRequested)
                                 {
-                                    HandleControllerInput();
+                                    if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+                                        HandleControllerInput();
+
+                                    else
+                                    {
+                                        HandleReconnect();
+                                        Thread.Sleep(2000);
+                                    }
                                 }
                             },
 
@@ -3146,24 +3119,11 @@ namespace ReFined
                             {
                                 while (!Variables.Token.IsCancellationRequested)
                                 {
-                                    HandleControllerOutput();
-                                }
-                            },
-
-                            Variables.Token
-                        );
-                    }
-
-                    if (Variables.RCTask == null || Variables.RCTask.IsFaulted || Variables.RCTask.IsCanceled)
-                    {
-                        Variables.RCTask = Task.Factory.StartNew(
-
-                            delegate ()
-                            {
-                                while (!Variables.Token.IsCancellationRequested)
-                                {
-                                    HandleReconnect();
-                                    Thread.Sleep(500);
+                                    if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
+                                        HandleControllerOutput();
+                                    else
+                                        Thread.Sleep(2000);
+                                    
                                 }
                             },
 
