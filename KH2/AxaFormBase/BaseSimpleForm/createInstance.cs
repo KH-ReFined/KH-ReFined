@@ -54,9 +54,15 @@ namespace AxaFormBase
                 AllocConsole();
 
                 Helpers.Log("Launching Re:Fined...", 0);
-                
+                ControllerIO.Initialize();
+
                 if (BaseSimpleForm.theInstance == null)
-                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fined v5.00]");
+                    new BaseSimpleForm(_app, "KINGDOM HEARTS II - FINAL MIX [Re:Fined v4.65]");
+
+                theInstance.suspend();
+                Hypervisor.AttachProcess(Process.GetCurrentProcess(), 0x56454E);
+                Functions.Initialization();
+				theInstance.resume();
 
                 Cursor.Hide();
                 theInstance.KeyDown += _keyEvent;
@@ -70,13 +76,13 @@ namespace AxaFormBase
                 CancelSource = new CancellationTokenSource();
                 MainToken = BaseSimpleForm.CancelSource.Token;
 
-                Hypervisor.AttachProcess(Process.GetCurrentProcess(), 0x56454E);
 
                 theInstance.timer1.Start();
 
                 MainTask = Task.Factory.StartNew(
                     delegate()
                     {
+                        Functions.EGSInit();
                         while (!MainToken.IsCancellationRequested)
                         {
                             Functions.Execute();

@@ -7,11 +7,69 @@
 */
 
 using System;
+using System.Runtime.InteropServices;
+using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
 
 namespace ReFined
 {
     public static class Additions
     {
+        /// <summary>
+        /// Shows a Warning Window, with the given raw text.
+        /// Must be in the Save/Load Menu.
+        /// </summary>
+        /// <param name="Input">The text to be shown.</param>
+        public static void ShowSLWarning(short StringID)
+        {
+            if (!Operations.CheckTitle())
+            {
+                Variables.SharpHook[(IntPtr)0x320AA0].Execute(StringID);
+                Variables.SharpHook[(IntPtr)0x3208E0].Execute();
+                Variables.SharpHook[(IntPtr)0x2F3F80].Execute(BSharpConvention.MicrosoftX64, 0x05, 0x00);
+            }
+        }
+
+        /// <summary>
+        /// Shows a Warning Window, with the given text ID.
+        /// Must be in a Menu.
+        /// </summary>
+        /// <param name="StringID">The ID of the text to be shown.</param>
+        /// <param name="Type">The menu to fall back after confirmation.</param>
+        public static void ShowCampWarning(short StringID, int Type)
+        {
+            if (!Operations.CheckTitle())
+            {
+                var _currentMenu = Hypervisor.Read<int>(0x6877DE);
+                Hypervisor.Write(0x689202, _currentMenu);
+
+                Variables.SharpHook[(IntPtr)0x3047D0].ExecuteJMP(BSharpConvention.MicrosoftX64, StringID, 0x0000);
+                Variables.SharpHook[(IntPtr)0x304620].Execute();
+                Variables.SharpHook[(IntPtr)0x2F3F80].Execute(BSharpConvention.MicrosoftX64, Type, 0x00);
+            }
+        }
+
+        /// <summary>
+        /// Shows a Warning Window, with the given raw text.
+        /// Must be in a Menu.
+        /// </summary>
+        /// <param name="Input">The text to be shown.</param>
+        /// <param name="Type">The menu to fall back after confirmation.</param>
+        public static void ShowCampWarningRAW(string Input, int Type)
+        {
+            if (!Operations.CheckTitle())
+            {
+                var _convString = Input.ToKHSCII();
+                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x800000, _convString, true);
+
+                var _currentMenu = Hypervisor.Read<int>(0x6877DE);
+                Hypervisor.Write(0x689202, _currentMenu);
+
+                Variables.SharpHook[(IntPtr)0x304890].ExecuteJMP(BSharpConvention.MicrosoftX64, (long)(Hypervisor.PureAddress + 0x800000), 0x0000);
+                Variables.SharpHook[(IntPtr)0x304620].Execute();
+                Variables.SharpHook[(IntPtr)0x2F3F80].Execute(BSharpConvention.MicrosoftX64, Type, 0x00);
+            }
+        }
+
         /// <summary>
         /// Shows the Information Bar in-game, with the given text.
         /// </summary>

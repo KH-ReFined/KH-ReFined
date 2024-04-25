@@ -6,17 +6,14 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
+using Octokit;
 using DiscordRPC;
-using HidLibrary;
-using DualShockAPI;
-using DualSenseAPI;
-using Nefarius.ViGEm.Client;
-using Nefarius.ViGEm.Client.Exceptions;
-using Nefarius.ViGEm.Client.Targets.Xbox360;
 
 using Binarysharp.MSharp;
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
+using System.Diagnostics;
 
 namespace ReFined
 {
@@ -29,7 +26,6 @@ namespace ReFined
 
         static List<ulong?> MAGIC_MEMORY = new List<ulong?>();
         static uint MAGIC_OLD = 0x00;
-        static uint MAGIC_COUNT = 0x00;
 
         static short[] LIMIT_SHORT;
 
@@ -48,27 +44,14 @@ namespace ReFined
         static bool LOADED_SETTINGS;
         static bool DETECTED_EXTRA_DUB;
         static byte[] AREA_READ;
-        static byte[] CONFIG_REMOVE = new byte[3];
-
-        static ulong ZERO_EXP_LOCATION;
-
-        public static float BIG_MOTOR;
-        public static float SMALL_MOTOR;
-        public static short TICK_COUNT;
-
-        static float PAST_BIG;
-        static float[] PAST_COLOR;
-
-        static float PLAYER_HP;
-        static float PLAYER_MP;
-        static byte BATTLE_STATE;
-        static byte FORM_STATE;
+        static uint[] CONFIG_REMOVE = new uint[3];
 
         static bool SKIP_ROXAS;
         static byte SKIP_STAGE;
 
         static byte HADES_COUNT;
 
+        static bool IS_RANDO;
         static bool CONFIG_WRITTEN;
         static Variables.CONFIG_BITWISE CONFIG_BIT;
 
@@ -101,9 +84,8 @@ namespace ReFined
         static string US_SUFF;
         static string FM_SUFF;
 
-        static uint[] HARDCORE_OPTION = new uint[] { 0x00000002, 0x0000E00A, 0xFFFFFFFF, 0x0000E001, 0x0000E002, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000E00B, 0x0000E00B, 0xFFFFFFFF, 0xFFFFFFFF };
-        static bool HARDCORE_SHOWN;
-        static bool HARDCORE_ENABLED;
+        static bool IS_PIRATE;
+        static string EPIC_ID = "1638";
 
         static bool DISABLE_SKIP;
 
@@ -118,93 +100,9 @@ namespace ReFined
             {
                 Helpers.InitConfig();
 
-                // === MOVE TO THE VERY BEGINNING OF CREATEINSTANCE CLASS WHEN BUILDING === //
-
-                if (!Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
-                {
-                    var _senseList = DualSense.EnumerateControllers();
-
-                    if (_senseList.Count() != 0x00)
-                    {
-                        Helpers.Log("Found a DualSense Controller! Initializing...", 0);
-                        Variables.CONTROLLER_SENSE = _senseList.First();
-                        Variables.CONTROLLER_SENSE.Acquire();
-
-                        if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
-                            Helpers.Log("DualSense is connected via Bluetooth.", 0);
-
-                        else
-                            Helpers.Log("DualSense is connected via USB.", 0);
-
-                        Variables.CONTROLLER_FOUND = true;
-                    }
-
-                    else
-                        Helpers.Log("DualSense is not detected! Looking for other types of controllers...", 1);
-                }
-
-                if (!Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
-                {
-                    var _shockList = HidDevices.Enumerate(0x054C, 0x05C4, 0x09CC);
-
-                    if (_shockList.Count() != 0x00)
-                    {
-                        var _hidDevice = _shockList.First();
-                        _hidDevice.OpenDevice(false);
-
-                        Helpers.Log("Found a DualShock 4 Controller! Initializing...", 0);
-                        Variables.CONTROLLER_SHOCK = new DualShock(_hidDevice, 0);
-
-                        if (Variables.CONTROLLER_SHOCK.Device.Capabilities.InputReportByteLength == 64)
-                            Helpers.Log("DualShock 4 is connected via USB.", 0);
-
-                        else
-                            Helpers.Log("DualShock 4 is connected via Bluetooth.", 0);
-
-
-                        Variables.CONTROLLER_FOUND = true;
-                    }
-
-                    else
-                        Helpers.Log("DualShock 4 is not detected! Looking for other types of controllers...", 1);
-                }
-
-                if (Variables.DUALSENSE_TOGGLE)
-                {
-                    Helpers.Log("Initializing ViGEm...", 0);
-
-                    try
-                    {
-                        Variables.CONTROLLER_CLIENT = new ViGEmClient();
-                        Variables.CONTROLLER_FAKE = Variables.CONTROLLER_CLIENT.CreateXbox360Controller();
-                        Variables.CONTROLLER_FAKE.Connect();
-
-                        Variables.CONTROLLER_FAKE.FeedbackReceived += delegate (object s, Xbox360FeedbackReceivedEventArgs a)
-                        {
-                            BIG_MOTOR = a.LargeMotor;
-                            SMALL_MOTOR = a.SmallMotor;
-                            TICK_COUNT = 0;
-                        };
-                    }
-
-                    catch (VigemBusNotFoundException)
-                    {
-                        Helpers.Log("ViGEmBUS Driver not installed! ERR504", 2);
-
-                        var _messageResult = MessageBox.Show(
-                            "The ViGEmBUS Driver is not installed! Please install this driver to play Re:Fined!\n\n" +
-                            "Re:Fined will now be terminated.",
-                            "Error #504: ViGEmBUS Driver not installed!", MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-
-                        if (_messageResult == DialogResult.Cancel || _messageResult == DialogResult.OK)
-                            Environment.Exit(-2);
-                    }
-                }
-
-                // ========================================================================= //
-
                 Helpers.Log("Initializing Re:Fined...", 0);
+
+                ControllerIO.Initialize();
 
                 // Open the config file for game-specific configs.
                 var _configIni = new TinyIni("reFined.ini");
@@ -216,9 +114,11 @@ namespace ReFined
                 Helpers.Log("Initializing Configuration...", 0);
 
                 // Parse the Festive Toggle, and the chosen Limit Form shortcuts, default Retry Setting, and the Drive Shortcut setting.
+
                 Variables.FORM_SHORTCUT = Convert.ToBoolean(_configIni.Read("driveShortcuts", "Kingdom Hearts II"));
                 Variables.RESET_PROMPT = Convert.ToBoolean(_configIni.Read("resetPrompt", "Kingdom Hearts II"));
                 Variables.RATIO_ADJUST = Convert.ToBoolean(_configIni.Read("adjustRatio", "Kingdom Hearts II"));
+
                 Variables.LIMIT_SHORTS = _configIni.Read("limitShortcuts", "Kingdom Hearts II");
                 Variables.RETRY_DEFAULT = _configIni.Read("deathPrompt", "Kingdom Hearts II") == "retry" ? true : false;
 
@@ -267,12 +167,13 @@ namespace ReFined
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x39EF31, true);
                 Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x39EF36, true);
 
+                Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x38CD1A, true);
+                Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x38CD23, true);
+
                 // Check if the patch is actually installed before proceeding.
 
                 if (Operations.GetFileSize("itempic/item-271.imd") == 0x00)
                 {
-                    // Axa.GX.GXDevice.suspendDevice();
-
                     Helpers.Log("Re:Fined Main Patch was not detected! ERR404", 2);
 
                     var _messageResult = MessageBox.Show(
@@ -283,51 +184,6 @@ namespace ReFined
 
                     if (_messageResult == DialogResult.Cancel || _messageResult == DialogResult.OK)
                         Environment.Exit(-2);
-                }
-
-                Helpers.Log("Initializing Save/Config/Log Directories...", 0);
-
-                var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-                var _logsDir = Path.Combine(_documentsPath, "Kingdom Hearts/Logs");
-                var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data");
-                var _configDir = Path.Combine(_documentsPath, "Kingdom Hearts/Configuration");
-
-                // Check the save file stuff.
-
-            EPIC_INIT:
-                if (Directory.Exists(_logsDir))
-                {
-                    string[] _epicDirs = Directory.GetDirectories(_saveDir, "*", SearchOption.TopDirectoryOnly);
-
-                    if (_epicDirs.Length == 0x00)
-                        goto EPIC_INIT;
-
-                    foreach (var _str in _epicDirs)
-                    {
-                        var _folderName = new DirectoryInfo(_str).Name;
-                        Directory.CreateDirectory(Path.Combine(_configDir, _folderName));
-
-                        Helpers.Log("Detected and Created directories for ID: " + _folderName, 0);
-                    }
-                }
-
-                else
-                {
-                    Directory.CreateDirectory(_logsDir);
-                    Directory.CreateDirectory(_saveDir);
-                    Directory.CreateDirectory(_configDir);
-
-                    var _messageResult = MessageBox.Show(
-                        "Re:Fined has detected the mispresence of the necessary folders, and has taken necessary action to try and create them. If you see this message again, or the game crashes, please restart the game.\n\n" +
-                        "Should the game continue to crash, write about it to the Re:Fined Discord Server immediately.",
-                        "Save Folder Mispresence Detected!", MessageBoxButtons.OKCancel,
-                        MessageBoxIcon.Warning);
-
-                    if (_messageResult == DialogResult.Cancel)
-                        Environment.Exit(0);
-
-                    goto EPIC_INIT;
                 }
 
                 var _pathPrefix = Path.Combine(Path.GetDirectoryName(Hypervisor.Process.MainModule.FileName), "Image", "en");
@@ -369,7 +225,7 @@ namespace ReFined
                     CONFIG_REMOVE[0] = 0x01;
                 }
 
-                else if (Operations.GetFileSize("voice/ks/battle/abu.win32.scd") != 0x00)
+                else if (Operations.GetFileSize("obj/P_EX110.a.ks") != 0x00)
                 {
                     Helpers.Log("An additional Dub Patch was detected! Accommodating the config menu...", 1);
 
@@ -378,6 +234,8 @@ namespace ReFined
 
                     Variables.ARRY_ConfigMenu[_indexAudioItem] = Variables.VALUE_ConfigAudio;
                     Variables.ARRY_NewGameMenu[_indexAudioWindow] = Variables.VALUE_NewGameAudio;
+
+                    DETECTED_EXTRA_DUB = true;
                 }
 
                 if (Operations.GetFileSize("bgm/ps2md050.win32.scd") == 0x00)
@@ -396,38 +254,12 @@ namespace ReFined
                     CONFIG_REMOVE[2] = 0x01;
                 }
 
-                // Fetch the location of No Experience in 03system.
+                // Redirect libretto selection.
 
-                while (ZERO_EXP_LOCATION == 0x00)
-                {
-                    var _systemFile = Hypervisor.Read<ulong>(Variables.PINT_SystemFile);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x38CD1A, new byte[] { 0x48, 0x8D, 0x0D, 0xDF, 0x31, 0x49, 0x00 }, true);
+                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x38CD23, new byte[] { 0x4C, 0x8D, 0x05, 0xD6, 0x31, 0x49, 0x00 }, true);
 
-                    if (_systemFile != 0x00)
-                    {
-                        var _barStart = Hypervisor.Read<uint>(_systemFile + 0x08, true);
-
-                        var _itemStart = Hypervisor.Read<uint>(_systemFile + 0x68, true) - _barStart;
-                        var _itemLength = Hypervisor.Read<int>(_systemFile + 0x6C, true);
-
-                        var _fileRead = Hypervisor.ReadArray(_systemFile + _itemStart, _itemLength, true);
-                        var _findArray = new byte[] { 0x94, 0x01, 0x13, 0x00 };
-
-                        var limit = _itemLength - 0x04;
-
-                        for (uint i = 0; i <= limit; i++)
-                        {
-                            var k = 0;
-
-                            for (; k < 0x04; k++)
-                                if (_findArray[k] != _fileRead[i + k]) break;
-
-                            if (k == 0x04)
-                                ZERO_EXP_LOCATION = _systemFile + _itemStart + i;
-                        }
-                    }
-                }
-
-                // Preapre the Game Over Menu for Retry/Hardcore.
+                // Preapre the Game Over Menu for Retry.
 
                 Helpers.Log("Writing the Game Over Menu...", 0);
 
@@ -480,7 +312,8 @@ namespace ReFined
                 {
                     Helpers.Log("Garden of Assemblage Randomizer detected! Disabling Roxas Skip!", 1);
                     Variables.ARRY_NewGameMenu.Remove(Variables.ARRY_NewGameMenu.Last());
-                    Functions.DISABLE_SKIP = true;
+                    IS_RANDO = true;
+                    DISABLE_SKIP = true;
                 }
 
                 Hypervisor.Write(Hypervisor.PureAddress + 0x2B5595, (byte)Variables.ARRY_NewGameMenu.Count, true);
@@ -523,6 +356,92 @@ namespace ReFined
             }
         }
 
+        /// <summary>
+        /// Initializes the Save Sata stuff, along with Cloud Saving functionality. 
+        /// Must be done after the game has initialized, as such, it is separate from the main function.
+        /// </summary>
+        public static void EGSInit()
+        {
+            Helpers.Log("Initializing Epic Games Store Variables...", 0);
+
+            foreach (ProcessModule _module in Hypervisor.Process.Modules)
+            {
+                if (_module.ModuleName == "CODEX64.dll")
+                {
+                    Helpers.Log("Pirated version detected! Functions that rely on Epic Games Store has been disabled!", 1);
+                    IS_PIRATE = true;
+                }
+            }
+
+            Helpers.Log("Initializing Save/Config/Log Directories...", 0);
+
+            var _documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+            var _logsDir = Path.Combine(_documentsPath, "Kingdom Hearts/Logs");
+            var _saveDir = Path.Combine(_documentsPath, "Kingdom Hearts/Save Data");
+            var _configDir = Path.Combine(_documentsPath, "Kingdom Hearts/Configuration");
+
+            if (!Directory.Exists(_logsDir))
+            {
+                Directory.CreateDirectory(_logsDir);
+                Directory.CreateDirectory(_saveDir);
+                Directory.CreateDirectory(_configDir);
+            }
+
+            if (!IS_PIRATE)
+            {
+                var _epicPointer = Hypervisor.Read<ulong>(0x36548A);
+                var _epicDenominator = Hypervisor.Read<ulong>(_epicPointer, true);
+                var _epicIdentifier = Hypervisor.ReadArray(_epicDenominator, 0x40, true);
+
+                if (_epicIdentifier[0] == 0x00)
+                {
+                    Helpers.Log("Waiting for the Epic ID. This may take a hot minute!", 1);
+
+                    while (_epicIdentifier[0] == 0x00)
+                    {
+                        _epicPointer = Hypervisor.Read<ulong>(0x36548A);
+                        _epicDenominator = Hypervisor.Read<ulong>(_epicPointer, true);
+                        _epicIdentifier = Hypervisor.ReadArray(_epicDenominator, 0x40, true);
+                    }
+                }
+
+                EPIC_ID = Encoding.Unicode.GetString(_epicIdentifier);
+            }
+
+            else
+            {
+                var _pirateLoc = Path.Combine(Path.GetDirectoryName(Hypervisor.Process.MainModule.FileName), "epic_emu.ini");
+                var _pirateIni = new TinyIni(_pirateLoc);
+
+                var _pirateID = _pirateIni.Read("AccountId", "Settings");
+
+                if (_pirateID == "0")
+                {
+                    Helpers.Log("Randomized Epic ID Detected! ERR457", 2);
+
+                    var _messageResult = MessageBox.Show(
+                        "Re:Fined has detected a Randomized Epic ID being used with a pirated copy!\n\n" +
+                        "While Re:Fined does not care about the game's origin, it does very much care about the Epic ID being used.\n\n" +
+                        "Please set the \"AccountId\" variable in \"epic_emu.ini\" to anything else. preferably \"1638\" and launch Re:Fined again.\n\n" +
+                        "Re:Fined will now be terminated.",
+                        "Error #457: Randomized Epic ID Detected!", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    if (_messageResult == DialogResult.Cancel || _messageResult == DialogResult.OK)
+                        Environment.Exit(-2);
+                }
+
+                else if (_pirateID != "")
+                    EPIC_ID = _pirateID;
+            }
+
+            Directory.CreateDirectory(Path.Combine(_saveDir, EPIC_ID));
+            Directory.CreateDirectory(Path.Combine(_configDir, EPIC_ID));
+
+            Helpers.Log("Detected and created directories for ID: " + EPIC_ID, 0);
+        }
+
         #region Base Functionality
 
         /// <summary>
@@ -551,10 +470,14 @@ namespace ReFined
 
             var _buttonRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
             var _confirmRead = Hypervisor.Read<ushort>(Variables.ADDR_Confirm);
+
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
             var _menuRead = Hypervisor.Read<ushort>(Variables.ADDR_MenuActive);
 
+            var _canReset = !Operations.CheckTitle() && _loadRead == 0x01 && _menuRead == 0x00;
+
             // If the button combo was exactly as requested, and a menu isn't present:
-            if (_buttonRead == Variables.RESET_COMBO && _menuRead == 0x00 && !DEBOUNCE[0])
+            if (_buttonRead == Variables.RESET_COMBO && _canReset && !DEBOUNCE[0])
             {
                 Helpers.Log("Reset Sequence Initiated! Checking for the prompt...", 0);
                 DEBOUNCE[0] = true;
@@ -691,13 +614,17 @@ namespace ReFined
             var _pauseCheck = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
 
             // Please refrain from saving in these rooms kthxbye!
-            var _blacklistCheck = (_worldCheck == 0x08 && _roomCheck == 0x03) || (_worldCheck == 0x12 && _roomCheck >= 0x13 && _roomCheck <= 0x1D);
+            var _blacklistCheck =
+                (_worldCheck == 0x08 && _roomCheck == 0x03) ||
+                (_worldCheck == 0x0C && _roomCheck == 0x02) ||
+                (_worldCheck == 0x12 && _roomCheck >= 0x13 && _roomCheck <= 0x1D) ||
+                (_worldCheck == 0x02 && _roomCheck <= 0x01);
 
             // If the game is loaded, and Sora is in the map, and the Blacklist isn't in effect:
             if (!Operations.CheckTitle() && _loadRead == 0x01 && !_blacklistCheck)
             {
                 // Wait for a bit.
-                Thread.Sleep(100);
+                Thread.Sleep(250);
 
                 // Read the BTL and CTS state.
                 var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
@@ -901,7 +828,6 @@ namespace ReFined
             
             if (MAGIC_OLD != _magicRead && _canLoad)
             {
-                MAGIC_COUNT = 0;
                 var _tableMagic = new byte[] { 0x31, 0x33, 0x32, 0x34, 0xAE, 0xB1 };
 
                 for (ulong i = 0; i < 0x06; i++)
@@ -928,6 +854,7 @@ namespace ReFined
 
                             var _magicType = _newName.Substring(_fromString, _toString - _fromString);
 
+                            // This prevents Magic Upgrade Registration, which crashes for some reason.
                             if (_currentName.Contains(_magicType))
                                 continue;
                         }
@@ -1233,15 +1160,10 @@ namespace ReFined
         /// </summary>
         public static void NewGameHandler()
         {
-            var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
-
             if (Operations.CheckTitle())
             {
-                if (Hypervisor.Read<byte>(0x5B6AC2) == 0x03 && Variables.ARRY_NewGameMenu.Contains(HARDCORE_OPTION) == false)
+                if (Hypervisor.Read<byte>(0x5B6AC2) == 0x03)
                 {
-                    Variables.ARRY_NewGameMenu.Insert(1, HARDCORE_OPTION);
-                    HARDCORE_SHOWN = true;
-
                     for (int i = 0; i < Variables.ARRY_NewGameMenu.Count; i++)
                     {
                         for (int z = 0; z < Variables.ARRY_NewGameMenu[i].Length; z++)
@@ -1252,11 +1174,8 @@ namespace ReFined
                     }
                 }
 
-                if (Hypervisor.Read<byte>(0x5B6AC2) != 0x03 && Variables.ARRY_NewGameMenu.Contains(HARDCORE_OPTION))
+                if (Hypervisor.Read<byte>(0x5B6AC2) != 0x03)
                 {
-                    Variables.ARRY_NewGameMenu.Remove(HARDCORE_OPTION);
-                    HARDCORE_SHOWN = false;
-
                     for (int i = 0; i < Variables.ARRY_NewGameMenu.Count; i++)
                     {
                         for (int z = 0; z < Variables.ARRY_NewGameMenu[i].Length; z++)
@@ -1276,46 +1195,59 @@ namespace ReFined
                 Hypervisor.Write(Hypervisor.PureAddress + 0x2B6B8B, (byte)(Variables.ARRY_NewGameMenu.Count - 1), true);
                 Hypervisor.Write(Hypervisor.PureAddress + 0x2B6767, (byte)(Variables.ARRY_NewGameMenu.Count - 1), true);
                 Hypervisor.Write(Hypervisor.PureAddress + 0x2B6C11, (byte)(Variables.ARRY_NewGameMenu.Count - 1), true);
-            }
 
-            if (Operations.CheckTitle())
-            {
                 CONFIG_WRITTEN = false;
 
-                ulong _configOffset = (ulong)((CONFIG_REMOVE[0] + CONFIG_REMOVE[1] + CONFIG_REMOVE[2]) * 0x04);
-                var _hardcoreOffset = (ulong)(HARDCORE_SHOWN ? 1 : 0) * 0x04;
+                var _configOffset = (CONFIG_REMOVE[0] + CONFIG_REMOVE[1] + CONFIG_REMOVE[2]) * 0x04;
 
-                HARDCORE_ENABLED = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x04) == 0x00 ? true : false;
+                var _vibration = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x04) == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF;
 
-                var _vibration = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x04 + _hardcoreOffset);
-                var _autoSave = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x08 + _hardcoreOffset);
-                var _audioLanguage = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x0C + _hardcoreOffset);
-                var _musicSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x10 - _configOffset + _hardcoreOffset);
-                var _heartlessSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x14 - _configOffset + _hardcoreOffset);
-                var _controlPrompt = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x18 - _configOffset + _hardcoreOffset);
+                var _autoSave = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x08) == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR :
+                               (Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x08) == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF);
+                
+                var _controlPrompt = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x18 - _configOffset) == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER :
+                                    (Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x18 - _configOffset) == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF);
 
-                SKIP_ROXAS = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x1C - _configOffset + _hardcoreOffset) == 0x00 ? false : true;
+                SKIP_ROXAS = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x1C - _configOffset) == 0x00 ? false : true;
 
                 CONFIG_BIT =
                     Variables.CONFIG_BITWISE.SUMMON_FULL | Variables.CONFIG_BITWISE.NAVI_MAP |
-                    (_vibration == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF) |
-                    (_autoSave == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR : (_autoSave == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF)) |
-                    (_audioLanguage == (DETECTED_EXTRA_DUB ? 0x02 : 0x01) ? Variables.CONFIG_BITWISE.AUDIO_JAPANESE : (_audioLanguage == 0x00 ? Variables.CONFIG_BITWISE.OFF : Variables.CONFIG_BITWISE.AUDIO_OTHER)) |
-                    (_musicSelect == 0x01 ? Variables.CONFIG_BITWISE.MUSIC_VANILLA : Variables.CONFIG_BITWISE.OFF) |
-                    (_heartlessSelect == 0x01 ? Variables.CONFIG_BITWISE.HEARTLESS_VANILLA : Variables.CONFIG_BITWISE.OFF) |
-                    (_controlPrompt == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER : (_controlPrompt == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF));
+                    _vibration | _autoSave | _controlPrompt;
+
+                if (CONFIG_REMOVE[0] == 0x00)
+                {
+                    var _audioLanguage = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x0C) == (DETECTED_EXTRA_DUB ? 0x02 : 0x01) ? Variables.CONFIG_BITWISE.AUDIO_JAPANESE :
+                                        (Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x0C) == 0x00 ? Variables.CONFIG_BITWISE.OFF : Variables.CONFIG_BITWISE.AUDIO_OTHER);
+
+                    CONFIG_BIT = CONFIG_BIT | _audioLanguage;
+                }
+
+                if (CONFIG_REMOVE[1] == 0x00)
+                {
+                    var _offsetMusic = CONFIG_REMOVE[0] * 0x04;
+                    var _musicSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x10 - _offsetMusic) == 0x01 ? Variables.CONFIG_BITWISE.MUSIC_VANILLA : Variables.CONFIG_BITWISE.OFF;
+
+                    CONFIG_BIT = CONFIG_BIT | _musicSelect;
+                }
+
+                if (CONFIG_REMOVE[2] == 0x00)
+                {
+                    var _offsetHeartless = (CONFIG_REMOVE[0] + CONFIG_REMOVE[1]) * 0x04;
+                    var _heartlessSelect = Hypervisor.Read<byte>(Variables.ADDR_NewGame + 0x14 - _offsetHeartless) == 0x01 ? Variables.CONFIG_BITWISE.HEARTLESS_VANILLA : Variables.CONFIG_BITWISE.OFF;
+                    CONFIG_BIT = CONFIG_BIT | _heartlessSelect;
+                }
             }
 
-            if (!Operations.CheckTitle() && !CONFIG_WRITTEN && _cutsceneRead == 0x01)
+            if (!Operations.CheckTitle() && !CONFIG_WRITTEN)
             {
-                if (Hypervisor.Read<uint>(Variables.ADDR_Area) == 0x0102)
+                var _areaRead = Hypervisor.Read<uint>(Variables.ADDR_Area);
+                var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
+
+                if (_areaRead == 0x0102 || (IS_RANDO && _areaRead == 0x2002))
                 {
                     Helpers.Log("Start of a new game detected! Writing configuration...", 0);
 
                     Hypervisor.Write(Variables.ADDR_Config, (ushort)CONFIG_BIT);
-
-                    if (HARDCORE_ENABLED)
-                        Hypervisor.WriteArray(Variables.ADDR_SaveData + 0x10, BitConverter.GetBytes(DateTime.Now.Ticks));
 
                     Variables.AUDIO_MODE = (byte)(((ushort)CONFIG_BIT & 0x0800) == 0x0800 ? 0x01 : (((ushort)CONFIG_BIT & 0x1000) == 0x1000 ? 0x02 : 0x0000));
                     Variables.MUSIC_VANILLA = ((ushort)CONFIG_BIT & 0x0020) == 0x0020;
@@ -1378,7 +1310,7 @@ namespace ReFined
                 LOADED_SETTINGS = true;
             }
 
-            // If we are in the title: FLush them.
+            // If we are in the title: Flush them.
             else if (Operations.CheckTitle() && LOADED_SETTINGS)
                 LOADED_SETTINGS = false;
 
@@ -1439,21 +1371,9 @@ namespace ReFined
                     Hypervisor.WriteArray(_settingsPoint, SETTINGS_FIRST.ToArray(), true);
 
                     Helpers.Log("Options set! Correcting the Difficulty...", 0);
-                    var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
 
-                    // Correct the difficulty text because I broke that somehow.
-
-                    if (_hardCoreFlag == 0x00)
-                    {
-                        Hypervisor.Write(_offsetTitle, _findTitle, true);
-                        Hypervisor.Write(_offsetDesc, _findDesc, true);
-                    }
-
-                    else
-                    {
-                        Hypervisor.Write(_offsetTitle, _hardTitle, true);
-                        Hypervisor.Write(_offsetDesc, _hardDesc, true);
-                    }
+                    Hypervisor.Write(_offsetTitle, _findTitle, true);
+                    Hypervisor.Write(_offsetDesc, _findDesc, true);
 
                     Variables.SharpHook[(IntPtr)0x363380].Execute();
                     Variables.SharpHook[(IntPtr)0x363340].Execute();
@@ -1475,7 +1395,7 @@ namespace ReFined
                  * THIS ENTIRE BLOCK IS JUST FOR THE FUCKING SCROLL BAR!
                  * 
                  * This was quite the endavour to get working. Turns out that Square Enix
-                 * decided to do something correctly here and killl the ENTIRE scroll bar
+                 * decided to do something correctly here and kill the ENTIRE scroll bar
                  * rather than just hiding it. So I am doing my best here using **black magic**
                  * to bring it back to life.
                  * 
@@ -1514,7 +1434,8 @@ namespace ReFined
                     Variables.MUSIC_VANILLA = Convert.ToBoolean(SETTINGS_SECOND[0x07 - CONFIG_REMOVE[0]] == 0x00 ? 0x01 : 0x00);
 
                 if (CONFIG_REMOVE[0] == 0x00)
-                    Variables.AUDIO_MODE = SETTINGS_SECOND[0x06];
+                    Variables.AUDIO_MODE = (byte)(DETECTED_EXTRA_DUB ? (SETTINGS_SECOND[0x06] == 0x01 ? 0x02 : 
+                                                                       (SETTINGS_SECOND[0x06] == 0x02 ? 0x01 : 0x00)) : SETTINGS_SECOND[0x06]);
 
                 // Calculate the offset for removed addons.
                 var _configOffset = CONFIG_REMOVE[0] + CONFIG_REMOVE[1] + CONFIG_REMOVE[2];
@@ -1524,19 +1445,49 @@ namespace ReFined
                 Variables.CONTROLLER_MODE = SETTINGS_SECOND[0x09 - _configOffset];
 
                 // Calculate the bitwise to write.
+
+                var _fieldCamBit = SETTINGS_SECOND[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF;
+                var _cameraVerticalBit = SETTINGS_SECOND[0x01] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF;
+                var _cameraHorizontalBit = SETTINGS_SECOND[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_H : Variables.CONFIG_BITWISE.OFF;
+
+                var _summonBit = SETTINGS_SECOND[0x03] == 0x01 ? Variables.CONFIG_BITWISE.SUMMON_PARTIAL : 
+                                (SETTINGS_SECOND[0x03] == 0x00 ? Variables.CONFIG_BITWISE.SUMMON_FULL : Variables.CONFIG_BITWISE.OFF);
+
+                var _mapBit = SETTINGS_SECOND[0x04] == 0x00 ? Variables.CONFIG_BITWISE.NAVI_MAP : Variables.CONFIG_BITWISE.OFF;
+
+                var _autoSaveBit = SETTINGS_SECOND[0x05] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR : 
+                                  (SETTINGS_SECOND[0x05] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF);
+
+                var _audioBit = CONFIG_REMOVE[0] == 0x00 ?
+                               (SETTINGS_SECOND[0x06] == (DETECTED_EXTRA_DUB ? 0x02 : 0x01) ? Variables.CONFIG_BITWISE.AUDIO_JAPANESE :
+                               (SETTINGS_SECOND[0x06] == 0x01 ? Variables.CONFIG_BITWISE.AUDIO_OTHER : Variables.CONFIG_BITWISE.OFF)) : Variables.CONFIG_BITWISE.OFF;
+
+                var _musicBit = CONFIG_REMOVE[1] == 0x00 ? 
+                               (SETTINGS_SECOND[0x07 - CONFIG_REMOVE[0]] == 0x00 ? Variables.CONFIG_BITWISE.MUSIC_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF;
+
+                var _enemyBit = CONFIG_REMOVE[2] == 0x00 ? 
+                               (SETTINGS_SECOND[0x08 - (CONFIG_REMOVE[0] + CONFIG_REMOVE[1])] == 0x00 ? Variables.CONFIG_BITWISE.HEARTLESS_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF;
+
+                var _controllerBit = SETTINGS_SECOND[0x09 - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER :
+                                    (SETTINGS_SECOND[0x09 - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF);
+
+                var _vibrationBit = SETTINGS_SECOND[0x0A - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF;
+                var _commandBit = SETTINGS_SECOND[0x0B - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.COMMAND_KH2 : Variables.CONFIG_BITWISE.OFF;
+
+
                 var _configBitwise =
-                    (SETTINGS_SECOND[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF) |
-                    (SETTINGS_SECOND[0x01] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF) |
-                    (SETTINGS_SECOND[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_H : Variables.CONFIG_BITWISE.OFF) |
-                    (SETTINGS_SECOND[0x03] == 0x01 ? Variables.CONFIG_BITWISE.SUMMON_PARTIAL : (SETTINGS_SECOND[0x03] == 0x00 ? Variables.CONFIG_BITWISE.SUMMON_FULL : Variables.CONFIG_BITWISE.OFF)) |
-                    (SETTINGS_SECOND[0x04] == 0x00 ? Variables.CONFIG_BITWISE.NAVI_MAP : Variables.CONFIG_BITWISE.OFF) |
-                    (SETTINGS_SECOND[0x05] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR : (SETTINGS_SECOND[0x05] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF)) |
-                    (CONFIG_REMOVE[0] == 0x00 ? (SETTINGS_SECOND[0x06] == (DETECTED_EXTRA_DUB ? 0x02 : 0x01) ? Variables.CONFIG_BITWISE.AUDIO_JAPANESE : (SETTINGS_SECOND[0x06] == 0x01 ? Variables.CONFIG_BITWISE.AUDIO_OTHER : Variables.CONFIG_BITWISE.OFF)) : Variables.CONFIG_BITWISE.OFF) |
-                    (CONFIG_REMOVE[1] == 0x00 ? (SETTINGS_SECOND[0x07 - CONFIG_REMOVE[0]] == 0x00 ? Variables.CONFIG_BITWISE.MUSIC_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) |
-                    (CONFIG_REMOVE[2] == 0x00 ? (SETTINGS_SECOND[0x08 - (CONFIG_REMOVE[1] + CONFIG_REMOVE[0])] == 0x00 ? Variables.CONFIG_BITWISE.HEARTLESS_VANILLA : Variables.CONFIG_BITWISE.OFF) : Variables.CONFIG_BITWISE.OFF) |
-                    (SETTINGS_SECOND[0x09 - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER : (SETTINGS_SECOND[0x09 - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF)) |
-                    (SETTINGS_SECOND[0x0A - _configOffset] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF) |
-                    (SETTINGS_SECOND[0x0B - _configOffset] == 0x01 ? Variables.CONFIG_BITWISE.COMMAND_KH2 : Variables.CONFIG_BITWISE.OFF);
+                    _fieldCamBit |
+                    _cameraVerticalBit |
+                    _cameraHorizontalBit |
+                    _summonBit |
+                    _mapBit |
+                    _autoSaveBit |
+                    _audioBit |
+                    _musicBit |
+                    _enemyBit |
+                    _controllerBit |
+                    _vibrationBit |
+                    _commandBit;
 
                 // Write the current config to the save file.
                 Hypervisor.Write(Variables.ADDR_Config, (ushort)_configBitwise);
@@ -1650,13 +1601,15 @@ namespace ReFined
                 var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
                 var _eventCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x04);
 
-                if (_selectButton == 0x00 && SKIP_STAGE == 3)
+                var _checkRoxas = _worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck == 0x38;
+
+                if (!_checkRoxas && _selectButton == 0x00 && SKIP_STAGE == 3)
                 {
                     Helpers.Log("Loaded game abandoned. Re-enabling Roxas Skip!", 0);
                     SKIP_STAGE = 0;
                 }
 
-                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck == 0x38 && SKIP_STAGE == 0)
+                if (_checkRoxas && SKIP_STAGE == 0)
                 {
                     if (SKIP_ROXAS)
                     {
@@ -1690,73 +1643,38 @@ namespace ReFined
                     Hypervisor.Write<byte>(Variables.ADDR_InventoryFlag, 0x9F);
                     Hypervisor.WriteArray(Variables.ADDR_StoryFlag, Variables.VALUE_StoryFlag);
 
-                    var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
-
                     if (_diffRead == 0x03)
                     {
                         Hypervisor.Write<byte>(0x445056, 0x18);
                         Hypervisor.Write<byte>(0x445056 + 0x01, 0x18);
 
-                        if (_hardCoreFlag != 0x00)
-                        {
-                            Hypervisor.WriteArray(
-                            0x4450A6,
-                            new byte[]
-                            {
-                                0xF8,
-                                0x00,
-                                0x89,
-                                0x01,
-                                0x88,
-                                0x01,
-                                0xA5,
-                                0x01,
-                                0x94,
-                                0x81,
-                                0x97,
-                                0x01,
-                                0x97,
-                                0x01,
-                                0x95,
-                                0x01,
-                                0x52,
-                                0x00,
-                                0x8A,
-                                0x00,
-                                0x9E,
-                                0x00
-                            }
-                            );
-                        }
-
-                        else
                         Hypervisor.WriteArray(
-                            0x4450A6,
-                            new byte[]
-                            {
-                                0xF8,
-                                0x00,
-                                0x89,
-                                0x01,
-                                0x88,
-                                0x01,
-                                0xA5,
-                                0x01,
-                                0x94,
-                                0x01,
-                                0x97,
-                                0x01,
-                                0x97,
-                                0x01,
-                                0x95,
-                                0x01,
-                                0x52,
-                                0x00,
-                                0x8A,
-                                0x00,
-                                0x9E,
-                                0x00
-                            }
+                        0x4450A6,
+                        new byte[]
+                        {
+                            0xF8,
+                            0x00,
+                            0x89,
+                            0x01,
+                            0x88,
+                            0x01,
+                            0xA5,
+                            0x01,
+                            0x94,
+                            0x81,
+                            0x97,
+                            0x01,
+                            0x97,
+                            0x01,
+                            0x95,
+                            0x01,
+                            0x52,
+                            0x00,
+                            0x8A,
+                            0x00,
+                            0x9E,
+                            0x00
+                        }
                         );
                     }
 
@@ -1798,7 +1716,7 @@ namespace ReFined
         public static void CrownManager()
         {
             // Prepare the suffic according to the language.
-            var _suffixFile = (Variables.AUDIO_MODE == 0x00) ? ".a.us" : (Variables.AUDIO_MODE == 0x01) ? ".a.jp" : ".a.xx";
+            var _suffixFile = (Variables.AUDIO_MODE == 0x00) ? ".a.us" : (Variables.AUDIO_MODE == 0x01) ? ".a.jp" : ".a.ks";
 
             // Read the values.
             var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
@@ -1905,7 +1823,6 @@ namespace ReFined
             var _subMenuRead = Hypervisor.Read<byte>(Variables.ADDR_SubMenuType);
             var _finishRead = Hypervisor.Read<byte>(Variables.ADDR_FinishFlag);
 
-            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
             var _pauseRead = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
             var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
             var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
@@ -1922,15 +1839,11 @@ namespace ReFined
             var _isEscape = _worldRead == 0x06 && _roomRead == 0x05 && _eventRead == 0x6F;
 
             // No-No Areas for Retry.
-            var _blacklistCheck = 
+            var _blacklistCheck =
                (_worldRead == 0x04 && _roomRead >= 0x15 && _roomRead <= 0x1A) // Cavern of Remembrance
-            || (_worldRead == 0x12 && _roomRead >= 0x13 && _roomRead <= 0x1D && _roomRead != 0x15) // Final Battles
-            || (_worldRead == 0x06 && _roomRead == 0x09 && _eventRead >= 0xBD && _eventRead <= 0xC4) // Olympus Cups
-            || (_worldRead == 0x0C && _roomRead == 0x00 && _eventRead == 0x33); // Minnie Escort
+            || (_worldRead == 0x06 && _roomRead == 0x09 && _eventRead >= 0xBD && _eventRead <= 0xC4); // Olympus Cups
 
-            var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
-
-            if (_hardCoreFlag == 0x00 && !_blacklistCheck && !Operations.CheckTitle())
+            if (!_blacklistCheck && !Operations.CheckTitle())
             {
                 // The battle state will also check **specifically** for Hades Escape.
                 var _battleState = _battleRead == 0x02 && _cutsceneRead == 0x00;
@@ -2115,103 +2028,12 @@ namespace ReFined
                 }
             }
 
-            // If in the blacklisted areas and/or hardcore mode: Do not run Retry.
+            // If in the blacklisted areas: Do not run Retry.
             else if (!RETRY_BLOCK && !Operations.CheckTitle())
             {
-                if (_hardCoreFlag != 0x00)
-                {
-                    Helpers.Log(String.Format("Hardcore Mode Detected! Retry cannot run!"), 0);
-
-                    byte[] _tempArray = new byte[18];
-                    Buffer.BlockCopy(new ushort[] { 0x0001, 0x0001, 0xE00D, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 }, 0, _tempArray, 0, 18);
-
-                    Hypervisor.WriteArray(_gameOverOptions + 0x34A, _tempArray, true);
-                }
-
-                else
-                    Helpers.Log(String.Format("Problematic area detected! Locking Retry Capabilities..."), 0);
+                Helpers.Log(String.Format("Problematic area detected! Locking Retry Capabilities..."), 0);
 
                 RETRY_BLOCK = true;
-            }
-        }
-
-        /// <summary>
-        /// The game reseting logic behind Hardcore Mode.
-        /// Highly experimental.
-        /// </summary>
-        public static void HardcoreReset()
-        {
-            var _gameOverRead = Hypervisor.Read<ulong>(Variables.PINT_GameOver);
-            var _hardCoreFlag = BitConverter.ToInt64(Hypervisor.ReadArray(Variables.ADDR_SaveData + 0x10, 0x08), 0);
-
-            if (_hardCoreFlag != 0x00 && !Operations.CheckTitle())
-                Hypervisor.Write<byte>(ZERO_EXP_LOCATION + 0x07, 0x00, true);
-
-            else
-                Hypervisor.Write<byte>(ZERO_EXP_LOCATION + 0x07, 0x01, true);
-
-            if (_hardCoreFlag != 0x00 && _gameOverRead != 0x00 && !Operations.CheckTitle())
-            {
-                // Prepare the pointers.
-                var _pointerBase = Hypervisor.Read<ulong>(Variables.PINT_SaveInformation);
-                var _pointerSecond = Hypervisor.Read<ulong>(_pointerBase + 0x10, true);
-
-                // Prepare the variables for Save Info.
-                var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM.png";
-
-                var _saveSlot = 0;
-                var _saveInfoLength = 0x158;
-                var _saveDataLength = 0x10FC0;
-
-                var _saveInfoStartRAM = _pointerSecond + 0x168;
-                var _saveDataStartRAM = _pointerSecond + 0x19630;
-
-                var _saveInfoStartFILE = 0x1C8;
-                var _saveDataStartFILE = 0x19690;
-
-                // Read the save slot.
-                var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
-
-                // Seek out the physical slot of the save to make.
-                while (_saveSlotRAM[0] != 0x00)
-                {
-                    Helpers.Log("Checking Save for Deletion #" + _saveSlot, 1);
-
-                    var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
-                    var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
-
-                    var _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
-                    var _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
-
-                    var _hardCoreCode = Hypervisor.ReadArray(_saveDataAddrRAM + 0x10, 0x08, true);
-
-                    if (BitConverter.ToInt64(_hardCoreCode, 0) == _hardCoreFlag)
-                    {
-                        Helpers.Log("Match Found! Deleting Save #" + _saveSlot, 1);
-
-                        Hypervisor.WriteArray(_saveInfoAddrRAM, new byte[_saveInfoLength], true);
-                        Hypervisor.WriteArray(_saveDataAddrRAM, new byte[_saveDataLength], true);
-
-                        using (var _stream = new FileStream(_savePath, FileMode.Open))
-                        using (var _write = new BinaryWriter(_stream))
-                        {
-                            _stream.Position = _saveInfoAddr;
-                            _write.Write(new byte[_saveInfoLength]);
-                            _stream.Position = _saveDataAddr;
-                            _write.Write(new byte[_saveInfoLength]);
-                        }
-                    }
-
-                    _saveSlot++;
-                    _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
-                }
-
-                var _buttonRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
-                var _confirmRead = Hypervisor.Read<ushort>(Variables.ADDR_Confirm);
-                var _buttonSeek = (_confirmRead == 0x01 ? 0x20 : 0x40);
-
-                if (_buttonRead == _buttonSeek)
-                Hypervisor.Write<byte>(Variables.ADDR_Reset, 0x01);
             }
         }
 
@@ -2289,6 +2111,15 @@ namespace ReFined
             var _widthRender = Hypervisor.Read<float>(_widthRenderAddr);
             var _heightRender = Hypervisor.Read<float>(_heightRenderAddr);
 
+            var _readButton = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+
+            if (_readButton == 0x00AF)
+            {
+                PAST_WIDTH = 0x00;
+                PAST_HEIGHT = 0x00;
+                RATIO_DETECT = 0x00;
+            }
+
             if (_widthRender == 0x00)
             {
                 _widthRender = Hypervisor.Read<float>(_widthWindowAddr);
@@ -2321,6 +2152,8 @@ namespace ReFined
 
                     Hypervisor.Write(_heightViewportAddr, _ratioHeight);
                     Hypervisor.Write(_widthViewportAddr, 1F);
+
+                    Thread.Sleep(100);
                 }
 
                 else if (_widthExpect < _widthRender)
@@ -2330,14 +2163,20 @@ namespace ReFined
                     Hypervisor.Write(_widthViewportAddr, _ratioWidth);
                     Hypervisor.Write(_heightViewportAddr, 1F);
 
+                    Thread.Sleep(100);
+
                     var _uiWidth = _prevWidthUI / _ratioWidth;
                     Hypervisor.Write(_uiWidthAddr, _uiWidth);
+
+                    Thread.Sleep(100);
                 }
 
                 else
                 {
                     Hypervisor.Write(_heightViewportAddr, 1F);
                     Hypervisor.Write(_widthViewportAddr, 1F);
+
+                    Thread.Sleep(100);
                 }
 
                 Hypervisor.Write(_widthPaxAddr, _widthRender);
@@ -2420,7 +2259,7 @@ namespace ReFined
                     Helpers.Log("Manual prompt mode detected! Enforcing prompts...", 0);
                 }
 
-                Hypervisor.Write<byte>(Variables.ADDR_ControllerMode, Variables.CONTROLLER_MODE);
+                Hypervisor.Write(Variables.ADDR_ControllerMode, Variables.CONTROLLER_MODE);
             }
 
             else
@@ -2429,7 +2268,6 @@ namespace ReFined
                 {
                     Hypervisor.WriteArray(Hypervisor.PureAddress + Variables.ADDR_ControllerINST, new byte[] { 0xC7, 0x05, 0x64, 0xA4, 0x65, 0x02, 0x01, 0x00, 0x00, 0x00 }, true);
                     Helpers.Log("Automatic prompt mode detected! Restoring the seeker...", 0);
-
                 }
             }
         }
@@ -2468,30 +2306,6 @@ namespace ReFined
             }
         }
 
-        /// <summary>
-        /// Hides the Magic Bar until Sora is either in Limit Form, or has learned a Magic Spell.
-        /// </summary>
-        public static void MagicHide()
-        {
-            if (Hypervisor.Read<uint>(Variables.ADDR_MagicLV1) == 0x00000000 && Hypervisor.Read<ushort>(Variables.ADDR_MagicLV2) == 0x0000 && Hypervisor.Read<byte>(Variables.ADDR_PlayerForm) != 0x03 && Hypervisor.Read<byte>(Variables.ADDR_PlayerForm) == 0x01 && Hypervisor.Read<byte>(Variables.ADDR_PlayerForm) == 0x07)
-            {
-                if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) != 0x00)
-                {
-                    Helpers.Log("Hiding the MP Bar...", 0);
-                    for (int i = 0; i < Variables.ADDR_MPSEQD.Length; i++)
-                        Hypervisor.Write<byte>(Variables.ADDR_MPSEQD[i], 0x00);
-                }
-            }
-
-            else if (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) == 0x00 || (Hypervisor.Read<byte>(Variables.ADDR_MPSEQD[0]) == 0x00 && Hypervisor.Read<byte>(Variables.ADDR_PlayerForm) == 0x03))
-            {
-                Helpers.Log("Showing the MP Bar...", 0);
-
-                for (int i = 0; i < Variables.ADDR_MPSEQD.Length; i++)
-                    Hypervisor.Write<byte>(Variables.ADDR_MPSEQD[i], Variables.VALUE_MPSEQD[i]);
-            }
-        }
-
         #endregion
 
         #region Switch-Up Functions
@@ -2505,8 +2319,10 @@ namespace ReFined
 
             var _stringANM = "anm/{0}/";
             var _stringPAX = "obj/%s.a.{0}";
+            // var _stringLMT = "limit/{0}/%s";
             var _stringEVT = "voice/{0}/event";
             var _stringBTL = "voice/{0}/battle";
+            var _stringGMI = "voice/{0}/gumibattle/gumi.win32.scd";
 
             if (Variables.AUDIO_MODE == 0x01 && _stringCheck != "voice/jp/event/")
             {
@@ -2517,7 +2333,7 @@ namespace ReFined
                 FM_SUFF = "jp";
             }
 
-            if (Variables.AUDIO_MODE == 0x02 && _stringCheck != "voice/ks/event/")
+            if (Variables.AUDIO_MODE == 0x02 && _stringCheck != "voice/ks/event/" && DETECTED_EXTRA_DUB)
             {
                 Helpers.Log("Switching to Extra Audio...", 0);
 
@@ -2551,6 +2367,29 @@ namespace ReFined
                 
                 Hypervisor.WriteString(Variables.ADDR_BTLFormatter, String.Format(_stringBTL, US_SUFF));
                 Hypervisor.WriteString(Variables.ADDR_EVTFormatter, String.Format(_stringEVT, US_SUFF));
+
+                /*
+                 * 
+                if (Variables.AUDIO_MODE != 0x00)
+                {
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x3E4FCF, 0xEB, true);
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x3E5960, 0xEB, true);
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x3E596A, 0xEB, true);
+                }
+
+                else
+                {
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x3E4FCF, 0x74, true);
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x3E5960, 0x74, true);
+                    Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x3E596A, 0x74, true);
+                }
+
+                Hypervisor.WriteString(0x62A02, String.Format(_stringLMT, FM_SUFF));
+
+                */
+
+                Hypervisor.WriteString(0x4F27A, String.Format(_stringGMI, US_SUFF));
+                Hypervisor.WriteString(0x81FF00, WL_SUFF);
             }
         }
 
@@ -2633,390 +2472,6 @@ namespace ReFined
 
         #endregion
 
-        #region Controller Adaptation
-
-        /// <summary>
-        /// Handles the external controllers in a better way than the game can.
-        /// Supports: DualSense, DualShock 4
-        /// </summary>
-        public static void HandleControllerInput()
-        {
-            try
-            {
-                if (Variables.CONTROLLER_SENSE != null)
-                {
-                    byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
-                    byte _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuActive);
-
-                    var _senseIn = Variables.CONTROLLER_SENSE.ReadOnce();
-
-                    if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
-                    {
-
-                        if (_senseIn.BatteryStatus.Level <= 1 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
-                        {
-                            Additions.ShowInformation(0x6012);
-                            DEBOUNCE[8] = true;
-                        }
-
-                        else if (Operations.CheckTitle() && DEBOUNCE[8])
-                            DEBOUNCE[8] = false;
-                    }
-
-                    // Fetch the buttons, fetch the analogs, and interpret them to the 360 false controller.
-
-                    var _senseButtonArray = new bool[]
-                    {
-                        _senseIn.DPadUpButton, _senseIn.DPadDownButton, _senseIn.DPadLeftButton, _senseIn.DPadRightButton,
-                        _senseIn.MenuButton, _senseIn.TouchpadButton,
-                        _senseIn.L3Button, _senseIn.R3Button, _senseIn.L1Button, _senseIn.R1Button, false,
-                        _senseIn.CrossButton, _senseIn.CircleButton, _senseIn.SquareButton, _senseIn.TriangleButton
-                    };
-
-                    var _senseAxisArray = new short[]
-                    {
-                        (short)(_senseIn.LeftAnalogStick.X * 32766F),
-                        (short)(_senseIn.LeftAnalogStick.Y * 32766F),
-                        (short)(_senseIn.RightAnalogStick.X * 32766F),
-                        (short)(_senseIn.RightAnalogStick.Y * 32766F)
-                    };
-
-                    for (int i = 0; i < _senseButtonArray.Length; i++)
-                        Variables.CONTROLLER_FAKE.SetButtonState(i, _senseButtonArray[i]);
-
-                    for (int i = 0; i < _senseAxisArray.Length; i++)
-                        Variables.CONTROLLER_FAKE.SetAxisValue(i, _senseAxisArray[i]);
-
-                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, (byte)(_senseIn.L2 * 255F));
-                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, (byte)(_senseIn.R2 * 255F));
-                }
-
-                else if (Variables.CONTROLLER_SHOCK != null)
-                {
-                    Variables.CONTROLLER_SHOCK.retrieveData();
-
-                    var _stateShock = Variables.CONTROLLER_SHOCK.currentState();
-
-                    if (!Variables.CONTROLLER_SHOCK.IsUSB)
-                    {
-                        byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
-                        byte _menuRead = Hypervisor.Read<byte>(Variables.ADDR_MenuActive);
-
-                        if (Variables.CONTROLLER_SHOCK.Charge <= 10 && !DEBOUNCE[8] && (_loadRead == 0x01 && _menuRead == 0x00 && !Operations.CheckTitle()))
-                        {
-                            Additions.ShowInformation(0x6022);
-                            DEBOUNCE[8] = true;
-                        }
-
-                        else if (Operations.CheckTitle() && DEBOUNCE[8])
-                            DEBOUNCE[8] = false;
-                    }
-
-                    var _shockButtonArray = new bool[]
-                    {
-                        _stateShock.DpadUp, _stateShock.DpadDown, _stateShock.DpadLeft, _stateShock.DpadRight,
-                        _stateShock.Options, _stateShock.Share,
-                        _stateShock.L3, _stateShock.R3, _stateShock.L1, _stateShock.R1, false,
-                        _stateShock.Cross, _stateShock.Circle, _stateShock.Square, _stateShock.Triangle
-                    };
-
-                    var _shockAxisArray = new short[]
-                    {
-                        (short)(_stateShock.LX >= 128 ? ((128F - _stateShock.LX) * -255F) : (_stateShock.LX - 128F) * 255F),
-                        (short)(_stateShock.LY >= 128 ? ((_stateShock.LY - 128F) * -255F) : (128F - _stateShock.LY) * 255F),
-                        (short)(_stateShock.RX >= 128 ? ((128F - _stateShock.RX) * -255F) : (_stateShock.RX - 128F) * 255F),
-                        (short)(_stateShock.RY >= 128 ? ((_stateShock.RY - 128F) * -255F) : (128F - _stateShock.RY) * 255F),
-                    };
-
-                    for (var i = 0; i < _shockButtonArray.Length; i++)
-                        Variables.CONTROLLER_FAKE.SetButtonState(i, _shockButtonArray[i]);
-
-                    for (var i = 0; i < _shockAxisArray.Length; i++)
-                        Variables.CONTROLLER_FAKE.SetAxisValue(i, _shockAxisArray[i]);
-
-                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.LeftTrigger, _stateShock.L2);
-                    Variables.CONTROLLER_FAKE.SetSliderValue(Xbox360Slider.RightTrigger, _stateShock.R2);
-
-                    // Handle the controller disconnecting.
-
-                    if (!Variables.CONTROLLER_SHOCK.Device.IsConnected || Variables.CONTROLLER_SHOCK.Device.IsTimedOut)
-                    {
-                        Variables.CONTROLLER_SHOCK = null;
-                        Helpers.Log("DualShock 4 Controller has been disconnected.", 1);
-
-                        if (Variables.DUALSENSE_NOTIFICATIONS)
-                            Additions.ShowInformation(0x6020);
-
-                        Variables.CONTROLLER_FOUND = false;
-                    }
-                }
-            }
-
-            catch (System.AggregateException)
-            {
-                if (Variables.CONTROLLER_SENSE != null)
-                {
-                    Variables.CONTROLLER_SENSE.Release();
-                    Variables.CONTROLLER_SENSE = null;
-                    Helpers.Log("DualSense Controller has been disconnected.", 1);
-
-                    if (Variables.DUALSENSE_NOTIFICATIONS)
-                        Additions.ShowInformation(0x6010);
-                }
-
-                Variables.CONTROLLER_FOUND = false;
-            }
-        }
-
-        public static void HandleControllerOutput()
-        {
-            try
-            {
-                float _hpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP);
-                float _hpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x04);
-
-                float _mpCurrent = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x180);
-                float _mpMaximum = Hypervisor.Read<byte>(Variables.ADDR_PlayerHP + 0x184);
-
-                byte _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
-                byte _formRead = Hypervisor.Read<byte>(Variables.ADDR_PlayerForm);
-                byte _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
-
-
-                if (!Operations.CheckTitle())
-                {
-                    switch (Variables.DUALSENSE_MODE)
-                    {
-
-                        case 0:
-                            {
-                                if (_hpCurrent != PLAYER_HP)
-                                {
-                                    PLAYER_HP = _hpCurrent;
-
-                                    float _healthPercent = _hpCurrent / _hpMaximum;
-                                    Variables.SENSE_COLOR = new float[] { 1.0F - _healthPercent, _healthPercent, 0.0F };
-                                }
-
-                                break;
-                            }
-
-                        case 1:
-                            {
-                                if (_mpCurrent != PLAYER_MP && Variables.DUALSENSE_MODE == 0x01)
-                                {
-                                    PLAYER_MP = _mpCurrent;
-
-                                    float _magicPercent = _mpCurrent / _mpMaximum;
-                                    float _magicDeduct = 0.8F * _magicPercent;
-
-                                    Variables.SENSE_COLOR = new float[] { 0.8F - _magicDeduct, 0.0F, 0.8F };
-                                }
-
-                                break;
-                            }
-
-                        case 2:
-                            {
-                                if (_battleRead != BATTLE_STATE)
-                                {
-                                    BATTLE_STATE = _battleRead;
-
-                                    switch (_battleRead)
-                                    {
-                                        case 0:
-                                            Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 1.0F };
-                                            break;
-                                        case 1:
-                                            Variables.SENSE_COLOR = new float[] { 1.0F, 0.8F, 0.0F };
-                                            break;
-                                        case 2:
-                                            Variables.SENSE_COLOR = new float[] { 0.9F, 0.0F, 0.0F };
-                                            break;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        case 3:
-                            {
-                                if (_formRead != FORM_STATE)
-                                {
-                                    switch (_formRead)
-                                    {
-                                        case 0:
-                                            Variables.SENSE_COLOR = new float[] { 0.5F, 0.5F, 0.5F };
-                                            break;
-                                        case 1:
-                                            Variables.SENSE_COLOR = new float[] { 1.0F, 0.0F, 0.0F };
-                                            break;
-                                        case 2:
-                                            Variables.SENSE_COLOR = new float[] { 0.0F, 1.0F, 0.0F };
-                                            break;
-                                        case 3:
-                                            Variables.SENSE_COLOR = new float[] { 1.0F, 0.5F, 0.0F };
-                                            break;
-                                        case 4:
-                                            Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 0.0F };
-                                            break;
-                                        case 5:
-                                            Variables.SENSE_COLOR = new float[] { 1.0F, 1.0F, 1.0F };
-                                            break;
-                                        case 6:
-                                            Variables.SENSE_COLOR = new float[] { 0.0F, 0.0F, 0.0F };
-                                            break;
-                                    }
-                                }
-
-                                break;
-                            }
-                    }
-                }
-
-                else
-                    Variables.SENSE_COLOR = new float[] { 0.00F, 0.75F, 1.00F };
-
-                // Controller Handling for the DualSense protocol. Latency -> BT : 0.5ms, USB: 250ms
-                // For some reason, laggy as shit on USB. I was not able to determine why yet.
-
-                if (Variables.CONTROLLER_SENSE != null)
-                {
-                    var _outState = Variables.CONTROLLER_SENSE.OutputState;
-
-                    _outState.LightbarBehavior = LightbarBehavior.CustomColor;
-                    _outState.LightbarColor = new LightbarColor(Variables.SENSE_COLOR[0], Variables.SENSE_COLOR[1], Variables.SENSE_COLOR[2]);
-
-                    // Both rumbles will play the highest of both rumble inputs.
-                    // The KH port normally only plays the BIG_MOTOR, cancelling about half of the rumble.
-
-                    _outState.RightRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
-                    _outState.LeftRumble = Math.Max(BIG_MOTOR, SMALL_MOTOR) / 255F;
-
-                    // This section is highly experimental and is subject to change.
-
-                    if (Variables.DUALSENSE_TRIGGERS)
-                    {
-                        _outState.L2Effect = new TriggerEffect.Section(0.3F, 0.4F);
-                        _outState.R2Effect = new TriggerEffect.Section(0.3F, 0.4F);
-                    }
-
-                    // This section may no longer be necessary.
-                    // I am not taking my chances yet.
-
-                    PAST_BIG = BIG_MOTOR;
-                    TICK_COUNT += 1;
-
-                    if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
-                    {
-                        _outState.RightRumble = 0F;
-                        _outState.LeftRumble = 0F;
-                    }
-
-                    Variables.CONTROLLER_SENSE.OutputState = _outState;
-                    Variables.CONTROLLER_SENSE.WriteOnce();
-                }
-
-                // Controller Handling for the DualSense protocol. Latency -> 10ms on both.
-
-                else if (Variables.CONTROLLER_SHOCK != null)
-                {
-                    Variables.CONTROLLER_SHOCK.setLedColor((byte)(Variables.SENSE_COLOR[0] * 0xFF), (byte)(Variables.SENSE_COLOR[1] * 0xFF), (byte)(Variables.SENSE_COLOR[2] * 0xFF));
-
-                    Variables.CONTROLLER_SHOCK.BigRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
-                    Variables.CONTROLLER_SHOCK.SmallRumble = (byte)Math.Max(BIG_MOTOR, SMALL_MOTOR);
-
-                    PAST_BIG = BIG_MOTOR;
-                    TICK_COUNT += 1;
-
-                    if (TICK_COUNT >= 400 && PAST_BIG == BIG_MOTOR)
-                    {
-                        Variables.CONTROLLER_SHOCK.BigRumble = 0x00;
-                        Variables.CONTROLLER_SHOCK.SmallRumble = 0x00;
-                    }
-
-                    Variables.CONTROLLER_SHOCK.sendOutputReport();
-                }
-            }
-
-            // This is only thrown if the DualSense controller unexpectedly disconnects.
-
-            catch (System.AggregateException)
-            {
-                if (Variables.CONTROLLER_SENSE != null)
-                {
-                    Variables.CONTROLLER_SENSE.Release();
-                    Variables.CONTROLLER_SENSE = null;
-                    Helpers.Log("DualSense Controller has been disconnected.", 1);
-
-                    if (Variables.DUALSENSE_NOTIFICATIONS)
-                        Additions.ShowInformation(0x6010);
-                }
-
-                Variables.CONTROLLER_FOUND = false;
-            }
-
-        }
-
-        /// <summary>
-        /// This function is called from a separate task. It handles controller reconnection.
-        /// </summary>
-        public static void HandleReconnect()
-        {
-            if (!Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
-            {
-                if (Variables.CONTROLLER_SENSE == null)
-                {
-                    var _devices = DualSense.EnumerateControllers();
-
-                    if (_devices.Count() != 0x00)
-                    {
-                        Variables.CONTROLLER_SENSE = _devices.First();
-                        Variables.CONTROLLER_SENSE.Acquire();
-
-                        Helpers.Log("DualSense Controller has been reconnected.", 0);
-
-                        if (Variables.CONTROLLER_SENSE.IoMode == IoMode.Bluetooth)
-                            Helpers.Log("DualSense is connected via Bluetooth", 0);
-
-                        else
-                            Helpers.Log("DualSense is connected via USB.", 0);
-
-                        if (Variables.DUALSENSE_NOTIFICATIONS)
-                            Additions.ShowInformation(0x6011);
-
-                        Variables.CONTROLLER_FOUND = true;
-                    }
-                }
-
-                if (Variables.CONTROLLER_SHOCK == null)
-                {
-                    var _shockList = HidDevices.Enumerate(0x054C, 0x05C4);
-
-                    if (_shockList.Count() != 0x00)
-                    {
-                        var _hidDevice = _shockList.First();
-                        _hidDevice.OpenDevice(false);
-
-                        Helpers.Log("Found a DualShock 4 Controller! Initializing...", 0);
-                        Variables.CONTROLLER_SHOCK = new DualShock(_hidDevice, 0);
-
-                        if (Variables.CONTROLLER_SHOCK.Device.Capabilities.InputReportByteLength == 64)
-                            Helpers.Log("DualShock 4 is connected via USB.", 0);
-
-                        else
-                            Helpers.Log("DualShock 4 is connected via Bluetooth.", 0);
-
-                        if (Variables.DUALSENSE_NOTIFICATIONS)
-                            Additions.ShowInformation(0x6021); 
-
-                        Variables.CONTROLLER_FOUND = true;
-                    }
-                }
-            }
-        }
-
-        #endregion
 
         public static void Execute()
         {
@@ -3053,9 +2508,6 @@ namespace ReFined
                     OverrideLimits();
                     OverrideLimiter();
 
-                    HardcoreReset();
-
-                    MagicHide();
                     RetryPrompt();
 
                     if (Variables.RATIO_ADJUST)
@@ -3088,47 +2540,35 @@ namespace ReFined
                         );
                     }
 
-                    if (Variables.INTask == null || Variables.INTask.IsFaulted || Variables.INTask.IsCanceled)
+                    if (Variables.DUALSENSE_TOGGLE)
                     {
-                        Variables.INTask = Task.Factory.StartNew(
+                        if (Variables.INTask == null || Variables.INTask.IsFaulted || Variables.INTask.IsCanceled)
+                        {
+                            Variables.INTask = Task.Factory.StartNew(
 
-                            delegate ()
-                            {
-                                while (!Variables.Token.IsCancellationRequested)
+                                delegate ()
                                 {
-                                    if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
-                                        HandleControllerInput();
+                                    while (!Variables.Token.IsCancellationRequested)
+                                        ControllerIO.ExecuteInput();
+                                },
 
-                                    else
-                                    {
-                                        HandleReconnect();
-                                        Thread.Sleep(2000);
-                                    }
-                                }
-                            },
+                                Variables.Token
+                            );
+                        }
 
-                            Variables.Token
-                        );
-                    }
+                        if (Variables.OUTTask == null || Variables.OUTTask.IsFaulted || Variables.OUTTask.IsCanceled)
+                        {
+                            Variables.OUTTask = Task.Factory.StartNew(
 
-                    if (Variables.OUTTask == null || Variables.OUTTask.IsFaulted || Variables.OUTTask.IsCanceled)
-                    {
-                        Variables.OUTTask = Task.Factory.StartNew(
-
-                            delegate ()
-                            {
-                                while (!Variables.Token.IsCancellationRequested)
+                                delegate ()
                                 {
-                                    if (Variables.CONTROLLER_FOUND && Variables.DUALSENSE_TOGGLE)
-                                        HandleControllerOutput();
-                                    else
-                                        Thread.Sleep(2000);
-                                    
-                                }
-                            },
+                                    while (!Variables.Token.IsCancellationRequested)
+                                        ControllerIO.ExecuteOutput();
+                                },
 
-                            Variables.Token
-                        );
+                                Variables.Token
+                            );
+                        }
                     }
                     #endregion
                 }

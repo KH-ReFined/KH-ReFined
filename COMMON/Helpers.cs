@@ -25,17 +25,16 @@ namespace ReFined
 				{
 					"[General]",
 					"discordRPC = true",
+					"cloudSave = true",
                     "resetCombo = 0x0003",
                     "dualSenseIntegration = true",
                     "dualSenseNotifications = false",
-                    "dualSenseTriggers = false",
                     "",
                     "# Options: 0 = HP Tracking, 1 = MP Tracking, 2 = Battle State Tracking, 3 = Form Tracking",
                     "dualSenseMode = 0",
                     "",
 					"[Kingdom Hearts II]",
 					"adjustRatio = false",
-					"festivityEngine = true",
 					"driveShortcuts = true",
 					"",
 					"# Options: retry, continue",
@@ -58,7 +57,7 @@ namespace ReFined
 			{
 				var _fileRead = File.ReadAllText("reFined.ini");
 
-				if (!_fileRead.Contains("dualSenseTriggers"))
+				if (!_fileRead.Contains("cloudSave"))
 				{
 					File.Delete("reFined.ini");
 					InitConfig();
@@ -113,7 +112,7 @@ namespace ReFined
 					_logFileName = "ReFined-" + _dateStr + ".txt";
 
 					FILE_CHECK:
-					if (File.Exists(_logFileName))
+					if (File.Exists(Path.Combine(_logDir, _logFileName)))
 					{
 						_logFileName = "ReFined-" + _dateStr + "_SESSION_" + _session + ".txt";
 						_session++;
@@ -172,7 +171,7 @@ namespace ReFined
 					_logFileName = "ReFined-" + _dateStr + ".txt";
 
 					FILE_CHECK:
-					if (File.Exists(_logFileName))
+					if (File.Exists(Path.Combine(_logDir, _logFileName)))
 					{
 						_logFileName = "ReFined-" + _dateStr + "_SESSION_" + _session + ".txt";
 						_session++;
