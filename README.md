@@ -3,7 +3,7 @@
 This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.
 
 > [!CAUTION]
-> This mod is currently only compatible with the Epic Games Server version and undergoing restruction. **Do not attempt installing on Steam at the moment**. Join the [Discord server](https://discord.gg/6r7yeDBaFx) for updates.
+> This mod is currently only compatible with the Epic Games Store version and undergoing restruction. **Do not attempt installing on Steam at the moment**. Join the [Discord server](https://discord.gg/6r7yeDBaFx) for updates.
 
 <details>
   <summary>Click here to expand <b>Epic Games Store</b> installation instructions.</summary>
