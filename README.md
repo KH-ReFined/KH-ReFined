@@ -2,6 +2,12 @@
 
 This project aims to improve the game in many ways whilst fixing the errors that the PC ports, and by extension, 1.5/2.5 had.
 
+> [!CAUTION]
+> This mod is currently only compatible with the Epic Games Server version and undergoing restruction. **Do not attempt installing on Steam at the moment**. Join the [Discord server](https://discord.gg/6r7yeDBaFx) for updates.
+
+<details>
+  <summary>Click here to expand <b>Epic Games Store</b> installation instructions.</summary>
+
 ## Download
 
 If you're going to play Kingdom Hearts I or Dream Drop Distance, get the v3.20 release by clicking the button below:
@@ -15,6 +21,7 @@ If you're going to play Kingdom Hearts II, get the latest release instead:
 ### Installation
 
 Installing Re:Fined is easy, even though it may seem like a monumential task. Please refer to [this page](SETUP.md) for full instructions.
+</details>
 
 ## Game Status
 
