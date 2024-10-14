@@ -1,18 +1,11 @@
-/*
-==================================================
-     KINGDOM HEARTS - RE:FINED COMMON FILE
-       COPYRIGHT TOPAZ WHITELOCK - 2022
- LICENSED UNDER DBAD. GIVE CREDIT WHERE IT'S DUE! 
-==================================================
-*/
-
-using System;
-using System.Text;
+﻿using System.Text;
 using System.Diagnostics;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System;
+using System.Globalization;
 
-namespace ReFined
+namespace ReFined.Common
 {
     public static class Hypervisor
     {
@@ -32,8 +25,7 @@ namespace ReFined
         public static ulong PureAddress;
         public static ulong MemoryOffset;
 
-        public static ProcessModule DLLModule;
-        public static ulong DLLAddress;
+        static byte[]? _patternBuffer = null;
 
 
         /// <summary>
@@ -48,16 +40,6 @@ namespace ReFined
             PureAddress = (ulong)Input.MainModule.BaseAddress;
             BaseAddress = PureAddress + Offset;
             MemoryOffset = PureAddress & 0x7FFF00000000;
-
-            foreach (ProcessModule _module in Input.Modules)
-			{
-				if (_module.ModuleName == "EOSSDK-Win64-Shipping.dll")
-				{
-					DLLModule = _module;
-					DLLAddress = (ulong)_module.BaseAddress;
-				}
-			}
-            
         }
 
         /// <summary>
@@ -86,13 +68,13 @@ namespace ReFined
             var _outArray = new byte[_outSize];
             int _outRead = 0;
 
-                ReadProcessMemory(Handle, _address, _outArray, _outSize, ref _outRead);
+            ReadProcessMemory(Handle, _address, _outArray, _outSize, ref _outRead);
 
             var _gcHandle = GCHandle.Alloc(_outArray, GCHandleType.Pinned);
             var _retData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), typeof(T));
-            
-            _gcHandle.Free();  
-                    
+
+            _gcHandle.Free();
+
             return _retData;
         }
 
@@ -122,7 +104,7 @@ namespace ReFined
 
             if (_inSize > 1)
             {
-                var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }) .Invoke(null, new object[] { Value });
+                var _inArray = (byte[])typeof(BitConverter).GetMethod("GetBytes", new[] { typeof(T) }).Invoke(null, new object[] { Value });
 
                 WriteProcessMemory(Handle, _address, _inArray, _inArray.Length, ref _inWrite);
             }
@@ -238,6 +220,62 @@ namespace ReFined
 
             int _oldProtect = 0;
             VirtualProtectEx(Handle, _address, 0x100000, 0x40, ref _oldProtect);
+        }
+
+        public static void RedirectInstruction(ulong Source, uint Destination)
+        {
+            var _instEnding = (uint)Source + 0x07;
+            var _instMath = Destination - _instEnding;
+            Hypervisor.WriteArray(Source + 0x03, BitConverter.GetBytes(_instMath));
+        }
+
+        public static IntPtr FindSignature(string Input)
+        {
+            if (_patternBuffer == null)
+                _patternBuffer = ReadArray(0x00, Process.MainModule.ModuleMemorySize);
+
+            var _sigBytes = Input.Split(' ');
+            int[] _sigList = new int[_sigBytes.Length];
+
+            for (int i = 0; i < _sigList.Length; i++)
+            {
+                if (_sigBytes[i] == "??")
+                    _sigList[i] = -1;
+                else
+                    _sigList[i] = int.Parse(_sigBytes[i], NumberStyles.HexNumber);
+            }
+
+            var results = new List<IntPtr>();
+
+            for (int a = 0; a < _patternBuffer.Length; a++)
+            {
+                for (int b = 0; b < _sigList.Length; b++)
+                {
+                    if (_sigList[b] != -1 && _sigList[b] != _patternBuffer[a + b])
+                        break;
+                    if (b + 1 == _sigList.Length)
+                    {
+                        var result = new IntPtr(a);
+                        results.Add(result);
+                    }
+                }
+
+
+            }
+
+            if (results.Count != 1)
+                throw new InvalidDataException("ERROR: Signature scan error -- Either none or more than one found!");
+
+            return results[0];
+        }
+
+        public static bool IsValidPointer(this ulong Address, bool Absolute = false)
+        {
+            var _readValue = Hypervisor.Read<ulong>(Address, Absolute);
+            if (_readValue == 0x00 || _readValue == 0xEFACCAFE || _readValue == 0xCAFEEFAC || _readValue == 0xFFFFFFFF)
+                return false;
+            else
+                return true;
         }
     }
 }

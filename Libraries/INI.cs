@@ -1,4 +1,4 @@
-/*
+﻿/*
 ==================================================
      KINGDOM HEARTS - RE:FINED COMMON FILE
        COPYRIGHT TOPAZ WHITELOCK - 2022
@@ -6,14 +6,13 @@
 ==================================================
 */
 
-using System.IO;
+using System.Text;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace ReFined
+namespace ReFined.Libraries
 {
-    class TinyIni
+    class INI
     {
         string Path;
         string EXE = Assembly.GetExecutingAssembly().GetName().Name;
@@ -24,7 +23,7 @@ namespace ReFined
         [DllImport("kernel32", CharSet = CharSet.Unicode)]
         static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
 
-        public TinyIni(string IniPath = null)
+        public INI(string IniPath = null)
         {
             Path = new FileInfo(IniPath ?? EXE + ".ini").FullName;
         }

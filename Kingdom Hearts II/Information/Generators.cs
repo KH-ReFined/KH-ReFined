@@ -1,19 +1,16 @@
-﻿using System;
-using System.IO;
+﻿using ReFined.Common;
+using ReFined.KH2.InGame;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
+using System.Threading.Tasks;
 
-namespace ReFined
+namespace ReFined.KH2.Information
 {
-    public static class Operations
+    public static class Generators
     {
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        static extern int memcmp(byte[] b1, byte[] b2, long count);
-
         /// <summary>
         /// Generates a CRC32 Table for Save Checksum Generation, courtesy of Xeeynamo.
         /// </summary>
@@ -28,153 +25,6 @@ namespace ReFined
 
                 yield return (uint)r;
             }
-        }
-
-        /// <summary>
-        /// Check to see if the game is in the title screen.
-        /// </summary>
-        /// <returns>"True" if it's in the title, "False" otherwise.</returns>
-        public static bool CheckTitle() =>
-            Hypervisor.Read<uint>(Variables.ADDR_Area) == 0x00FFFFFF
-         || Hypervisor.Read<uint>(Variables.ADDR_Area) == 0x00000101
-         || Hypervisor.Read<uint>(Variables.ADDR_Title) == 0x00000001
-         || Hypervisor.Read<uint>(Variables.ADDR_Reset) == 0x00000001;
-
-        /// <summary>
-        /// Generates the CRC32 Checksum for a Save File, courtesy of Xeeynamo.
-        /// </summary>
-        /// <param name="data">The save file itself.</param>
-        /// <param name="offset">The offset of the true data.</param>
-        /// <param name="checksum">The previous checksum, if any.</param>
-        /// <returns>The CRC32 Checksum of the given data.</returns>
-        public static uint SaveCRC32(byte[] data, int offset, uint checksum)
-        {
-            uint[] array = _fetchTable().Take(0x100).ToArray();
-
-            for (var i = 0; i < offset; i++)
-                checksum = array[(checksum >> 24) ^ data[i]] ^ (checksum << 8);
-
-            return checksum ^ uint.MaxValue;
-        }
-
-        /// <summary>
-        /// Fetches a string from a given MSG file.
-        /// </summary>
-        /// <param name="StartMSG">The address in which the MSG file starts. Must be a valid MSG file.</param>
-        /// <param name="StringID">The ID of the String to fetch the pointer of.</param>
-        /// <returns>The string requested in KHSCII.</returns>
-        /// <exception cref="InvalidDataException"></exception>
-        public static byte[] FetchStringMSG(ulong StartMSG, ushort StringID)
-        {
-            var _msnAbsolute = Hypervisor.Read<ulong>(StartMSG);
-
-            var _checkFirst = Hypervisor.Read<int>(_msnAbsolute, true);
-            var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
-
-            if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                return null;
-
-            var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
-
-            var _offsetLocal = _fetchData.FindValue<int>(StringID);
-
-            var _offsetString = Hypervisor.Read<int>(_msnAbsolute + _offsetLocal + 0x0C, true);
-
-            int _readOffset = 0;
-            List<byte> _returnList = new List<byte>();
-
-            while (true)
-            {
-                var _byte = Hypervisor.Read<byte>(_msnAbsolute + (ulong)(_offsetString + _readOffset), true);
-
-                _returnList.Add(_byte);
-
-                if (_byte == 0x00)
-                    break;
-
-                else
-                    _readOffset++;
-            }
-
-            return _returnList.ToArray();
-        }
-
-        /// <summary>
-        /// Fetches the absolute pointer of a String stored inside a MSG file.
-        /// Usually needed for functions such as "ShowInformation".
-        /// </summary>
-        /// <param name="StartMSG">The address in which the MSG file starts. Must be a valid MSG file.</param>
-        /// <param name="StringID">The ID of the String to fetch the pointer of.</param>
-        /// <returns>The absolute pointer of the given string.</returns>
-        public static long FetchPointerMSG(ulong StartMSG, ushort StringID)
-        {
-            var _msnAbsolute = Hypervisor.Read<ulong>(StartMSG);
-
-            var _checkFirst = Hypervisor.Read<int>(_msnAbsolute, true);
-            var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
-
-            if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                return 0x00;
-
-            var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
-
-            var _offsetLocal = _fetchData.FindValue<int>(StringID);
-
-            var _offsetString = Hypervisor.Read<int>(_msnAbsolute + _offsetLocal + 0x0C, true);
-
-            return (long)_msnAbsolute + _offsetString;
-        }
-
-        /// <summary>
-        /// Fetches the offset of a String stored inside a MSG file.
-        /// </summary>
-        /// <param name="StartMSG">The address in which the MSG file starts. Must be a valid MSG file.</param>
-        /// <param name="StringID">The ID of the String to fetch the pointer of.</param>
-        /// <returns>The offset of the given string (Absolute).</returns>
-        public static int FetchOffsetMSG(ulong StartMSG, ushort StringID)
-        {
-            var _msnAbsolute = Hypervisor.Read<ulong>(StartMSG);
-
-            var _checkFirst = Hypervisor.Read<int>(_msnAbsolute, true);
-            var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
-
-            if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                return 0x00;
-
-            var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
-
-            var _offsetLocal = _fetchData.FindValue(StringID);
-
-            var _offsetString = Hypervisor.Read<int>(_msnAbsolute + _offsetLocal + 0x0C, true);
-
-            return _offsetString;
-        }
-
-        /// <summary>
-        /// Finds the info of a String stored inside a MSG file.
-        /// </summary>
-        /// <param name="StartMSG">The address in which the MSG file starts. Must be a valid MSG file.</param>
-        /// <param name="StringID">The ID of the String to fetch the pointer of.</param>
-        /// <returns></returns>
-        public static ulong FindInfoMSG(ulong StartMSG, ushort StringID)
-        {
-            var _msnAbsolute = Hypervisor.Read<ulong>(StartMSG);
-
-            var _checkFirst = Hypervisor.Read<int>(_msnAbsolute, true);
-            var _checkSecond = Hypervisor.Read<int>(_msnAbsolute - 0x30, true);
-
-            if (_checkFirst != 0x01 || _checkSecond != 0x01524142)
-                return 0x00;
-
-            var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
-
-            var _offsetLocal = _fetchData.FindValue<int>(StringID);
-
-            return _msnAbsolute + _offsetLocal + 0x08;
         }
 
         /// <summary>
@@ -314,24 +164,22 @@ namespace ReFined
         }
 
         /// <summary>
-        /// Finds a file in the Buffer Cache.
+        /// Generates the CRC32 Checksum for a Save File, courtesy of Xeeynamo.
         /// </summary>
-        /// <param name="Input">The name of the file.</param>
-        /// <returns>The absolute position of the file indicator in memory. "0" if not found.</returns>
-        public static ulong FindFile(string Input)
+        /// <param name="data">The save file itself.</param>
+        /// <param name="offset">The offset of the true data.</param>
+        /// <param name="checksum">The previous checksum, if any.</param>
+        /// <returns>The CRC32 Checksum of the given data.</returns>
+        public static uint SaveCRC32(byte[] data, int offset, uint checksum)
         {
-            var _memoryOffset = Hypervisor.PureAddress & 0x7FFF00000000;
-            var _returnValue = Variables.SharpHook[(IntPtr)0x39A820].Execute<uint>(BSharpConvention.MicrosoftX64, Input, -1);
-            return _returnValue == 0x00 ? 0x00 : _memoryOffset + _returnValue;
+            uint[] array = _fetchTable().Take(0x100).ToArray();
+
+            for (var i = 0; i < offset; i++)
+                checksum = array[(checksum >> 24) ^ data[i]] ^ (checksum << 8);
+
+            return checksum ^ uint.MaxValue;
         }
 
-        /// <summary>
-        /// Gets the size of the file, used primarily to check if a file actually exists.
-        /// </summary>
-        /// <param name="Input">The name of the file.</param>
-        /// <returns>A 32-bit integer containing the size in bytes, "0" if the file is not found.</returns>
-        public static int GetFileSize(string Input) => Variables.SharpHook[(IntPtr)0x39E2F0].Execute<int>(Input);
-        
         /// <summary>
         /// Generates and writes the current game state to both RAM and ROM Save Files.
         /// </summary>
@@ -343,7 +191,7 @@ namespace ReFined
 
             // Prepare the strings.
             var _saveName = "BISLPM-66675FM-98";
-            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM.png";
+            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM_WW.png";
 
             // Calculate the Unix Date.
             var _currDate = DateTime.Now;
@@ -369,10 +217,10 @@ namespace ReFined
 
             if (!Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM"))
             {
-                Helpers.Log("File does not bare a save! Autosave aborted to stop corruption!", 1);
+                Terminal.Log("Main file doesn't have a save! Autosave aborted.", 1);
 
                 if (Variables.SAVE_MODE == 0x00)
-                    Additions.ShowInformation(0x4D6D);
+                    Message.ShowInformation(0x4D6D);
 
                 return;
             }
@@ -459,11 +307,10 @@ namespace ReFined
 
             if (Variables.SAVE_MODE == 0x00)
             {
-                Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x18BA09, 0x28, true);
-                Additions.ShowInformation(0x4D6C);
-                Hypervisor.Write<byte>(Hypervisor.PureAddress + 0x18BA09, 0x22, true);
+                Hypervisor.Write<byte>(0x18DE09, 0x28);
+                Message.ShowInformation(0x4D6C);
+                Hypervisor.Write<byte>(0x18DE09, 0x22);
             }
-
         }
     }
 }
