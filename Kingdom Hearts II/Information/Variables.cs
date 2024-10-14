@@ -147,6 +147,7 @@ namespace ReFined.KH2.Information
         public static string FUNC_ShowSLWarning = "48 89 5C 24 08 57 48 83 EC 40 8B F9 48 8B 0D ?? ?? ?? ??";
         public static string FUNC_SetCampWarning = "48 89 5C 24 08 57 48 83 EC 50 8B F9 8B DA";
         public static string FUNC_ShowCampWarning = "40 55 48 83 EC 50 44 8B 0D ?? ?? ?? ??";
+        public static string FUNC_ExecuteCampMenu = "40 56 41 56 41 57 48 83 EC 20 45 32 FF 44 8B F2 44 38 3D ?? ?? ?? ??";
 
         //
         // HOTFIX SIGNATURES

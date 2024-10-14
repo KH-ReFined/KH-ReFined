@@ -132,6 +132,8 @@ namespace ReFined.KH2.Functions
                     Variables.CONFIG_MENU.Children.Insert(8, _entAudio);
                 }
 
+                Critical.OffsetCampMenu = Hypervisor.FindSignature(Variables.FUNC_ExecuteCampMenu);
+
                 Variables.Source = new CancellationTokenSource();
                 Variables.Token = Variables.Source.Token;
 

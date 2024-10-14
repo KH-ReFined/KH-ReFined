@@ -7,6 +7,8 @@ namespace ReFined.KH2.Functions
 {
     internal class Critical
     {
+        public static IntPtr OffsetCampMenu;
+
         static Variables.CONFIG_BITWISE CONFIG_BIT;
         static bool CONFIG_WRITTEN;
 
@@ -641,7 +643,7 @@ namespace ReFined.KH2.Functions
                     if (PREPARE_MODE == 0x01 && _menuRead != 0x08)
                     {
                         Terminal.Log("Prepare request detected! Opening the Camp Menu...", 0);
-                        Variables.SharpHook[0x2E4950].Execute(BSharpConvention.MicrosoftX64, 0, 0);
+                        Variables.SharpHook[OffsetCampMenu].Execute(BSharpConvention.MicrosoftX64, 0, 0);
                     }
 
                     // Acknowledge the menu was called.
