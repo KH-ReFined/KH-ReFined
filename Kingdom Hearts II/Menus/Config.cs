@@ -167,14 +167,12 @@ namespace ReFined.KH2.Menus
                 Buttons = new List<ushort>()
                 {
                     0x01CA,
-                    0x01CB,
                     0x01CC
                 },
 
                 Descriptions = new List<ushort>()
                 {
                     0x01D6, 
-                    0x01D7,
                     0x01D8
                 }
             };
@@ -197,20 +195,21 @@ namespace ReFined.KH2.Menus
             };
             var _entCommandKH2 = new Entry()
             {
-                Count = 2,
+                Count = 3,
                 Title = 0xB71C,
-                
 
                 Buttons = new List<ushort>()
                 {
                     0xB734,
-                    0xB735
+                    0xB735,
+                    0x01CB
                 },
 
                 Descriptions = new List<ushort>()
                 {
                     0xB736, 
-                    0xB737
+                    0xB737,
+                    0x01D7
                 }
             };
 
@@ -241,8 +240,8 @@ namespace ReFined.KH2.Menus
                 _entFieldCam,
                 _entCameraV,
                 _entCameraH,
-                _entNavigation,
                 _entSummonFX,
+                _entNavigation,
                 _entAutosave,
                 _entController,
                 _entVibration,

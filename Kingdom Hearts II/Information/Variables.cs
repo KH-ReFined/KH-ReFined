@@ -6,6 +6,7 @@ using ReFined.KH2.Menus;
 // using DiscordRPC;
 using Binarysharp.MSharp;
 using System.Net.NetworkInformation;
+using ReFined.Common;
 
 namespace ReFined.KH2.Information
 {
@@ -43,6 +44,11 @@ namespace ReFined.KH2.Information
         public static Config CONFIG_MENU;
         public static Intro INTRO_MENU;
         public static Continue CONTINUE_MENU;
+
+        public static bool IS_TITLE =>
+            Hypervisor.Read<uint>(ADDR_Area) == 0x00FFFFFF
+         || Hypervisor.Read<uint>(ADDR_Area) == 0x00000101
+         || Hypervisor.Read<uint>(ADDR_Reset) == 0x00000001;
 
         //
         // RESOURCE LIBRARY
@@ -169,19 +175,6 @@ namespace ReFined.KH2.Information
 
         public static List<ulong> HFIX_ConfigOffsets = new List<ulong>();
 
-        public static ulong ADDR_InventoryINST = 0;
-        public static ulong ADDR_WarpINST = 0;
-
-        //
-        // INSTRUCTIONS
-        // 
-        // We store the actual instructions here.
-        //
-
-        public static byte[] INST_FrameLimiter = { 0x89, 0x1D, 0xE2, 0x65, 0x96, 0x00 };
-        public static byte[] INST_RoomWarp;
-        public static byte[] INST_InvRevert;
-
         //
         // VALUE DUMP
         //
@@ -225,7 +218,7 @@ namespace ReFined.KH2.Information
             AUDIO_JAPANESE = 0x0800,
             AUDIO_OTHER = 0x1000,
             PROMPT_CONTROLLER = 0x2000,
-            PROMPT_KEYBOARD = 0x4000,
+            COMMAND_VLAD = 0x4000,
             HEARTLESS_VANILLA = 0x8000
         }
     }

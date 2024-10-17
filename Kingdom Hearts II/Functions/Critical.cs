@@ -23,8 +23,8 @@ namespace ReFined.KH2.Functions
         static int POSITIVE_OFFSET = 0x55;
         static int NEGATIVE_OFFSET = -0x55;
 
-        static List<byte>? SETTINGS_FIRST;
-        static byte[]? SETTINGS_SECOND;
+        static List<byte>? SETTINGS_READ;
+        static byte[]? SETTINGS_WRITE;
 
         static bool STATE_COPIED;
         static byte HADES_COUNT;
@@ -33,57 +33,41 @@ namespace ReFined.KH2.Functions
         static byte PREPARE_MODE;
         static bool RETRY_BLOCK;
 
-        /// <summary>
-        /// The function responsible for automatically saving the game.
-        /// </summary>
         public static void HandleAutosave()
         {
-            // Read all the values
-            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
-
             var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_Area);
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+            var _pauseCheck = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
             var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
 
-            var _pauseCheck = Hypervisor.Read<byte>(Variables.ADDR_PauseFlag);
-
-            // Please refrain from saving in these rooms kthxbye!
             var _blacklistCheck =
                 (_worldCheck == 0x08 && _roomCheck == 0x03) ||
                 (_worldCheck == 0x0C && _roomCheck == 0x02) ||
                 (_worldCheck == 0x12 && _roomCheck >= 0x13 && _roomCheck <= 0x1D) ||
                 (_worldCheck == 0x02 && _roomCheck <= 0x01);
 
-            // If the game is loaded, and Sora is in the map, and the Blacklist isn't in effect:
-            if (!Checks.CheckTitle() && _loadRead == 0x01 && !_blacklistCheck)
+            if (!Variables.IS_TITLE && _loadRead == 0x01 && !_blacklistCheck)
             {
-                // Wait for a bit.
                 Thread.Sleep(250);
 
-                // Read the BTL and CTS state.
                 var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
                 var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
 
-                // Read if the game is loaded again.
                 _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
 
-                // Check if the game is saveable:
-                // 
-                // - Autosave is enabled.
-                // - Player isn't in battle.
-                // - The map is loaded.
-                // - Not on a cutscene.
-                // - The world is valid.
-                // - The game isn't paused.
 
-                var _saveableBool = (Variables.SAVE_MODE != 0x02) && _battleRead == 0x00 && _loadRead == 0x01 && _cutsceneRead == 0x00 && _worldCheck >= 0x02 && _pauseCheck == 0x00;
+                var _saveableBool = (Variables.SAVE_MODE != 0x02) && 
+                                    _battleRead == 0x00 && 
+                                    _loadRead == 0x01 && 
+                                    _cutsceneRead == 0x00 && 
+                                    _worldCheck >= 0x02 && 
+                                    _pauseCheck == 0x00;
 
-                // If the game is indeed saveable:
                 if (_saveableBool)
                 {
-                    // If the world has changed and it isn't the World Map:
                     if (SAVE_WORLD != _worldCheck && _worldCheck != 0x07)
                     {
-                        Terminal.Log("World change detected! Autosaving...", 0);
+                        Terminal.Log("Attempting to Autosave.", 0);
 
                         Generators.GenerateSave();
                         SAVE_ITERATOR = 0;
@@ -92,33 +76,26 @@ namespace ReFined.KH2.Functions
                     // If the room has changed, and the world is valid:
                     else if (SAVE_ROOM != _roomCheck && _worldCheck >= 2)
                     {
-                        // Increase the iterator.
                         SAVE_ITERATOR++;
 
-                        // If it has been 3 roomchanges:
                         if (SAVE_ITERATOR == 3)
                         {
-                            Terminal.Log("Room change detected! Autosaving...", 0);
+                            Terminal.Log("Attempting to Autosave.", 0);
 
                             Generators.GenerateSave();
                             SAVE_ITERATOR = 0;
                         }
                     }
 
-                    // Record the last room and world visited.
                     SAVE_WORLD = _worldCheck;
                     SAVE_ROOM = _roomCheck;
                 }
             }
         }
 
-        /// <summary>
-        /// Reconstructs and handles the New Game menu.
-        /// Dynamically adjusts the menu in real-time according to what is necessary.
-        /// </summary>
         public static void HandleIntro()
         {
-            if (Checks.CheckTitle())
+            if (Variables.IS_TITLE)
             {
                 var _readState = Hypervisor.ReadArray(Variables.ADDR_NewGame, 0x20);
 
@@ -127,43 +104,38 @@ namespace ReFined.KH2.Functions
                 var _autoSave = _readState[0x08] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR :
                                (_readState[0x08] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF);
 
-                var _controlPrompt = _readState[0x18] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER :
-                                    (_readState[0x18] == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF);
+                var _controlPrompt = _readState[0x18] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER : Variables.CONFIG_BITWISE.OFF;
 
                 CONFIG_BIT = CONFIG_BIT | Variables.CONFIG_BITWISE.SUMMON_FULL | Variables.CONFIG_BITWISE.NAVI_MAP | _vibration | _autoSave | _controlPrompt;
             }
 
-            if (!Checks.CheckTitle() && !CONFIG_WRITTEN)
+            if (!Variables.IS_TITLE && !CONFIG_WRITTEN)
             {
                 var _areaRead = Hypervisor.Read<uint>(Variables.ADDR_Area);
 
                 if (_areaRead == 0x0102 || (_areaRead == 0x2002))
                 {
-                    Terminal.Log("A new game has begun! Writing configuration...", 0);
+                    Terminal.Log("Intro Handler detected a new game! Writing the configuration.", 0);
 
-                    Hypervisor.Write(Variables.ADDR_Config, (ushort)CONFIG_BIT);
+                    var _configBitwise = (ushort)CONFIG_BIT;
+                    Hypervisor.Write(Variables.ADDR_Config, _configBitwise);
 
-                    Variables.SAVE_MODE = (byte)(((ushort)CONFIG_BIT & 0x0002) == 0x0002 ? 0x01 : (((ushort)CONFIG_BIT & 0x0004) == 0x0004 ? 0x00 : 0x02));
-                    Variables.CONTROLLER_MODE = (byte)(((ushort)CONFIG_BIT & 0x2000) == 0x2000 ? 0x00 : (((ushort)CONFIG_BIT & 0x4000) == 0x4000 ? 0x01 : 0x02));
+                    Variables.SAVE_MODE = _configBitwise.GetBitwise(0x0004, 0x0002, 0xCAFE);
+                    Variables.CONTROLLER_MODE = _configBitwise.GetBitwise(0xCAFE, 0x2000);
 
                     CONFIG_WRITTEN = true;
                 }
 
                 else
                 {
-                    Terminal.Log("Loaded game detected. Skipping configuration...", 0);
+                    Terminal.Log("Intro Handler detected a game load! Skipping config writing..", 0);
                     CONFIG_WRITTEN = true;
                 }
             }
         }
 
-        /// <summary>
-        /// Handles the configuration of the game.
-        /// Dynamically adjusts the configuration menu in real-time according to what is necessary.
-        /// </summary>
         public static void HandleConfig()
         {
-            // Read a LOT of shit.
             var _configRead = Hypervisor.Read<ushort>(Variables.ADDR_Config);
             var _selectPoint = Hypervisor.Read<ulong>(Variables.PINT_SubMenuOptionSelect);
 
@@ -174,67 +146,53 @@ namespace ReFined.KH2.Functions
             var _settingsPoint = Hypervisor.Read<ulong>(Variables.PINT_ConfigMenu);
             var _difficultyRead = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x2498);
 
-            // var _layoutPointer = Hypervisor.Read<ulong>(0x3A0952);
-
-            // If we are not in the title screen and the settings are not yet loaded:
-            if (!Checks.CheckTitle() && !LOADED_SETTINGS)
+            if (!Variables.IS_TITLE && !LOADED_SETTINGS)
             {
-                Terminal.Log("Fetching the current configuration from Save Data...", 0);
+                Terminal.Log("Fetching the config from the save file.", 0);
 
-                Variables.SAVE_MODE = (byte)((_configRead & 0x0002) == 0x0002 ? 0x01 : ((_configRead & 0x0004) == 0x0004 ? 0x00 : 0x02));
-                Variables.CONTROLLER_MODE = (byte)((_configRead & 0x2000) == 0x2000 ? 0x00 : ((_configRead & 0x4000) == 0x4000 ? 0x01 : 0x02));
+                Variables.CONTROLLER_MODE = _configRead.GetBitwise(0xCAFE, 0x2000);
+                Variables.SAVE_MODE = _configRead.GetBitwise(0x0004, 0x0002, 0xCAFE);
 
-                Terminal.Log("Configuration fetched!", 0);
+                Terminal.Log("Fetch successful!", 0);
 
                 LOADED_SETTINGS = true;
             }
 
-            // If we are in the title: Flush them.
-            else if (Checks.CheckTitle() && LOADED_SETTINGS)
+            else if (Variables.IS_TITLE && LOADED_SETTINGS)
                 LOADED_SETTINGS = false;
 
-            // If we are seemingly in the configuration menu, and the game is paused, and we are highlighting something:
             if (_menuRead == 0x24 && _pauseRead == 0x01 && _selectPoint != 0x00)
             {
-                // If we are indeed in the configuration menu:
                 if (_settingsPoint != 0x00 && !DEBOUNCE[6])
                 {
-                    Terminal.Log("Config Menu Detected! Setting the necessary values...", 0);
+                    Terminal.Log("Config Menu has been opened! Setting up necessary stuff.", 0);
 
-                    // Read the config:
+                    var _naviMap = _configRead.GetBitwise(0x0008);
+                    var _cameraAuto = _configRead.GetBitwise(0x0010);
+                    var _cameraHRev = _configRead.GetBitwise(0x0080);
+                    var _cameraVRev = _configRead.GetBitwise(0x0100);
+                    var _commandKH2 = _configRead.GetBitwise(0x0040);
+                    var _vibrationOn = _configRead.GetBitwise(0x0001);
+                    var _summonEffect = _configRead.GetBitwise(0x0200, 0x0400);
 
-                    var _naviMap = Variables.SharpHook[0x2E53B0].Execute<byte>();
-                    var _cameraAuto = Variables.SharpHook[0x2E5310].Execute<byte>();
-                    var _cameraHRev = Variables.SharpHook[0x2E5330].Execute<byte>();
-                    var _cameraVRev = Variables.SharpHook[0x2E5350].Execute<byte>();
-                    var _commandKH2 = Variables.SharpHook[0x2E5380].Execute<byte>();
-                    var _vibrationOn = Variables.SharpHook[0x2E53F0].Execute<byte>();
-                    var _summonEffect = Variables.SharpHook[0x2E4FA0].Execute<byte>();
+                    var _autoSave = _configRead.GetBitwise(0x0004, 0x0002, 0xCAFE);
+                    var _promptMode = _configRead.GetBitwise(0x2000, 0xCAFE);
 
-                    // 2E5030 + 0x340 = KILL
-                    // 2E5060 + 0x340 = KILL
-
-                    var _autoSave = (_configRead & 0x0002) == 0x0002 ? 0x01 : ((_configRead & 0x0004) == 0x0004 ? 0x00 : 0x02);
-                    var _promptMode = (_configRead & 0x2000) == 0x2000 ? 0x00 : ((_configRead & 0x4000) == 0x4000 ? 0x01 : 0x02);
-
-                    // Shape the array in which the menu will use.
-                    SETTINGS_FIRST = new List<byte>
+                    SETTINGS_READ = new List<byte>
                     {
-                        (byte)(_cameraAuto == 0x01 ? 0x00 : 0x01),
-                        _cameraVRev,
-                        _cameraHRev,
-                        (byte)(_summonEffect == 0x02 ? 0x00 : (_summonEffect == 0x01 ? 0x01 : 0x02)),
-                        (byte)(_naviMap == 0x01 ? 0x00 : 0x01),
+                        Convert.ToByte(_cameraAuto),
+                        Convert.ToByte(_cameraVRev),
+                        Convert.ToByte(_cameraHRev),
+                        Convert.ToByte(_summonEffect),
+                        Convert.ToByte(_naviMap),
                         Convert.ToByte(_autoSave),
                         Convert.ToByte(_promptMode),
-                        (byte)(_vibrationOn == 0x01 ? 0x00 : 0x01),
-                        (byte)(_commandKH2 == 0x01 ? 0x00 : 0x01),
+                        Convert.ToByte(_vibrationOn),
+                        Convert.ToByte(_commandKH2),
                         _difficultyRead
                     };
 
-                    // Write said config to the menu.
-
-                    Hypervisor.WriteArray(_settingsPoint, SETTINGS_FIRST.ToArray(), true);
+                    Hypervisor.WriteArray(_settingsPoint, SETTINGS_READ.ToArray(), true);
 
                     Variables.SharpHook[0x365A20].Execute();
                     Variables.SharpHook[0x3659E0].Execute();
@@ -242,74 +200,27 @@ namespace ReFined.KH2.Functions
                     DEBOUNCE[6] = true;
                 }
 
-                SETTINGS_SECOND = Hypervisor.ReadArray(_settingsPoint, SETTINGS_FIRST.Count(), true);
+                SETTINGS_WRITE = Hypervisor.ReadArray(_settingsPoint, SETTINGS_READ.Count(), true);
 
-                // ======================================================================================= //
+                Variables.SAVE_MODE = SETTINGS_WRITE[0x05];
+                Variables.CONTROLLER_MODE = SETTINGS_WRITE[0x06];
 
-                /*
-                 *
-                 * THIS ENTIRE BLOCK IS JUST FOR THE FUCKING SCROLL BAR!
-                 * 
-                 * This was quite the endavour to get working. Turns out that Square Enix
-                 * decided to do something correctly here and kill the ENTIRE scroll bar
-                 * rather than just hiding it. So I am doing my best here using **black magic**
-                 * to bring it back to life.
-                 * 
-                 * It works quite well, though not 1:1 with the original. Could not be bothered THAT much.
-                 *
-                 */
+                var _fieldCamBit = SETTINGS_WRITE[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF;
+                var _cameraVerticalBit = SETTINGS_WRITE[0x01] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF;
+                var _cameraHorizontalBit = SETTINGS_WRITE[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_H : Variables.CONFIG_BITWISE.OFF;
 
-                /*
-                if (Entry.CONFIG_COUNT > 0)
-                {
-                    var _pageIndex = Hypervisor.Read<byte>(_selectPoint + 0x12, true);
+                var _summonBit = SETTINGS_WRITE[0x03] == 0x01 ? Variables.CONFIG_BITWISE.SUMMON_PARTIAL :
+                                (SETTINGS_WRITE[0x03] == 0x00 ? Variables.CONFIG_BITWISE.SUMMON_FULL : Variables.CONFIG_BITWISE.OFF);
 
-                    var _pageCount = (Entry.CONFIG_COUNT - 0x08);
-                    var _pageFactor = 0x18 * _pageCount;
+                var _mapBit = SETTINGS_WRITE[0x04] == 0x00 ? Variables.CONFIG_BITWISE.NAVI_MAP : Variables.CONFIG_BITWISE.OFF;
 
-                    var _pageOffset = (_pageFactor / _pageCount) * _pageIndex;
+                var _autoSaveBit = SETTINGS_WRITE[0x05] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR :
+                                  (SETTINGS_WRITE[0x05] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF);
 
-                    var _layoutPointer = Hypervisor.Read<ulong>(0x907640);
+                var _controllerBit = SETTINGS_WRITE[0x06] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER : Variables.CONFIG_BITWISE.OFF;
 
-                    Hypervisor.Write(_layoutPointer + 0x21498, 0x64 + _pageOffset, true);
-                    Hypervisor.Write(_layoutPointer + 0x2149C, 0x64 + _pageOffset, true);
-
-                    Hypervisor.Write(_layoutPointer + 0x21528, 0x64 + _pageOffset, true);
-                    Hypervisor.Write(_layoutPointer + 0x2152C, 0x64 + _pageOffset, true);
-
-                    Hypervisor.Write(_layoutPointer + 0x215B8, 0x64 - (_pageFactor + 1) + _pageOffset, true);
-                    Hypervisor.Write(_layoutPointer + 0x215BC, 0x64 - (_pageFactor + 1) + _pageOffset, true);
-
-                    Hypervisor.Write(_layoutPointer + 0x21568, (0xC0 - _pageFactor) * 0.01F, true);
-                    Hypervisor.Write(_layoutPointer + 0x2156C, (0xC0 - _pageFactor) * 0.01F, true);
-                }
-                */
-
-                // ======================================================================================= //
-
-                // Set the variables.
-                Variables.SAVE_MODE = SETTINGS_SECOND[0x05];
-                Variables.CONTROLLER_MODE = SETTINGS_SECOND[0x06];
-
-                // Calculate the bitwise to write.
-
-                var _fieldCamBit = SETTINGS_SECOND[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF;
-                var _cameraVerticalBit = SETTINGS_SECOND[0x01] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF;
-                var _cameraHorizontalBit = SETTINGS_SECOND[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_H : Variables.CONFIG_BITWISE.OFF;
-
-                var _summonBit = SETTINGS_SECOND[0x03] == 0x01 ? Variables.CONFIG_BITWISE.SUMMON_PARTIAL :
-                                (SETTINGS_SECOND[0x03] == 0x00 ? Variables.CONFIG_BITWISE.SUMMON_FULL : Variables.CONFIG_BITWISE.OFF);
-
-                var _mapBit = SETTINGS_SECOND[0x04] == 0x00 ? Variables.CONFIG_BITWISE.NAVI_MAP : Variables.CONFIG_BITWISE.OFF;
-
-                var _autoSaveBit = SETTINGS_SECOND[0x05] == 0x00 ? Variables.CONFIG_BITWISE.AUTOSAVE_INDICATOR :
-                                  (SETTINGS_SECOND[0x05] == 0x01 ? Variables.CONFIG_BITWISE.AUTOSAVE_SILENT : Variables.CONFIG_BITWISE.OFF);
-
-                var _controllerBit = SETTINGS_SECOND[0x06] == 0x00 ? Variables.CONFIG_BITWISE.PROMPT_CONTROLLER :
-                                    (SETTINGS_SECOND[0x06] == 0x01 ? Variables.CONFIG_BITWISE.PROMPT_KEYBOARD : Variables.CONFIG_BITWISE.OFF);
-
-                var _vibrationBit = SETTINGS_SECOND[0x07] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF;
-                var _commandBit = SETTINGS_SECOND[0x08] == 0x01 ? Variables.CONFIG_BITWISE.COMMAND_KH2 : Variables.CONFIG_BITWISE.OFF;
+                var _vibrationBit = SETTINGS_WRITE[0x07] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF;
+                var _commandBit = SETTINGS_WRITE[0x08] == 0x01 ? Variables.CONFIG_BITWISE.COMMAND_KH2 : Variables.CONFIG_BITWISE.OFF;
 
 
                 var _configBitwise =
@@ -323,20 +234,13 @@ namespace ReFined.KH2.Functions
                     _vibrationBit |
                     _commandBit;
 
-                // Write the current config to the save file.
                 Hypervisor.Write(Variables.ADDR_Config, (ushort)_configBitwise);
             }
 
             else if (DEBOUNCE[6])
-            {
                 DEBOUNCE[6] = false;
-            }
         }
 
-        /// <summary>
-        /// Code to adjust the Aspect Ratio for Ultrawide users.
-        /// May require tweaking. WIP.
-        /// </summary>
         public static void HandleRatio()
         {
             ulong _2ldAddr = 0x8A0974;
@@ -425,10 +329,7 @@ namespace ReFined.KH2.Functions
             }
         }
 
-        /// <summary>
-        /// Adds the option to retry a past fight.
-        /// It also adds the option to prepare before retrying.
-        /// </summary>
+        /*
         public static void HandleRetry()
         {
             // So, we initialize all of this shit just to determine whether Retry will show up or not.
@@ -474,7 +375,7 @@ namespace ReFined.KH2.Functions
                (_worldRead == 0x04 && _roomRead >= 0x15 && _roomRead <= 0x1A) // Cavern of Remembrance
             || (_worldRead == 0x06 && _roomRead == 0x09 && _eventRead >= 0xBD && _eventRead <= 0xC4); // Olympus Cups
 
-            if (!_blacklistCheck && !Checks.CheckTitle())
+            if (!_blacklistCheck && !Variables.IS_TITLE)
             {
                 // The battle state will also check **specifically** for Hades Escape.
                 var _battleState = _battleRead == 0x02 && _cutsceneRead == 0x00;
@@ -662,12 +563,13 @@ namespace ReFined.KH2.Functions
             }
 
             // If in the blacklisted areas: Do not run Retry.
-            else if (!RETRY_BLOCK && !Checks.CheckTitle())
+            else if (!RETRY_BLOCK && !Variables.IS_TITLE)
             {
                 Terminal.Log("Blacklisted area! Disabling Retry...", 0);
 
                 RETRY_BLOCK = true;
             }
         }
+        */
     }
 }

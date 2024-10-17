@@ -47,14 +47,16 @@ namespace ReFined.KH2.Functions
 
                 Terminal.Log("Locating Hotfix Signatures...", 0);
 
-                Continuous.OffsetLimiter = (ulong)Hypervisor.FindSignature(Variables.HFIX_Framelimiter);
-                Demand.OffsetPrompts = (ulong)Hypervisor.FindSignature(Variables.HFIX_ContPrompts);
+                Continuous.LIMITER_OFFSET = (ulong)Hypervisor.FindSignature(Variables.HFIX_Framelimiter);
+                Continuous.PROMPT_OFFSET = (ulong)Hypervisor.FindSignature(Variables.HFIX_ContPrompts);
 
+                /*
                 Variables.ADDR_InventoryINST = (ulong)Hypervisor.FindSignature(Variables.HFIX_InventoryReset);
                 Variables.ADDR_WarpINST = (ulong)Hypervisor.FindSignature(Variables.HFIX_WarpContinue);
 
                 Variables.INST_RoomWarp = Hypervisor.ReadArray(Variables.ADDR_WarpINST, 0x05);
                 Variables.INST_InvRevert = Hypervisor.ReadArray(Variables.ADDR_InventoryINST, 0x07);
+                */
 
                 Terminal.Log("Locating Hotfix Signatures for the Menus...", 0);
 

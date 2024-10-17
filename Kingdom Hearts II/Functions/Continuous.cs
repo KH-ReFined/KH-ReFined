@@ -5,37 +5,47 @@ namespace ReFined.KH2.Functions
 {
     public static class Continuous
     {
-        public static ulong OffsetLimiter;
+        public static ulong PROMPT_OFFSET;
+        public static ulong LIMITER_OFFSET;
 
-        /// <summary>
-        /// Adjusts and edits the current framelimiter, and the function which controls it,
-        /// according to the current chosen framerate.
-        /// </summary>
-        public static void OverrideLimiter()
+        public static byte[]? LIMITER_FUNCTION = null;
+
+        public static void ToggleLimiter()
         {
+            if (LIMITER_FUNCTION == null)
+                LIMITER_FUNCTION = Hypervisor.ReadArray(LIMITER_OFFSET, 0x06);
 
-            // Fetch the framerate, and the first byte of the instruction.
-            var _framerateRead = Hypervisor.Read<byte>(Variables.ADDR_Framerate);
-            var _instructionRead = Hypervisor.Read<byte>(OffsetLimiter);
+            var _fetchFramerate = Hypervisor.Read<byte>(Variables.ADDR_Framerate);
+            var _fetchFunction = Hypervisor.Read<byte>(LIMITER_OFFSET);
+            var _limiterInvert = (byte)(_fetchFramerate == 0x00 ? 0x01 : 0x00);
 
-            // If the framerate is set to 30FPS, and the limiter is NOP'd out: Rewrite the instruction.
-            if (_framerateRead == 0x00 && _instructionRead == 0x90)
+            if (_fetchFramerate == 0x00 && _fetchFunction == 0x90)
             {
-                Terminal.Log("Switched to 30FPS! Restoring the framelimiter.", 0);
-                Hypervisor.WriteArray(OffsetLimiter, Variables.INST_FrameLimiter);
+                Terminal.Log("Toggling the framelimiter for 30FPS.", 0);
+                Hypervisor.WriteArray(LIMITER_OFFSET, LIMITER_FUNCTION);
             }
 
-            // Otherwise, if the framerate is not set to 30FPS, and the limiter is present:
-            else if (_framerateRead != 0x00 && _instructionRead != 0x90)
+            else if (_fetchFramerate != 0x00 && _fetchFunction != 0x90)
             {
-                Terminal.Log("Switched to 60FPS! Destroying the Framelimiter.", 0);
-
-                // NOP the instruction.
-                Hypervisor.WriteArray(OffsetLimiter, [ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 ]);
-
-                // Set the current limiter to be off.
-                Hypervisor.Write<byte>(Variables.ADDR_Framelimiter, 0x00);
+                Terminal.Log("Toggling the framelimiter for 60FPS.", 0);
+                Hypervisor.DeleteInstruction(LIMITER_OFFSET, 0x06);
             }
+
+            Hypervisor.Write(Variables.ADDR_Framelimiter, _limiterInvert);
+        }
+
+        public static void TogglePrompts()
+        {
+            var _promptCheck = Hypervisor.Read<byte>(PROMPT_OFFSET + 0x06);
+            var _promptString = Variables.CONTROLLER_MODE == 0x00 ? "Manual" : "Automatic";
+
+            if (_promptCheck != Variables.CONTROLLER_MODE)
+            {
+                Terminal.Log("Switching to " + _promptString + " Prompt Mode.", 0);
+                Hypervisor.Write(PROMPT_OFFSET + 0x06, Variables.CONTROLLER_MODE);
+            }
+
+            Hypervisor.Write(Variables.ADDR_ControllerMode, Variables.CONTROLLER_MODE);
         }
     }
 }

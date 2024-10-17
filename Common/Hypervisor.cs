@@ -4,6 +4,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System;
 using System.Globalization;
+using System.Net;
 
 namespace ReFined.Common
 {
@@ -222,12 +223,18 @@ namespace ReFined.Common
             VirtualProtectEx(Handle, _address, 0x100000, 0x40, ref _oldProtect);
         }
 
-        public static void RedirectInstruction(ulong Source, uint Destination)
+        public static void RedirectInstruction(ulong Address, uint Destination, bool Absolute = false)
         {
-            var _instEnding = (uint)Source + 0x07;
+            var _instEnding = (uint)Address + 0x07;
             var _instMath = Destination - _instEnding;
-            Hypervisor.WriteArray(Source + 0x03, BitConverter.GetBytes(_instMath));
+            WriteArray(Address + 0x03, BitConverter.GetBytes(_instMath), Absolute);
         }
+
+        public static void DeleteInstruction(ulong Address, int Length, bool Absolute = false)
+        {
+            WriteArray(Address, Enumerable.Repeat<byte>(0x90, Length).ToArray(), Absolute);
+        }
+
 
         public static IntPtr FindSignature(string Input)
         {
@@ -269,6 +276,12 @@ namespace ReFined.Common
             return results[0];
         }
 
+        /// <summary>
+        /// Checks if the pointer exists, is valid, and isn't repurposed.
+        /// </summary>
+        /// <param name="Address">The address.</param>
+        /// <param name="Absolute">Is the address absolute.</param>
+        /// <returns>TRUE if it is valid, FALSE otherwise.</returns>
         public static bool IsValidPointer(this ulong Address, bool Absolute = false)
         {
             var _readValue = Hypervisor.Read<ulong>(Address, Absolute);

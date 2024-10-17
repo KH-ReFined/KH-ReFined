@@ -22,7 +22,7 @@ namespace ReFined.KH2.InGame
         /// <param name="StringID">The ID of the text to be shown.</param>
         public static void ShowInformation(ushort StringID)
         {
-            if (!Checks.CheckTitle())
+            if (!Variables.IS_TITLE)
             {
                 var _pointString = Operations.FetchPointerMSG(Variables.PINT_SystemMSG, StringID);
                 Variables.SharpHook[OffsetInfo].Execute(_pointString);
@@ -35,7 +35,7 @@ namespace ReFined.KH2.InGame
         /// <param name="String">The text to be shown.</param>
         public static void ShowInformationRAW(string Input)
         {
-            if (!Checks.CheckTitle())
+            if (!Variables.IS_TITLE)
             {
                 var _convString = Input.ToKHSCII();
                 Hypervisor.WriteArray(Hypervisor.PureAddress + 0x800000, _convString, true);
@@ -50,7 +50,7 @@ namespace ReFined.KH2.InGame
         /// <param name="StringID">The ID of the text to be shown.</param>
         public static void ShowSmallObtained(ushort StringID)
         {
-            if (!Checks.CheckTitle())
+            if (!Variables.IS_TITLE)
             {
                 var _pointString = Operations.FetchPointerMSG(Variables.PINT_SystemMSG, StringID);
                 Variables.SharpHook[OffsetObtained].Execute(_pointString);
@@ -63,7 +63,7 @@ namespace ReFined.KH2.InGame
         /// <param name="String">The text to be shown.</param>
         public static void ShowSmallObtainedRAW(string Input)
         {
-            if (!Checks.CheckTitle())
+            if (!Variables.IS_TITLE)
             {
                 var _convString = Input.ToKHSCII();
                 Hypervisor.WriteArray(Hypervisor.PureAddress + 0x800000, _convString, true);
@@ -78,7 +78,7 @@ namespace ReFined.KH2.InGame
         /// <param name="StringID">The ID of thetext to be shown.</param>
         public static void ShowSLWarning(short StringID)
         {
-            if (!Checks.CheckTitle())
+            if (!Variables.IS_TITLE)
             {
                 Variables.SharpHook[OffsetSetSLWarning].Execute(StringID);
                 Variables.SharpHook[OffsetShowSLWarning].Execute();
@@ -94,7 +94,7 @@ namespace ReFined.KH2.InGame
         /// <param name="Type">The menu to fall back after confirmation.</param>
         public static void ShowCampWarning(short StringID, int Type)
         {
-            if (!Checks.CheckTitle())
+            if (!Variables.IS_TITLE)
             {
                 var _currentMenu = Hypervisor.Read<int>(0x687B1E);
                 Hypervisor.Write(0x689542, _currentMenu);
