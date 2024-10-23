@@ -1,6 +1,7 @@
 ﻿using ReFined.Common;
 using ReFined.KH2.Functions;
 using ReFined.KH2.Information;
+using ReFined.Libraries;
 
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
 
@@ -38,7 +39,7 @@ namespace ReFined.KH2.InGame
             if (!Variables.IS_TITLE)
             {
                 var _convString = Input.ToKHSCII();
-                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x800000, _convString, true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x800000, _convString, true);
 
                 Variables.SharpHook[OffsetInfo].Execute((long)(Hypervisor.PureAddress + 0x800000));
             }
@@ -66,7 +67,7 @@ namespace ReFined.KH2.InGame
             if (!Variables.IS_TITLE)
             {
                 var _convString = Input.ToKHSCII();
-                Hypervisor.WriteArray(Hypervisor.PureAddress + 0x800000, _convString, true);
+                Hypervisor.Write(Hypervisor.PureAddress + 0x800000, _convString, true);
                 Variables.SharpHook[OffsetObtained].Execute((long)(Hypervisor.PureAddress + 0x800000));
             }
         }

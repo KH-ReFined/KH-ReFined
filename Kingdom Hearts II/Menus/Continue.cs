@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 
 using ReFined.Common;
 using ReFined.KH2.Information;
+using ReFined.Libraries;
 
 namespace ReFined.KH2.Menus
 {
@@ -80,7 +81,7 @@ namespace ReFined.KH2.Menus
                 {
                     var _childExport = Children[i].Export();
                     var _childWrite = _childExport.SelectMany(BitConverter.GetBytes).ToArray();
-                    Hypervisor.WriteArray(_continueOptions + 0x34C + (ulong)(0x04 * i), _childWrite, true);
+                    Hypervisor.Write(_continueOptions + 0x34C + (ulong)(0x04 * i), _childWrite, true);
                 }
 
                 else

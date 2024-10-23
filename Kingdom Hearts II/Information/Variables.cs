@@ -1,12 +1,7 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using ReFined.KH2.Menus;
+﻿using Binarysharp.MSharp;
 
-// using DiscordRPC;
-using Binarysharp.MSharp;
-using System.Net.NetworkInformation;
-using ReFined.Common;
+using ReFined.KH2.Menus;
+using ReFined.Libraries;
 
 namespace ReFined.KH2.Information
 {
@@ -58,6 +53,60 @@ namespace ReFined.KH2.Information
 
         public static MemorySharp SharpHook;
         // public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
+
+        public static string[] BOSSObjentry =
+{
+            "B_BB100",
+            "B_BB100_GM",
+            "B_BB100_TSURU",
+            "B_CA000",
+            "B_CA050",
+            "B_CA050_GM",
+            "B_LK120",
+            "B_LK120_GM",
+            "B_MU120",
+            "B_MU120_GM",
+        };
+
+        public static string[] ENEMYObjentry =
+        {
+            "M_EX010",
+            "M_EX010_NM",
+            "M_EX050",
+            "M_EX060",
+            "M_EX200",
+            "M_EX200_NM",
+            "M_EX500",
+            "M_EX500_GM",
+            "M_EX500_HB",
+            "M_EX500_HB_GM",
+            "M_EX500_NM",
+            "M_EX510",
+            "M_EX520",
+            "M_EX520_AL",
+            "M_EX530",
+            "M_EX540",
+            "M_EX550",
+            "M_EX560",
+            "M_EX570",
+            "M_EX590",
+            "M_EX620",
+            "M_EX620_AL",
+            "M_EX630",
+            "M_EX640",
+            "M_EX650",
+            "M_EX670",
+            "M_EX690",
+            "M_EX710",
+            "M_EX720",
+            "M_EX730",
+            "M_EX750",
+            "M_EX750_NM",
+            "M_EX780",
+            "M_EX790",
+            "M_EX790_HALLOWEEN",
+            "M_EX790_HALLOWEEN_NM"
+        };
 
         //
         // ALTERED VARIABLES
@@ -111,6 +160,20 @@ namespace ReFined.KH2.Information
         public static ulong ADDR_MenuType = 0x900724;
         public static ulong ADDR_MenuSelect = 0x902FA0;
 
+        public static ulong ADDR_MagicCommands = 0x2A11188;
+        public static ulong ADDR_MagicIndex = 0x2A1073C;
+        public static ulong ADDR_MagicLV1 = 0x9ACE44;
+        public static ulong ADDR_MagicLV2 = 0x9ACE7F;
+
+        public static ulong ADDR_MusicPath = 0x5B4C74;
+
+        public static ulong ADDR_PAXFormatter = 0x5C8590;
+        public static ulong ADDR_ANBFormatter = 0x5B8FB0;
+        public static ulong ADDR_EVTFormatter = 0x5B9020;
+        public static ulong ADDR_BTLFormatter = 0x5B4E98;
+
+        public static ulong ADDR_ObjentryBASE = 0x2A254D0;
+
         //
         // POINTERS
         //
@@ -126,6 +189,8 @@ namespace ReFined.KH2.Information
 
         public static ulong PINT_GameOver = 0xBEF4A8;
         public static ulong PINT_GameOverOptions = 0x2A11360;
+
+        public static ulong PINT_ChildMenu = 0x2A11118;
 
         //
         // RPC ASSET LIBRARY
@@ -165,6 +230,7 @@ namespace ReFined.KH2.Information
         public static string HFIX_ContPrompts = "C7 05 ?? ?? ?? ?? 01 00 00 00 E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ??";
         public static string HFIX_WarpContinue = "E8 59 00 00 00 48 8B 0D ?? ?? ?? ??";
         public static string HFIX_InventoryReset = "48 8D 15 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ??";
+        public static string HFIX_CommandNavigation = "48 89 5C 24 18 55 41 56 41 57 48 83 EC 20 4C 8B 41 08 48 8B D9";
 
         public static string HFIX_ConfigFirst = "40 53 48 83 EC 20 0F B6 D9 48 8B 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B 1D ?? ?? ?? ??";
         public static string HFIX_ConfigSecond = "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 41 54 41 55 41 56 41 57 48 81 EC 80 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 70 E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ??";

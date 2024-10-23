@@ -1,4 +1,5 @@
 ﻿using ReFined.Common;
+using ReFined.Libraries;
 using ReFined.KH2.Information;
 using ReFined.KH2.Menus;
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
@@ -8,6 +9,13 @@ namespace ReFined.KH2.Functions
     internal class Critical
     {
         public static IntPtr OffsetCampMenu;
+
+        public static ulong WARP_OFFSET;
+        public static ulong INVT_OFFSET;
+        public static ulong CMD_OFFSET;
+
+        public static byte[]? WARP_FUNCTION;
+        public static byte[]? INVT_FUNCTION;
 
         static Variables.CONFIG_BITWISE CONFIG_BIT;
         static bool CONFIG_WRITTEN;
@@ -32,6 +40,149 @@ namespace ReFined.KH2.Functions
         static byte RETRY_MODE;
         static byte PREPARE_MODE;
         static bool RETRY_BLOCK;
+
+        static byte[] MAGIC_STORE;
+
+        static uint[] MAGIC_OFFSET = [0x1B1, 0x295, 0x2BD, 0x30C, 0x33C];
+        static List<byte[]> MAGIC_INST;
+
+        static uint MAGIC_LV1;
+        static ushort MAGIC_LV2;
+        static bool ROOM_LOADED;
+
+        public static void HandleMagicSort()
+        {
+            var _loadRead = Hypervisor.Read<byte>(Variables.ADDR_LoadFlag);
+
+            var _inputRead = Hypervisor.Read<ushort>(Variables.ADDR_Input);
+            var _menuPointer = Hypervisor.Read<ulong>(Variables.PINT_ChildMenu);
+
+            var _magicOne = Hypervisor.Read<uint>(Variables.ADDR_MagicLV1);
+            var _magicTwo = Hypervisor.Read<ushort>(Variables.ADDR_MagicLV2);
+
+            var _readMagic = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE500, 0x0C);
+            var _firstMagic = BitConverter.ToUInt16(_readMagic, 0x00);
+
+            if (MAGIC_INST == null)
+            {
+                MAGIC_INST =
+                [
+                    Hypervisor.Read<byte>(CMD_OFFSET + MAGIC_OFFSET[0], 0x03),
+                    Hypervisor.Read<byte>(CMD_OFFSET + MAGIC_OFFSET[1], 0x03),
+                    Hypervisor.Read<byte>(CMD_OFFSET + MAGIC_OFFSET[2], 0x03),
+                    Hypervisor.Read<byte>(CMD_OFFSET + MAGIC_OFFSET[3], 0x03),
+                    Hypervisor.Read<byte>(CMD_OFFSET + MAGIC_OFFSET[4], 0x03),
+                ];
+            }
+
+            if (_loadRead == 0x01 && MAGIC_STORE == null && _firstMagic != 0x00)
+            {
+                Terminal.Log("Detected a saved Magic sort! Reloading...", 0);
+                MAGIC_STORE = _readMagic;
+            }
+
+            if (_magicOne != MAGIC_LV1 || _magicTwo != MAGIC_LV2)
+            {
+                Terminal.Log("Spell change detected! Resetting sort memory.", 1);
+
+                MAGIC_STORE = null;
+
+                MAGIC_LV1 = _magicOne;
+                MAGIC_LV2 = _magicTwo;
+
+                _readMagic = new byte[0x0C];
+                Hypervisor.Write(Variables.ADDR_SaveData + 0xE500, _readMagic);
+
+                _firstMagic = 0x00;
+            }
+
+            if (Variables.IS_TITLE)
+                MAGIC_STORE = null; 
+
+            if (_loadRead == 0x01 && ROOM_LOADED && _menuPointer != 0x00)
+            {
+                if (MAGIC_STORE != null)
+                {
+                    Terminal.Log("Roomchange detected! Restoring the Magic Menu.", 1);
+                    Hypervisor.Write(Variables.ADDR_MagicCommands, MAGIC_STORE);
+                }
+
+                ROOM_LOADED = false;
+            }
+
+            else if (_loadRead == 0x00 && !ROOM_LOADED)
+                ROOM_LOADED = true;
+
+            if (_menuPointer != 0x00 && _loadRead == 0x01)
+            {
+                var _menuRead = Hypervisor.Read<byte>(_menuPointer, true);
+
+                if (_menuRead == 0x01)
+                {
+                    var _magicIndex = Hypervisor.Read<byte>(Variables.ADDR_MagicIndex);
+                    var _magicMax = Hypervisor.Read<byte>(_menuPointer + 0x10, true);
+
+                    var _inputCheck = (_inputRead & 0x0110) == 0x0110 ? 0x01 : (_inputRead & 0x0140) == 0x0140 ? 0x02 : 0x00;
+                    var _triggerCheck = (_inputRead & 0x0100) == 0x0100;
+
+                    var _insCheck = Hypervisor.Read<byte>(CMD_OFFSET + 0x1B1);
+
+                    if (_triggerCheck && _insCheck != 0x90)
+                    {
+                        Terminal.Log("L2 Detected within Magic Menu! Disabling input registry.", 1);
+
+                        foreach (var _off in MAGIC_OFFSET)
+                        Hypervisor.DeleteInstruction(CMD_OFFSET + _off, 0x03);
+                    }
+
+                    else if (!_triggerCheck && _insCheck == 0x90)
+                    {
+                        Terminal.Log("L2 has been let go! Enabling input registry.", 1);
+
+                        for (int i = 0; i < MAGIC_OFFSET.Length; i++)
+                            Hypervisor.Write(CMD_OFFSET + MAGIC_OFFSET[i], MAGIC_INST[i]);
+                    }
+
+                    if (!DEBOUNCE[1] && _inputCheck != 0x00)
+                    {
+                        DEBOUNCE[1] = true;
+
+                        var _magicPointer = (0x02 * _magicIndex);
+                        var _magicBounds = _magicPointer + (_inputCheck == 0x01 ? -0x02 : 0x02);
+
+                        var _subjectMagic = Hypervisor.Read<ushort>(Variables.ADDR_MagicCommands + (ulong)_magicPointer);
+                        var _targetMagic = _magicBounds >= 0 ? Hypervisor.Read<ushort>(Variables.ADDR_MagicCommands + (ulong)_magicBounds) : (ushort)0x0000;
+
+                        if (_targetMagic != 0x0000)
+                        {
+                            Hypervisor.Write(Variables.ADDR_MagicCommands + (ulong)_magicPointer, _targetMagic);
+                            Hypervisor.Write(Variables.ADDR_MagicCommands + (ulong)_magicBounds, _subjectMagic);
+
+                            Hypervisor.Write(Variables.ADDR_MagicIndex, _magicIndex + (_inputCheck == 0x01 ? -0x01 : 0x01));
+                            Hypervisor.Write(Variables.ADDR_MagicIndex + 0x04, _subjectMagic);
+
+                            Terminal.Log(String.Format("Moving Magic ID \"{0}\" {1} within the menu!", "0x" + _subjectMagic.ToString("X4"), _inputCheck == 0x01 ? "up" : "down"), 0);
+
+                            MAGIC_STORE = Hypervisor.Read<byte>(Variables.ADDR_MagicCommands, _magicMax * 0x02);
+                            Hypervisor.Write(Variables.ADDR_SaveData + 0xE500, MAGIC_STORE);
+
+                        }
+
+                        else
+                            Terminal.Log("Could not move the spell out of bounds!", 1);
+                    }
+
+                    else if (DEBOUNCE[1] && _inputCheck == 0x00)
+                        DEBOUNCE[1] = false;
+                }
+            }
+
+            else
+            {
+                for (int i = 0; i < MAGIC_OFFSET.Length; i++)
+                    Hypervisor.Write(CMD_OFFSET + MAGIC_OFFSET[i], MAGIC_INST[i]);
+            }
+        }
 
         public static void HandleAutosave()
         {
@@ -73,7 +224,6 @@ namespace ReFined.KH2.Functions
                         SAVE_ITERATOR = 0;
                     }
 
-                    // If the room has changed, and the world is valid:
                     else if (SAVE_ROOM != _roomCheck && _worldCheck >= 2)
                     {
                         SAVE_ITERATOR++;
@@ -97,7 +247,7 @@ namespace ReFined.KH2.Functions
         {
             if (Variables.IS_TITLE)
             {
-                var _readState = Hypervisor.ReadArray(Variables.ADDR_NewGame, 0x20);
+                var _readState = Hypervisor.Read<byte>(Variables.ADDR_NewGame, 0x20);
 
                 var _vibration = _readState[0x04] == 0x00 ? Variables.CONFIG_BITWISE.VIBRATION : Variables.CONFIG_BITWISE.OFF;
 
@@ -150,6 +300,13 @@ namespace ReFined.KH2.Functions
             {
                 Terminal.Log("Fetching the config from the save file.", 0);
 
+                if (!Variables.IS_LITE)
+                {
+                    Variables.AUDIO_MODE = _configRead.GetBitwise(0xCAFE, 0x0800, 0x1000);
+                    Variables.MUSIC_VANILLA = _configRead.GetBitwise(0x0020, 0xCAFE) == 0x00 ? true : false;
+                    Variables.ENEMY_VANILLA = _configRead.GetBitwise(0x8000, 0xCAFE) == 0x00 ? true : false;
+                }
+
                 Variables.CONTROLLER_MODE = _configRead.GetBitwise(0xCAFE, 0x2000);
                 Variables.SAVE_MODE = _configRead.GetBitwise(0x0004, 0x0002, 0xCAFE);
 
@@ -173,7 +330,7 @@ namespace ReFined.KH2.Functions
                     var _cameraVRev = _configRead.GetBitwise(0x0100);
                     var _commandKH2 = _configRead.GetBitwise(0x0040);
                     var _vibrationOn = _configRead.GetBitwise(0x0001);
-                    var _summonEffect = _configRead.GetBitwise(0x0200, 0x0400);
+                    var _summonEffect = _configRead.GetBitwise(0x0400, 0x0200);
 
                     var _autoSave = _configRead.GetBitwise(0x0004, 0x0002, 0xCAFE);
                     var _promptMode = _configRead.GetBitwise(0x2000, 0xCAFE);
@@ -192,7 +349,19 @@ namespace ReFined.KH2.Functions
                         _difficultyRead
                     };
 
-                    Hypervisor.WriteArray(_settingsPoint, SETTINGS_READ.ToArray(), true);
+                    if (!Variables.IS_LITE)
+                    {
+                        var _langAudio = _configRead.GetBitwise(0xCAFE, 0x0800, 0x1000);
+                        var _musicClassic = _configRead.GetBitwise(0x0020, 0xCAFE);
+                        var _heartlessClassic = _configRead.GetBitwise(0x8000, 0xCAFE);
+
+                        SETTINGS_READ.Insert(0x08, _langAudio);
+                        SETTINGS_READ.Insert(0x08, _musicClassic);
+                        SETTINGS_READ.Insert(0x08, _heartlessClassic);
+
+                    }
+
+                    Hypervisor.Write(_settingsPoint, SETTINGS_READ.ToArray(), true);
 
                     Variables.SharpHook[0x365A20].Execute();
                     Variables.SharpHook[0x3659E0].Execute();
@@ -200,7 +369,7 @@ namespace ReFined.KH2.Functions
                     DEBOUNCE[6] = true;
                 }
 
-                SETTINGS_WRITE = Hypervisor.ReadArray(_settingsPoint, SETTINGS_READ.Count(), true);
+                SETTINGS_WRITE = Hypervisor.Read<byte>(_settingsPoint, SETTINGS_READ.Count(), true);
 
                 Variables.SAVE_MODE = SETTINGS_WRITE[0x05];
                 Variables.CONTROLLER_MODE = SETTINGS_WRITE[0x06];
@@ -329,11 +498,8 @@ namespace ReFined.KH2.Functions
             }
         }
 
-        /*
         public static void HandleRetry()
         {
-            // So, we initialize all of this shit just to determine whether Retry will show up or not.
-
             var _menuRead = Hypervisor.Read<int>(Variables.ADDR_MenuType);
             var _selectRead = Hypervisor.Read<byte>(Variables.ADDR_MenuSelect);
 
@@ -347,8 +513,6 @@ namespace ReFined.KH2.Functions
             var _battleRead = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
             var _cutsceneRead = Hypervisor.Read<byte>(Variables.ADDR_CutsceneFlag);
 
-            var _warpRead = Hypervisor.Read<byte>(Variables.ADDR_WarpINST);
-
             var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_Area);
             var _roomRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
             var _eventRead = Hypervisor.Read<ushort>(Variables.ADDR_Area + 0x04);
@@ -358,46 +522,42 @@ namespace ReFined.KH2.Functions
                 Opcode = 0x0002,
                 Label = 0x8AB1,
             };
-
             var _entPrepare = new Continue.Entry()
             {
                 Opcode = 0x0002,
                 Label = 0x01DE,
             };
 
-            var _nullArray = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
-
-            // Check for Hades Escape
             var _isEscape = _worldRead == 0x06 && _roomRead == 0x05 && _eventRead == 0x6F;
 
-            // No-No Areas for Retry.
             var _blacklistCheck =
-               (_worldRead == 0x04 && _roomRead >= 0x15 && _roomRead <= 0x1A) // Cavern of Remembrance
-            || (_worldRead == 0x06 && _roomRead == 0x09 && _eventRead >= 0xBD && _eventRead <= 0xC4); // Olympus Cups
+               (_worldRead == 0x04 && _roomRead >= 0x15 && _roomRead <= 0x1A)
+            || (_worldRead == 0x06 && _roomRead == 0x09 && _eventRead >= 0xBD && _eventRead <= 0xC4);
 
             if (!_blacklistCheck && !Variables.IS_TITLE)
             {
-                // The battle state will also check **specifically** for Hades Escape.
                 var _battleState = _battleRead == 0x02 && _cutsceneRead == 0x00;
 
-                // Read the necessary shits at the start of a fight.
+                if (RETRY_BLOCK)
+                {
+                    Terminal.Log("Out of the blacklisted area. Retry functionality has been enabled.", 0);
+                    RETRY_BLOCK = false;
+                }
+
                 if (_battleState && _pauseRead == 0x00 && !STATE_COPIED)
                 {
-                    Terminal.Log("Forced fight was detected! Copying the current state...", 0);
+                    Terminal.Log("A forced battle was started. Savestate was copied to memory.", 0);
 
                     if (_isEscape)
                     {
                         HADES_COUNT = 0;
-                        Terminal.Log("Hades Escape Detected! Adjusting Retry Logic!", 0);
+                        Terminal.Log("Adjusted Retry Logic for the Hades Escape event.", 0);
                     }
                     
-                    var _currentSave = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x10FC0);
-                    Hypervisor.WriteArray(0x7A0000, _currentSave);
+                    var _currentSave = Hypervisor.Read<byte>(Variables.ADDR_SaveData, 0x10FC0);
 
-                    ROXAS_KEYBLADE = Hypervisor.Read<ushort>(0x445052);
+                    Hypervisor.Write(0x7A0000, _currentSave);
                     STATE_COPIED = true;
-
-                    Terminal.Log("Current state has been copied!", 0);
 
                     var _insertIndex = Variables.RETRY_DEFAULT ? 0 : 1;
 
@@ -405,16 +565,15 @@ namespace ReFined.KH2.Functions
                     Variables.CONTINUE_MENU.Children.Insert(_insertIndex, _entRetry);
                 }
 
-                // Flush the memory post-fight.
                 else if (!_battleState && _pauseRead == 0x00 && STATE_COPIED && !(_isEscape && _battleRead == 0x01))
                 {
-                    Terminal.Log("The player is out of battle, resetting the copied state...", 0);
-                    Hypervisor.WriteArray(0x7A0000, new byte[0x10FC0]);
+                    Terminal.Log("The battle has ended. Savestate has been restored.", 0);
+                    Hypervisor.Write(0x7A0000, new byte[0x10FC0]);
 
                     if (RETRY_MODE != 0x00)
                     {
-                        Hypervisor.WriteArray(Variables.ADDR_WarpINST, Variables.INST_RoomWarp);
-                        Hypervisor.WriteArray(Variables.ADDR_InventoryINST, Variables.INST_InvRevert);
+                        Hypervisor.Write(WARP_OFFSET, WARP_FUNCTION);
+                        Hypervisor.Write(INVT_OFFSET, INVT_FUNCTION);
                         RETRY_MODE = 0x00;
                     }
 
@@ -424,152 +583,106 @@ namespace ReFined.KH2.Functions
                     ROXAS_KEYBLADE = 0x0000;
                 }
 
-
-                // Count the amount of "done" battles in Hades Escape.
                 if (_isEscape && _battleRead == 0x01 && !DEBOUNCE[7])
                 {
                     HADES_COUNT += 1;
                     DEBOUNCE[7] = true;
-                    Terminal.Log("Hades Escape: Incrementing Clear Count!", 0);
+                    Terminal.Log("Incrementing the clear count for Hades Escape.", 0);
                 }
 
                 if (_isEscape && _battleRead == 0x02 && DEBOUNCE[7])
                     DEBOUNCE[7] = false;
-
                
-                // If the battle has ended (Death, Kill, Hades Clear, or Cutscene), restore the functions.
                 if (_gameOverRead == 0x00 && ((_finishRead == 0x01 || _cutsceneRead != 0x00) && RETRY_MODE != 0x00) || (_isEscape && HADES_COUNT == 3))
                 {
-                    Terminal.Log("The battle has ended. Restoring functions...", 0);
+                    Terminal.Log("The battle has ended. Disabled functions have been re-enabled.", 0);
 
                     if (_isEscape)
                     {
                         HADES_COUNT = 255;
-                        Terminal.Log("Battle ended because of Hades Escape.", 0);
+                        Terminal.Log("The battle ended on a special edge-case.", 0);
                     }
 
-                    Hypervisor.WriteArray(Variables.ADDR_WarpINST, Variables.INST_RoomWarp);
-                    Hypervisor.WriteArray(Variables.ADDR_InventoryINST, Variables.INST_InvRevert);
+                    Hypervisor.Write(WARP_OFFSET, WARP_FUNCTION);
+                    Hypervisor.Write(INVT_OFFSET, INVT_FUNCTION);
 
                     RETRY_MODE = 0x00;
                 }
 
-                if (RETRY_BLOCK)
-                {
-                    Terminal.Log("Out of blacklisted area. Re-activating Retry.", 0);
-                    RETRY_BLOCK = false;
-                }
-
-                // If the game is over and the state is copied beforehand:
                 if (_gameOverRead != 0x00 && STATE_COPIED)
                 {
-                    // Restore Roxas' Keyblade.
-                    var _roxasTemp = Hypervisor.Read<ushort>(0x445052);
-                    var _charRead = Hypervisor.Read<ushort>(0x24BE4B2);
-
-                    if (_roxasTemp != ROXAS_KEYBLADE && _charRead == 0x5A)
-                    {
-                        Hypervisor.Write(0x446B4C, _roxasTemp);
-                        Hypervisor.Write(0x445052, ROXAS_KEYBLADE);
-                    }
-
-                    // Calculate what button will do what.
                     var _retryButton = Variables.RETRY_DEFAULT ? 0x00 : 0x01;
                     var _prepareButton = Variables.RETRY_DEFAULT ? 0x01 : 0x02;
                     var _continueButton = Variables.RETRY_DEFAULT ? 0x02 : 0x00;
 
-                    // Calculate where the Continue function looks for the save, and our save.
                     var _calculatePointer = Hypervisor.PureAddress - Hypervisor.MemoryOffset + 0x39DECB;
                     var _calculateSave = Hypervisor.PureAddress - Hypervisor.MemoryOffset + 0x7A0000;
 
-                    // Restore if the Load Menu is present.
-                    if ((_subMenuRead == 0x04 || _subMenuRead == 0x0C) && _warpRead == 0x90 && RETRY_MODE >= 0x01)
-                    {
-                        Terminal.Log("Load Menu has been detected. Restoring functions...", 0);
+                    var _buttonCheck = _selectRead == _retryButton || _selectRead == _prepareButton;
 
-                        Hypervisor.WriteArray(Variables.ADDR_WarpINST, Variables.INST_RoomWarp);
-                        Hypervisor.WriteArray(Variables.ADDR_InventoryINST, Variables.INST_InvRevert);
+                    if (!_buttonCheck && _selectRead < 0x04 && RETRY_MODE != 0x00)
+                    {
+                        Terminal.Log("Switched out of Retry, enabling functions.", 0);
+
+                        Hypervisor.Write(WARP_OFFSET, WARP_FUNCTION);
+                        Hypervisor.Write(INVT_OFFSET, INVT_FUNCTION);
 
                         RETRY_MODE = 0x00;
+                        PREPARE_MODE = 0x00;
                     }
 
-                    // Destroy if the button is Retry.
-                    else if (_selectRead == _retryButton && RETRY_MODE != 0x01)
+                    else if (_buttonCheck && RETRY_MODE == 0x00)
                     {
-                        Terminal.Log("Switched to Retry mode! Destroying functions...", 0);
+                        Terminal.Log("Switched into Retry, disabling functions.", 0);
 
-                        Hypervisor.WriteArray(Variables.ADDR_WarpINST, _nullArray);
-                        Hypervisor.WriteArray(Variables.ADDR_InventoryINST, [ 0x48, 0x8D, 0x15 ]);
+                        Hypervisor.DeleteInstruction(WARP_OFFSET, 0x05);
+                        Hypervisor.Write(INVT_OFFSET, INVT_FUNCTION.Take(0x03).ToArray());
 
-                        Hypervisor.Write(Variables.ADDR_InventoryINST + 0x03, (uint)(_calculateSave - _calculatePointer));
+                        Hypervisor.Write(INVT_OFFSET + 0x03, (uint)(_calculateSave - _calculatePointer));
 
                         RETRY_MODE = 0x01;
-                        PREPARE_MODE = 0x00;
                     }
 
-                    // Restore if the button is Continue.
-                    else if (_selectRead == _continueButton && RETRY_MODE != 0x00)
+                    if (_selectRead == _prepareButton && RETRY_MODE != 0x02)
                     {
-                        Terminal.Log("Switched to Continue mode! Restoring functions...", 0);
-
-                        Hypervisor.WriteArray(Variables.ADDR_WarpINST, Variables.INST_RoomWarp);
-                        Hypervisor.WriteArray(Variables.ADDR_InventoryINST, Variables.INST_InvRevert);
-
-                        RETRY_MODE = 0x00;
-                        PREPARE_MODE = 0x00;
-                    }
-
-                    // Read the beginning save state, then destroy if the button is Prepare.
-                    else if (_selectRead == _prepareButton && RETRY_MODE != 0x02)
-                    {
-                        Terminal.Log("Switched to Prepare Mode! Destroying functions...", 0);
-
-                        var _currentSave = Hypervisor.ReadArray(0x7A0000, 0x10FC0);
-                        Hypervisor.WriteArray(Variables.ADDR_SaveData, _currentSave);
-
-                        Hypervisor.WriteArray(Variables.ADDR_WarpINST, _nullArray);
-                        Hypervisor.WriteArray(Variables.ADDR_InventoryINST, [ 0x48, 0x8D, 0x15 ]);
-
-                        Hypervisor.Write(Variables.ADDR_InventoryINST + 0x03, (uint)(_calculateSave - _calculatePointer));
+                        var _currentSave = Hypervisor.Read<byte>(0x7A0000, 0x10FC0);
+                        Hypervisor.Write(Variables.ADDR_SaveData, _currentSave);
 
                         RETRY_MODE = 0x02;
                         PREPARE_MODE = 0x01;
+
+                        Terminal.Log("Prepare and Retry is ready to execute.", 0);
                     }
                 }
 
-                // If the death menu is gone, and Prepare and Retry was executed:
                 else
                 {
-                    // Call the menu.
                     if (PREPARE_MODE == 0x01 && _menuRead != 0x08)
                     {
                         Terminal.Log("Prepare request detected! Opening the Camp Menu...", 0);
                         Variables.SharpHook[OffsetCampMenu].Execute(BSharpConvention.MicrosoftX64, 0, 0);
                     }
 
-                    // Acknowledge the menu was called.
                     else if (_menuRead == 0x08 && PREPARE_MODE == 0x01)
                         PREPARE_MODE = 0x02;
 
                     else if (PREPARE_MODE == 0x02 && _menuRead != 0x08)
                     {
                         Terminal.Log("Prepare finished! Copying the save state...", 0);
-                        var _currentSave = Hypervisor.ReadArray(Variables.ADDR_SaveData, 0x10FC0);
-                        Hypervisor.WriteArray(0x7A0000, _currentSave);
+                        var _currentSave = Hypervisor.Read<byte>(Variables.ADDR_SaveData, 0x10FC0);
+                        Hypervisor.Write(0x7A0000, _currentSave);
                         PREPARE_MODE = 0x03;
                     }
                 }
 
             }
 
-            // If in the blacklisted areas: Do not run Retry.
             else if (!RETRY_BLOCK && !Variables.IS_TITLE)
             {
-                Terminal.Log("Blacklisted area! Disabling Retry...", 0);
+                Terminal.Log("Blacklisted area have been detected. Retry functionality has been disabled.", 0);
 
                 RETRY_BLOCK = true;
             }
         }
-        */
     }
 }

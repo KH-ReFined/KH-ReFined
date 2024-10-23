@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 
 using ReFined.Common;
 using ReFined.KH2.Information;
+using ReFined.Libraries;
 
 namespace ReFined.KH2.Menus
 {
@@ -161,7 +162,7 @@ namespace ReFined.KH2.Menus
             };
             var _entController = new Entry()
             {
-                Count = 3,
+                Count = 2,
                 Title = 0x01C0,
                 
                 Buttons = new List<ushort>()
@@ -267,7 +268,7 @@ namespace ReFined.KH2.Menus
             {
                 var _childExport = Children[i].Export();
                 var _childWrite = _childExport.SelectMany(BitConverter.GetBytes).ToArray();
-                Hypervisor.WriteArray(Variables.ADDR_ConfigMenu + (ulong)(i * 0x14), _childWrite);
+                Hypervisor.Write(Variables.ADDR_ConfigMenu + (ulong)(i * 0x14), _childWrite);
             }
 
             byte _lastIndex = (byte)(Children.Count - 1);

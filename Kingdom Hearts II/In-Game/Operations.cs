@@ -1,5 +1,6 @@
 ﻿using ReFined.Common;
 using ReFined.KH2.Information;
+using ReFined.Libraries;
 
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
 
@@ -25,7 +26,7 @@ namespace ReFined.KH2.InGame
                 return null;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
+            var _fetchData = Hypervisor.Read<byte>(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
 
             var _offsetLocal = _fetchData.FindValue<int>(StringID);
 
@@ -68,7 +69,7 @@ namespace ReFined.KH2.InGame
                 return 0x00;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
+            var _fetchData = Hypervisor.Read<byte>(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
 
             var _offsetLocal = _fetchData.FindValue<int>(StringID);
 
@@ -94,7 +95,7 @@ namespace ReFined.KH2.InGame
                 return 0x00;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
+            var _fetchData = Hypervisor.Read<byte>(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
 
             var _offsetLocal = _fetchData.FindValue(StringID);
 
@@ -120,7 +121,7 @@ namespace ReFined.KH2.InGame
                 return 0x00;
 
             var _fetchCount = Hypervisor.Read<int>(_msnAbsolute + 0x04, true);
-            var _fetchData = Hypervisor.ReadArray(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
+            var _fetchData = Hypervisor.Read<byte>(_msnAbsolute + 0x08, _fetchCount * 0x08, true);
 
             var _offsetLocal = _fetchData.FindValue<int>(StringID);
 

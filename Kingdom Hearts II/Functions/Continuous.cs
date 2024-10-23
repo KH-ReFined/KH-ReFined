@@ -1,5 +1,6 @@
 ﻿using ReFined.Common;
 using ReFined.KH2.Information;
+using ReFined.Libraries;
 
 namespace ReFined.KH2.Functions
 {
@@ -13,7 +14,7 @@ namespace ReFined.KH2.Functions
         public static void ToggleLimiter()
         {
             if (LIMITER_FUNCTION == null)
-                LIMITER_FUNCTION = Hypervisor.ReadArray(LIMITER_OFFSET, 0x06);
+                LIMITER_FUNCTION = Hypervisor.Read<byte>(LIMITER_OFFSET, 0x06);
 
             var _fetchFramerate = Hypervisor.Read<byte>(Variables.ADDR_Framerate);
             var _fetchFunction = Hypervisor.Read<byte>(LIMITER_OFFSET);
@@ -22,7 +23,7 @@ namespace ReFined.KH2.Functions
             if (_fetchFramerate == 0x00 && _fetchFunction == 0x90)
             {
                 Terminal.Log("Toggling the framelimiter for 30FPS.", 0);
-                Hypervisor.WriteArray(LIMITER_OFFSET, LIMITER_FUNCTION);
+                Hypervisor.Write(LIMITER_OFFSET, LIMITER_FUNCTION);
             }
 
             else if (_fetchFramerate != 0x00 && _fetchFunction != 0x90)
@@ -47,5 +48,6 @@ namespace ReFined.KH2.Functions
 
             Hypervisor.Write(Variables.ADDR_ControllerMode, Variables.CONTROLLER_MODE);
         }
+
     }
 }

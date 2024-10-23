@@ -30,7 +30,7 @@ namespace ReFined.KH2.Functions
                 Variables.RESET_PROMPT = Convert.ToBoolean(_configIni.Read("resetPrompt", "Kingdom Hearts II"));
 
                 Terminal.Log("Unlocking Memory Regions...", 0);
-                Hypervisor.UnlockBlock(Hypervisor.PureAddress + 0x360000, true);
+                Hypervisor.UnlockBlock(0x360000);
 
                 Terminal.Log("Locating Function Signatures...", 0);
 
@@ -43,21 +43,22 @@ namespace ReFined.KH2.Functions
                 Message.OffsetSetCampWarning = Hypervisor.FindSignature(Variables.FUNC_SetCampWarning);
                 Message.OffsetShowCampWarning = Hypervisor.FindSignature(Variables.FUNC_ShowCampWarning);
 
+                Critical.OffsetCampMenu = Hypervisor.FindSignature(Variables.FUNC_ExecuteCampMenu);
+
                 Sound.OffsetSound = Hypervisor.FindSignature(Variables.FUNC_PlaySFX);
 
                 Terminal.Log("Locating Hotfix Signatures...", 0);
 
                 Continuous.LIMITER_OFFSET = (ulong)Hypervisor.FindSignature(Variables.HFIX_Framelimiter);
                 Continuous.PROMPT_OFFSET = (ulong)Hypervisor.FindSignature(Variables.HFIX_ContPrompts);
+                
+                Critical.INVT_OFFSET = (ulong)Hypervisor.FindSignature(Variables.HFIX_InventoryReset);
+                Critical.WARP_OFFSET = (ulong)Hypervisor.FindSignature(Variables.HFIX_WarpContinue);
+                Critical.CMD_OFFSET = (ulong)Hypervisor.FindSignature(Variables.HFIX_CommandNavigation);
 
-                /*
-                Variables.ADDR_InventoryINST = (ulong)Hypervisor.FindSignature(Variables.HFIX_InventoryReset);
-                Variables.ADDR_WarpINST = (ulong)Hypervisor.FindSignature(Variables.HFIX_WarpContinue);
-
-                Variables.INST_RoomWarp = Hypervisor.ReadArray(Variables.ADDR_WarpINST, 0x05);
-                Variables.INST_InvRevert = Hypervisor.ReadArray(Variables.ADDR_InventoryINST, 0x07);
-                */
-
+                Critical.WARP_FUNCTION = Hypervisor.Read<byte>(Critical.WARP_OFFSET, 0x05);
+                Critical.INVT_FUNCTION = Hypervisor.Read<byte>(Critical.INVT_OFFSET, 0x07);
+                
                 Terminal.Log("Locating Hotfix Signatures for the Menus...", 0);
 
                 Variables.HFIX_ConfigOffsets.Add((ulong)Hypervisor.FindSignature(Variables.HFIX_ConfigFirst));
@@ -134,7 +135,6 @@ namespace ReFined.KH2.Functions
                     Variables.CONFIG_MENU.Children.Insert(8, _entAudio);
                 }
 
-                Critical.OffsetCampMenu = Hypervisor.FindSignature(Variables.FUNC_ExecuteCampMenu);
 
                 Variables.Source = new CancellationTokenSource();
                 Variables.Token = Variables.Source.Token;

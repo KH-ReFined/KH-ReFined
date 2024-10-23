@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ReFined.Libraries;
 
 namespace ReFined.KH2.Information
 {
@@ -52,7 +53,7 @@ namespace ReFined.KH2.Information
 
             // Prepare the strings.
             var _saveName = "BISLPM-66675FM-98";
-            var _savePath = Hypervisor.ReadTerminate(_pointerBase + 0x40, true) + "\\KHIIFM_WW.png";
+            var _savePath = Hypervisor.Read<char>(_pointerBase + 0x40, true) + "\\KHIIFM_WW.png";
 
             // Calculate the Unix Date.
             var _currDate = DateTime.Now;
@@ -71,10 +72,10 @@ namespace ReFined.KH2.Information
             var _saveDataStartFILE = 0x19690;
 
             // Read the save from RAM.
-            var _saveData = Hypervisor.ReadArray(Variables.ADDR_SaveData, _saveDataLength);
+            var _saveData = Hypervisor.Read<byte>(Variables.ADDR_SaveData, _saveDataLength);
 
             // Read the save slot.
-            var _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+            var _saveSlotRAM = Hypervisor.Read<byte>(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
 
             if (!Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM"))
             {
@@ -90,7 +91,7 @@ namespace ReFined.KH2.Information
             while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM-98"))
             {
                 _saveSlot++;
-                _saveSlotRAM = Hypervisor.ReadArray(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
+                _saveSlotRAM = Hypervisor.Read<byte>(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
             }
 
             // Calculate the checksums.
@@ -106,7 +107,7 @@ namespace ReFined.KH2.Information
             var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
 
             // Write out the save information.
-            Hypervisor.WriteArray(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
+            Hypervisor.Write(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
 
             // Write the date in which the save was made.
             Hypervisor.Write(_saveInfoAddrRAM + 0x40, _writeDate, true);
@@ -116,14 +117,14 @@ namespace ReFined.KH2.Information
             Hypervisor.Write(_saveInfoAddrRAM + 0x50, _saveDataLength, true);
 
             // Write the header.
-            Hypervisor.WriteArray(_saveDataAddrRAM, Encoding.ASCII.GetBytes("KH2J"), true);
+            Hypervisor.Write(_saveDataAddrRAM, Encoding.ASCII.GetBytes("KH2J"), true);
             Hypervisor.Write<uint>(_saveDataAddrRAM + 0x04, 0x3A, true);
 
             // Write the checksum.
             Hypervisor.Write(_saveDataAddrRAM + 0x08, _checkData, true);
 
             // Write, the save.
-            Hypervisor.WriteArray(_saveDataAddrRAM + 0x0C, _dataArray, true);
+            Hypervisor.Write(_saveDataAddrRAM + 0x0C, _dataArray, true);
             #endregion
 
             #region File Save

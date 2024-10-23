@@ -9,7 +9,7 @@ namespace ReFined.Common
 {
     public static class Extensions
     {
-        public static byte GetBitwise(this ushort Input, ushort First, ushort Second = 0xCAFE, ushort Third = 0xDEAD) => (byte)((Input & First) == First ? 0x00 : (Input & Second) == Second ? 0x01 : (Input & Third) == Third ? 0x02 : 0x00);
+        public static byte GetBitwise(this ushort Input, ushort First, ushort Second = 0xCAFE, ushort Third = 0xDEAD) => (byte)((Input & First) == First ? 0x00 : (Input & Second) == Second ? 0x01 : (Input & Third) == Third ? 0x02 : 0xFF);
 
         /// <summary>
         /// Converts any given string to a KH-Compliant string called "KHSCII".
