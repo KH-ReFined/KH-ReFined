@@ -37,8 +37,8 @@ namespace ReFined.KH2.Functions
 
         public static void TogglePrompts()
         {
-            var _promptCheck = Hypervisor.Read<byte>(PROMPT_OFFSET + 0x06);
-            var _promptString = Variables.CONTROLLER_MODE == 0x00 ? "Manual" : "Automatic";
+            var _promptCheck = Hypervisor.Read<byte>(PROMPT_OFFSET + 0x06) == 0x00 ? true : false;
+            var _promptString = Variables.CONTROLLER_MODE ? "Manual" : "Automatic";
 
             if (_promptCheck != Variables.CONTROLLER_MODE)
             {

@@ -2,6 +2,7 @@
 
 using ReFined.KH2.Menus;
 using ReFined.Libraries;
+using System.Runtime.InteropServices;
 
 namespace ReFined.KH2.Information
 {
@@ -13,7 +14,7 @@ namespace ReFined.KH2.Information
         // Variables that will be read from a config file to tell Re:Fined what to do.
         //
 
-        public static bool IS_LITE = true;
+        public static bool IS_LITE = false;
         public static bool DEV_MODE;
         public static bool ATTACK_TOGGLE;
         public static bool DISCORD_TOGGLE = true;
@@ -22,17 +23,17 @@ namespace ReFined.KH2.Information
         public static bool RESET_PROMPT = true;
         public static ushort RESET_COMBO = 0x0300;
 
-        public static byte SAVE_MODE = 0x00;
+        public static int SAVE_MODE = 0x00;
 
         public static bool RATIO_ADJUST;
         public static bool FORM_SHORTCUT = true;
 
-        public static byte AUDIO_MODE = 0x00;
+        public static int AUDIO_MODE = 0x00;
         public static bool ENEMY_VANILLA = true;
         public static bool MUSIC_VANILLA = false;
 
         public static bool RETRY_DEFAULT = true;
-        public static byte CONTROLLER_MODE = 0x00;
+        public static bool CONTROLLER_MODE = true;
 
         public static string LIMIT_SHORTS;
 
@@ -142,7 +143,7 @@ namespace ReFined.KH2.Information
         public static ulong ADDR_BattleFlag = 0x2A11404;
         public static ulong ADDR_CutsceneFlag = 0x728440;
 
-        public static ulong ADDR_Config = 0x9AD9D4;
+        public static ulong ADDR_Config = 0x9ADA54;
         public static ulong ADDR_NewGame = 0xB1D790;
         public static ulong ADDR_SaveData = 0x9A98B0;
 
@@ -170,7 +171,7 @@ namespace ReFined.KH2.Information
         public static ulong ADDR_PAXFormatter = 0x5C8590;
         public static ulong ADDR_ANBFormatter = 0x5B8FB0;
         public static ulong ADDR_EVTFormatter = 0x5B9020;
-        public static ulong ADDR_BTLFormatter = 0x5B4E98;
+        public static ulong ADDR_BTLFormatter = 0x5C5E48;
 
         public static ulong ADDR_ObjentryBASE = 0x2A254D0;
 
@@ -275,14 +276,14 @@ namespace ReFined.KH2.Information
             AUTOSAVE_INDICATOR = 0x0004,
             NAVI_MAP = 0x0008,
             FIELD_CAM = 0x0010,
-            MUSIC_VANILLA = 0x0020,
+            RIGHT_STICK = 0x0020,
             COMMAND_KH2 = 0x0040,
             CAMERA_H = 0x0080,
             CAMERA_V = 0x0100,
             SUMMON_PARTIAL = 0x0200,
             SUMMON_FULL = 0x0400,
             AUDIO_JAPANESE = 0x0800,
-            AUDIO_OTHER = 0x1000,
+            MUSIC_VANILLA = 0x1000,
             PROMPT_CONTROLLER = 0x2000,
             COMMAND_VLAD = 0x4000,
             HEARTLESS_VANILLA = 0x8000

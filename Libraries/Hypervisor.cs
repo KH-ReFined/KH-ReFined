@@ -63,12 +63,27 @@ namespace ReFined.Libraries
 
             ReadProcessMemory(Handle, _address, _outArray, _outSize, ref _outRead);
 
-            var _gcHandle = GCHandle.Alloc(_outArray, GCHandleType.Pinned);
-            var _retData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), typeof(T));
+            var _outType = typeof(T);
 
-            _gcHandle.Free();
+            if (_outType.IsEnum)
+            {
+                var _gcHandle = GCHandle.Alloc(_outArray, GCHandleType.Pinned);
+                var _retData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), Enum.GetUnderlyingType(_outType));
 
-            return _retData;
+                _gcHandle.Free();
+
+                return _retData;
+            }
+
+            else
+            {
+                var _gcHandle = GCHandle.Alloc(_outArray, GCHandleType.Pinned);
+                var _retData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), typeof(T));
+
+                _gcHandle.Free();
+
+                return _retData;
+            }
         }
 
         /// <summary>
@@ -100,20 +115,48 @@ namespace ReFined.Libraries
 
             ReadProcessMemory(Handle, _address, _outArray, Size * _outSize, ref _outRead);
 
-            var _retArray = new T[Size];
+            var _outType = typeof(T);
 
-            for (int i = 0; i < Size; i++)
+            if (_outType.IsEnum)
             {
-                var _pickArray = _outArray.Skip(i * _outSize).Take(_outSize).ToArray();
+                var _enumType = Enum.GetUnderlyingType(_outType);
+                var _retArray = Array.CreateInstance(_enumType, Size);
 
-                var _gcHandle = GCHandle.Alloc(_pickArray, GCHandleType.Pinned);
-                var _convData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), typeof(T));
+                for (int i = 0; i < Size; i++)
+                {
+                    var _pickArray = _outArray.Skip(i * _outSize).Take(_outSize).ToArray();
 
-                _retArray[i] = _convData;
-                _gcHandle.Free();
+                    var _gcHandle = GCHandle.Alloc(_pickArray, GCHandleType.Pinned);
+                    var _convData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), _enumType);
+
+                    _retArray.SetValue(_convData, i);
+                    _gcHandle.Free();
+                }
+
+                var _convArray = new T[Size];
+                _retArray.CopyTo(_convArray, 0);
+
+                return _convArray;
             }
 
-            return _retArray;
+            else
+            {
+                var _retArray = new T[Size];
+
+                for (int i = 0; i < Size; i++)
+                {
+                    var _pickArray = _outArray.Skip(i * _outSize).Take(_outSize).ToArray();
+
+                    var _gcHandle = GCHandle.Alloc(_pickArray, GCHandleType.Pinned);
+                    var _convData = (T)Marshal.PtrToStructure(_gcHandle.AddrOfPinnedObject(), typeof(T));
+
+                    _retArray[i] = _convData;
+                    _gcHandle.Free();
+                }
+
+                return _retArray;
+
+            }
         }
 
         /// <summary>
@@ -191,31 +234,53 @@ namespace ReFined.Libraries
         }
 
         /// <summary>
-        /// Calculated a pointer with the given offsets.
+        /// Calculated a 64-bit pointer with the given offsets.
         /// All offsets are added and the resulting address is read.
         /// </summary>
         /// <param name="Address">The starting point to the pointer.</param>
         /// <param name="Offsets">All the offsets of the pointer, null by default.</param>
         /// <param name="Absolute">If the address is absolute, false by default.</param>
         /// <returns>The final calculated pointer.</returns>
-        public static ulong GetPointer(ulong Address, uint[] Offsets = null, bool Absolute = false)
+        public static ulong GetPointer64(ulong Address, uint[] Offsets = null, bool Absolute = false)
         {
-            var _address = (IntPtr)Address;
-
-            if (!Absolute)
-                _address = (IntPtr)(PureAddress + Address);
-
             var _returnPoint = Read<ulong>(Address, Absolute);
 
             if (Offsets == null)
                 return _returnPoint;
 
-            for (int i = 0; i < Offsets.Length; i++)
+            for (int i = 0; i < Offsets.Length - 1; i++)
                 _returnPoint = Read<ulong>(_returnPoint + Offsets[i], true);
 
-            return _returnPoint;
+            return _returnPoint + Offsets.Last();
         }
 
+        /// <summary>
+        /// Calculated a 32-bit pointer with the given offsets.
+        /// All offsets are added and the resulting address is read.
+        /// </summary>
+        /// <param name="Address">The starting point to the pointer.</param>
+        /// <param name="Offsets">All the offsets of the pointer, null by default.</param>
+        /// <param name="Absolute">If the address is absolute, false by default.</param>
+        /// <returns>The final calculated pointer.</returns>
+        public static uint GetPointer32(ulong Address, uint[] Offsets = null, bool Absolute = false)
+        {
+            var _returnPoint = Read<uint>(Address, Absolute);
+
+            if (Offsets == null)
+                return _returnPoint;
+
+            for (int i = 0; i < Offsets.Length - 1; i++)
+                _returnPoint = Read<uint>(_returnPoint + Offsets[i], true);
+
+            return _returnPoint + Offsets.Last();
+        }
+
+        /// <summary>
+        /// Redirects a MOV instruction to another address. Given it expects a relative pointer.
+        /// </summary>
+        /// <param name="Address">The instruction address.</param>
+        /// <param name="Destination">The address in memory it will be reditected to.</param>
+        /// <param name="Absolute">If the address is absolute, false by default.</param>
         public static void RedirectInstruction(ulong Address, uint Destination, bool Absolute = false)
         {
             var _instEnding = (uint)Address + 0x07;
@@ -223,11 +288,20 @@ namespace ReFined.Libraries
             Write(Address + 0x03, BitConverter.GetBytes(_instMath), Absolute);
         }
 
-        public static void DeleteInstruction(ulong Address, int Length, bool Absolute = false)
-        {
-            Write(Address, Enumerable.Repeat<byte>(0x90, Length).ToArray(), Absolute);
-        }
+        /// <summary>
+        /// NOPs an instruction, given it's length.
+        /// </summary>
+        /// <param name="Address">The instruction address.</param>
+        /// <param name="Absolute">If the address is absolute, false by default.</param>
+        public static void DeleteInstruction(ulong Address, int Length, bool Absolute = false) => Write(Address, Enumerable.Repeat<byte>(0x90, Length).ToArray(), Absolute);
 
+        /// <summary>
+        /// Finds a signature in memory. Uses the string signature pattern.
+        /// Refuses to return more than one result.
+        /// </summary>
+        /// <param name="Input">The signature to find.</param>
+        /// <returns>The address of said signature.</returns>
+        /// <exception cref="InvalidDataException">The pattern hit more or less than 1 result.</exception>
         public static IntPtr FindSignature(string Input)
         {
             if (_patternBuffer == null)
@@ -258,8 +332,6 @@ namespace ReFined.Libraries
                         results.Add(result);
                     }
                 }
-
-
             }
 
             if (results.Count != 1)

@@ -55,14 +55,14 @@ namespace ReFined.KH2.Functions
 
             if (_stringCheck != String.Format(_stringPAX, WL_SUFF))
             {
-                Hypervisor.Write(Variables.ADDR_PAXFormatter, String.Format(_stringPAX, WL_SUFF).ToArray());
-                Hypervisor.Write(Variables.ADDR_PAXFormatter + 0x10, String.Format(_stringPAX, US_SUFF).ToArray());
+                Hypervisor.Write(Variables.ADDR_PAXFormatter, Encoding.Default.GetBytes(String.Format(_stringPAX, WL_SUFF)));
+                Hypervisor.Write(Variables.ADDR_PAXFormatter + 0x10, Encoding.Default.GetBytes(String.Format(_stringPAX, US_SUFF)));
 
-                Hypervisor.Write(Variables.ADDR_ANBFormatter, String.Format(_stringANM, US_SUFF).ToArray());
-                Hypervisor.Write(Variables.ADDR_ANBFormatter + 0x08, String.Format(_stringANM, FM_SUFF).ToArray());
+                Hypervisor.Write(Variables.ADDR_ANBFormatter, Encoding.Default.GetBytes(String.Format(_stringANM, US_SUFF)));
+                Hypervisor.Write(Variables.ADDR_ANBFormatter + 0x08, Encoding.Default.GetBytes(String.Format(_stringANM, FM_SUFF)));
 
-                Hypervisor.Write(Variables.ADDR_BTLFormatter, String.Format(_stringBTL, US_SUFF).ToArray());
-                Hypervisor.Write(Variables.ADDR_EVTFormatter, String.Format(_stringEVT, US_SUFF).ToArray());
+                Hypervisor.Write(Variables.ADDR_BTLFormatter, Encoding.Default.GetBytes(String.Format(_stringBTL, US_SUFF)));
+                Hypervisor.Write(Variables.ADDR_EVTFormatter, Encoding.Default.GetBytes(String.Format(_stringEVT, US_SUFF)));
             }
         }
 

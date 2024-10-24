@@ -70,6 +70,23 @@ namespace ReFined.KH2.Menus
                     0xB721
                 }
             };
+            var _entRightStick = new Entry()
+            {
+                Count = 2,
+                Title = 0xB718,
+
+                Buttons = new List<ushort>()
+                {
+                    0xB722,
+                    0xB723
+                },
+
+                Descriptions = new List<ushort>()
+                {
+                    0xB724,
+                    0xB725
+                }
+            };
             var _entCameraV = new Entry()
             {
                 Count = 2,
@@ -239,6 +256,7 @@ namespace ReFined.KH2.Menus
             Children = new ObservableCollection<Entry>()
             {
                 _entFieldCam,
+                _entRightStick,
                 _entCameraV,
                 _entCameraH,
                 _entSummonFX,
