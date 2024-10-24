@@ -1,5 +1,7 @@
-﻿using ReFined.Common;
+﻿using DiscordRPC;
+using ReFined.Common;
 using ReFined.KH2.Information;
+using ReFined.KH2.InGame;
 using ReFined.Libraries;
 
 namespace ReFined.KH2.Functions
@@ -47,6 +49,101 @@ namespace ReFined.KH2.Functions
             }
 
             Hypervisor.Write(Variables.ADDR_ControllerMode, Variables.CONTROLLER_MODE);
+        }
+
+
+        public static void ToggleDiscord()
+        {
+            // Read all the values.
+
+            var _worldID = Hypervisor.Read<byte>(Variables.ADDR_Area);
+
+            var _roomRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
+            var _roundRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x02);
+            var _eventRead = Hypervisor.Read<ushort>(Variables.ADDR_Area + 0x04);
+
+            var _formValue = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x3524);
+            var _healthValue = Hypervisor.Read<byte>(0x2A23598);
+            var _magicValue = Hypervisor.Read<byte>(0x2A23718);
+
+            var _battleFlag = Hypervisor.Read<byte>(Variables.ADDR_BattleFlag);
+            var _diffValue = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x2498);
+
+            var _timeValue = Math.Floor(Hypervisor.Read<int>(Variables.ADDR_SaveData + 0x2444) / 60F);
+            var _timeMinutes = Math.Floor((_timeValue % 3600F) / 60F);
+            var _timeHours = Math.Floor(_timeValue / 3600F);
+
+            // Construct the necessary strings.
+
+            var _stringState = string.Format
+            (
+                "Level {0} | Form: {1}",
+                Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x24FF),
+                Variables.DICTIONARY_FRM.ElementAtOrDefault(_formValue)
+            );
+
+            var _stringDetail = string.Format("HP: {0} | MP: {1}", _healthValue, _magicValue > 0 ? _magicValue : "Recharging!");
+            var _timeText = string.Format("In-Game Time: {0}", string.Format("{0}:{1}", _timeHours.ToString("00"), _timeMinutes.ToString("00")));
+
+            // If the game is NOT in the Title Screen, apply the detailed presence.
+            if (!Variables.IS_TITLE)
+            {
+                if (_worldID == 0x06 && _roomRead == 0x09 && (_eventRead >= 0xBD && _eventRead <= 0xC4))
+                {
+                    Variables.DiscordClient.SetPresence(
+                        new RichPresence
+                        {
+                            Details = _stringDetail,
+                            State = _stringState + " | Round: " + _roundRead,
+                            Assets = new Assets
+                            {
+                                LargeImageText = _timeText,
+
+                                LargeImageKey = Variables.DICTIONARY_CPS.ElementAtOrDefault(_eventRead < 0xC1 ? _eventRead - 0xBD : _eventRead - 0xC1),
+                                SmallImageText = Variables.DICTIONARY_MDE.ElementAtOrDefault(_diffValue),
+                                SmallImageKey = Variables.DICTIONARY_BTL.ElementAtOrDefault(_battleFlag)
+                            },
+                        }
+                    );
+                }
+
+                else
+                {
+                    Variables.DiscordClient.SetPresence(
+                        new RichPresence
+                        {
+                            Details = _stringDetail,
+                            State = _stringState,
+                            Assets = new Assets
+                            {
+                                LargeImageText = _timeText,
+
+                                LargeImageKey = Variables.DICTIONARY_WRL.ElementAtOrDefault(_worldID),
+                                SmallImageText = Variables.DICTIONARY_MDE.ElementAtOrDefault(_diffValue),
+                                SmallImageKey = Variables.DICTIONARY_BTL.ElementAtOrDefault(_battleFlag)
+                            },
+                        }
+                    );
+                }
+            }
+
+            // If the game is in the Title Screen, apply the simple presence.
+            else
+            {
+                Variables.DiscordClient.SetPresence(
+                    new RichPresence
+                    {
+                        Details = "On the Title Screen",
+                        State = null,
+                        Assets = new Assets
+                        {
+                            LargeImageKey = "title",
+                            SmallImageKey = null,
+                            SmallImageText = null
+                        },
+                    }
+                );
+            }
         }
 
     }

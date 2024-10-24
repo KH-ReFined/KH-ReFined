@@ -25,6 +25,7 @@ namespace ReFined.KH2.Functions
 
                 Terminal.Log("Initializing SharpHook...", 0);
                 Variables.SharpHook = new MemorySharp(Hypervisor.Process);
+                Variables.DiscordClient.Initialize();
 
                 Terminal.Log("Initializing Configuration...", 0);
                 Variables.RESET_PROMPT = Convert.ToBoolean(_configIni.Read("resetPrompt", "Kingdom Hearts II"));
@@ -44,6 +45,9 @@ namespace ReFined.KH2.Functions
                 Message.OffsetShowCampWarning = Hypervisor.FindSignature(Variables.FUNC_ShowCampWarning);
 
                 Critical.OffsetCampMenu = Hypervisor.FindSignature(Variables.FUNC_ExecuteCampMenu);
+                Critical.OffsetShutMusic = Hypervisor.FindSignature(Variables.FUNC_StopBGM);
+                Critical.OffsetMapJump = Hypervisor.FindSignature(Variables.FUNC_MapJump);
+                Critical.OffsetSetFadeOff = Hypervisor.FindSignature(Variables.FUNC_SetFadeOff);
 
                 Sound.OffsetSound = Hypervisor.FindSignature(Variables.FUNC_PlaySFX);
 

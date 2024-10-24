@@ -9,6 +9,9 @@ namespace ReFined.KH2.Functions
     internal class Critical
     {
         public static IntPtr OffsetCampMenu;
+        public static IntPtr OffsetShutMusic;
+        public static IntPtr OffsetMapJump;
+        public static IntPtr OffsetSetFadeOff;
 
         public static ulong WARP_OFFSET;
         public static ulong INVT_OFFSET;
@@ -332,7 +335,7 @@ namespace ReFined.KH2.Functions
 
                     var _naviMap = _configBitwise.HasFlag(Variables.CONFIG_BITWISE.NAVI_MAP) ? 0x00 : 0x01;
                     var _rightStick = _configBitwise.HasFlag(Variables.CONFIG_BITWISE.RIGHT_STICK) ? 0x01 : 0x00;
-                    var _cameraAuto = _configBitwise.HasFlag(Variables.CONFIG_BITWISE.FIELD_CAM) ? 0x00 : 0x01;
+                    var _cameraAuto = _configBitwise.HasFlag(Variables.CONFIG_BITWISE.FIELD_CAM) ? 0x01 : 0x00;
                     var _cameraHRev = _configBitwise.HasFlag(Variables.CONFIG_BITWISE.CAMERA_H) ? 0x01 : 0x00;
                     var _cameraVRev = _configBitwise.HasFlag(Variables.CONFIG_BITWISE.CAMERA_V) ? 0x01 : 0x00;
                     var _commandKH2 = _configBitwise.HasFlag(Variables.CONFIG_BITWISE.COMMAND_KH2) ? 0x01 : (_configBitwise.HasFlag(Variables.CONFIG_BITWISE.COMMAND_VLAD) ? 0x02 : 0x00);
@@ -384,7 +387,7 @@ namespace ReFined.KH2.Functions
 
                 var _liteOffset = Variables.IS_LITE ? 0x00 : 0x03;
 
-                var _fieldCamBit = SETTINGS_WRITE[0x00] == 0x00 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF;
+                var _fieldCamBit = SETTINGS_WRITE[0x00] == 0x01 ? Variables.CONFIG_BITWISE.FIELD_CAM : Variables.CONFIG_BITWISE.OFF;
                 var _rightStickBit = SETTINGS_WRITE[0x01] == 0x01 ? Variables.CONFIG_BITWISE.RIGHT_STICK : Variables.CONFIG_BITWISE.OFF;
 
                 var _cameraVerticalBit = SETTINGS_WRITE[0x02] == 0x01 ? Variables.CONFIG_BITWISE.CAMERA_V : Variables.CONFIG_BITWISE.OFF;
@@ -449,7 +452,7 @@ namespace ReFined.KH2.Functions
                     while (Hypervisor.Read<byte>(0x717418) != 1) ;
 
                     Terminal.Log("Killing the background music.", 0);
-                    Variables.SharpHook[0x138D20].Execute();
+                    Variables.SharpHook[OffsetShutMusic].Execute();
 
                     Terminal.Log("Copying down the current area state.", 0);
 
@@ -468,32 +471,32 @@ namespace ReFined.KH2.Functions
 
                     // Initiate the jump.
                     Hypervisor.Write(Variables.ADDR_Area, _newArray);
-                    Variables.SharpHook[0x152990].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.PureAddress + Variables.ADDR_Area), 2, 0, 0, 0);
+                    Variables.SharpHook[OffsetMapJump].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.PureAddress + Variables.ADDR_Area), 2, 0, 0, 0);
 
                     // Wait until the fade has been completed.
                     while (Hypervisor.Read<byte>(0xABB3C7) != 0x80) ;
 
                     // Destroy the fade handler so it does not cause issues.
-                    Hypervisor.DeleteInstruction(0x156D3A, 0x08);
+                    Hypervisor.DeleteInstruction((ulong)(OffsetSetFadeOff + 0x81A), 0x08);
                     Hypervisor.Write<byte>(0xABB3C7, 0x80);
 
                     // Whilst not loaded, constantly shut off the music.
                     while (Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) != 1)
-                        Variables.SharpHook[0x138D20].Execute();
+                        Variables.SharpHook[OffsetShutMusic].Execute();
 
-                    Variables.SharpHook[0x156520].Execute(0x02);
+                    Variables.SharpHook[OffsetSetFadeOff].Execute(0x02);
 
                     Terminal.Log("Jump complete! Jumping back!", 0);
 
                     // Atfer load, jump back to where we came from.
                     Hypervisor.Write(Variables.ADDR_Area, AREA_READ);
-                    Variables.SharpHook[0x152990].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.PureAddress + Variables.ADDR_Area), 2, 0, 0, 0);
+                    Variables.SharpHook[OffsetMapJump].Execute(BSharpConvention.MicrosoftX64, (long)(Hypervisor.PureAddress + Variables.ADDR_Area), 2, 0, 0, 0);
 
                     // Wait until load.
                     while (Hypervisor.Read<byte>(Variables.ADDR_LoadFlag) != 1) ;
 
                     // Restore the fade initiater after load.
-                    Hypervisor.Write<byte>(0x156D3A, [ 0xF3, 0x0F, 0x11, 0x8F, 0x0C, 0x01, 0x00, 0x00 ]);
+                    Hypervisor.Write<byte>((ulong)(OffsetSetFadeOff + 0x81A), [ 0xF3, 0x0F, 0x11, 0x8F, 0x0C, 0x01, 0x00, 0x00 ]);
 
                     Terminal.Log("All settings were applied through hot-reloading successfully!", 0);
 
@@ -667,7 +670,7 @@ namespace ReFined.KH2.Functions
                     Variables.CONTINUE_MENU.Children.Insert(_insertIndex, _entRetry);
                 }
 
-                else if (!_battleState && _pauseRead == 0x00 && STATE_COPIED && !(_isEscape && _battleRead == 0x01))
+                else if (!_battleState && _pauseRead == 0x00 && STATE_COPIED && !(_isEscape && _battleRead == 0x01) && RETRY_MODE == 0x00)
                 {
                     Terminal.Log("The battle has ended. Savestate has been restored.", 0);
                     Hypervisor.Write(0x7A0000, new byte[0x10FC0]);
@@ -717,9 +720,6 @@ namespace ReFined.KH2.Functions
                     var _prepareButton = Variables.RETRY_DEFAULT ? 0x01 : 0x02;
                     var _continueButton = Variables.RETRY_DEFAULT ? 0x02 : 0x00;
 
-                    var _calculatePointer = Hypervisor.PureAddress - Hypervisor.MemoryOffset + 0x39DECB;
-                    var _calculateSave = Hypervisor.PureAddress - Hypervisor.MemoryOffset + 0x7A0000;
-
                     var _buttonCheck = _selectRead == _retryButton || _selectRead == _prepareButton;
 
                     if (!_buttonCheck && _selectRead < 0x04 && RETRY_MODE != 0x00)
@@ -738,9 +738,7 @@ namespace ReFined.KH2.Functions
                         Terminal.Log("Switched into Retry, disabling functions.", 0);
 
                         Hypervisor.DeleteInstruction(WARP_OFFSET, 0x05);
-                        Hypervisor.Write(INVT_OFFSET, INVT_FUNCTION.Take(0x03).ToArray());
-
-                        Hypervisor.Write(INVT_OFFSET + 0x03, (uint)(_calculateSave - _calculatePointer));
+                        Hypervisor.RedirectInstruction(INVT_OFFSET, 0x7A0000);
 
                         RETRY_MODE = 0x01;
                     }
@@ -748,12 +746,19 @@ namespace ReFined.KH2.Functions
                     if (_selectRead == _prepareButton && RETRY_MODE != 0x02)
                     {
                         var _currentSave = Hypervisor.Read<byte>(0x7A0000, 0x10FC0);
+
                         Hypervisor.Write(Variables.ADDR_SaveData, _currentSave);
 
                         RETRY_MODE = 0x02;
                         PREPARE_MODE = 0x01;
 
                         Terminal.Log("Prepare and Retry is ready to execute.", 0);
+                    }
+
+                    else if (_selectRead == _retryButton && RETRY_MODE == 0x02)
+                    {
+                        RETRY_MODE = 0x01;
+                        PREPARE_MODE = 0x00;
                     }
                 }
 

@@ -1,4 +1,5 @@
 ﻿using Binarysharp.MSharp;
+using DiscordRPC;
 
 using ReFined.KH2.Menus;
 using ReFined.Libraries;
@@ -53,7 +54,7 @@ namespace ReFined.KH2.Information
         //
 
         public static MemorySharp SharpHook;
-        // public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
+        public static DiscordRpcClient DiscordClient = new DiscordRpcClient("833511404274974740");
 
         public static string[] BOSSObjentry =
 {
@@ -220,6 +221,9 @@ namespace ReFined.KH2.Information
         public static string FUNC_SetCampWarning = "48 89 5C 24 08 57 48 83 EC 50 8B F9 8B DA";
         public static string FUNC_ShowCampWarning = "40 55 48 83 EC 50 44 8B 0D ?? ?? ?? ??";
         public static string FUNC_ExecuteCampMenu = "40 56 41 56 41 57 48 83 EC 20 45 32 FF 44 8B F2 44 38 3D ?? ?? ?? ??";
+        public static string FUNC_StopBGM = "40 53 48 83 EC 20 48 83 3D ?? ?? ?? ?? 00 0F 84 ?? ?? ?? ?? 48 8B 1D ?? ?? ?? ??";
+        public static string FUNC_MapJump = "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 20 80 3D ?? ?? ?? ?? 00 41 0F B6 E9";
+        public static string FUNC_SetFadeOff = "48 83 EC 28 85 C9 79 0F 0F BA F1 1F 89 0D ?? ?? ?? ?? 48 83 C4 28 C3 89 0D ?? ?? ?? ?? 81 E1 FF FF FF 3F 0F 84 ?? ?? ?? ?? 83 E9 01";
 
         //
         // HOTFIX SIGNATURES
@@ -230,7 +234,7 @@ namespace ReFined.KH2.Information
         public static string HFIX_Framelimiter = "F3 0F 10 15 ?? ?? ?? ?? F3 0F 10 0D ?? ?? ?? ?? F3 0F 10 05 ?? ?? ?? ?? F3 0F 59 CA";
         public static string HFIX_ContPrompts = "C7 05 ?? ?? ?? ?? 01 00 00 00 E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ??";
         public static string HFIX_WarpContinue = "E8 59 00 00 00 48 8B 0D ?? ?? ?? ??";
-        public static string HFIX_InventoryReset = "48 8D 15 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ??";
+        public static string HFIX_InventoryReset = "48 8D 15 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 41 B8 30 08 00 00 48 8D 15 ?? ?? ?? ??";
         public static string HFIX_CommandNavigation = "48 89 5C 24 18 55 41 56 41 57 48 83 EC 20 4C 8B 41 08 48 8B D9";
 
         public static string HFIX_ConfigFirst = "40 53 48 83 EC 20 0F B6 D9 48 8B 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B 1D ?? ?? ?? ??";
