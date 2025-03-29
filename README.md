@@ -6,7 +6,8 @@
 [![Discord](https://img.shields.io/discord/978975211481354251?logo=Discord&logoColor=%23f0f0f0&label=Discord%20Server&color=6A7EC2)](https://discord.gg/kh-refined)
 [![Patreon](https://img.shields.io/endpoint?url=https%3A%2F%2Fshieldsio-Patreon.vercel.app%2Fapi%2F%3Fusername%3Dtopaztk%26type%3DPatrons)](https://www.patreon.com/topaztk)  
 
-![KHI](https://img.shields.io/badge/Kingdom_Hearts_I-Not_Live!-red)
+![KHI](https://img.shields.io/badge/Kingdom_Hearts_I-Work_in_Progress!-orange)
+![KHCOM](https://img.shields.io/badge/Re:_Chain_of_Memories-Work_in_Progress!-orange)
 ![KHII](https://img.shields.io/badge/Kingdom_Hearts_II-Live!-dark_lime)
 ![KHBBS](https://img.shields.io/badge/Birth_by_Sleep-Not_Live!-red)
 ![KHDDD](https://img.shields.io/badge/Dream_Drop_Distance-Not_Live!-red)
