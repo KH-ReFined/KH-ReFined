@@ -49,11 +49,11 @@ However, there are also features that are common across every game, which you ca
 | :heavy_check_mark: | - | Fixed broken and/or missing sound effects and quotes. [[3]](#reference) |
 | - | :heavy_check_mark: | Added an option to skip Copyright Notices [For legal reasons, they will always play on First Boot]. |
 | - | :heavy_check_mark: | Voice channels will now be muted when set to "1" in the PC settings menu. |
-| - | :heavy_check_mark: | Added in the option to force controller prompts and camera at will. |
-| - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
+| - | :heavy_check_mark: | Added in the option to force controller prompts and camera at will. [13](#references) |
+| - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. [13](#references) |
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
 | - | :heavy_check_mark: | Soft Reset implementation [R2 + L2, Customizable]. |
-| - | :heavy_check_mark: | Ultrawide Support, aiming to improve the experience on 32:9, 21:9, and 16:10 aspects. |
+| - | :heavy_check_mark: | Ultrawide Support, aiming to improve the experience on 32:9, 21:9, and 16:10 aspects. [13](#references)  |
 | - | :heavy_check_mark: | Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
 
 ### Re:Chain of Memories
@@ -109,6 +109,7 @@ However, there are also features that are common across every game, which you ca
 10. In Kingdom Hearts III, the player can have up to 3 shortcut sets and can cycle between them by using the DPAD. This feature is neat, so now it's in Kingdom Hearts II.
 11. For some reason, in the remasters, the D-Pad is rotated 90* for the controls on the Card Revolder (Down/Up to cycle instead of Left/Right, Right to Reload Shortcut instead of Down, etc.), this addresses that.
 12. Because the game's research is still ongoing, this is toogleable only through the config file.
+13. Currently not available in Re: Chain of Memories.
 
 ## Official Addons
 
