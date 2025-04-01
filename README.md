@@ -47,6 +47,7 @@ However, there are also features that are common across every game, which you ca
 | :heavy_check_mark: | - | The game will no longer infinitely freeze while shutting down. |
 | :heavy_check_mark: | - | Removed Save File Restrictions. [[2]](#reference) |
 | :heavy_check_mark: | - | Fixed broken and/or missing sound effects and quotes. [[3]](#reference) |
+| - | :heavy_check_mark: | Added an option to skip Copyright Notices [For legal reasons, they will always play on First Boot]. |
 | - | :heavy_check_mark: | Voice channels will now be muted when set to "1" in the PC settings menu. |
 | - | :heavy_check_mark: | Added in the option to force controller prompts and camera at will. |
 | - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
@@ -54,6 +55,17 @@ However, there are also features that are common across every game, which you ca
 | - | :heavy_check_mark: | Soft Reset implementation [R2 + L2, Customizable]. |
 | - | :heavy_check_mark: | Ultrawide Support, aiming to improve the experience on 32:9, 21:9, and 16:10 aspects. |
 | - | :heavy_check_mark: | Create a game-specific configuration file named `config_xxx.dat` so that changes only have effects on a per-game basis. |
+
+### Re:Chain of Memories
+> [!IMPORTANT]  
+> Due to how this game works, Re:COM will be in the **Re:Freshed-Only** state until further notice.
+
+| Error/Bug Fix | Enhancement | Description |
+|---------------|-------------|-------------|
+| :heavy_check_mark: | - | Correct the D-Pad Buttons for the Card Revolver [[11]](#reference) |
+| :heavy_check_mark: | - | Bring back the Type-A and Type-B control schemes. [[12]](#reference) |
+| - | :heavy_check_mark: | Remove the "Must have 1 Attack Card" limitation from Deck Building. |
+| - | :heavy_check_mark: | Added a toggle for "No Experience". [[12]](#reference)|
 
 ### Kingdom Hearts II
 
@@ -95,6 +107,8 @@ However, there are also features that are common across every game, which you ca
 8. CrazyCatz00's English Patch for Kingdom Hearts II - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games. There's also extra patches to have up to 5 languages at once. Please see the "Official Addons" section.
 9. In Kingdom Hearts III, the player can reorganize their magic menu. This feature is neat, so now it's in Kingdom Hearts II. To do this, highlight your magic command and press L2+DPAD to shift around.
 10. In Kingdom Hearts III, the player can have up to 3 shortcut sets and can cycle between them by using the DPAD. This feature is neat, so now it's in Kingdom Hearts II.
+11. For some reason, in the remasters, the D-Pad is rotated 90* for the controls on the Card Revolder (Down/Up to cycle instead of Left/Right, Right to Reload Shortcut instead of Down, etc.), this addresses that.
+12. Because the game's research is still ongoing, this is toogleable only through the config file.
 
 ## Official Addons
 
@@ -145,6 +159,9 @@ Thank you for your consideration, all support is appreciated!
 - **iTeoh**, **kuxir**, and **atlas_0x** for the Italian translation.
 - **SapphireSaphic** for the upcoming Japanese translation.
 
+### Re:Chain of Memories
+- **TheLegendOfLame** and **GICU** for their input on making the No Experience toggle.
+
 ### Kingdom Hearts 2
 - **CrazyCatz00** for his contributions to Ultrawide Compatibility and Boss Quote Fixes.
 - **TieuLink** for providing the Japanese voices for the Multi Audio Add-on.
@@ -162,5 +179,5 @@ Thank you for your consideration, all support is appreciated!
 
 Re:Fined makes use of the following third-party libraries for it's functionality:
 
-[Discord-RPC-CSharp by Lachee](https://github.com/Lachee/discord-rpc-csharp)  
+[Tommy by dezhidki](https://github.com/dezhidki/Tommy)
 [MemorySharp by JamesMenetrey](https://github.com/JamesMenetrey/MemorySharp)
