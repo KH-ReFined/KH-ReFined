@@ -154,11 +154,11 @@ Thank you for your consideration, all support is appreciated!
 - **Denhonator** for his work on Soft Reset, and Volume Mute in the past.
 - **Xeeynamo** for the functions used to calculate the Save Checksum.
 - **Alison** for her work on Enemy Journal Entries.
-- **UtenaSW** and **Ruby-Chan** for the German translation.
+- **UtenaSW**, **dedede123**, and **Ruby-Chan** for the German translation.
 - **Svenchu**, **Mikote11**, and **Abelatox** for the Spanish translation.
 - **blobdash** for the French translation.
 - **iTeoh**, **kuxir**, and **atlas_0x** for the Italian translation.
-- **SapphireSaphic** for the upcoming Japanese translation.
+- **SapphireSaphic** and **ALOE** for the upcoming Japanese translation.
 
 ### Re:Chain of Memories
 - **TheLegendOfLame** and **GICU** for their input on making the No Experience toggle.
