@@ -35,6 +35,7 @@ namespace ReFined
 
         static bool VENDOR_GIVEN;
 
+
         /// <summary>
         /// Handles Autoattacking logic, since we can't just force it nilly willy!
         /// This checks a lot of the game's states and it may still not be perfect.
@@ -323,6 +324,7 @@ namespace ReFined
             // Fetch the Sub-Menu Type
             var _subMenuPointer = Hypervisor.GetPointer64(Variables.PINT_SubMenuOptionSelect, [0x00]);
             var _subSelection = Hypervisor.Read<byte>(_subMenuPointer, true);
+            var _mainMenuType = Hypervisor.Read<byte>(Variables.ADDR_MenuType);
             var _subMenuType = Hypervisor.Read<byte>(Variables.ADDR_SubMenuType);
 
             // Read the current shortcut menu, and the current Form.
@@ -330,7 +332,7 @@ namespace ReFined
             var _seenHelp = Hypervisor.Read<short>(Variables.ADDR_SaveData + 0x4270);
             var _seenShort = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE248);
             
-            var _currShort = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE000);
+            var _currShort = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE100);
             var _currForm = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x3524);
 
             var _fetchCommand = (Hypervisor.Read<Variables.CONFIG>(Variables.ADDR_Config) & Variables.CONFIG.COMMAND_KH1) == Variables.CONFIG.COMMAND_KH1 &&
@@ -369,8 +371,8 @@ namespace ReFined
              * Is Customize Menu => The game is paused, and the Sub-Menu is "Customize"
              * Is Editing Shortcut => The game is paused, and we are editing any of the 4 shortcuts.
              */
-            var _isCustomizeMenu = Variables.IS_PAUSED && _subMenuType == 0x19;
-            var _isEditingShortcut = Variables.IS_PAUSED && (_subMenuType == 0x1A || _subMenuType == 0x1D || _subMenuType == 0x1E || _subMenuType == 0x1F);
+            var _isCustomizeMenu = Variables.IS_PAUSED && _mainMenuType == 0x08 && _subMenuType == 0x19;
+            var _isEditingShortcut = Variables.IS_PAUSED && _mainMenuType == 0x08 && (_subMenuType == 0x1A || _subMenuType == 0x1D || _subMenuType == 0x1E || _subMenuType == 0x1F);
 
             // If the main "Sora" text is not defined in memory, fetch them.
             if (MAIN_TEXT == null)
@@ -533,7 +535,7 @@ namespace ReFined
                         break;
 
                     case 0x80:
-                        CURRENT_SHORTCUT = Hypervisor.Read<byte>(Variables.ADDR_ContinueData + 0xE000);
+                        CURRENT_SHORTCUT = Hypervisor.Read<byte>(Variables.ADDR_ContinueData + 0xE100);
                         break;
 
                     case 0xFF:
@@ -551,7 +553,7 @@ namespace ReFined
 
                     // Write it to the "real" shortcut data.
                     Hypervisor.Write(_shortReal, _shortTake);
-                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE000, CURRENT_SHORTCUT);
+                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE100, CURRENT_SHORTCUT);
 
                     // If in "Customize", refresh the Shortcut List.
                     if (_isCustomizeMenu)

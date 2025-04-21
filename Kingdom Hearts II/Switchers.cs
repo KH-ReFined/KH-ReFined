@@ -1,7 +1,7 @@
 ﻿using KH2FML;
 using System.Linq;
 
-namespace ReFined.KH2
+namespace ReFined
 {
     /// <summary>
     /// This class is responsible for the switching functions.
@@ -13,7 +13,8 @@ namespace ReFined.KH2
 
         static bool MUSIC_PAST;
         static bool ENEMY_PAST;
-        static bool WILLIE_PAST;
+
+        static bool ATLANTICA_SWITCH;
 
         public static void AudioSwitch()
         {
@@ -94,12 +95,41 @@ namespace ReFined.KH2
 
         public static void MusicSwitch()
         {
-            if (Locals.MUSIC_MODE != MUSIC_PAST)
+            var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_Area);
+            var _roomRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
+            var _eventRead = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x04);
+
+            var _musicalCheck = _worldRead == 0x0B && !Locals.MIRAGE_ARENA && ((_roomRead == 0x04 && _eventRead == 0x42) ||
+                                                                               (_roomRead == 0x01 && _eventRead == 0x43) ||
+                                                                               (_roomRead == 0x03 && _eventRead == 0x44) ||
+                                                                               (_roomRead == 0x09 && _eventRead == 0x45) ||
+                                                                               (_roomRead == 0x04 && _eventRead == 0x46));
+
+            if (Locals.MUSIC_MODE != MUSIC_PAST || (!_musicalCheck && ATLANTICA_SWITCH))
             {
+                if (ATLANTICA_SWITCH)
+                    Axa.Suspend(false);
+
                 Terminal.Log(String.Format("Switching Music to {0}...", Locals.MUSIC_MODE ? "Vanilla" : "Remastered"), 0);
                 Hypervisor.Write<byte>(Variables.DATA_BGMPath, Locals.MUSIC_MODE ? [0x70, 0x73, 0x32, 0x6D, 0x64] : [0x6D, 0x75, 0x73, 0x69, 0x63]);
 
+                if (ATLANTICA_SWITCH)
+                {
+                    Axa.Resume(false);
+                    ATLANTICA_SWITCH = false;
+                }
+
                 MUSIC_PAST = Locals.MUSIC_MODE;
+            }
+
+            else if (_musicalCheck && !ATLANTICA_SWITCH)
+            {
+                Axa.Suspend(false);
+                Terminal.Log("Atlantica Detected! Switching to the according soundtrack...", 0);
+                Hypervisor.Write<byte>(Variables.DATA_BGMPath, [0x6D, 0x75, 0x73, 0x69, 0x63]);
+                Axa.Resume(false);
+                
+                ATLANTICA_SWITCH = true;
             }
         }
 
@@ -132,47 +162,6 @@ namespace ReFined.KH2
 
                 Locals.ENEMY_LOADING = false;
                 ENEMY_PAST = Locals.ENEMY_MODE;
-            }
-        }
-
-        public static void WillieSwitch()
-        {
-            var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_Area);
-
-            if (!Locals.TECHNICOLOR)
-            {
-                if (_worldCheck == 0x0D && !WILLIE_PAST)
-                {
-                    Terminal.Log("Adjusting Elements for Timeless River.", 0);
-
-                    foreach (var _id in Locals.OBJENTRY_SUMMON)
-                    {
-                        var _fetchObjentry = Shisutemu.FetchObject(_id);
-                        var _readName = Hypervisor.ReadString(_fetchObjentry + 0x08, true);
-
-                        var _nameString = _readName.Replace("P_", "X_").Replace("N_", "X_");
-                        Hypervisor.Write(_fetchObjentry + 0x08, _nameString, true);
-                    }
-
-                    WILLIE_PAST = true;
-                }
-
-                else if (_worldCheck != 0x0D && WILLIE_PAST)
-                {
-                    Terminal.Log("Adjusting Elements for Colored Worlds.", 0);
-
-                    foreach (var _id in Locals.OBJENTRY_SUMMON)
-                    {
-                        var _fetchObjentry = Shisutemu.FetchObject(_id);
-                        var _readName = Hypervisor.ReadString(_fetchObjentry + 0x08, true);
-
-                        var _nameString = _readName.Contains("_BTL") ? _readName.Replace("X_", "N_") : _readName.Replace("X_", "P_");
-
-                        Hypervisor.Write(_fetchObjentry + 0x08, _nameString, true);
-                    }
-
-                    WILLIE_PAST = false;
-                }
             }
         }
     }

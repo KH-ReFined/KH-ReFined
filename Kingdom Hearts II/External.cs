@@ -1,6 +1,6 @@
 ﻿using KH2FML;
-using System.Numerics;
-namespace ReFined.KH2
+
+namespace ReFined
 {
     /// <summary>
     /// This class handles anything and everything that will happen *outside* of the game.
@@ -41,6 +41,43 @@ namespace ReFined.KH2
 
             RICH_PRESENCE.ApplicationId = 833511404274974740;
             RICH_PRESENCE.Timestamps = BEGIN_TIMESTAMP;
+
+            if (Locals.RPC_TEXTS == null)
+            {
+                Terminal.Log("Parsing all of the Discord RPC related texts...", 1);
+
+                Locals.RPC_TEXTS = new List<string>();
+                Locals.MODE_TEXTS = new List<string>();
+                Locals.FORM_TEXTS = new List<string>();
+
+                for (short i = 0x5740; i < 0x5745; i++)
+                    Locals.RPC_TEXTS.Add(Text.GetStringHuman(i).Replace("/", "|"));
+
+                for (var i = 0; i < 4; i++)
+                {
+                    short _stringID = (short)(0x3738 + i);
+
+                    if (i == 0x03)
+                        _stringID = 0x4E30;
+
+                    Locals.MODE_TEXTS.Add(Text.GetStringHuman(_stringID));
+                }
+
+                for (var i = 0; i < 6; i++)
+                {
+                    short _stringID = (short)(0x01E5 + (i >= 0x02 ? i - 1 : i));
+
+                    if (i == 0x02)
+                        _stringID = 0x4E7F;
+
+                    var _formString = Text.GetStringHuman(_stringID);
+                    var _splitString = _formString.Split(' ');
+
+                    Locals.FORM_TEXTS.Add(_splitString[0]);
+                }
+
+                Terminal.Log("Discord RPC texts have been parsed successfully!", 0);
+            }
 
             if (!Variables.IS_TITLE)
             {

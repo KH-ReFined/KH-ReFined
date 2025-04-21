@@ -5,7 +5,7 @@ using System.Reflection;
 
 using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
 
-namespace ReFined.KH2
+namespace ReFined
 {
     /// <summary>
     /// These functions right here made me hate my life.
@@ -27,7 +27,10 @@ namespace ReFined.KH2
         // 0x0B => Magic Changes Applied (SortMagic)
         // 0x0C => Retry Blacklist (RetryBattles)
         // 0x0D => Retribution and Absolution Switch (RetributionLogic)
-        static bool[] DEBOUNCE = new bool[0x10];
+        // 0x0E => Magic Sort Disabler
+        // 0x0F => Autosave Load-Save Preventer
+        // 0x10 => Kill Sora Debounce
+        static bool[] DEBOUNCE = new bool[0x20];
 
         static ushort PAST_FORM;
         static int PAST_CROWN;
@@ -45,6 +48,7 @@ namespace ReFined.KH2
         static byte SAVE_ROOM;
         static byte SAVE_WORLD;
         static byte SAVE_ITERATOR;
+        static byte SAVE_CHECK_OFFSET;
 
         static uint MAGIC_LV1;
         static ushort MAGIC_LV2;
@@ -90,6 +94,10 @@ namespace ReFined.KH2
         static ulong RETRIBUTION_RAM;
         static ulong ABSOLUTION_RAM;
 
+        static ushort[] ABILITY_ARRAY;
+
+        static bool RETRIBUTION_INIT = false;
+
         public static List<ushort> PARAMS_ALL = new List<ushort>();
         static List<ushort> PARAMS_LIST = new List<ushort>();
 
@@ -98,8 +106,12 @@ namespace ReFined.KH2
 
         public static ulong ASPECT_OFFSET;
         public static ulong AREAINIT_OFFSET;
+        public static ulong CAMPINIT_OFFSET;
+        public static ulong MENUSELECT_OFFSET;
+        public static byte[] CAMPINIT_FUNCTION;
         public static IntPtr FUNC_ITEMSELECTUPDATE;
         public static IntPtr FUNC_CONFIGUPDATELIST;
+        public static IntPtr FUNC_CONFIGUPDATEACTIVE;
 
         static Continue.Entry RETRY_ENTRY = new Continue.Entry()
         {
@@ -113,6 +125,62 @@ namespace ReFined.KH2
             Label = 0x5727,
         };
 
+        public static void EnablersAP()
+        {
+            if (!Variables.IS_TITLE && !Variables.IS_CUTSCENE && !Variables.IS_PAUSED && Variables.IS_LOADED)
+            {
+                if (ABILITY_ARRAY == null)
+                    ABILITY_ARRAY = Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0x2544, 0x60);
+
+                var _readAbilities = Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0x2544, 0x60);
+
+                if (!Enumerable.SequenceEqual(_readAbilities, ABILITY_ARRAY))
+                {
+                    Terminal.Log("Ability Mismatch! Refreshing...", 0);
+
+                    Shisutemu.RefreshSora();
+                    ABILITY_ARRAY = _readAbilities;
+                }
+
+                var _fadeCheck = Hypervisor.Read<byte>(Variables.ADDR_FadeValue);
+                var _enableLine = Hypervisor.Read<byte>(0x800000);
+
+                if (_fadeCheck == 0x00 && _enableLine > 0x00)
+                {
+                    Hypervisor.Write<byte>(0x800000, 0x00);
+
+                    switch (_enableLine)
+                    {
+                        case 1:
+                            Terminal.Log("Information Bar has been requested externally! Showing...", 0);
+                            Popup.PopupInformation(Hypervisor.PureAddress + 0x800004);
+                            break;
+                        case 2:
+                            Terminal.Log("Prize Bar has been requested externally! Showing...", 0);
+                            Popup.PopupPrize(Hypervisor.PureAddress + 0x800004);
+                            break;
+                    }
+                }
+
+                var _soraGaugePointer = Hypervisor.GetPointer64(Variables.PINT_PlayerGauge, [0x88]);
+                var _soraGauge = Hypervisor.Read<ulong>(_soraGaugePointer, true);
+
+                var _soraPointer = Hypervisor.Read<ulong>(Variables.PINT_Sora);
+                var _currentHealth = Hypervisor.Read<byte>(Variables.ADDR_PlayerStats);
+                var _currentPlayer = Hypervisor.Read<ushort>(Variables.ADDR_CurrentCharacter);
+
+                if (_soraGauge != 0x00 && _currentPlayer != 0x03BE && _currentHealth == 0x00 && !DEBOUNCE[0x10])
+                {
+                    Terminal.Log("Conditions are met and Sora's HP is 0! Updating status...", 0);
+                    Shisutemu.AddHP(_soraPointer, 0x00);
+                    DEBOUNCE[0x10] = true;
+                }
+
+                else if (_currentHealth != 0x00 && DEBOUNCE[0x10])
+                    DEBOUNCE[0x10] = false;
+            }
+        }
+
         /// <summary>
         /// If requested, skips Roxas' Prologue segment.
         /// Alright, because of all the flag nonsense I could not be bothered to rewrite this.
@@ -120,113 +188,115 @@ namespace ReFined.KH2
         /// </summary>
         public static void PrologueSkip()
         {
-            // Read these for use later.
-            var _diffRead = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x2498);
-            var _selectButton = Hypervisor.Read<byte>(Variables.ADDR_TitleSelect);
-
-            // If on the Title Screen;
-            if (Variables.IS_TITLE)
+            if (!Locals.RANDOMIZER)
             {
-                // If the selected button is NOT 0x00 (New Game) and Roxas Skip is marked as "Ready";
-                if (_selectButton != 0x00 && ROXAS_SKIP_STAGE == 0)
-                {
-                    // Mark Roxas Skip as "Disabled".
-                    Terminal.Log("Disabling the Prologue Skip, expecting a game load.", 0);
-                    ROXAS_SKIP_STAGE = 4;
-                }
+                // Read these for use later.
+                var _diffRead = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x2498);
+                var _selectButton = Hypervisor.Read<byte>(Variables.ADDR_TitleSelect);
 
-                // If the selected button IS 0x00 (New Game) and Roxas Skip is marked as "Disabled";
-                else if (_selectButton == 0x00 && ROXAS_SKIP_STAGE > 0x00)
+                // If on the Title Screen;
+                if (Variables.IS_TITLE)
                 {
-                    // Mark Roxas Skip as "Ready".
-                    Terminal.Log("Enabling the Prologue Skip, expecting a new game.", 0);
-                    ROXAS_SKIP_STAGE = 0;
-                }
-            }
-
-            // If not on the Title Screen;
-            if (!Variables.IS_TITLE)
-            {
-                // Read all the map-specific values
-                var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_Area);
-                var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
-                var _eventCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x04);
-                var _fadeCheck = Hypervisor.Read<byte>(Variables.ADDR_FadeValue);
-
-                // If the cutscene "Twilight Town - Waking from a Dream" is playing and Roxas Skip is marked "Ready";
-                if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck == 0x38 && ROXAS_SKIP_STAGE == 0)
-                {
-                    // If the Debounce is set;
-                    if (DEBOUNCE[0x09])
+                    // If the selected button is NOT 0x00 (New Game) and Roxas Skip is marked as "Ready";
+                    if (_selectButton != 0x00 && ROXAS_SKIP_STAGE == 0)
                     {
-                        Terminal.Log("Everything seems to be correct! Initiating Prologue Skip...", 1);
+                        // Mark Roxas Skip as "Disabled".
+                        Terminal.Log("Disabling the Prologue Skip, expecting a game load.", 0);
+                        ROXAS_SKIP_STAGE = 4;
+                    }
 
-                        // Lock the autosave.
-                        DEBOUNCE[0x01] = true;
+                    // If the selected button IS 0x00 (New Game) and Roxas Skip is marked as "Disabled";
+                    else if (_selectButton == 0x00 && ROXAS_SKIP_STAGE > 0x00)
+                    {
+                        // Mark Roxas Skip as "Ready".
+                        Terminal.Log("Enabling the Prologue Skip, expecting a new game.", 0);
+                        ROXAS_SKIP_STAGE = 0;
+                    }
+                }
 
-                        // Suspend the game to run stuff in the back.
+                // If not on the Title Screen;
+                if (!Variables.IS_TITLE)
+                {
+                    // Read all the map-specific values
+                    var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_Area);
+                    var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
+                    var _eventCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x04);
+                    var _fadeCheck = Hypervisor.Read<byte>(Variables.ADDR_FadeValue);
+
+                    // If the cutscene "Twilight Town - Waking from a Dream" is playing and Roxas Skip is marked "Ready";
+                    if (_worldCheck == 0x02 && _roomCheck == 0x01 && _eventCheck == 0x38 && ROXAS_SKIP_STAGE == 0)
+                    {
+                        // If the Debounce is set;
+                        if (DEBOUNCE[0x09])
+                        {
+                            Terminal.Log("Everything seems to be correct! Initiating Prologue Skip...", 1);
+
+                            // Lock the autosave.
+                            DEBOUNCE[0x01] = true;
+
+                            // Suspend the game to run stuff in the back.
+                            Terminal.Log("Entering the CRITICAL SECTION in anticipation of a warp! Suspending the game...", 1);
+                            Axa.Suspend(false);
+
+                            // Construct the area code for "Dive into the Heart - Station of Awakening".
+                            Terminal.Log("Constructing the warp-to point!", 1);
+                            var _warpArea = new byte[] { 0x02, 0x20, 0x32, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 };
+
+                            // Write the target area in question.
+                            Hypervisor.Write(Variables.ADDR_Area, _warpArea);
+
+                            // Execute the warp.
+                            Terminal.Log("Initiating warp to Roxas's Heart!", 1);
+                            Shisutemu.ExecuteWarp(Variables.ADDR_Area, Locals.IS_FLASHBANG ? Shisutemu.FADE_TYPE.WHITEOUT : Shisutemu.FADE_TYPE.BLACKOUT);
+
+                            // Everything critical has been completed. Resume the game.
+                            Terminal.Log("CRITICAL SECTION has been completed! Resuming the game.", 1);
+                            Axa.Resume(false);
+
+                            // Write the flags for Command Menu access.
+                            Hypervisor.Write(Variables.ADDR_SaveData + 0x1CD0, 0x1FF00001);
+                            Hypervisor.Write(Variables.ADDR_SaveData + 0x1CD4, 0x00000000);
+
+                            Terminal.Log("Prologue Skip's First Stage has been completed!", 0);
+
+                            // Mark Roxas Skip as "Dream Selection".
+                            ROXAS_SKIP_STAGE = 1;
+                        }
+
+                        // If the Debounce is not set; Mark Roxas Skip as "Disabled".
+                        else
+                        {
+                            Terminal.Log("Prologue Skip has not been requested! Not initiating the function.", 0);
+                            ROXAS_SKIP_STAGE = 4;
+                        }
+                    }
+
+                    // If we are at "Dive into the Heart - Station of Awakening" and any cutscene is playing, and Roxas Skip is marked "Dream Selection";
+                    else if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x01 && (Variables.IS_CUTSCENE || Variables.IS_EVENT) && ROXAS_SKIP_STAGE == 1)
+                    {
+                        Terminal.Log("Dream Weapon was chosen after Prologue Skip! Moving unto the Second Stage...", 1);
+
+                        var _configRead = Hypervisor.Read<int>(Variables.ADDR_Config);
+
                         Terminal.Log("Entering the CRITICAL SECTION in anticipation of a warp! Suspending the game...", 1);
                         Axa.Suspend(false);
 
-                        // Construct the area code for "Dive into the Heart - Station of Awakening".
+                        // Construct a new area memory to temporarily warp to.
                         Terminal.Log("Constructing the warp-to point!", 1);
-                        var _warpArea = new byte[] { 0x02, 0x20, 0x32, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 };
+                        var _warpArea = new byte[] { 0x02, 0x0E, 0x32, 0x00, 0x02, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00 };
 
                         // Write the target area in question.
                         Hypervisor.Write(Variables.ADDR_Area, _warpArea);
 
-                        // Execute the warp.
-                        Terminal.Log("Initiating warp to Roxas's Heart!", 1);
+                        Terminal.Log("Initiating warp to Sora's Twilight Town!", 1);
                         Shisutemu.ExecuteWarp(Variables.ADDR_Area, Locals.IS_FLASHBANG ? Shisutemu.FADE_TYPE.WHITEOUT : Shisutemu.FADE_TYPE.BLACKOUT);
 
-                        // Everything critical has been completed. Resume the game.
-                        Terminal.Log("CRITICAL SECTION has been completed! Resuming the game.", 1);
-                        Axa.Resume(false);
+                        Terminal.Log("Writing all the necessary flags for the game to function!", 1);
 
-                        // Write the flags for Command Menu access.
-                        Hypervisor.Write(Variables.ADDR_SaveData + 0x1CD0, 0x1FF00001);
-                        Hypervisor.Write(Variables.ADDR_SaveData + 0x1CD4, 0x00000000);
-
-                        Terminal.Log("Prologue Skip's First Stage has been completed!", 0);
-
-                        // Mark Roxas Skip as "Dream Selection".
-                        ROXAS_SKIP_STAGE = 1;
-                    }
-
-                    // If the Debounce is not set; Mark Roxas Skip as "Disabled".
-                    else
-                    {
-                        Terminal.Log("Prologue Skip has not been requested! Not initiating the function.", 0);
-                        ROXAS_SKIP_STAGE = 4;
-                    }
-                }
-
-                // If we are at "Dive into the Heart - Station of Awakening" and any cutscene is playing, and Roxas Skip is marked "Dream Selection";
-                else if (_worldCheck == 0x02 && _roomCheck == 0x20 && _eventCheck == 0x01 && (Variables.IS_CUTSCENE || Variables.IS_EVENT) && ROXAS_SKIP_STAGE == 1)
-                {
-                    Terminal.Log("Dream Weapon was chosen after Prologue Skip! Moving unto the Second Stage...", 1);
-
-                    var _configRead = Hypervisor.Read<int>(Variables.ADDR_Config);
-
-                    Terminal.Log("Entering the CRITICAL SECTION in anticipation of a warp! Suspending the game...", 1);
-                    Axa.Suspend(false);
-
-                    // Construct a new area memory to temporarily warp to.
-                    Terminal.Log("Constructing the warp-to point!", 1);
-                    var _warpArea = new byte[] { 0x02, 0x0E, 0x32, 0x00, 0x02, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00 };
-
-                    // Write the target area in question.
-                    Hypervisor.Write(Variables.ADDR_Area, _warpArea);
-
-                    Terminal.Log("Initiating warp to Sora's Twilight Town!", 1);
-                    Shisutemu.ExecuteWarp(Variables.ADDR_Area, Locals.IS_FLASHBANG ? Shisutemu.FADE_TYPE.WHITEOUT : Shisutemu.FADE_TYPE.BLACKOUT);
-
-                    Terminal.Log("Writing all the necessary flags for the game to function!", 1);
-
-                    Hypervisor.Write(
-                        Variables.ADDR_SaveData + 0x31C,
-                        new byte[]
-                        {
+                        Hypervisor.Write(
+                            Variables.ADDR_SaveData + 0x31C,
+                            new byte[]
+                            {
                            0x04,
                            0x00,
                            0x00,
@@ -304,15 +374,15 @@ namespace ReFined.KH2
                            0x00,
                            0x00,
                            0x12
-                        });
+                            });
 
-                    Hypervisor.Write(Variables.ADDR_SaveData + 0x03E8, 0x04);
-                    Hypervisor.Write(Variables.ADDR_SaveData + 0x03EE, 0x04);
+                        Hypervisor.Write(Variables.ADDR_SaveData + 0x03E8, 0x04);
+                        Hypervisor.Write(Variables.ADDR_SaveData + 0x03EE, 0x04);
 
-                    Hypervisor.Write(
-                    Variables.ADDR_SaveData + 0x1CD0,
-                    new byte[]
-                    {
+                        Hypervisor.Write(
+                        Variables.ADDR_SaveData + 0x1CD0,
+                        new byte[]
+                        {
                         0x01,
                         0x00,
                         0xF0,
@@ -345,31 +415,31 @@ namespace ReFined.KH2
                         0x00,
                         0x00,
                         0x81
-                    });
+                        });
 
-                    Hypervisor.Write(Variables.ADDR_SaveData + 0x1CE2, 0x67);
+                        Hypervisor.Write(Variables.ADDR_SaveData + 0x1CE2, 0x67);
 
-                    var _assembly = Assembly.GetExecutingAssembly();
-                    var _resourceName = _assembly.GetManifestResourceNames();
+                        var _assembly = Assembly.GetExecutingAssembly();
+                        var _resourceName = _assembly.GetManifestResourceNames();
 
-                    byte[] _resourceFile = Array.Empty<byte>();
+                        byte[] _resourceFile = Array.Empty<byte>();
 
-                    using (var _resStream = _assembly.GetManifestResourceStream(_resourceName[0]))
-                    using (var _resReader = new BinaryReader(_resStream))
-                        _resourceFile = _resReader.ReadBytes((int)_resStream.Length);
+                        using (var _resStream = _assembly.GetManifestResourceStream(_resourceName.First(x => x.Contains("prologue_flags"))))
+                        using (var _resReader = new BinaryReader(_resStream))
+                            _resourceFile = _resReader.ReadBytes((int)_resStream.Length);
 
-                    Hypervisor.Write(Variables.ADDR_SaveData + 0x20E4, _resourceFile);
-                    Hypervisor.Write(Variables.ADDR_Config, _configRead);
+                        Hypervisor.Write(Variables.ADDR_SaveData + 0x20E4, _resourceFile);
+                        Hypervisor.Write(Variables.ADDR_Config, _configRead);
 
-                    if (_diffRead == 0x03)
-                    {
-                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F8, 0x32);
-                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4, 0x18);
-                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4 + 0x01, 0x18);
-                        Hypervisor.Write(
-                            Variables.ADDR_SaveData + 0x2544,
-                            new byte[]
-                            {
+                        if (_diffRead == 0x03)
+                        {
+                            Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F8, 0x32);
+                            Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4, 0x18);
+                            Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4 + 0x01, 0x18);
+                            Hypervisor.Write(
+                                Variables.ADDR_SaveData + 0x2544,
+                                new byte[]
+                                {
                                 0x89,
                                 0x01,
                                 0x88,
@@ -390,30 +460,31 @@ namespace ReFined.KH2
                                 0x00,
                                 0x9E,
                                 0x00
-                            }
-                        );
+                                }
+                            );
+                        }
+
+                        else
+                        {
+                            Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4, 0x1E);
+                            Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4 + 0x01, 0x1E);
+                            Hypervisor.Write(
+                                Variables.ADDR_SaveData + 0x2544,
+                                new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 }
+                            );
+                        }
+
+                        Terminal.Log("All the flags were written successfully!", 0);
+
+                        // Everything critical has been completed. Resume the game.
+                        Terminal.Log("CRITICAL SECTION has been completed! Resuming the game.", 1);
+                        Axa.Resume(false);
+
+                        Terminal.Log("Prologue Skip has been completed! Enjoy the game as Sora!", 0);
+
+                        DEBOUNCE[0x01] = false;
+                        ROXAS_SKIP_STAGE = 3;
                     }
-
-                    else
-                    {
-                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4, 0x1E);
-                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x24F4 + 0x01, 0x1E);
-                        Hypervisor.Write(
-                            Variables.ADDR_SaveData + 0x2544,
-                            new byte[] { 0x52, 0x00, 0x8A, 0x00, 0x9E, 0x00 }
-                        );
-                    }
-
-                    Terminal.Log("All the flags were written successfully!", 0);
-
-                    // Everything critical has been completed. Resume the game.
-                    Terminal.Log("CRITICAL SECTION has been completed! Resuming the game.", 1);
-                    Axa.Resume(false);
-
-                    Terminal.Log("Prologue Skip has been completed! Enjoy the game as Sora!", 0);
-
-                    DEBOUNCE[0x07] = false;
-                    ROXAS_SKIP_STAGE = 3;
                 }
             }
         }
@@ -546,6 +617,19 @@ namespace ReFined.KH2
 
                             // Launch the CAMP Menu. Did you notice how we are still in a suspend state?
                             // Yes, this is to prevent the game from loading anything important, as doing so WILL cause a crash when you change your loadout.
+
+                            ulong _initOffset = Variables.PLATFORM == "STEAM" ? 0x517U : 0x4D7U;
+
+                            var _campBitwise = Variables.CAMP_BITWISE.ITEMS |
+                                               Variables.CAMP_BITWISE.ABILITIES |
+                                               Variables.CAMP_BITWISE.CUSTOMIZE |
+                                               Variables.CAMP_BITWISE.PARTY;
+
+                            Hypervisor.DeleteInstruction(Popup.CAMP_OFFSET + 0x1A7, 0x07);
+                            Hypervisor.DeleteInstruction(Popup.CAMPINIT_OFFSET + _initOffset, 0x08);
+
+                            Hypervisor.Write(Variables.ADDR_CampBitwise, _campBitwise);
+
                             Popup.PopupMenu(Popup.MENU.CAMP, 0);
                         }
 
@@ -564,7 +648,7 @@ namespace ReFined.KH2
                         RETRY_MODE = 0x00;
                     }
 
-                    else if (RETRY_MODE == 0x00 && RETRY_STATE != null)
+                    else if (RETRY_MODE == 0x00 && RETRY_STATE != null && !Variables.IS_PAUSED)
                     {
                         Terminal.Log("Flushing the game state from memory...", 0);
                         RETRY_WAIT = false;
@@ -573,6 +657,11 @@ namespace ReFined.KH2
                         // Reset the function calls.
                         Hypervisor.Write(_mapJumpOffset, INST_MAPJUMPTASK);
                         Hypervisor.Write(_continueOffset, INST_CONTINUELOAD);
+
+                        ulong _initOffset = Variables.PLATFORM == "STEAM" ? 0x517U : 0x4D7U;
+
+                        Hypervisor.Write(Popup.CAMP_OFFSET + 0x1A7, Popup.CAMP_FUNCTION);
+                        Hypervisor.Write(Popup.CAMPINIT_OFFSET + _initOffset, Popup.CAMPINIT_FUNCTION);
 
                         // Reset the continue menu.
                         Locals.MAIN_CONTINUE = new Continue();
@@ -880,7 +969,7 @@ namespace ReFined.KH2
             else if (!Variables.IS_TITLE && !DEBOUNCE[0x07] && DEBOUNCE[0x08])
             {
                 // Read the current room.
-                var _currentArea = Hypervisor.Read<uint>(Variables.ADDR_Area);
+                var _currentArea = Hypervisor.Read<ushort>(Variables.ADDR_Area);
 
                 // If the current area is 02 01 (Twilight Town - Beginning FMV) or 02 20 (Dive into the Heart);
                 if (_currentArea == 0x0102 || _currentArea == 0x2002)
@@ -950,7 +1039,7 @@ namespace ReFined.KH2
                                        ((_configBitwise & Locals.CONFIG.AUDIO_SECONDARY) == Locals.CONFIG.AUDIO_SECONDARY ? 0x02 : 0x00);
 
                     Locals.SAVE_MODE = (_configBitwise & Locals.CONFIG.AUTOSAVE_INDICATOR) == Locals.CONFIG.AUTOSAVE_INDICATOR ? 0x00 : 
-                                      ((_configBitwise & Locals.CONFIG.AUTOSAVE_SILENT) == Locals.CONFIG.AUTOSAVE_SILENT ? 0x02 : 0x00);
+                                      ((_configBitwise & Locals.CONFIG.AUTOSAVE_SILENT) == Locals.CONFIG.AUTOSAVE_SILENT ? 0x01 : 0x02);
 
                     // Check for the Quadratum Config and set the byte if enabled.
                     var _vladConfig = Hypervisor.Read<byte>(Variables.ADDR_Config + 0x03);
@@ -1070,6 +1159,8 @@ namespace ReFined.KH2
                             // If the config menu is completely up:
                             if (_mainMenuTiming == 0xAF20)
                             {
+                                Hypervisor.DeleteInstruction(MENUSELECT_OFFSET + 0x46, 0x04);
+
                                 // Get the variables for page calculation.
                                 var _pointPage = Hypervisor.GetPointer64(Variables.PINT_SubMenuOptionSelect, [0x12]);
                                 var _pointCurrent = Hypervisor.GetPointer64(Variables.PINT_SubMenuOptionSelect, [0x00]);
@@ -1079,22 +1170,22 @@ namespace ReFined.KH2
                                 Hypervisor.Write(_pointMaximum, (byte)_configArray.Count, true);
 
                                 // Do the page calculation.
-                                byte _pageCurrent = Hypervisor.Read<byte>(_pointPage, true);
                                 byte _pageAmount = (byte)(_configArray.Count - 0x09);
-
-                                // Do the index calculation.
-                                var _currentIndex = Hypervisor.Read<byte>(_pointCurrent, true);
-                                var _currentIndexTotal = Hypervisor.Read<byte>(_pointCurrent + 0x02, true);
-
-                                byte _pageDifference = _pageCurrent > _pageAmount ? (byte)(_pageCurrent - _pageAmount) : (byte)(_pageAmount - _pageCurrent);
+                                byte _pageCurrent = Hypervisor.Read<byte>(_pointPage, true);
+                                byte _indexCurrent = Hypervisor.Read<byte>(_pointCurrent, true);
 
                                 // Write the page data.
-                                Hypervisor.Write(_pointPage, _pageAmount, true);
-                                Hypervisor.Write(_pointCurrent, (byte)(_currentIndex + _pageDifference), true);
-                                Hypervisor.Write(_pointCurrent + 0x02, (byte)(_currentIndexTotal + _pageDifference), true);
+                                if (_pageCurrent >= _pageAmount)
+                                {
+                                    Hypervisor.Write(_pointPage, _pageAmount, true);
+                                    Hypervisor.Write(_pointCurrent, _indexCurrent + (_pageCurrent - _pageAmount), true);
+                                }
 
                                 // Update the config list forcefully.
                                 Variables.SharpHook[FUNC_CONFIGUPDATELIST].Execute();
+                                Variables.SharpHook[FUNC_CONFIGUPDATEACTIVE].Execute();
+
+                                Hypervisor.Write<byte>(MENUSELECT_OFFSET + 0x46, [0x66, 0x89, 0x53, 0x02]);
                             }
 
                             // Declare the config menu has been set-up!
@@ -1286,6 +1377,7 @@ namespace ReFined.KH2
                         {
                             Terminal.Log("Vanilla Heartless is taking a bit to load. Waiting until it's complete.", 1);
                             
+                            // Do fuck all until it's done.
                             while (Locals.ENEMY_LOADING) 
                             { }
                         }
@@ -1335,7 +1427,9 @@ namespace ReFined.KH2
 
             // Read the Magic Sort data in the Save File, and fetches the first magic from the array.
             var _readMagic = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE000, 0x0C);
+            
             var _firstMagic = BitConverter.ToUInt16(_readMagic, 0x00);
+            var _checkCommand = Hypervisor.Read<short>(Variables.ADDR_MagicCommands);
 
             // If the Command Control instructions are not in memory, fetch them.
             // We do this because we want to not be able to control the Command Menu when we activate sorting.
@@ -1353,49 +1447,43 @@ namespace ReFined.KH2
                 ];
             }
 
-            // If the current Magic Levels mismatch the ones we had a moment ago;
-            if (Variables.IS_LOADED && (_magicOne != MAGIC_LV1 || _magicTwo != MAGIC_LV2))
+            if (MAGIC_STORE != null)
             {
-                Terminal.Log("Magic Change has been detected! Reseting Magic Sort memory!", 1);
+                if (Variables.IS_TITLE)
+                {
+                    Terminal.Log("Return to Title Screen detected! Resetting Magic Sort variables...", 1);
 
-                // Reset the sort memory.
-                MAGIC_STORE = null;
+                    MAGIC_STORE = null;
 
-                // Note the current Magic Values.
-                MAGIC_LV1 = _magicOne;
-                MAGIC_LV2 = _magicTwo;
+                    MAGIC_LV1 = 0x00;
+                    MAGIC_LV2 = 0x00;
 
-                // Erase the sort memory from the save file.
-                _firstMagic = 0x00;
-                _readMagic = new byte[0x0C];
-                Hypervisor.Write(Variables.ADDR_SaveData + 0xE000, _readMagic);
+                    _firstMagic = 0x00;
+                    _readMagic = new byte[0x0C];
+
+                    DEBOUNCE[0x00] = false;
+                    DEBOUNCE[0x0B] = false;
+                }
+
+                if (!Variables.IS_LOADED && (MAGIC_LV1 != _magicOne || MAGIC_LV2 != _magicTwo))
+                {
+                    Terminal.Log("Gained a new magic and changed rooms! Resetting Magic Sort memory...", 1);
+
+                    MAGIC_STORE = null;
+
+                    MAGIC_LV1 = _magicOne;
+                    MAGIC_LV2 = _magicTwo;
+
+                    _firstMagic = 0x00;
+                    _readMagic = new byte[0x0C];
+
+                    DEBOUNCE[0x00] = false;
+                    DEBOUNCE[0x0B] = false;
+                    DEBOUNCE[0x0E] = true;
+
+                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE000, _readMagic);
+                }
             }
-
-
-            // If we are loaded in, we do not have the Magic Sort in memory, but it exists on the save; Apply it.
-            if (Variables.IS_LOADED && MAGIC_STORE == null && _firstMagic != 0x00)
-                MAGIC_STORE = _readMagic;
-
-            else if (Variables.IS_LOADED && MAGIC_STORE == null)
-            {
-                Terminal.Log("Magic Store isn't detected! Constructing it!", 1);
-                MAGIC_STORE = Hypervisor.Read<byte>(Variables.ADDR_MagicCommands, 0x0C);
-                Hypervisor.Write(Variables.ADDR_SaveData + 0xE000, MAGIC_STORE);
-            }
-
-            // If we are on the Title Screen; Reset the sort memory.
-            if (Variables.IS_TITLE)
-            {
-                _firstMagic = 0x00;
-                _readMagic = new byte[0x0C];
-
-                MAGIC_STORE = null;
-                DEBOUNCE[0x0B] = false;
-            }
-
-            // If we leave the room, and the Sort is applied; Consider it not.
-            if (!Variables.IS_LOADED && DEBOUNCE[0x0B])
-            DEBOUNCE[0x0B] = false;
 
             // If a Child Menu is up, and the room is loaded;
             if (_menuPointer != 0x00 && Variables.IS_LOADED)
@@ -1403,16 +1491,23 @@ namespace ReFined.KH2
                 // Read the menu type.
                 var _menuRead = Hypervisor.Read<byte>(_menuPointer, true);
 
-                // If the room is loaded and the Sort is not yet applied;
-                if (!DEBOUNCE[0x0B])
+                if (MAGIC_STORE == null && DEBOUNCE[0x0E])
                 {
-                    Terminal.Log("Magic Sort not applied after room change, applying...", 1);
+                    Terminal.Log("Sub-Menu Opened after Magic Gain, reconstructing sort memory...", 1);
 
-                    // If we do in fact have the Sort Memory; Apply it.
-                    if (MAGIC_STORE != null)
-                        Hypervisor.Write(Variables.ADDR_MagicCommands, MAGIC_STORE);
+                    MAGIC_STORE = Hypervisor.Read<byte>(Variables.ADDR_MagicCommands, 0x0C);
+                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE000, MAGIC_STORE);
+                    DEBOUNCE[0x0E] = false;
 
-                    DEBOUNCE[0x0B] = true;
+                    return;
+                }
+
+                if (_firstMagic != 0x00 && !DEBOUNCE[0x0E])
+                {
+                    Terminal.Log("Roomchange w/ existing sort, applying sort memory...", 1);
+
+                    Hypervisor.Write<byte>(Variables.ADDR_MagicCommands, _readMagic);
+                    MAGIC_STORE = _readMagic;
                 }
 
                 // If it is indeed the Magic Menu;
@@ -1545,7 +1640,7 @@ namespace ReFined.KH2
         /// </summary>
         public static void ApplyCrowns()
         {
-            // Read the character to ensure it's actually our Sora.
+            // Read the character to ensure it's actually Sora.
             var _charRead = Hypervisor.Read<short>(Variables.ADDR_CurrentCharacter);
 
             // Read the current file formatter to ensure execution with other language packs.
@@ -1575,7 +1670,7 @@ namespace ReFined.KH2
             PARSE_BEGIN:
 
             // If the game is loaded, not on the title screen or a cutscene, not in the World Map, and the Crown Engine hasn't done SHIT:
-            if (!Variables.IS_TITLE && Variables.IS_LOADED && !Variables.IS_MOVIE && !Variables.IS_CUTSCENE && _worldRead >= 0x02 && _worldRead != 0x0F && SORA_PORTRAIT == 0x00 && _charRead == 0x0054)
+            if (!Variables.IS_TITLE && Variables.IS_LOADED && !Variables.IS_MOVIE && !Variables.IS_CUTSCENE && _worldRead >= 0x02 && _worldRead != 0x0F && SORA_PORTRAIT == 0x00 && _crownSum > 0x00 && !Variables.IS_PAUSED && _charRead == 0x0054)
             {
                 // Fetch all of Sora's Assets from the Buffer. I should be able to simplify this but eh, I can't bother right this moment.
                 var _fileName = _fileFormatter.Replace("%s", Locals.SORA_FORMS[_formRead]);
@@ -1706,7 +1801,9 @@ namespace ReFined.KH2
         {
             // Read the world and the room.
             var _worldCheck = Hypervisor.Read<byte>(Variables.ADDR_Area);
+            var _fadeCheck = Hypervisor.Read<byte>(Variables.ADDR_FadeValue);
             var _roomCheck = Hypervisor.Read<byte>(Variables.ADDR_Area + 0x01);
+            var _menuCheck = Hypervisor.Read<byte>(Variables.ADDR_MenuFlag);
 
             var _blacklistCheck =
                 (_worldCheck == 0x0F) ||
@@ -1719,35 +1816,25 @@ namespace ReFined.KH2
             // If we are not in the Title Screen, the game is loaded, and the room we are at is NOT blacklisted;
             if (!Variables.IS_TITLE && Variables.IS_LOADED && !_blacklistCheck)
             {
-                REINSTATE_AUTOSAVE:
-
-                /*
-                 * See if the following are true:
-                 * - Save Mode isn't set to "0x02", disabling Autosave.
-                 * - The game is not paused.
-                 * - No cutscene is playing.
-                 * - No event is playing.
-                 * - The room is loaded.
-                 * - There is no active battle going on.
-                 * - The world is valid (Twilight Town or higher)
-                 * - The fade has at least half-way set in.
-                 * - The Debounce is not set.
-                 */
-                var _saveableBool = Locals.SAVE_MODE != 0x02 && !Variables.IS_PAUSED &&
-                                   !Variables.IS_CUTSCENE && !Variables.IS_EVENT && Variables.IS_LOADED &&
-                                    Variables.BATTLE_MODE == Variables.BATTLE_TYPE.PEACEFUL &&
-                                    !Locals.CONFIG_RELOADING && Hypervisor.Read<byte>(Variables.ADDR_FadeValue) <= 0x40 &&
-                                    _worldCheck >= 0x02 && !DEBOUNCE[0x01] && !DEBOUNCE[0x02] && DEBOUNCE[0x0A];
-
-                if (_saveableBool)
+                if (!DEBOUNCE[0x0F])
                 {
-                    // Implement a wait state because this is fuckin' bullshit.
-                    if (!DEBOUNCE[0x06])
-                    {
-                        Thread.Sleep(500);
-                        DEBOUNCE[0x06] = true;
-                        goto REINSTATE_AUTOSAVE;
-                    }
+                    SAVE_WORLD = _worldCheck;
+                    SAVE_ROOM = _roomCheck;
+                    SAVE_ITERATOR = 0;
+                    DEBOUNCE[0x0F] = true;
+                    return;
+                }
+
+                var _statusCheck = Locals.SAVE_MODE != 0x02 && !Variables.IS_PAUSED && Variables.IS_LOADED && !Locals.CONFIG_RELOADING && !DEBOUNCE[0x01] && !DEBOUNCE[0x02] && DEBOUNCE[0x0A] && _worldCheck >= 0x02 && _fadeCheck == 0x00;
+
+                if (_statusCheck)
+                {
+                    Thread.Sleep(750);
+
+                    var _saveableCheck = !Variables.IS_CUTSCENE && !Variables.IS_EVENT && !Variables.IS_MOVIE && Variables.BATTLE_MODE == Variables.BATTLE_TYPE.PEACEFUL && _menuCheck == 0x00;
+
+                    if (!_saveableCheck)
+                        return;
 
                     // Check if the world we are in is not acknowledged;
                     if (SAVE_WORLD != _worldCheck)
@@ -1786,7 +1873,7 @@ namespace ReFined.KH2
                 else if (Variables.IS_TITLE && DEBOUNCE[0x0A])
                 {
                     DEBOUNCE[0x0A] = false;
-                    
+
                     SAVE_ROOM = _roomCheck;
                     SAVE_WORLD = _worldCheck;
                 }
@@ -1807,8 +1894,11 @@ namespace ReFined.KH2
                         }
                     }
 
+                START_SAVE:
+
                     // Prepare the strings.
-                    var _saveName = "BISLPM-66675FM-98";
+                    var _saveID = "66675FM-" + (Locals.SAVE_SLOT - SAVE_CHECK_OFFSET).ToString("00");
+                    var _saveName = "BISLPM-66675FM-" + (Locals.SAVE_SLOT - SAVE_CHECK_OFFSET).ToString("00");
                     var _savePath = Hypervisor.ReadString(Hypervisor.GetPointer64(Variables.PINT_SaveInformation, [0x40]), true) + (Locals.PLATFORM == "EPIC" ? "\\KHIIFM.png" : "\\KHIIFM_WW.png");
 
                     // Calculate the Unix Date.
@@ -1831,6 +1921,8 @@ namespace ReFined.KH2
                     var _worldRead = Hypervisor.Read<byte>(Variables.ADDR_Area);
 
                     // Read the save from RAM.
+
+                    Hypervisor.Write(Variables.ADDR_SaveData + 0x10, 0xFFFFFFFF);
                     var _saveData = Hypervisor.Read<byte>(Variables.ADDR_SaveData, _saveDataLength);
 
                     // Read the save slot.
@@ -1853,7 +1945,7 @@ namespace ReFined.KH2
                     }
 
                     // Seek out the physical slot of the save to make.
-                    while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains("66675FM-98"))
+                    while (_saveSlotRAM[0] != 0x00 && !Encoding.Default.GetString(_saveSlotRAM).Contains(_saveID))
                     {
                         _saveSlot++;
                         _saveSlotRAM = Hypervisor.Read<byte>(_saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot), 0x11, true);
@@ -1890,6 +1982,31 @@ namespace ReFined.KH2
                     var _saveInfoAddrRAM = _saveInfoStartRAM + (ulong)(_saveInfoLength * _saveSlot);
                     var _saveDataAddrRAM = _saveDataStartRAM + (ulong)(_saveDataLength * _saveSlot);
 
+                    if (_saveSlotRAM[0] != 0x00)
+                    {
+                        var _autoSaveCheck = Hypervisor.Read<uint>(_saveDataAddrRAM + 0x10, true);
+
+                        if (_autoSaveCheck != 0xFFFFFFFF)
+                        {
+                            var _slotCalc = Locals.SAVE_SLOT + 0x01 - SAVE_CHECK_OFFSET;
+
+                            if (SAVE_CHECK_OFFSET <= 0x00 || _slotCalc >= 0x00)
+                            {
+                                SAVE_CHECK_OFFSET++;
+                                Terminal.Log("Parsed Slot is NOT an Autosave! Offsetting to slot #" + (Locals.SAVE_SLOT + 0x01 - SAVE_CHECK_OFFSET).ToString("00"), 1);
+                                goto START_SAVE;
+                            }
+
+                            else if (_slotCalc < 0x00)
+                            {
+                                Terminal.Log("No valid slots to create an Autosave found! Terminating...", 2);
+                                SAVE_CHECK_OFFSET = 0x00;
+                                DEBOUNCE[0x02] = false;
+                                return;
+                            }
+                        }
+                    }
+
                     // Write out the save information.
                     Hypervisor.Write(_saveInfoAddrRAM, Encoding.Default.GetBytes(_saveName), true);
 
@@ -1909,6 +2026,9 @@ namespace ReFined.KH2
 
                     // Write, the save.
                     Hypervisor.Write(_saveDataAddrRAM + 0x0C, _dataArray, true);
+
+                    // Write the Autosave indicator.
+                    Hypervisor.Write(Variables.ADDR_SaveData + 0x10, 0x00);
                     #endregion
 
                     #region File Save
@@ -1961,9 +2081,13 @@ namespace ReFined.KH2
                         Hypervisor.Write<byte>(INFORMATION_OFFSET + 0x029, 0x22);
                     }
 
+                    SAVE_CHECK_OFFSET = 0x00;
                     DEBOUNCE[0x02] = false;
                 }
             }
+
+            else if (Variables.IS_TITLE && DEBOUNCE[0x0F])
+                DEBOUNCE[0x0F] = false;
         }
 
         /// <summary>
@@ -1985,6 +2109,28 @@ namespace ReFined.KH2
                     var _isMenuGood = _readMenu == 0x01 && (_readSubMenu == 0x02 || _readSubMenu == 0x05);
                     var _isStatusGood = _readPicture == 420 || _readPicture == 421;
 
+                    if (!RETRIBUTION_INIT)
+                    {
+                        Terminal.Log("Fetching WENT from 03system.bin...", 1);
+
+                        var _systemAddress = Hypervisor.Read<ulong>(Variables.PINT_SystemFile);
+                        var _wentFile = IO.FetchBARSubfile(_systemAddress, "went", true);
+
+                        if (_wentFile == 0x00)
+                            return;
+
+                        Terminal.Log("Writing the values for Retribution and Absolution to WENT...", 1);
+
+                        Hypervisor.Write(_wentFile + 0x017C, [0x0A03, 0x0A07], true);
+                        Hypervisor.Write(_wentFile + 0x030C, [0x0A04, 0x0A08], true);
+                        Hypervisor.Write(_wentFile + 0x0900, [0x0A05, 0x0A09], true);
+                        Hypervisor.Write(_wentFile + 0x0A90, [0x0A06, 0x0A0A], true);
+
+                        Terminal.Log("Special Weapon initialization is complete!", 0);
+
+                        RETRIBUTION_INIT = true;
+                    }
+
                     if (PARAMS_ALL.Count == 0x00)
                     {
                         Terminal.Log("Fetching Keyblade Information to use with Addon Keyblades...", 0);
@@ -2005,18 +2151,18 @@ namespace ReFined.KH2
                         ABSOLUTION_RAM = Shisutemu.FetchItem(0x0301);
                         RETRIBUTION_RAM = Shisutemu.FetchItem(0x0300);
 
-                        PARAM_ABSOLUTION = Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE204);
-                        PARAM_RETRIBUTION = Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE200);
+                        PARAM_ABSOLUTION = Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE304);
+                        PARAM_RETRIBUTION = Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE300);
 
                         if (PARAM_ABSOLUTION == 0x0000)
                         {
-                            Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE204, 0x50);
+                            Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE304, 0x50);
                             PARAM_ABSOLUTION = 0x50;
                         }
 
                         if (PARAM_RETRIBUTION == 0x0000)
                         {
-                            Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE200, 0x50);
+                            Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0xE300, 0x50);
                             PARAM_RETRIBUTION = 0x50;
                         }
 
@@ -2032,19 +2178,19 @@ namespace ReFined.KH2
                         Hypervisor.Read<ushort>(Variables.ADDR_SaveData + 0x339C)
                     };
 
-                    var _absolutionCheck = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x3580 + 0x139) == 0x00 && _equipArray.FirstOrDefault(x => x == 0x0301) == 0x00;
-                    var _retributionCheck = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x3580 + 0x138) == 0x00 && _equipArray.FirstOrDefault(x => x == 0x0300) == 0x00;
+                    var _absolutionCheck = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE311) == 0x00 && _equipArray.FirstOrDefault(x => x == 0x0301) == 0x00;
+                    var _retributionCheck = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE310) == 0x00 && _equipArray.FirstOrDefault(x => x == 0x0300) == 0x00;
 
                     if (_absolutionCheck && Locals.DETECTED_ABSOLUTION)
                     {
                         Terminal.Log("Giving Absolution...", 0);
-                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x3580 + 0x139, 0x01);
+                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0xE311, 0x01);
                     }
 
                     if (_retributionCheck && Locals.DETECTED_RETRIBUTION)
                     {
                         Terminal.Log("Giving Retribution...", 0);
-                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0x3580 + 0x138, 0x01);
+                        Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0xE310, 0x01);
                     }
 
                     if (INDEX_ABSOLUTION == 0xFF)
@@ -2098,14 +2244,14 @@ namespace ReFined.KH2
 
                                 if (_seekItem == 0x0300)
                                 {
-                                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE200, PARAMS_LIST[_currParam]);
+                                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE300, PARAMS_LIST[_currParam]);
                                     PARAM_RETRIBUTION = PARAMS_LIST[_currParam];
                                     INDEX_RETRIBUTION = _currParam;
                                 }
 
                                 else
                                 {
-                                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE204, PARAMS_LIST[_currParam]);
+                                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE404, PARAMS_LIST[_currParam]);
                                     PARAM_ABSOLUTION = PARAMS_LIST[_currParam];
                                     INDEX_ABSOLUTION = _currParam;
                                 }

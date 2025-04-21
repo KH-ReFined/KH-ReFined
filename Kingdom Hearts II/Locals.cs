@@ -5,15 +5,15 @@ namespace ReFined
 {
     public class Locals : Variables
     {
-        public static string PLATFORM = "EPIC";
+        public static string PLATFORM = "STEAM";
 
         public static bool IS_LITE;
         public static int SAVE_MODE;
+        public static int SAVE_SLOT;
         public static bool AUTOATTACK;
         public static bool MIRAGE_ARENA;
         public static bool RANDOMIZER;
         public static bool RPC_ENABLED;
-        public static bool TECHNICOLOR;
         public static int AUDIO_MODE;
         public static bool COMBAT_MODE;
         public static bool MUSIC_MODE;
@@ -27,6 +27,7 @@ namespace ReFined
         public static bool CONFIG_RELOADING;
         public static bool DETECTED_RETRIBUTION;
         public static bool DETECTED_ABSOLUTION;
+        public static bool INITIALIZED;
         public static BUTTON RESET_COMBO = BUTTON.L2 | BUTTON.R2;
 
         public static Dictionary<string, int> LOADED_LANGS = new Dictionary<string, int>();

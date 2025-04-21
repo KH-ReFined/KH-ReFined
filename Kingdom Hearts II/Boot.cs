@@ -9,11 +9,15 @@ using System.Threading.Tasks;
 
 using DiscordClient = Discord.Discord;
 
-namespace ReFined.KH2
+namespace ReFined
 {
     public static class Boot
     {
-        public static void Initialization()
+        public static bool ENABLE_IDLEMOVIE;
+        public static bool ENABLE_QUICKBOOT;
+        public static ulong TITLEINIT_OFFSET;
+
+        public static int Initialization()
         {
             if (File.Exists("reFined.cfg"))
             {
@@ -27,7 +31,10 @@ namespace ReFined.KH2
                     Locals.RPC_ENABLED = _generalTable["discordRPC"].AsBoolean;
                     Locals.IS_FLASHBANG = _generalTable["isFlashbang"].AsBoolean;
 
+                    Locals.SAVE_SLOT = _generalTable["saveSlot"].AsInteger - 0x01;
                     Locals.RESET_COMBO = Variables.BUTTON.NONE;
+
+                    ENABLE_QUICKBOOT = _generalTable["quickBoot"].AsBoolean;
 
                     foreach (TomlString _button in _generalTable["resetCombo"].AsArray)
                     {
@@ -41,6 +48,8 @@ namespace ReFined.KH2
                     Locals.AUTOATTACK = _accessTable["autoAttack"].AsBoolean;
 
                     var _gameTable = _tomlTable["Kingdom Hearts II"];
+
+                    ENABLE_IDLEMOVIE = _gameTable["idleMovie"].AsBoolean;
 
                     Locals.FORM_SHORTCUT = _gameTable["driveShortcuts"].AsBoolean;
                     Locals.RESET_PROMPT = _gameTable["resetPrompt"].AsBoolean;
@@ -64,6 +73,7 @@ namespace ReFined.KH2
                     "resetCombo = [\"L2\", \"R2\"]",
                     "isFlashbang = true",
                     "quickBoot = false",
+                    "saveSlot = 99",
                     "",
                     "[Accessibility]",
                     "autoAttack = false",
@@ -74,6 +84,7 @@ namespace ReFined.KH2
                     "autoSave = true",
                     "",
                     "[\"Kingdom Hearts II\"]",
+                    "idleMovie = false",
                     "driveShortcuts = true",
                     "resetPrompt = true",
                     "deathPrompt = \"retry\"",
@@ -85,15 +96,15 @@ namespace ReFined.KH2
 
             Terminal.Log("Welcome to " + (Locals.IS_LITE ? "Re:Freshed" : "Re:Fined") + " v3.00!", 0);
 
-            Terminal.Log("Trying to attach to the process...", 1);
-            var _fetchProc = Process.GetProcessesByName("KINGDOM HEARTS II FINAL MIX")[0];
-            Terminal.Log("Attached to the process successfully!", 0);
+            if (!File.Exists("keystone.dll") ||
+                !File.Exists("discord_game_sdk.dll"))
+                return 550;
+
+            var _mainProcess = Process.GetProcessesByName("KINGDOM HEARTS II FINAL MIX")[0];
+            Hypervisor.AttachProcess(_mainProcess);
 
             Terminal.Log("Initializing Kingdom Hearts II - Flexible Modding Library...", 1);
-            Entry.Initialize(_fetchProc);
-
-            Terminal.Log("Initializing the Hypervisor...", 1);
-            Hypervisor.AttachProcess(_fetchProc);
+            Entry.Initialize(Hypervisor.Process);
 
             Terminal.Log("Initializing Discord GameSDK...", 1);
             Locals.DiscordClient = new DiscordClient(833511404274974740, 0x01);
@@ -116,23 +127,36 @@ namespace ReFined.KH2
             Critical.AREAINIT_OFFSET = Hypervisor.FindSignature<ulong>("48 89 5C 24 10 56 48 83 EC 30 33 F6 48 89 7C 24 40 F6 05 B4 53 96 00 01 48 8B F9 74 28 8B 1D A1 53 96 00 8B CB");
 
             Critical.CONTROL_OFFSET = Hypervisor.FindSignature<ulong>("48 89 5C 24 18 55 41 56 41 57 48 83 EC 20 4C 8B 41 08 48 8B D9");
+            Critical.MENUSELECT_OFFSET = Hypervisor.FindSignature<ulong>("40 55 53 48 8D 6C 24 B1 48 81 EC 98 00 00 00 48 8B 05 ?? ?? ?? ??");
             Critical.INFORMATION_OFFSET = Hypervisor.FindSignature<ulong>("48 89 5C 24 18 57 48 81 EC D0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 C0 00 00 00 48 8B DA 48 8B F9");
-            
+
             Critical.FUNC_ITEMSELECTUPDATE = Hypervisor.FindSignature<IntPtr>("48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 41 54 41 55 41 56 41 57 48 83 EC 40 45 32 E4 E8 ?? ?? ?? ??");
+            Critical.FUNC_CONFIGUPDATEACTIVE = Hypervisor.FindSignature<IntPtr>("48 83 EC 28 48 8B 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 63 D0 48 8B 05 ?? ?? ?? ?? 48 0F BE 0C 02");
             Critical.FUNC_CONFIGUPDATELIST = Hypervisor.FindSignature<IntPtr>("40 53 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 58 E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 4C 8B F8 E8 ?? ?? ?? ??");
 
+            TITLEINIT_OFFSET = Hypervisor.FindSignature<ulong>("48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F1 33 C9 E8 ?? ?? ?? ?? 33 C9 48 8B F8 E8 ?? ?? ?? ??");
+
+            if (!ENABLE_IDLEMOVIE)
+                Hypervisor.Write(TITLEINIT_OFFSET + 0x4A, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+
+            if (ENABLE_QUICKBOOT)
+                Hypervisor.Write(0x5B85D0, "title_fast.2ld");
+
+            var _hotfixSound = Hypervisor.FindSignature<ulong>("40 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C 24 E0 48 81 EC 20 01 00 00 48 C7 44 24 60 FE FF FF FF 48 89 9C 24 60 01 00 00 48 8B 05 ?? ?? ?? ??");
+            Hypervisor.Write<byte>(_hotfixSound + 0x162, [0x31, 0xC0, 0x90, 0x90, 0x90]);
+
             Terminal.Log("All functions found successfully!", 0);
+
+            if (IO.GetFileSize("reFined-v3.bin") == 0)
+                return 404;
+
+            if (IO.GetFileSize("03system.bin") == 0)
+                return 430;
 
             if (IO.GetFileSize("mirageArena.bin") != 0x00)
             {
                 Terminal.Log("Mirage Arena Detected! Adjusting Discord RPC accordingly...", 0);
                 Locals.MIRAGE_ARENA = true;
-            }
-
-            if (IO.GetFileSize("techniColor.bin") != 0x00)
-            {
-                Terminal.Log("Technicolor Detected! Disabling Summon Accommodation...", 0);
-                Locals.TECHNICOLOR = true;
             }
 
             Terminal.Log("Initializing all the menus...", 1);
@@ -169,7 +193,7 @@ namespace ReFined.KH2
 
                 if (IO.GetFileSize("obj/H_ZZ020_DC.mdlx") != 0x00)
                 {
-                    Terminal.Log("Garden of Assemblage Rndomizer Detected! Adjusting some functionality accordingly...", 0);
+                    Terminal.Log("Garden of Assemblage Randomizer Detected! Adjusting some functionality accordingly...", 0);
                     Locals.RANDOMIZER = true;
                 }
 
@@ -341,47 +365,104 @@ namespace ReFined.KH2
                     Locals.MAIN_INTRO.Children.Add(_skipIntro);
                 }
 
+                if (Locals.RANDOMIZER && (Locals.DETECTED_RETRIBUTION || Locals.DETECTED_ABSOLUTION))
+                {
+                    Terminal.Log("Randomizer with Retribution/Absolution detected! Adding support for Randomizer Keyblades...", 1);
+
+                    Locals.KEY_DICTIONARY.Add(0x0053, 0x002C);
+                    Locals.KEY_DICTIONARY.Add(0x0054, 0x002D);
+                    Locals.KEY_DICTIONARY.Add(0x0055, 0x0047);
+                    Locals.KEY_DICTIONARY.Add(0x0074, 0x0051);
+                }
+
                 Terminal.Log("All adjustments have been done successfully!", 0);
             }
 
-            if (Locals.RPC_TEXTS == null)
-            {
-                Terminal.Log("Parsing all of the Discord RPC related texts...", 1);
-
-                Locals.RPC_TEXTS = new List<string>();
-                Locals.MODE_TEXTS = new List<string>();
-                Locals.FORM_TEXTS = new List<string>();
-
-                for (short i = 0x5740; i < 0x5745; i++)
-                    Locals.RPC_TEXTS.Add(Text.GetStringHuman(i).Replace("/", "|"));
-
-                for (var i = 0; i < 4; i++)
-                {
-                    short _stringID = (short)(0x3738 + i);
-
-                    if (i == 0x03)
-                        _stringID = 0x4E30;
-
-                    Locals.MODE_TEXTS.Add(Text.GetStringHuman(_stringID));
-                }
-
-                for (var i = 0; i < 6; i++)
-                {
-                    short _stringID = (short)(0x01E5 + (i >= 0x02 ? i - 1 : i));
-
-                    if (i == 0x02)
-                        _stringID = 0x4E7F;
-
-                    var _formString = Text.GetStringHuman(_stringID);
-                    var _splitString = _formString.Split(' ');
-
-                    Locals.FORM_TEXTS.Add(_splitString[0]);
-                }
-
-                Terminal.Log("Discord RPC texts have been parsed successfully!", 0);
-            }
-
             Terminal.Log("Initialization completed! Enjoy!", 0);
+            Locals.INITIALIZED = true;
+            return 0;
+        }
+
+        public static void Execute()
+        {
+            if (Locals.INITIALIZED)
+            {
+                Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        if (!Locals.IS_LITE)
+                        {
+                            Demand.CombatMode();
+
+                            Switchers.MusicSwitch();
+                            Switchers.AudioSwitch();
+                            Switchers.EnemySwitch();
+                        }
+                    }
+                });
+
+                Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        if (!Locals.IS_LITE)
+                            Critical.ApplyCrowns();
+
+                        Critical.HandleAutosave();
+                        Critical.AspectCorrection();
+                    }
+
+                });
+
+                Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        Continuous.FixSavePoint();
+                        Continuous.EnforcePrompts();
+                        Continuous.CorrectTutorials();
+                        Continuous.ModifyLimitShorts();
+                        Continuous.HandleFramelimiter();
+
+                        Demand.TriggerReset();
+                        Demand.HandleShortcuts();
+
+                        Critical.HandleIntro();
+                        Critical.HandleConfiguration();
+
+                        if (Locals.RANDOMIZER)
+                            Critical.EnablersAP();
+
+                        if (!Locals.IS_LITE)
+                        {
+                            Continuous.ActivateWarpGOA();
+
+                            Demand.HandleEncounter();
+                            Demand.HandleAutoattack();
+
+                            Critical.SortMagic();
+                            Critical.RetryBattles();
+                            Critical.PrologueSkip();
+                            Critical.RetributionLogic();
+                            Critical.AllowFormShorcuts();
+                        }
+                    }
+                });
+
+                Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        if (Locals.RPC_ENABLED)
+                        {
+                            External.DiscordRPC();
+                            Thread.Sleep(500);
+                        }
+                    }
+                });
+
+            }
         }
     }
 }

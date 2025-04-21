@@ -35,7 +35,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ReFined.KH2
+namespace ReFined
 {
     #region TOML Nodes
 
