@@ -77,6 +77,8 @@ However, there are also features that are common across every game, which you ca
 | :heavy_check_mark: | - | Fix the Save Point lighting up indefinitely. |
 | :heavy_check_mark: | - | Fix some elements in Timeless River not being in Black and White. |
 | :heavy_check_mark: | - | The "Right Stick" configuration option has been restored. |
+| :heavy_check_mark: | - | The screen shake that happens in certain moments have been restored. |
+| :heavy_check_mark: | - | Magic will now properly register the moment it is obtained instead of requiring a map reload. |
 | - | :heavy_check_mark: | Removed the FMV on the Title Screen. |
 | - | :heavy_check_mark: | The player can now retry all forced encounters. [[5]](#reference) |
 | - | :heavy_check_mark: | Added the ability to "Prepare and Retry". [[6]](#reference) |
@@ -94,6 +96,7 @@ However, there are also features that are common across every game, which you ca
 | - | :heavy_check_mark: | Added the ability to customize and switch between 3 shortcut configurations on-the-fly. This is done on a per-save basis. [[10]](#reference)|
 | - | :heavy_check_mark: | Limit Form's Shortcuts can now be reorganized through the config file. |
 | - | :heavy_check_mark: | Added the `Quadratum` Command Menu Setting for those who may want to use it. |
+| - | :heavy_check_mark: | Improvements to the Archipelago Experience have been implemented. |
 
 #### Reference
 
