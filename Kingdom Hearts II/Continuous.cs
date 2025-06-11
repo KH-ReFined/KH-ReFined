@@ -23,33 +23,6 @@ namespace ReFined
 
         static byte SAVE_CHECK = 0x75;
 
-        static byte[][] _controlScheme = 
-        [
-            [ 0x78, 0x62, 0x6F ], // xbo
-            [ 0x70, 0x73, 0x78 ], // psx
-            [ 0x65, 0x74, 0x63 ]  // etc
-        ];
-
-        public static void CorrectTutorials()
-        {
-            var _controlType = Hypervisor.Read<byte>(Variables.ADDR_Confirm - 0x02);
-
-            if (_controlType != PAST_TYPE)
-            {
-                Terminal.Log("A change in the Control Scheme has been detected! Adjusting the tutorial images...", 1);
-                    
-                Hypervisor.Write(Variables.MemoryKH["HELPIMAGE_FNAMES"] + 0x13, _controlScheme[_controlType - 0x01], true);
-                Hypervisor.Write(Variables.MemoryKH["HELPIMAGE_FNAMES"] + 0x33, _controlScheme[_controlType - 0x01], true);
-                Hypervisor.Write(Variables.MemoryKH["HELPIMAGE_FNAMES"] + 0x53, _controlScheme[_controlType - 0x01], true);
-                Hypervisor.Write(Variables.MemoryKH["HELPIMAGE_FNAMES"] + 0x93, _controlScheme[_controlType - 0x01], true);
-                Hypervisor.Write(Variables.MemoryKH["HELPIMAGE_FNAMES"] + 0xA3, _controlScheme[_controlType - 0x01], true);
-
-                PAST_TYPE = _controlType;
-
-                Terminal.Log("Tutorial images have been adjusted!", 0);
-            }
-        }
-
         /// <summary>
         /// Handles the modification of Limit Form's Shortcuts according to the config file.
         /// I really want to somehow allow this to happen in-game.

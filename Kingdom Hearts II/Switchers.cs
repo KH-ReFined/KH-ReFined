@@ -108,14 +108,14 @@ namespace ReFined
             if (Locals.MUSIC_MODE != MUSIC_PAST || (!_musicalCheck && ATLANTICA_SWITCH))
             {
                 if (ATLANTICA_SWITCH)
-                    Axa.Suspend(false);
+                    AxaInterface.Suspend(false);
 
                 Terminal.Log(String.Format("Switching Music to {0}...", Locals.MUSIC_MODE ? "Vanilla" : "Remastered"), 0);
                 Hypervisor.Write<byte>(Variables.DATA_BGMPath, Locals.MUSIC_MODE ? [0x70, 0x73, 0x32, 0x6D, 0x64] : [0x6D, 0x75, 0x73, 0x69, 0x63]);
 
                 if (ATLANTICA_SWITCH)
                 {
-                    Axa.Resume(false);
+                    AxaInterface.Resume(false);
                     ATLANTICA_SWITCH = false;
                 }
 
@@ -124,10 +124,10 @@ namespace ReFined
 
             else if (_musicalCheck && !ATLANTICA_SWITCH)
             {
-                Axa.Suspend(false);
+                AxaInterface.Suspend(false);
                 Terminal.Log("Atlantica Detected! Switching to the according soundtrack...", 0);
                 Hypervisor.Write<byte>(Variables.DATA_BGMPath, [0x6D, 0x75, 0x73, 0x69, 0x63]);
-                Axa.Resume(false);
+                AxaInterface.Resume(false);
                 
                 ATLANTICA_SWITCH = true;
             }
@@ -140,7 +140,6 @@ namespace ReFined
                 Locals.ENEMY_LOADING = true;
 
                 Terminal.Log(String.Format("Switching Enemies to the {0} Palette...", Locals.ENEMY_MODE ? "Classic" : "Special"), 0);
-                Hypervisor.Write(Variables.ADDR_HeartJiminy, Locals.ENEMY_MODE ? "ps2tx" : "heart");
 
 
                 foreach (var _id in Locals.OBJENTRY_BOSS)

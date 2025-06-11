@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KH2FML;
+
+using BSharpConvention = Binarysharp.MSharp.Assembly.CallingConvention.CallingConventions;
+
 
 namespace ReFined.KH2
 {

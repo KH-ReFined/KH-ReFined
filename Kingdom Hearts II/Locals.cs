@@ -5,8 +5,7 @@ namespace ReFined
 {
     public class Locals : Variables
     {
-        public static string PLATFORM = "STEAM";
-
+        public static string NAME_LABEL = "Re:Fined";
         public static bool IS_LITE;
         public static int SAVE_MODE;
         public static int SAVE_SLOT;
@@ -28,6 +27,9 @@ namespace ReFined
         public static bool DETECTED_RETRIBUTION;
         public static bool DETECTED_ABSOLUTION;
         public static bool INITIALIZED;
+        public static bool GAME_LOADED;
+        public static bool SHAKE_ENABLED = true;
+        public static bool SHAKE_BLOOM;
         public static BUTTON RESET_COMBO = BUTTON.L2 | BUTTON.R2;
 
         public static Dictionary<string, int> LOADED_LANGS = new Dictionary<string, int>();
@@ -43,14 +45,6 @@ namespace ReFined
 
         public static string[] SORA_FORMS = ["P_EX100", "P_EX100_BTLF", "P_EX100_MAGF", "P_EX100_KH1F", "P_EX100_TRIF", "P_EX100_ULTF", "P_EX100_HTLF"];
 
-        public static short[] OBJENTRY_SUMMON =
-        {
-            0x045B,
-            0x06C8,
-            0x07F5,
-            0x030A
-        };
-
         public static short[] OBJENTRY_BOSS =
         {
             0x0161,
@@ -63,7 +57,7 @@ namespace ReFined
             0x08C6,
             0x0165,
             0x08DD,
-            0x05D0,
+            0x05CE,
             0x08DC,
         };
 
@@ -168,8 +162,8 @@ namespace ReFined
             FIELD_CAM = 0x0010,
             RIGHT_STICK = 0x0020,
             COMMAND_KH1 = 0x0040,
-            CAMERA_H = 0x0080,
-            CAMERA_V = 0x0100,
+            CAMERA_H = 0x0100,
+            CAMERA_V = 0x0080,
             SUMMON_PARTIAL = 0x0200,
             SUMMON_FULL = 0x0400,
             AUDIO_PRIMARY = 0x0800,

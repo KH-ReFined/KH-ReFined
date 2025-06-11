@@ -27,15 +27,6 @@ namespace ReFined
         static bool SUBMIT_SHORTCUTS;
         static byte CURRENT_SHORTCUT = 0x80;
 
-        static ulong RESOLVED_POINT;
-        static ulong ACTIVATE_POINT;
-
-        static int ACTIVATE_SIZE;
-        static int RESOLVED_SIZE;
-
-        static bool VENDOR_GIVEN;
-
-
         /// <summary>
         /// Handles Autoattacking logic, since we can't just force it nilly willy!
         /// This checks a lot of the game's states and it may still not be perfect.
@@ -198,14 +189,14 @@ namespace ReFined
 
             // Suspend the game to prepare for the warpback.
             Terminal.Log("ENTERING CRITICAL SECTION! Suspending the game!", 1);
-            Axa.Suspend(false);
+            AxaInterface.Suspend(false);
 
             // Trigger the reset and release the Debounce.
             Hypervisor.Write<byte>(Variables.ADDR_Reset, 0x01);
             DEBOUNCE[0x00] = false;
 
             Terminal.Log("CRITICAL SECTION has been completed! Resuming the game.", 1);
-            Axa.Resume(false);
+            AxaInterface.Resume(false);
 
             Thread.Sleep(250);
 
@@ -255,7 +246,7 @@ namespace ReFined
             {
                 Terminal.Log("Suspending the game in preparation for Encounter Plus operations.", 1);
 
-                Axa.Suspend(false);
+                AxaInterface.Suspend(false);
 
                 Terminal.Log("Clearing the Enemy Data in the room.", 1);
 
@@ -301,7 +292,7 @@ namespace ReFined
 
                 Terminal.Log("Resuming the game as Encounter Plus operations have concluded.", 0);
 
-                Axa.Resume(false);
+                AxaInterface.Resume(false);
             }
 
             // If the room has been loaded, release the Debounce.
@@ -330,13 +321,17 @@ namespace ReFined
             // Read the current shortcut menu, and the current Form.
 
             var _seenHelp = Hypervisor.Read<short>(Variables.ADDR_SaveData + 0x4270);
-            var _seenShort = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE248);
+            var _seenShort = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE748);
             
-            var _currShort = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE100);
+            var _currShort = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0xE600);
             var _currForm = Hypervisor.Read<byte>(Variables.ADDR_SaveData + 0x3524);
 
             var _fetchCommand = (Hypervisor.Read<Variables.CONFIG>(Variables.ADDR_Config) & Variables.CONFIG.COMMAND_KH1) == Variables.CONFIG.COMMAND_KH1 &&
                                  Hypervisor.Read<byte>(Variables.ADDR_Config + 0x03) == 0x00;
+
+            // Fetch the current character.
+
+            var _fetchCharacter = Hypervisor.Read<ushort>(Variables.ADDR_CurrentCharacter);
 
             /*
              * So, this function works by storing all the shortcut menus in a "fake" address, which is "_shortFake",
@@ -344,7 +339,7 @@ namespace ReFined
              * This makes more sense after having the whole picture.
              */
             var _shortReal = Variables.ADDR_SaveData + 0x36F8;
-            var _shortFake = Variables.ADDR_SaveData + 0xE200;
+            var _shortFake = Variables.ADDR_SaveData + 0xE700;
 
             // If the pointer for the "Sora" text is not defined, fetch it.
             if (SORA_MSG_POINT == 0x00)
@@ -382,19 +377,21 @@ namespace ReFined
                 MAIN_TEXT = Text.GetStringLiteral(0x051F);
             }
 
-            // If we are not on Title Screen, and Lite Mode is NOT enabled;
-            if (!Variables.IS_TITLE && !Locals.IS_LITE)
-            {
-                if ((_seenHelp & 0x0600) != 0x0600)
-                    Hypervisor.Write(Variables.ADDR_SaveData + 0x4270, _seenHelp + 0x0F00);
+            // If we have not seen the actual Shortcut Tutorial, consider it as such.
+            if ((_seenHelp & 0x0600) != 0x0600)
+                Hypervisor.Write(Variables.ADDR_SaveData + 0x4270, _seenHelp + 0x0F00);
 
-                if (_isCustomizeMenu && _seenShort == 0x00)
+            // If we are not on Title Screen, and Lite Mode is NOT enabled, and the Character is NOT Roxas or we are in the randomizer;
+            if (!Variables.IS_TITLE && !Locals.IS_LITE && ((_fetchCharacter != 0x005A && _fetchCharacter != 0x0323) || Locals.RANDOMIZER))
+            {
+                // If we have not seen the tutorial, show it.
+                // Do not do this in Rando, I do not know why but it shits itself.
+                if (_isCustomizeMenu && _seenShort == 0x00 && !Locals.RANDOMIZER)
                 {
                     Popup.PopupHelp(0x04);
-                    Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0xE248, 0x01);
+                    Hypervisor.Write<byte>(Variables.ADDR_SaveData + 0xE748, 0x01);
                 }
 
-                #region Shortcut Submitting
                 // If in editing mode, allow Shortcuts to be submitted.
                 if (_isEditingShortcut && !SUBMIT_SHORTCUTS)
                     SUBMIT_SHORTCUTS = true;
@@ -402,7 +399,8 @@ namespace ReFined
                 // If no longer editing the shortcuts but submitting is enabled;
                 else if (!_isEditingShortcut && SUBMIT_SHORTCUTS)
                 {
-                    Terminal.Log("Submitting Shortcut Data for Menu \"" + ('A' + CURRENT_SHORTCUT) + "\"!", 1);
+                    char _shortChar = (char)('A' + CURRENT_SHORTCUT);
+                    Terminal.Log("Submitting Shortcut Data for Menu \"" + _shortChar + "\"!", 1);
 
                     // Take the "real" Shortcut Data, slap it on the current "fake" Shortcut Data, disallow submitting.
                     var _shortTake = Hypervisor.Read<byte>(_shortReal, 0x08);
@@ -411,9 +409,7 @@ namespace ReFined
 
                     Terminal.Log("Shortcut Data was successfully submitted!", 0);
                 }
-                #endregion
 
-                #region Menu Text Handling
                 // If we are not in anywhere Shortcut related, and the text is not "Sora";
                 if (!_isCustomizeMenu && !_isEditingShortcut && !TEXT_IS_SORA)
                 {
@@ -443,9 +439,7 @@ namespace ReFined
                     // Signify the text is currently not "Sora".
                     TEXT_IS_SORA = false;
                 }
-                #endregion
 
-                #region Input and Switching
                 // If we are NOT in any shortcut related situation, or are not pressing UP, DOWN, L1, or R1; Release the Debounce.
                 if (((_isCustomizeMenu || _isEditingShortcut) && !Variables.IS_PRESSED(Variables.BUTTON.L1) && !Variables.IS_PRESSED(Variables.BUTTON.R1)) ||
                     (_menuType == 0x05 && !Variables.IS_PRESSED(Variables.BUTTON.DOWN) && !Variables.IS_PRESSED(Variables.BUTTON.UP)))
@@ -470,9 +464,9 @@ namespace ReFined
                                 Sound.PlaySFX(0x14);
 
                                 CURRENT_SHORTCUT += (byte)_flowDirection;
-                                var _shortChar = CURRENT_SHORTCUT == 0x01 ? "B" : (CURRENT_SHORTCUT == 0x00 ? "A" : "C");
+                                var _shortChar = CURRENT_SHORTCUT == 0x01 ? "B" : (CURRENT_SHORTCUT == 0x02 ? "C" : "A");
 
-                                Terminal.Log("Swtiching the Shortcut Menu to \"" + _shortChar + "\"!", 0);
+                                Terminal.Log("Switching the Shortcut Menu to \"" + _shortChar + "\"!", 0);
 
                                 // Set the Debounce.
                                 DEBOUNCE[0x02] = true;
@@ -515,7 +509,7 @@ namespace ReFined
                             Sound.PlaySFX(0x02);
 
                             CURRENT_SHORTCUT += (byte)_flowDirection;
-                            var _shortChar = CURRENT_SHORTCUT == 0x01 ? "B" : (CURRENT_SHORTCUT == 0x00 ? "A" : "C");
+                            var _shortChar = CURRENT_SHORTCUT == 0x01 ? "B" : (CURRENT_SHORTCUT == 0x02 ? "C" : "A");
 
                             Terminal.Log("Swtiching the Shortcut Menu to \"" + _shortChar + "\"!", 0);
 
@@ -524,24 +518,17 @@ namespace ReFined
                         }
                     }
                 }
-                #endregion
 
-                #region Shortcut Swapping
                 // Basically, prevent overflows and read the Current Shortcut Set from the Save File if uninitialized.
-                switch (CURRENT_SHORTCUT)
-                {
-                    case 0x03:
-                        CURRENT_SHORTCUT = 0x00;
-                        break;
 
-                    case 0x80:
-                        CURRENT_SHORTCUT = Hypervisor.Read<byte>(Variables.ADDR_ContinueData + 0xE100);
-                        break;
+                if (CURRENT_SHORTCUT == 0x80)
+                    CURRENT_SHORTCUT = Hypervisor.Read<byte>(Variables.ADDR_ContinueData + 0xE100);
 
-                    case 0xFF:
-                        CURRENT_SHORTCUT = 0x02;
-                        break;
-                }
+                if (CURRENT_SHORTCUT >= 0x81)
+                    CURRENT_SHORTCUT = 0x02;
+
+                if (CURRENT_SHORTCUT >= 0x03)
+                    CURRENT_SHORTCUT = 0x00;
 
                 // If there is a mismatch between the shortcut set in-game vs in memory, and Debounce has been set:
                 if (CURRENT_SHORTCUT != _currShort && DEBOUNCE[0x02])
@@ -553,7 +540,7 @@ namespace ReFined
 
                     // Write it to the "real" shortcut data.
                     Hypervisor.Write(_shortReal, _shortTake);
-                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE100, CURRENT_SHORTCUT);
+                    Hypervisor.Write(Variables.ADDR_SaveData + 0xE600, CURRENT_SHORTCUT);
 
                     // If in "Customize", refresh the Shortcut List.
                     if (_isCustomizeMenu)
@@ -566,7 +553,6 @@ namespace ReFined
 
 
                 }
-                #endregion
             }
 
             // If we are in Lite Mode, enforce the text to always be "Sora" regardless of any input.
