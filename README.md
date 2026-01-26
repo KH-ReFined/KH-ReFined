@@ -128,7 +128,7 @@ The current official addons for each game can be seen below, and what they do be
 - `KH-ReFined/KH2-VanillaMusicS2` 
     - The Vanilla Music Addon for Kingdom Hearts II - Re:Fined. (Slot 2)
 
-**Textures**:
+**Resources**:
 - `KH-ReFined/KH2-VanillaHeartlessS1` 
     - The Vanilla Heartless Addon for Kingdom Hearts II - Re:Fined. (Slot 1)
 
