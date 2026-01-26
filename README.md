@@ -121,12 +121,22 @@ The current official addons for each game can be seen below, and what they do be
 
 ### Kingdom Hearts II
 
-- **KH-ReFined/KH2-VanillaOST** - Adds an option to use the MIDI versions of the soundtrack from the PS2 in Kingdom Hearts II. Can be toggled from the in-game config menu or at the New Game screen.
-- **KH-ReFined/KH2-VanillaEnemy** - Adds an option to use the classic Heartless Colors in Kingdom Hearts II. Can be toggled from the in-game config menu or at the New Game screen.
-- **KH-ReFined/KH2-JapaneseVO** - Adds an option to use Japanese Voice Over in Kingdom Hearts II. Can be toggled from the in-game config menu or at the New Game screen.
-- **KH-ReFined/KH2-SpanishVO** - Adds an option to use Spanish Voice Over in Kingdom Hearts II. Can be toggled from the in-game config menu or at the New Game screen.
-- **KH-ReFined/KH2-FrenchVO** - Adds an option to use French Voice Over in Kingdom Hearts II. Can be toggled from the in-game config menu or at the New Game screen.
-- **KH-ReFined/KH2-GermanVO** - Adds an option to use German Voice Over in Kingdom Hearts II. Can be toggled from the in-game config menu or at the New Game screen.
+**Music**:
+- `KH-ReFined/KH2-VanillaMusicS1` 
+    - The Vanilla Music Addon for Kingdom Hearts II - Re:Fined. (Slot 1)
+
+- `KH-ReFined/KH2-VanillaMusicS2` 
+    - The Vanilla Music Addon for Kingdom Hearts II - Re:Fined. (Slot 2)
+
+**Textures**:
+- `KH-ReFined/KH2-VanillaHeartlessS1` 
+    - The Vanilla Heartless Addon for Kingdom Hearts II - Re:Fined. (Slot 1)
+
+- `KH-ReFined/KH2-VanillaHeartlessS2` 
+    - The Vanilla Heartless Addon for Kingdom Hearts II - Re:Fined. (Slot 2)
+
+**Voice Overs**:
+- Work in Progress!
 
 > [!NOTE]  
 > These addons require the use of OpenKH Mod Manager.
