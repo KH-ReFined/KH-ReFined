@@ -114,36 +114,36 @@ However, there are also features that are common across every game, which you ca
 12. Because the game's research is still ongoing, this is toogleable only through the config file.
 13. Currently not available in Re: Chain of Memories.
 
-## Official Addons
+## Official Packs
 
-Re:Fined has support for addons that add extra functionality to the game. This is done so that people don't have to download gigabytes of content that they may not use.  
-The current official addons for each game can be seen below, and what they do being listed. More addons are planned for the future.
+Re:Fined has support for packs that add extra functionality to the game. This is done so that people don't have to download gigabytes of content that they may not use.  
+The current official packs for each game can be seen below, and what they do being listed. More packs are planned for the future.
 
 ### Kingdom Hearts II
 
 **Music**:
 - `KH-ReFined/KH2-VanillaMusicS1` 
-    - The Vanilla Music Addon for Kingdom Hearts II - Re:Fined. (Slot 1)
+    - The Vanilla Music Pack for Kingdom Hearts II - Re:Fined. (Slot 1)
 
 - `KH-ReFined/KH2-VanillaMusicS2` 
-    - The Vanilla Music Addon for Kingdom Hearts II - Re:Fined. (Slot 2)
+    - The Vanilla Music Pack for Kingdom Hearts II - Re:Fined. (Slot 2)
 
 **Resources**:
 - `KH-ReFined/KH2-VanillaHeartlessS1` 
-    - The Vanilla Heartless Addon for Kingdom Hearts II - Re:Fined. (Slot 1)
+    - The Vanilla Heartless Pack for Kingdom Hearts II - Re:Fined. (Slot 1)
 
 - `KH-ReFined/KH2-VanillaHeartlessS2` 
-    - The Vanilla Heartless Addon for Kingdom Hearts II - Re:Fined. (Slot 2)
+    - The Vanilla Heartless Pack for Kingdom Hearts II - Re:Fined. (Slot 2)
 
 **Voice Overs**:
 - Work in Progress!
 
 > [!NOTE]  
-> These addons require the use of OpenKH Mod Manager.
+> These packs require the use of OpenKH Mod Manager.
 
-## Community Addons
+## Community Pack
 
-The addon system allows the end user to make their own addons for Re:Fined to add their own custom sound packs, music packs, etc. A guide on how to create these packs will be made and posted to the Wiki soon!
+The pack system allows the end user to make their own packs for Re:Fined to add their own custom sound packs, music packs, etc. A guide on how to create these packs will be made and posted to the Wiki soon!
 
 > [!IMPORTANT]  
 > The end user is responsible for all that can go wrong when using community addons.  
