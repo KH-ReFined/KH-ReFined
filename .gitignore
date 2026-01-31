@@ -4,3 +4,5 @@ compileOutput.cs
 testOut.txt
 _PATCHES\*
 
+/.vs
+/ReFined.KH2/.vs
