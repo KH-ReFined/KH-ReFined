@@ -458,5 +458,11 @@
     <ClCompile Include="src\kingdom\fvector.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
+    <ClCompile Include="include\kingdom\item_table.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\item_table.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

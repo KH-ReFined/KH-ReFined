@@ -141,6 +141,7 @@
     <ClInclude Include="include\SigScan.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="include\kingdom\item_table.h" />
     <ClCompile Include="include\kingdom\weapon_mset.h">
       <FileType>CppHeader</FileType>
     </ClCompile>
@@ -183,6 +184,7 @@
     <ClCompile Include="src\kingdom\info_base.cpp" />
     <ClCompile Include="src\kingdom\item.cpp" />
     <ClCompile Include="src\kingdom\itempic.cpp" />
+    <ClCompile Include="src\kingdom\item_table.cpp" />
     <ClCompile Include="src\kingdom\jumpeffect.cpp" />
     <ClCompile Include="src\kingdom\lockon.cpp" />
     <ClCompile Include="src\kingdom\magic.cpp" />

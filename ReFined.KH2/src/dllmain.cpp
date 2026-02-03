@@ -60,6 +60,7 @@
 #include "weapon_mset.h"
 #include "weapon_entry.h"
 #include "world.h"
+#include "item_table.h"
 
 #include "SigScan.h"
 #include "continue_menu.h"
@@ -70,11 +71,12 @@
 #include <sheet.h>
 #include <fvector.h>
 
-bool COLOR_SWAPPED = false;
-bool IS_KEYBLADE_MENU = false;
+bool CAN_PROCESS_FORM_KEYBLADES = false;
 bool KEYBLADE_DEBOUNCE = false;
+bool PENDING_KEYBLADE_UPDATE = false;
 
-int TARGET_KEY = 0x00;
+uint16_t TARGET_KEYBLADE = 0x0000;
+uint16_t TARGET_CURRENT_FORM_KEYBLADE = 0x0000;
 
 using namespace std;
 using namespace discord;
@@ -504,6 +506,13 @@ uint8_t RETRY_MODE;
 ReFined::Continue::Entry RETRY_ENTRY(0x0002, 0x8AB1);
 ReFined::Continue::Entry PREPARE_ENTRY(0x0002, 0x5727);
 
+// I do NOT know what there are, and am too lazy to figure out.
+void(*MENU_COMMIT_FIRST)(char*, int, int) = SignatureScan<void(*)(char*, int, int)>("\x40\x53\x56\x57\x41\x54\x41\x56\x48\x83\xEC\x20\x4C\x8D\x71\x04", "xxxxxxxxxxxxxxxx");
+void(*MENU_COMMIT_SECOND)(char*, int, int) = SignatureScan<void(*)(char*, int, int)>("\x40\x53\x55\x56\x57\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x20\x48", "xxxxxxxxxxxxxxxx");
+
+void(*ITEM_COMMIT)() = nullptr;
+
+char** MENU_ITEMS = ResolveRelativeAddress<char**>("\x40\x53\x55\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxx????xxx????xxx", 0x26);
 char* CURRENT_SUBMENU = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????x????", 0xF0);
 
 // Configuration Values.
@@ -577,6 +586,9 @@ uint32_t trap_obj_effect_start_bind(uint32_t* bdvalue)
     if (!_fetchPAX)
         return 0x00;
 
+    if (*reinterpret_cast<uint64_t*>(_fetchPAX) == 0x00)
+        return 0x00;
+
     auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _objectActual);
     auto _dwordReturn = PC::CONVERTER::LONG_TO_INT_ADDRESS(reinterpret_cast<uint64_t>(_paxReturn));
 
@@ -620,6 +632,9 @@ uint32_t trap_obj_effect_start_bind_other(uint32_t* bdvalue)
     auto _fetchPAX = reinterpret_cast<char*>(_objectActual + 0x80);
 
     if (!_fetchPAX)
+        return 0x00;
+
+    if (*reinterpret_cast<uint64_t*>(_fetchPAX) == 0x00)
         return 0x00;
 
     auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _targetObjectActual);
@@ -941,14 +956,17 @@ void DISPLAY_NEXT_EXP()
             }
 
             uint32_t _currExp = *reinterpret_cast<uint32_t*>(YS::AREA::SaveData + 0x36E4);
-            uint32_t _expFetch = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::GetSummonTable() + 0x04);
+            uint32_t* _expFetch = reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::GetSummonTable() + 0x04);
+
+            if (_expFetch == nullptr)
+                return;
 
             if (PAST_EXP_SUMM == 0x00)
                 PAST_EXP_SUMM = _currExp;
 
             else if (PAST_EXP_SUMM != _currExp)
             {
-                dk::NEXT_FORM::create(_expFetch - _currExp, NEGATIVE_ASPECT_OFFSET);
+                dk::NEXT_FORM::create(*_expFetch - _currExp, NEGATIVE_ASPECT_OFFSET);
                 PAST_EXP_SUMM = _currExp;
             }
         }
@@ -1902,6 +1920,12 @@ void HANDLE_ASPECT()
                 memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x29, &NEGATIVE_ASPECT_OFFSET, 0x04);
             }
         }
+
+        else
+        {
+            memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x21, &POSITIVE_ASPECT_OFFSET, 0x04);
+            memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x29, &NEGATIVE_ASPECT_OFFSET, 0x04);
+        }
     }
 }
 
@@ -2095,6 +2119,91 @@ void RETRY_BATTLES()
             // Denote we are no longer retrying.
             RETRY_MODE = 0x00;
         }
+    }
+}
+
+void PROCESS_FORM_KEYBLADES()
+{
+    if (*YS::MENU::IsMenu && *YS::MENU::SubMenuType == 0x02 && *CURRENT_SUBMENU == 0x00 && *YS::HARDPAD::Input & 0x1000 && !KEYBLADE_DEBOUNCE)
+    {
+        auto _fetchSelect = *reinterpret_cast<uint8_t**>(YS::MENU::pint_suboptionselect);
+
+        // Calculate the maximum selection we can make.
+        auto _calculateForms = YS::ITEM::GetNumBackyard(0x001A) + YS::ITEM::GetNumBackyard(0x001D) + YS::ITEM::GetNumBackyard(0x001F);
+
+        if (_fetchSelect)
+        {
+            if (*_fetchSelect != 0x00 && *_fetchSelect <= _calculateForms)
+            {
+                uint16_t* _currentFormKeyPtr = nullptr;
+                uint16_t* _currentRegularKeyPtr = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x24F0);
+
+                auto _fetchItemTable = YS::ITEM_TABLE::Each(nullptr);
+                bool _isCurrentForm = false;
+
+                for (int i = 1; i <= 5; i++)
+                {
+                    auto _fetchFormKey = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x32BC + 0x38 * i);
+                    _fetchItemTable = YS::ITEM_TABLE::Get(*_fetchFormKey);
+
+                    if (*_fetchFormKey == 0x0000)
+                        continue;
+
+                    auto _fetchFormItempic = *reinterpret_cast<uint16_t*>(_fetchItemTable + 0x14);
+
+                    if (_fetchFormItempic == *YS::ITEMPIC::LoadedId)
+                    {
+                        _currentFormKeyPtr = _fetchFormKey;
+
+                        if (*(YS::AREA::SaveData + 0x3524) == i)
+                            _isCurrentForm = true;
+
+                        break;
+                    }
+                }
+
+                if (!_currentFormKeyPtr)
+                    return;
+
+                auto _fetchFormKey = *_currentFormKeyPtr;
+                auto _fetchRegularKey = *_currentRegularKeyPtr;
+
+                *_currentRegularKeyPtr = _fetchFormKey;
+                *_currentFormKeyPtr = _fetchRegularKey;
+
+                TARGET_KEYBLADE = _fetchFormKey;
+
+                if (_isCurrentForm)
+                    TARGET_CURRENT_FORM_KEYBLADE = _fetchRegularKey;
+
+                MENU_COMMIT_FIRST(*MENU_ITEMS, 0x05, 0x00);
+                MENU_COMMIT_SECOND(*MENU_ITEMS, 0x00, 0x00);
+
+                ITEM_COMMIT();
+
+                YS::SOUND::PlaySFX(0x02);
+
+                PENDING_KEYBLADE_UPDATE = true;
+            }
+        }
+
+        KEYBLADE_DEBOUNCE = true;
+    }
+
+    else if (KEYBLADE_DEBOUNCE && (*YS::HARDPAD::Input & 0x1000) != 0x1000)
+        KEYBLADE_DEBOUNCE = false;
+
+    if (!*YS::MENU::IsMenu && PENDING_KEYBLADE_UPDATE)
+    {
+        YS::PARTY::ChangeWeapon(nullptr, 0x01, false, TARGET_KEYBLADE);
+
+        if (TARGET_CURRENT_FORM_KEYBLADE != 0x0000)
+            YS::PARTY::ChangeWeapon(nullptr, 0x01, true, TARGET_CURRENT_FORM_KEYBLADE);
+
+        TARGET_KEYBLADE = 0x0000;
+        TARGET_CURRENT_FORM_KEYBLADE = 0x0000;
+
+        PENDING_KEYBLADE_UPDATE = false;
     }
 }
 
@@ -2693,6 +2802,10 @@ extern "C"
             if (!_fetchFake)
                 return;
 
+            // Trying to initialize this in OnInit causes moduleInfo to get corrupt. I have no fucking idea why.
+            if (!ITEM_COMMIT)
+                ITEM_COMMIT = SignatureScan<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x40\x45\x32", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
             // If "00shopface.bin" exists, patch all SHOPFACE functions to use the file instead.
             if (YS::FILE::GetSize("00shopface.bin"))
             {
@@ -3064,6 +3177,17 @@ extern "C"
 
                 memcpy(const_cast<char*>(_currentTextPtr), _soraText, _soraSize + 0x01);
             }
+
+            _modulePath[MAX_PATH];
+
+            wcscpy(_modulePath, MOD_PATH);
+            wcscat(_modulePath, L"\\dll\\modules\\ModuleRF-KeybladeSwitching.dll");
+
+            _foundFileHandle = FindFirstFileW(_modulePath, &_foundFile);
+
+            if (_foundFileHandle != INVALID_HANDLE_VALUE)
+                CAN_PROCESS_FORM_KEYBLADES = true;
+
             #endif
 
             INITIALIZED = true;
@@ -3099,6 +3223,7 @@ extern "C"
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             HANDLE_GOA_LAND();
             ENFORCE_LOCKON();
+            PROCESS_FORM_KEYBLADES();
             #endif
             #endif
 

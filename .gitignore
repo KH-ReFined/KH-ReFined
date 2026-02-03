@@ -6,3 +6,11 @@ _PATCHES\*
 
 /.vs
 /ReFined.KH2/.vs
+/ReFined.KH2/x64
+/x64
+/ReFined.KH2/modules/ModuleRF-ShortcutSets/x64
+/ReFined.KH2/modules/ModuleRF-ShortcutForms/x64
+/ReFined.KH2/modules/ModuleRF-PrologueSkip/x64
+/ReFined.KH2/modules/ModuleRF-EncounterPlus/x64
+/ReFined.KH2/modules/ModuleRF-CrownEngine/x64
+/ReFined.KH2/modules/ModuleRF-Autoattack/x64
