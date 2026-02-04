@@ -51,6 +51,7 @@
 #include "softreset.h"
 #include "sora.h"
 #include "sound.h"
+#include "iteminfo.h"
 #include "sprite.h"
 #include "steam.h"
 #include "title.h"
@@ -498,10 +499,6 @@ uint8_t RETRY_MODE;
 
 ReFined::Continue::Entry RETRY_ENTRY(0x0002, 0x8AB1);
 ReFined::Continue::Entry PREPARE_ENTRY(0x0002, 0x5727);
-
-// I do NOT know what there are, and am too lazy to figure out.
-void(*MENU_COMMIT_FIRST)(char*, int, int) = SignatureScan<void(*)(char*, int, int)>("\x40\x53\x56\x57\x41\x54\x41\x56\x48\x83\xEC\x20\x4C\x8D\x71\x04", "xxxxxxxxxxxxxxxx");
-void(*MENU_COMMIT_SECOND)(char*, int, int) = SignatureScan<void(*)(char*, int, int)>("\x40\x53\x55\x56\x57\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x20\x48", "xxxxxxxxxxxxxxxx");
 
 void(*ITEM_COMMIT)() = nullptr;
 
@@ -2178,8 +2175,8 @@ void PROCESS_FORM_KEYBLADES()
                 if (_isCurrentForm)
                     TARGET_CURRENT_FORM_KEYBLADE = _fetchRegularKey;
 
-                MENU_COMMIT_FIRST(*MENU_ITEMS, 0x05, 0x00);
-                MENU_COMMIT_SECOND(*MENU_ITEMS, 0x00, 0x00);
+                Tz::ItemInfo::SetItemInfo(*MENU_ITEMS, 0x05, 0x00);
+                Tz::ItemInfo::MakeMsgTbl(*MENU_ITEMS, 0x00, 0x00);
 
                 ITEM_COMMIT();
 

@@ -109,6 +109,7 @@
     <ClInclude Include="include\kingdom\information.h" />
     <ClInclude Include="include\kingdom\info_base.h" />
     <ClInclude Include="include\kingdom\item.h" />
+    <ClInclude Include="include\kingdom\iteminfo.h" />
     <ClInclude Include="include\kingdom\itempic.h" />
     <ClInclude Include="include\kingdom\jumpeffect.h" />
     <ClInclude Include="include\kingdom\lockon.h" />
@@ -183,6 +184,7 @@
     <ClCompile Include="src\kingdom\information.cpp" />
     <ClCompile Include="src\kingdom\info_base.cpp" />
     <ClCompile Include="src\kingdom\item.cpp" />
+    <ClCompile Include="src\kingdom\iteminfo.cpp" />
     <ClCompile Include="src\kingdom\itempic.cpp" />
     <ClCompile Include="src\kingdom\item_table.cpp" />
     <ClCompile Include="src\kingdom\jumpeffect.cpp" />
