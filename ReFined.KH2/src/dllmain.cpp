@@ -71,13 +71,6 @@
 #include <sheet.h>
 #include <fvector.h>
 
-bool CAN_PROCESS_FORM_KEYBLADES = false;
-bool KEYBLADE_DEBOUNCE = false;
-bool PENDING_KEYBLADE_UPDATE = false;
-
-uint16_t TARGET_KEYBLADE = 0x0000;
-uint16_t TARGET_CURRENT_FORM_KEYBLADE = 0x0000;
-
 using namespace std;
 using namespace discord;
 
@@ -514,6 +507,15 @@ void(*ITEM_COMMIT)() = nullptr;
 
 char** MENU_ITEMS = ResolveRelativeAddress<char**>("\x40\x53\x55\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxx????xxx????xxx", 0x26);
 char* CURRENT_SUBMENU = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????x????", 0xF0);
+
+bool CAN_PROCESS_FORM_KEYBLADES = false;
+bool KEYBLADE_DEBOUNCE = false;
+bool PENDING_KEYBLADE_UPDATE = false;
+
+uint16_t TARGET_KEYBLADE = 0x0000;
+uint16_t TARGET_CURRENT_FORM_KEYBLADE = 0x0000;
+
+map<string, void(*)()> FUNCTION_ARRAY;
 
 // Configuration Values.
 
@@ -2211,6 +2213,40 @@ extern "C"
 {
     __declspec(dllexport) void OnInit(wchar_t* mod_path)
     {
+        FUNCTION_ARRAY =
+        {
+            #ifndef BUILD_ARCHIPELAGO_LITE
+            {"SOFT_RESET", SOFT_RESET},
+            {"AUTOSAVE", AUTOSAVE},
+            {"ENFORCE_FRAMERATE", ENFORCE_FRAMERATE},
+            #endif
+
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            {"HANDLE_MUSIC", HANDLE_MUSIC},
+            {"HANDLE_RESOURCE", HANDLE_RESOURCE},
+            {"RETRY_BATTLES", RETRY_BATTLES},
+            {"DISPLAY_NEXT_EXP", DISPLAY_NEXT_EXP},
+            {"HANDLE_SHAKE", HANDLE_SHAKE},
+            {"ENFORCE_PROMPTS", ENFORCE_PROMPTS},
+            {"FIX_SAVE_POINT", FIX_SAVE_POINT},
+            {"DISCORD_RPC", DISCORD_RPC},
+            {"HANDLE_ASPECT", HANDLE_ASPECT},
+            #endif
+
+            #ifndef BUILD_NMC
+            {"REGISTER_MAGIC", REGISTER_MAGIC},
+            {"REGISTER_ABILITY", REGISTER_ABILITY},
+            {"SHOW_INFORMATION", SHOW_INFORMATION},
+            {"PROCESS_DEATH", PROCESS_DEATH},
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                {"ENFORCE_LOCKON", ENFORCE_LOCKON},
+                {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
+                {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
+                #endif
+            #endif
+        };
+
         // Determine if the MOD is running on STEAM or EPIC.
         IS_STEAM = FindModule("steam_api64.dll");
 
@@ -3077,6 +3113,29 @@ extern "C"
                         if (_moduleImportance)
                             _importance = *_moduleImportance;
 
+                        string (*_excludeFunctions)() = (string(*)())GetProcAddress(_moduleHandle, "RF_ExcludeFunctions");
+
+                        if (_excludeFunctions)
+                        {
+                            auto _fetchFunctions = _excludeFunctions();
+
+                            vector<string> _funcNames;
+
+                            size_t _currPos = 0;
+                            string _currFunc;
+
+                            while ((_currPos = _fetchFunctions.find('|')) != std::string::npos) {
+                                _currFunc = _fetchFunctions.substr(0, _currPos);
+                                _funcNames.push_back(_currFunc);
+                                _fetchFunctions.erase(0, _currPos + 1);
+                            }
+
+                            _funcNames.push_back(_fetchFunctions);
+
+                            for (auto _fetchName : _funcNames)
+                                FUNCTION_ARRAY.erase(_fetchName);
+                        }
+
                         uint32_t* (*checkIntro)() = (uint32_t * (*)())GetProcAddress(_moduleHandle, "RF_CheckIntro");
                         uint16_t* (*checkConfig)() = (uint16_t * (*)())GetProcAddress(_moduleHandle, "RF_CheckConfig");
 
@@ -3198,45 +3257,20 @@ extern "C"
             #ifndef BUILD_ARCHIPELAGO_LITE
             Tz::HookIntro::Handle();
             Tz::HookConfig::Handle();
-
-            SOFT_RESET();
-            ENFORCE_FRAMERATE();
-            AUTOSAVE();
             #endif
 
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            HANDLE_MUSIC();
-            HANDLE_RESOURCE();
-            RETRY_BATTLES();
-            DISPLAY_NEXT_EXP();
-            HANDLE_SHAKE();
-            ENFORCE_PROMPTS();
-            FIX_SAVE_POINT();
-            #endif
-
-            #ifndef BUILD_NMC
-            REGISTER_MAGIC();
-            REGISTER_ABILITY();
-            SHOW_INFORMATION();
-            PROCESS_DEATH();
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            HANDLE_GOA_LAND();
-            ENFORCE_LOCKON();
-            PROCESS_FORM_KEYBLADES();
-            #endif
-            #endif
+            for (auto _funcRefined : FUNCTION_ARRAY)
+                _funcRefined.second();
 
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             for (auto _execPair : _execModule)
                 _execPair.second();
 
+            if (DISCORD_ENABLED && FUNCTION_ARRAY.find("DISCORD_RPC") != FUNCTION_ARRAY.end())
+                FUNCTION_ARRAY["DISCORD_RPC"]();
 
-            if (DISCORD_ENABLED)
-                DISCORD_RPC();
-
-            if (!IS_NOASPECT)
-                HANDLE_ASPECT();
+            if (!IS_NOASPECT && FUNCTION_ARRAY.find("NO_ASPECT") != FUNCTION_ARRAY.end())
+                FUNCTION_ARRAY["HANDLE_ASPECT"]();
             #endif
         }
     }
