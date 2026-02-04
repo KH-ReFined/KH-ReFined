@@ -30,16 +30,7 @@ extern "C"
 {
 	__declspec(dllexport) bool* INTRO_SEEK;
 
-	__declspec(dllexport) uint32_t* RF_CheckIntro()
-	{
-		uint32_t _tempInt[] = { 0x02, 0x5730, 0xFFFF, 0x5738, 0x5739, 0x5731, 0x5732, 0xFFFF, 0xFFFF };
-		char* _allocMemory = (char*)malloc(0x09 * 0x04);
-
-		memcpy(_allocMemory, _tempInt, 0x09 * 0x04);
-		return reinterpret_cast<uint32_t*>(_allocMemory);
-	}
-
-	__declspec(dllexport) void RF_ModuleInit(const wchar_t* mod_path)
+	__declspec(dllexport) bool RF_EnsurePrerequisites(const wchar_t* mod_path)
 	{
 		wchar_t filepath[MAX_PATH];
 
@@ -47,6 +38,24 @@ extern "C"
 		wcscat(filepath, L"\\dll\\ReFined.KH2.dll");
 
 		MAIN_HANDLE = LoadLibraryW(filepath);
+
+		using GetFileSize_t = size_t(*)(const char*);
+		GetFileSize_t _getFileSize = *(GetFileSize_t*)GetProcAddress(MAIN_HANDLE, "?GetSize@FILE@YS@@2P6A_KPEBD@ZEA");
+
+		if (_getFileSize("scripts/F266B00B GoA ROM.lua"))
+			return false;
+
+		else
+			return true;
+	}
+
+	__declspec(dllexport) uint32_t* RF_CheckIntro()
+	{
+		uint32_t _tempInt[] = { 0x02, 0x5730, 0xFFFF, 0x5738, 0x5739, 0x5731, 0x5732, 0xFFFF, 0xFFFF };
+		char* _allocMemory = (char*)malloc(0x09 * 0x04);
+
+		memcpy(_allocMemory, _tempInt, 0x09 * 0x04);
+		return reinterpret_cast<uint32_t*>(_allocMemory);
 	}
 
 	__declspec(dllexport) void RF_ModuleExecute()
