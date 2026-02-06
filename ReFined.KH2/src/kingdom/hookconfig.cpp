@@ -87,7 +87,7 @@ vector<vector<uint16_t>> Tz::HookConfig::Entries = vector<vector<uint16_t>>
 void Tz::HookConfig::Add(int Index, vector<uint16_t> Input)
 {
 	if (Index == UINT32_MAX)
-		Entries.insert(Entries.end(), Input);
+		Entries.insert(Entries.end() - 1, Input);
 	else
 		Entries.insert(Entries.begin() + Index, Input);
 

@@ -3110,11 +3110,11 @@ extern "C"
                         if (_moduleImportance)
                             _importance = *_moduleImportance;
 
-                        string (*_excludeFunctions)() = (string(*)())GetProcAddress(_moduleHandle, "RF_ExcludeFunctions");
+                        char* (*_excludeFunctions)() = (char*(*)())GetProcAddress(_moduleHandle, "RF_ExcludeFunctions");
 
                         if (_excludeFunctions)
                         {
-                            auto _fetchFunctions = _excludeFunctions();
+                            auto _fetchFunctions = string(_excludeFunctions());
 
                             vector<string> _funcNames;
 
