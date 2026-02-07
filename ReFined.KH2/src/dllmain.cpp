@@ -1624,7 +1624,7 @@ void REGISTER_ABILITY()
 
     auto _fetchEvent = CalculatePointer(YS::EVENT::pint_eventinfo, { 0x04 });
     bool _isCutscene = _fetchEvent != 0x00 && *reinterpret_cast<const uint32_t*>(_fetchEvent) != 0xCAFEEFAC &&
-        *reinterpret_cast<const uint32_t*>(_fetchEvent) != 0xEFACCAFE;
+                       *reinterpret_cast<const uint32_t*>(_fetchEvent) != 0xEFACCAFE;
 
     auto _commandPointer = *reinterpret_cast<const char**>(YS::COMMAND_DRAW::pint_commanddraw);
 
@@ -3163,6 +3163,8 @@ extern "C"
                             _vectorConfig.resize(_sizeVector / 2);
                             memcpy(_vectorConfig.data(), _fetchConfig, _sizeVector);
 
+                            auto _seekConfig = Tz::HookConfig::Entries.size() - 1;
+
                             Tz::HookConfig::Add(UINT32_MAX, _vectorConfig);
 
                             uint16_t** configSeek = (uint16_t**)GetProcAddress(_moduleHandle, "CONFIG_SEEK");
@@ -3177,21 +3179,18 @@ extern "C"
 
                                     for (int z = 0; z < _fetchCount; z++)
                                     {
-                                        auto _fetchBitwise = Tz::HookConfig::Entries[i][0x04 + (0x02 * _fetchCount * 0x02) + z];
+                                        auto _fetchBitwise = Tz::HookConfig::Entries[i][0x02 + (0x02 * _fetchCount) + z];
 
-                                        if (_checkBitwise & _fetchBitwise)
+                                        if (_checkBitwise & _fetchBitwise && i == _seekConfig)
                                         {
-                                            if (i == Tz::HookConfig::Entries.size() - 1)
-                                                *configSeek = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6);
-
-                                            else
-                                                continue;
+                                            *configSeek = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6);
+                                            goto CONFIG_LOOP_END;
                                         }
 
-                                        if (i == Tz::HookConfig::Entries.size() - 1)
+                                        else if (i == Tz::HookConfig::Entries.size() - 1)
                                         {
                                             *configSeek = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A4);
-                                            break;
+                                            goto CONFIG_LOOP_END;
                                         }
 
                                         _checkBitwise |= _fetchBitwise;
@@ -3199,6 +3198,8 @@ extern "C"
                                 }
                             }
                         }
+
+                    CONFIG_LOOP_END:
 
                         if (funcInit)
                             _initModule.insert(_initModule.end(), { _importance, funcInit });
