@@ -177,9 +177,9 @@ T ResolveRelativeAddress(const char* pattern, const char* mask, size_t callOffse
 
         if (i == patLen)
         {
-            uint32_t _fetchValue;
+            int _fetchValue;
             std::memcpy(&_fetchValue, addr + callOffset, sizeof(int));
-            return reinterpret_cast<T>(const_cast<char*>(_fetchValue + addr + callOffset + 4));
+            return reinterpret_cast<T>(const_cast<char*>((addr + _fetchValue) + callOffset + 4));
         }
 
         currOffset++;

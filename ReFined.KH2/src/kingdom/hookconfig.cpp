@@ -5,6 +5,8 @@ bool CONFIG_FETCH;
 bool CONFIG_FIRST_INIT;
 uint16_t SETTING_MEMORY;
 
+bool FORCE_UPDATE = false;
+
 char* COMMAND_MENU_ADDR = ResolveRelativeAddress<char*>("\x40\x56\x48\x83\xEC\x30\x8B\x35\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x48\x89\x5C\x24\x40\x48\x89\x7C\x24\x48", "xxxxxxxx????x????xxxx????x????xxxx????xxxxxxxxxx", 0x50);
 bool* COMMAND_FLAG_ADDR = ResolveRelativeAddress<bool*>("\x40\x56\x48\x83\xEC\x30\x8B\x35\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x48\x89\x5C\x24\x40\x48\x89\x7C\x24\x48", "xxxxxxxx????x????xxxx????x????xxxx????xxxxxxxxxx", 0x5D) + 0x04;
 uint8_t* COMMAND_TYPE_ADDR = ResolveRelativeAddress<uint8_t*>("\x48\x83\xEC\x28\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\x48\x83\xC4\x28\xE9\x00\x00\x00\x00\xCC\xCC\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\xC3", "xxxxxxx????x????xxx????xxx????xxx????xxxxx????xxxxx????xxx????x", 0x1A);
@@ -26,20 +28,20 @@ vector<char*> Tz::HookConfig::CONFIG_OFFSETS = vector<char*>
 };
 
 #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE) && !defined(BUILD_NMC)
-vector<vector<uint16_t>> Tz::HookConfig::Entries = vector<vector<uint16_t>>
+vector<Tz::HookConfig::Entry> Tz::HookConfig::Entries = vector<Tz::HookConfig::Entry>
 {
-	vector<uint16_t> { 0x02, 0xB717, 0xB71E, 0xB71F, 0xB720, 0xB721, 0x0000, 0x0010 },
-	vector<uint16_t> { 0x02, 0xB718, 0xB722, 0xB723, 0xB724, 0xB725, 0x0000, 0x0020 },
-	vector<uint16_t> { 0x02, 0xC2F5, 0xC2F8, 0xC2F9, 0xC2FA, 0xC2FB, 0x0000, 0x0100 },
-	vector<uint16_t> { 0x02, 0xC2F6, 0xC2FC, 0xC2FD, 0xC2FE, 0xC2FF, 0x0000, 0x0080 },
-	vector<uint16_t> { 0x03, 0xC2F7, 0xC302, 0xC300, 0xC301, 0xC305, 0xC303, 0xC304, 0x0200, 0x0400, 0x0000 },
-	vector<uint16_t> { 0x02, 0xB719, 0xB726, 0xB727, 0xB728, 0xB729, 0x0008, 0x0000 },
-	vector<uint16_t> { 0x03, 0x5704, 0x5705, 0x5707, 0x5709, 0x5706, 0x5708, 0x570A, 0x0004, 0x0002, 0x0000 },
-	vector<uint16_t> { 0x02, 0x5722, 0x5723, 0x5725, 0x5724, 0x5726, 0x2000, 0x0000 },
-	vector<uint16_t> { 0x03, 0x5754, 0x5755, 0x5756, 0x5757, 0x5758, 0x5759, 0x575A, 0x4000, 0x8000, 0x0000 },
-	vector<uint16_t> { 0x02, 0xB71A, 0xB72A, 0xB752, 0xB72C, 0xB72D, 0x0001, 0x0000 },
-	vector<uint16_t> { 0x03, 0xB71C, 0xB734, 0x572C, 0xB735, 0xB736, 0x572D, 0xB737, 0x0000, 0x0800, 0x0040 },
-	vector<uint16_t> { 0x01, 0xB71D, 0xB738, 0xB739, 0xB73A, 0xCE30, 0xB73B, 0xB73C, 0xB73D, 0xCE31, 0x0000, 0x0000, 0x0000, 0x0000 }
+	Tz::HookConfig::Entry { 0x02, 0xB717, vector<uint16_t> { 0xB71E, 0xB71F }, vector<uint16_t> { 0xB720, 0xB721 }, vector<uint16_t> { 0x0000, 0x0010 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xB718, vector<uint16_t> { 0xB722, 0xB723 }, vector<uint16_t> { 0xB724, 0xB725 }, vector<uint16_t> { 0x0000, 0x0020 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xC2F5, vector<uint16_t> { 0xC2F8, 0xC2F9 }, vector<uint16_t> { 0xC2FA, 0xC2FB }, vector<uint16_t> { 0x0000, 0x0100 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xC2F6, vector<uint16_t> { 0xC2FC, 0xC2FD }, vector<uint16_t> { 0xC2FE, 0xC2FF }, vector<uint16_t> { 0x0000, 0x0080 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x03, 0xC2F7, vector<uint16_t> { 0xC302, 0xC300, 0xC301 }, vector<uint16_t> { 0xC305, 0xC303, 0xC304 }, vector<uint16_t> { 0x0200, 0x0400, 0x0000}, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xB719, vector<uint16_t> { 0xB726, 0xB727 }, vector<uint16_t> { 0xB728, 0xB729 }, vector<uint16_t> { 0x0008, 0x0000 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x03, 0x5704, vector<uint16_t> { 0x5705, 0x5707, 0x5709 }, vector<uint16_t> { 0x5706, 0x5708, 0x570A }, vector<uint16_t> { 0x0004, 0x0002, 0x0000 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0x5722, vector<uint16_t> { 0x5723, 0x5725 }, vector<uint16_t> { 0x5724, 0x5726 }, vector<uint16_t> { 0x2000, 0x0010 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x03, 0x5754, vector<uint16_t> { 0x5755, 0x5756, 0x5757 }, vector<uint16_t> { 0x5758, 0x5759, 0x575A }, vector<uint16_t> { 0x4000, 0x8000, 0x0000 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xB71A, vector<uint16_t> { 0xB72A, 0xB752 }, vector<uint16_t> { 0xB72C, 0xB72D }, vector<uint16_t> { 0x0001, 0x0000 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x03, 0xB71C, vector<uint16_t> { 0xB734, 0x572C, 0xB735 }, vector<uint16_t> { 0xB736, 0x572D, 0xB737 }, vector<uint16_t> { 0x0000, 0x0800, 0x0040 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x01, 0xB71D, vector<uint16_t> { 0xB738, 0xB739, 0xB73A, 0xCE30 }, vector<uint16_t> { 0xB73B, 0xB73C, 0xB73D, 0xCE31 }, vector<uint16_t> { 0x0000, 0x0000, 0x0000, 0x0000 }, 0x0000, nullptr }
 };
 #elif BUILD_NMC
 vector<vector<uint16_t>> Tz::HookConfig::Entries = vector<vector<uint16_t>>
@@ -84,7 +86,7 @@ vector<vector<uint16_t>> Tz::HookConfig::Entries = vector<vector<uint16_t>>
 };
 #endif
 
-void Tz::HookConfig::Add(int Index, vector<uint16_t> Input)
+void Tz::HookConfig::Add(int Index, Tz::HookConfig::Entry Input)
 {
 	if (Index == UINT32_MAX)
 		Entries.insert(Entries.end() - 1, Input);
@@ -114,14 +116,14 @@ void Tz::HookConfig::Submit()
 	{
 		auto _currentEntry = Entries[i];
 
-		memcpy(_configMemory + (0x14 * i), &_currentEntry[0], 0x02);
-		memcpy(_configMemory + (0x14 * i) + 0x02, &_currentEntry[1], 0x02);
+		memcpy(_configMemory + (0x14 * i), &_currentEntry.Count, 0x02);
+		memcpy(_configMemory + (0x14 * i) + 0x02, &_currentEntry.Title, 0x02);
 
-		for (int z = 0; z < (_currentEntry[0] == 0x01 ? 0x04 : _currentEntry[0]); z++)
-			memcpy(_configMemory + (0x14 * i) + (0x02 * z) + 0x04, &_currentEntry[0x02 + z], 0x02);
+		for (int z = 0; z < (_currentEntry.Count == 0x01 ? 0x04 : _currentEntry.Count); z++)
+			memcpy(_configMemory + (0x14 * i) + (0x02 * z) + 0x04, &_currentEntry.Buttons[z], 0x02);
 
-		for (int z = 0; z < (_currentEntry[0] == 0x01 ? 0x04 : _currentEntry[0]); z++)
-			memcpy(_configMemory + (0x14 * i) + (0x02 * z) + 0x0C, &_currentEntry[0x02 + (_currentEntry[0] == 0x01 ? 0x04 : _currentEntry[0]) + z], 0x02);
+		for (int z = 0; z < (_currentEntry.Count == 0x01 ? 0x04 : _currentEntry.Count); z++)
+			memcpy(_configMemory + (0x14 * i) + (0x02 * z) + 0x0C, &_currentEntry.Descriptions[z], 0x02);
 	}
 
 	uint8_t _childCount = Entries.size();
@@ -181,6 +183,40 @@ void Tz::HookConfig::Submit()
 
 	memcpy(CONFIG_OFFSETS[4] + 0x33, _preventUpdateInst.data(), _preventUpdateInst.size());
 
+	if (*reinterpret_cast<const int*>(YS::MENU::MenuType + 0x5C) == 0xAF20)
+	{
+		char _nopArray[0x04];
+		char _menuSelectInst[0x04];
+
+		fill(_nopArray, _nopArray + 0x04, 0x90);
+
+		memcpy(_menuSelectInst, MENUSELECT_OFFSET + 0x46, 0x04);
+		memcpy(MENUSELECT_OFFSET + 0x46, _nopArray, 0x04);
+
+		auto _pointPage = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x12 });
+		auto _pointCurrent = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x00 });
+		auto _pointMaximum = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x16 });
+
+		uint8_t _configSize = Entries.size();
+		memcpy(const_cast<char*>(_pointMaximum), &_configSize, 0x01);
+
+		uint8_t _pageCurrent = *_pointPage;
+		uint8_t _indexCurrent = *_pointCurrent;
+		uint8_t _pageAmount = _configSize - 0x09;
+
+		if (_pageCurrent >= _pageAmount)
+		{
+			uint8_t _indexCalcuation = _indexCurrent + (_pageCurrent - _pageAmount);
+
+			memcpy(const_cast<char*>(_pointPage), &_pageAmount, 0x01);
+			memcpy(const_cast<char*>(_pointCurrent), &_indexCalcuation, 0x01);
+		}
+
+		Tz::CmConfig::UpdateActive();
+
+		memcpy(MENUSELECT_OFFSET + 0x46, _menuSelectInst, 0x04);
+	}
+
 	CONFIG_OFFSETS[6][0xE5] = 0x00;
 }
 
@@ -217,10 +253,11 @@ void Tz::HookConfig::Handle()
 				}
 
 				bool _isQuadratum = *(YS::AREA::SaveData + 0x41A7);
-				uint8_t _configSize = 0x0B;
 
 				vector<uint8_t> _configArray;
-				_configArray.resize(Entries.size() - 1);
+				uint8_t _configSize = Entries.size();
+
+				_configArray.resize(_configSize - 1);
 
 				uint16_t _checkBitwise = 0x0000;
 
@@ -228,32 +265,38 @@ void Tz::HookConfig::Handle()
 				{
 					auto _offIndex = 0xFF;
 
-					for (int z = 0; z < Entries[i][0x00]; z++)
-					{
-						auto _encodedName = YS::MESSAGE::GetData(Entries[i][0x01]);
-						auto _decodedName = YS::MESSAGE::DecodeKHSCII(_encodedName);
+					auto _encodedName = YS::MESSAGE::GetData(Entries[i].Title);
+					auto _decodedName = YS::MESSAGE::DecodeKHSCII(_encodedName);
 
-						auto _fetchBitwise = Entries[i][0x02 + (Entries[i][0x00] * 0x02) + z];
+					for (int z = 0; z < Entries[i].Count; z++)
+					{
+						auto _fetchBitwise = Entries[i].Toggles[z];
 
 						if (_fetchBitwise == 0x0000)
+						{
 							_configArray[i] = z;
+							continue;
+						}
 
 						auto _seekBitwise = (_checkBitwise & _fetchBitwise) == 0x00 ? _primaryBitwise : _secondaryBitwise;
 
 						if (_fetchBitwise != 0x0000 && (_seekBitwise & _fetchBitwise) == _fetchBitwise)
 						{
 							_configArray[i] = z;
+							printf("%s is set: %d\n", _decodedName.c_str(), z);
 							break;
 						}
 					}
 
-					for (int z = 0; z < Entries[i][0x00]; z++)
+					for (int z = 0; z < Entries[i].Count; z++)
 					{
-						auto _fetchBitwise = Entries[i][0x02 + (Entries[i][0x00] * 0x02) + z];
+						auto _fetchBitwise = Entries[i].Toggles[z];
 
 						if ((_checkBitwise & _fetchBitwise) == 0x0000)
 							_checkBitwise |= _fetchBitwise;
 					}
+
+					printf("%s is set: %d\n", _decodedName.c_str(), _configArray[i]);
 				}
 				
 				_configArray.push_back(*(YS::AREA::SaveData + 0x2498));
@@ -262,8 +305,6 @@ void Tz::HookConfig::Handle()
 					return;
 
 				memcpy(reinterpret_cast<char*>(_configMemory), _configArray.data(), _configArray.size());
-
-				Tz::CmConfig::UpdateActive();
 
 				if (*reinterpret_cast<const int*>(YS::MENU::MenuType + 0x5C) == 0xAF20)
 				{
@@ -293,12 +334,13 @@ void Tz::HookConfig::Handle()
 						memcpy(const_cast<char*>(_pointCurrent), &_indexCalcuation, 0x01);
 					}
 
+					Tz::CmConfig::UpdateList();
 					Tz::CmConfig::UpdateActive();
 
 					memcpy(MENUSELECT_OFFSET + 0x46, _menuSelectInst, 0x04);
 				}
 
-				CONFIG_INIT = true;
+				CONFIG_INIT = true;					
 			}
 
 			if (*reinterpret_cast<const int*>(YS::MENU::MenuType + 0x5C) == 0xAF20)
@@ -313,13 +355,13 @@ void Tz::HookConfig::Handle()
 				
 				for (int i = 0; i < Entries.size() - 1; i++)
 				{
-					auto _encodedName = YS::MESSAGE::GetData(Entries[i][0x01]);
+					auto _encodedName = YS::MESSAGE::GetData(Entries[i].Title);
 					auto _decodedName = YS::MESSAGE::DecodeKHSCII(_encodedName);
 
 					if (_fetchConfig[i] > 0x02)
 						break;
 
-					auto _fetchBitwise = Entries[i][0x02 + (Entries[i][0] * 0x02) + _fetchConfig[i]];
+					auto _fetchBitwise = Entries[i].Toggles[_fetchConfig[i]];
 
 					if ((_checkBitwise & _fetchBitwise) == _fetchBitwise)
 						_constructSecondary |= _fetchBitwise;
@@ -327,9 +369,9 @@ void Tz::HookConfig::Handle()
 					else
 						_constructPrimary |= _fetchBitwise;
 
-					for (int z = 0; z < Entries[i][0x00]; z++)
+					for (int z = 0; z < Entries[i].Count; z++)
 					{
-						auto _getBitwise = Entries[i][0x02 + (Entries[i][0x00] * 0x02) + z];
+						auto _getBitwise = Entries[i].Toggles[z];
 
 						if ((_checkBitwise & _getBitwise) == 0x0000)
 							_checkBitwise |= _getBitwise;
@@ -354,6 +396,40 @@ void Tz::HookConfig::Handle()
 				memcpy(YS::AREA::SaveData + 0x41A6, &_constructSecondary, 0x02);
 
 				memcpy(COMMAND_FLAG_ADDR, &_switchFlag, 0x01);
+
+
+				for (int i = 0; i < Entries.size(); i++)
+				{
+					if (Entries[i].SubEntry)
+					{
+						auto _canFind = find_if(Entries.begin(), Entries.end(),
+							[i](const Tz::HookConfig::Entry _fetchEntry) {
+								return _fetchEntry.Title == Entries[i].SubEntry->Title;
+							});
+
+						auto _fetchBitwise = Entries[i].Toggles[_fetchConfig[i]];
+
+						if (_fetchBitwise == Entries[i].SubToggle && _canFind == Entries.end())
+						{
+							Tz::HookConfig::Add(i + 1, *Entries[i].SubEntry);
+
+							CONFIG_INIT = false;
+							CONFIG_FETCH = false;
+
+							return;
+						}
+
+						else if (_fetchBitwise != Entries[i].SubToggle && _canFind != Entries.end())
+						{
+							Tz::HookConfig::Remove(_canFind - Entries.begin());
+
+							CONFIG_INIT = false;
+							CONFIG_FETCH = false;
+
+							return;
+						}
+					}
+				}
 			}
 
 			auto _pointLayout = CalculatePointer(YS::MENU::pint_camp2ld, { 0x00 });

@@ -87,6 +87,7 @@
     <ClInclude Include="include\discord\voice_manager.h" />
     <ClInclude Include="include\ini.h" />
     <ClInclude Include="include\kingdom\area.h" />
+    <ClInclude Include="include\kingdom\areainfo.h" />
     <ClInclude Include="include\kingdom\axa.h" />
     <ClInclude Include="include\kingdom\cache_buff.h" />
     <ClInclude Include="include\kingdom\cmconfig.h" />
@@ -133,8 +134,10 @@
     <ClInclude Include="include\kingdom\sound.h" />
     <ClInclude Include="include\kingdom\sprite.h" />
     <ClInclude Include="include\kingdom\steam.h" />
+    <ClInclude Include="include\kingdom\task.h" />
     <ClInclude Include="include\kingdom\title.h" />
     <ClInclude Include="include\kingdom\treasure_info.h" />
+    <ClInclude Include="include\kingdom\voice.h" />
     <ClInclude Include="include\kingdom\vsync.h" />
     <ClInclude Include="include\kingdom\weapon.h" />
     <ClInclude Include="include\kingdom\weapon_entry.h" />
@@ -163,6 +166,7 @@
     <ClCompile Include="src\discord\voice_manager.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\kingdom\area.cpp" />
+    <ClCompile Include="src\kingdom\areainfo.cpp" />
     <ClCompile Include="src\kingdom\cache_buff.cpp" />
     <ClCompile Include="src\kingdom\cmconfig.cpp" />
     <ClCompile Include="src\kingdom\command_draw.cpp" />
@@ -209,8 +213,10 @@
     <ClCompile Include="src\kingdom\sound.cpp" />
     <ClCompile Include="src\kingdom\sprite.cpp" />
     <ClCompile Include="src\kingdom\steam.cpp" />
+    <ClCompile Include="src\kingdom\task.cpp" />
     <ClCompile Include="src\kingdom\title.cpp" />
     <ClCompile Include="src\kingdom\treasure_info.cpp" />
+    <ClCompile Include="src\kingdom\voice.cpp" />
     <ClCompile Include="src\kingdom\vsync.cpp" />
     <ClCompile Include="src\kingdom\weapon.cpp" />
     <ClCompile Include="src\kingdom\weapon_entry.cpp" />

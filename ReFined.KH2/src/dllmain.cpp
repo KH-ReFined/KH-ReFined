@@ -13,6 +13,7 @@
 
 #include "axa.h"
 #include "area.h"
+#include "areainfo.h"
 #include "cache_buff.h"
 #include "cmconfig.h"
 #include "command_draw.h"
@@ -62,6 +63,7 @@
 #include "weapon_entry.h"
 #include "world.h"
 #include "item_table.h"
+#include "voice.h"
 
 #include "SigScan.h"
 #include "continue_menu.h"
@@ -100,7 +102,6 @@ char* BGM_WRITE_BUFFER;
 char* MENU_FNAME_BUFFER = ResolveRelativeAddress<char*>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x0D);
 char* FAC_WRITE_BUFFER = ResolveRelativeAddress<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x", 0x1F9);
 
-
 // 3D Path Constructors.
 
 char* ConstructMDLX(char* objentryEntry, char* buff)
@@ -123,6 +124,11 @@ char* ConstructAPDX(char* objentryEntry, char* buff)
 {
     auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
 
+    string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
+                           (_fetchConfig & 0x0008 ? "es" :
+                           (_fetchConfig & 0x0010 ? "de" :
+                           (_fetchConfig & 0x0020 ? "bg" : "us")));
+
     char* _apdxName = objentryEntry + 0x08;
     char* _useBuff = !buff ? APDX_WRITE_BUFFER : buff;
 
@@ -133,14 +139,20 @@ char* ConstructAPDX(char* objentryEntry, char* buff)
     if ((*(objentryEntry + 0x48) & 0x01) != 0x00)
         return nullptr;
 
-    sprintf(_useBuff, _constructPath.c_str(), _apdxName, _regionStr);
+    sprintf(_useBuff, _constructPath.c_str(), _apdxName, _encodedRegion.c_str());
+
+    if (!YS::FILE::GetSize(_useBuff))
+        sprintf(_useBuff, _constructPath.c_str(), _apdxName, _regionStr);
 
     if (!YS::FILE::GetSize(_useBuff))
         sprintf(_useBuff, _constructPath.c_str(), _apdxName, "us");
 
     if (!YS::FILE::GetSize(_useBuff))
     {
-        sprintf(_useBuff, "obj/%s.a.%s", _apdxName, _regionStr);
+        sprintf(_useBuff, "obj/%s.a.%s", _apdxName, _encodedRegion.c_str() );
+
+        if (!YS::FILE::GetSize(_useBuff))
+            sprintf(_useBuff, "obj/%s.a.%s", _apdxName, _regionStr);
 
         if (!YS::FILE::GetSize(_useBuff))
             sprintf(_useBuff, "obj/%s.a.us", _apdxName);
@@ -515,6 +527,13 @@ uint16_t TARGET_CURRENT_FORM_KEYBLADE = 0x0000;
 
 map<string, void(*)()> FUNCTION_ARRAY;
 
+string CURRENT_AUDIO = "voice/us/battle";
+
+bool QUEUE_VSB = false;
+int CURRENT_VSB = 0x0000;
+
+char* ALLOCATE_VSB = nullptr;
+
 // Configuration Values.
 
 bool DISCORD_ENABLED = true;
@@ -844,6 +863,101 @@ void HANDLE_RESOURCE()
         {
             YS::AREA::MapJump(YS::AREA::Current, 0x01, 0x00, false);
             CURRENT_OBJECTS = _fetchObject;
+        }
+    }
+}
+
+void HANDLE_AUDIO()
+{
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+
+    string _constructPath = _fetchConfig & 0x0004 ? "voice/jp/battle" :
+                           (_fetchConfig & 0x0008 ? "voice/es/battle" :
+                           (_fetchConfig & 0x0010 ? "voice/de/battle" :
+                           (_fetchConfig & 0x0020 ? "voice/bg/battle" : "voice/us/battle")));
+
+    if (!*YS::TITLE::IsTitle)
+    {
+        if (_constructPath != CURRENT_AUDIO)
+        {
+            if (*YS::MENU::IsMenu)
+            {
+                YS::SOUND::StreamAllStop(true);
+
+                auto _fetchSora = *reinterpret_cast<const uint16_t*>(YS::MEMBER_TABLE::MemberTable);
+
+                char _loadBuff[64];
+
+                string _pathAppend = _constructPath;
+                sprintf(_loadBuff, _pathAppend.append("/%s.win32.scd").c_str(), _fetchSora == 0x5A ? "preview_roxas" : "preview_sora");
+
+                auto _fetchSize = YS::FILE::GetSize(_loadBuff);
+
+                if (_fetchSize)
+                {
+                    auto _allocLoad = (char*)malloc(_fetchSize);
+                    YS::FILE::Read(_loadBuff, _allocLoad);
+
+                    YS::SOUND::PlayVSB(_allocLoad, _fetchSize, 0x3FAC, 0x00);
+                    QUEUE_VSB = true;
+                }
+            }
+
+            CURRENT_AUDIO = _constructPath;
+        }
+
+        else if (QUEUE_VSB && !*YS::MENU::IsMenu)
+        {
+            if (CURRENT_VSB == 0x0000)
+                CURRENT_VSB = 0x0236;
+
+            else if (CURRENT_VSB != 0x0000 && CURRENT_VSB <= 0x0238)
+            {
+                if (*YS::SOUND::IsTransferActive != 0x00)
+                    return;
+
+                else
+                {
+                    if (ALLOCATE_VSB)
+                    {
+                        free(ALLOCATE_VSB);
+                        ALLOCATE_VSB = nullptr;
+                    }
+
+                    CURRENT_VSB++;
+                }
+            }
+
+            else if (CURRENT_VSB == 0x0239)
+            {
+                QUEUE_VSB = false;
+                CURRENT_VSB = 0x0000;
+                return;
+            }
+
+            auto _fetchObject = YS::OBJENTRY::Get(CURRENT_VSB);
+
+            if (_fetchObject)
+            {
+                char _loadBuff[64];
+
+                auto _entryPart = *reinterpret_cast<uint16_t*>(_fetchObject + 0x4C);
+                auto _worldName = YS::WORLD::GetName(YS::AREA::Current->World);
+
+                auto _areaInfo = YS::AREAINFO::Get(-1, -1);
+                auto _areaVoice = *reinterpret_cast<uint16_t*>(_areaInfo + 0x30);
+
+                string _pathAppend = _constructPath;
+                sprintf(_loadBuff, _pathAppend.append("/%s%d_%s.win32.scd").c_str(), _worldName, _areaVoice, YS::VOICE::Part[_entryPart]);
+
+                auto _fetchSize = YS::FILE::GetSize(_loadBuff);
+                ALLOCATE_VSB = (char*)malloc(_fetchSize);
+
+                YS::FILE::Read(_loadBuff, ALLOCATE_VSB);
+                YS::SOUND::SetTransfer(CURRENT_VSB - 0x0236, 0x03, ALLOCATE_VSB, _fetchSize, nullptr, nullptr);
+
+                return;
+            }
         }
     }
 }
@@ -2222,6 +2336,7 @@ extern "C"
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             {"HANDLE_MUSIC", HANDLE_MUSIC},
             {"HANDLE_RESOURCE", HANDLE_RESOURCE},
+            {"HANDLE_AUDIO", HANDLE_AUDIO},
             {"RETRY_BATTLES", RETRY_BATTLES},
             {"DISPLAY_NEXT_EXP", DISPLAY_NEXT_EXP},
             {"HANDLE_SHAKE", HANDLE_SHAKE},
@@ -2416,6 +2531,30 @@ extern "C"
             0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
+
+        auto _voiceReadFunc = (uint64_t)YS::VOICE::ReadEntryId;
+        auto _fetchVoiceReadFunc = SignatureScan<char*>("\x85\xC9\x0F\x84\x93\x01\x00\x00\x41\x56\x48\x83\xEC\x70\x48\x8B", "xxxxxxxxxxxxxxxx");
+
+        fill(_fetchVoiceReadFunc, _fetchVoiceReadFunc + 0x9C, 0x90);
+
+        memcpy(_absoluteInstructionJMP.data() + 0x06, &_voiceReadFunc, 0x08);
+        memcpy(_fetchVoiceReadFunc, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+
+        auto _anbLoadFunc = (uint64_t)sa::EVENT::motion_read_set;
+        auto _fetchAnbLoad = SignatureScan<char*>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx");
+
+        fill(_fetchAnbLoad, _fetchAnbLoad + 0x28F, 0x90);
+
+        memcpy(_absoluteInstructionJMP.data() + 0x06, &_anbLoadFunc, 0x08);
+        memcpy(_fetchAnbLoad, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+
+        auto _eventVoiceLoadFunc = (uint64_t)sa::EVENT::audio_read_set;
+        auto _fetchEventVoiceLoad = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+        fill(_fetchEventVoiceLoad, _fetchEventVoiceLoad + 0x12B, 0x90);
+
+        memcpy(_absoluteInstructionJMP.data() + 0x06, &_eventVoiceLoadFunc, 0x08);
+        memcpy(_fetchEventVoiceLoad, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
 
         auto _trapObjEffectStartBindOther = (uint64_t)trap_obj_effect_start_bind;
         auto _trapObjEffectStartBindOtherFunc = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x48\x89\x7C\x24\x18\x41\x56\x48\x83\xEC\x30\x8B\x59\x18\x4C\x8B\xF1\x8B\x79\x10\x8B\x71\x08\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx");
@@ -2985,41 +3124,110 @@ extern "C"
             }
             #endif
 
-            vector<uint16_t> _musicConfig{ 0x01, 0x5718, 0x5719, 0x571A, 0x0000 };
-            vector<uint16_t> _resourceConfig{ 0x01, 0x571F, 0x573A, 0x573B, 0x0000 };
+            static Tz::HookConfig::Entry _musicConfig{ 0x01, 0x5718, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 } };
+            static Tz::HookConfig::Entry _resourceConfig{ 0x01, 0x571F, vector<uint16_t>{ 0x573A }, vector<uint16_t>{ 0x573B }, vector<uint16_t>{ 0x0000 } };
+
+            // This code block handles AUDIO packs.
+
+            vector<size_t> _loadedLangs
+            {
+                YS::FILE::GetSize("voice/jp/battle/tt0_sora.win32.scd"), 
+                YS::FILE::GetSize("voice/es/battle/tt0_sora.win32.scd"),
+                YS::FILE::GetSize("voice/de/battle/tt0_sora.win32.scd"),
+                YS::FILE::GetSize("voice/bg/battle/tt0_sora.win32.scd"),
+            };
+
+            static Tz::HookConfig::Entry _subAudioConfig = Tz::HookConfig::Entry { 0x0000, 0x572B, vector<uint16_t>(), vector<uint16_t>(), vector<uint16_t>(), 0x0000, nullptr };
+            static Tz::HookConfig::Entry _mainAudioConfig{ 0x01, 0x570B, vector<uint16_t>{ 0x570C }, vector<uint16_t>{ 0x570D }, vector<uint16_t> { 0x0000 } };
+
+            for (int i = 1; i < 4; i++)
+            {
+                if (_loadedLangs[i] != 0x0000)
+                {
+                    _subAudioConfig.Buttons.push_back(0x570E + 0x02 * i);
+                    _subAudioConfig.Descriptions.push_back(0x570F + 0x02 * i);
+                    _subAudioConfig.Count += 1;
+                }
+            }
+
+            if (_loadedLangs[0] != 0x0000)
+            {
+                _mainAudioConfig.Buttons.push_back(0x570E);
+                _mainAudioConfig.Descriptions.push_back(0x570F);
+                _mainAudioConfig.Toggles.push_back(0x0004);
+
+                _mainAudioConfig.Count += 0x01;
+
+                if (_subAudioConfig.Count >= 0x01)
+                {
+                    _mainAudioConfig.Buttons.push_back(_subAudioConfig.Count == 0x01 ? _subAudioConfig.Buttons[0] : 0x5716);
+                    _mainAudioConfig.Descriptions.push_back(_subAudioConfig.Count == 0x01 ? _subAudioConfig.Descriptions[0] : 0x5717);
+
+                    uint16_t _fetchBitwise = pow(2, ((_subAudioConfig.Buttons[0] - 0x570E) / 2) + 0x02);
+                    _mainAudioConfig.Toggles.push_back(_subAudioConfig.Count == 0x01 ? _fetchBitwise : 0x0002);
+
+                    _mainAudioConfig.Count += 0x01;
+                }
+            }
+
+            else if (_subAudioConfig.Count >= 0x01)
+            {
+                if (_subAudioConfig.Count < 0x03)
+                {
+                    for (int i = 0; i < _subAudioConfig.Count; i++)
+                    {
+                        _mainAudioConfig.Buttons.push_back(_subAudioConfig.Buttons[i]);
+                        _mainAudioConfig.Descriptions.push_back(_subAudioConfig.Descriptions[i]);
+                        _mainAudioConfig.Toggles.push_back(pow(2, ((_subAudioConfig.Buttons[i] - 0x570E) / 2) + 0x02));
+
+                        _mainAudioConfig.Count += 0x01;
+                    }
+                }
+            }
+
+            if (_subAudioConfig.Count >= 0x01)
+            {
+                for (int i = 0; i < _subAudioConfig.Count; i++)
+                {
+                    uint16_t _fetchBitwise = pow(2, ((_subAudioConfig.Buttons[i] - 0x570E) / 2) + 0x02);
+                    _subAudioConfig.Toggles.push_back(_fetchBitwise);
+                }
+
+                _mainAudioConfig.SubToggle = 0x0002;
+                _mainAudioConfig.SubEntry = &_subAudioConfig;
+            }
+
+            if (_mainAudioConfig.Count > 0x01)
+                Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _mainAudioConfig);
 
             // This code block handles RESOURCE packs.
 
             if (YS::MESSAGE::GetData(0x573C) != _fetchFake)
             {
-                _resourceConfig[0] += 1;
+                _resourceConfig.Count += 1;
 
-                auto _indexName = find(_resourceConfig.begin(), _resourceConfig.end(), 0x573B);
-                _resourceConfig.insert(_indexName, 0x573C);
+                _resourceConfig.Buttons.push_back(0x573C);
+                _resourceConfig.Descriptions.push_back(0x573D);
 
-                auto _indexBitwise = find(_resourceConfig.begin(), _resourceConfig.end(), 0x0000);
-                _resourceConfig.insert(_indexBitwise, 0x573D);
-
-                _resourceConfig.push_back(0x0200);
+                _resourceConfig.Toggles.push_back(0x0200);
             }
 
             if (YS::MESSAGE::GetData(0x573E) != _fetchFake)
             {
-                _resourceConfig[0] += 1;
+                _resourceConfig.Count += 1;
 
-                auto _indexName = find(_resourceConfig.begin(), _resourceConfig.end(), 0x573B);
-                _resourceConfig.insert(_indexName, 0x573E);
+                _resourceConfig.Buttons.push_back(0x573E);
+                _resourceConfig.Descriptions.push_back(0x573F);
 
-                auto _indexBitwise = find(_resourceConfig.begin(), _resourceConfig.end(), 0x0000);
-                _resourceConfig.insert(_indexBitwise, 0x573F);
-
-                _resourceConfig.push_back(0x0400);
+                _resourceConfig.Toggles.push_back(0x0400);
             }
 
-            if (_resourceConfig[0] > 1)
+           
+            if (_resourceConfig.Count > 1)
             {
                 Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _resourceConfig);
 
+                /*
                 std::vector<uint32_t> _resourceIntro;
 
                 for (auto _element : _resourceConfig)
@@ -3029,40 +3237,36 @@ extern "C"
                 _resourceIntro[0x01] = 0x5736;
 
                 Tz::HookIntro::Add(UINT32_MAX, _resourceIntro);
+                */
             }
 
             // This code block handles MUSIC packs.
-
+            
             if (YS::MESSAGE::GetData(0x571B) != _fetchFake)
             {
-                _musicConfig[0] += 1;
+                _musicConfig.Count += 1;
 
-                auto _indexName = find(_musicConfig.begin(), _musicConfig.end(), 0x571A);
-                _musicConfig.insert(_indexName, 0x571B);
+                _musicConfig.Buttons.push_back(0x571B);
+                _musicConfig.Descriptions.push_back(0x571C);
 
-                auto _indexBitwise = find(_musicConfig.begin(), _musicConfig.end(), 0x0000);
-                _musicConfig.insert(_indexBitwise, 0x571C);
-
-                _musicConfig.push_back(0x0080);
+                _musicConfig.Toggles.push_back(0x0080);
             }
 
             if (YS::MESSAGE::GetData(0x571D) != _fetchFake)
             {
-                _musicConfig[0] += 1;
+                _musicConfig.Count += 1;
 
-                auto _indexName = find(_musicConfig.begin(), _musicConfig.end(), 0x571A);
-                _musicConfig.insert(_indexName, 0x571D);
+                _musicConfig.Buttons.push_back(0x571D);
+                _musicConfig.Descriptions.push_back(0x571E);
 
-                auto _indexBitwise = find(_musicConfig.begin(), _musicConfig.end(), 0x0000);
-                _musicConfig.insert(_indexBitwise, 0x571E);
-
-                _musicConfig.push_back(0x0100);
+                _musicConfig.Toggles.push_back(0x0100);
             }
 
-            if (_musicConfig[0] > 1)
+            if (_musicConfig.Count > 1)
             {
                 Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _musicConfig);
 
+                /*
                 std::vector<uint32_t> _musicIntro;
 
                 for (auto _element : _musicConfig)
@@ -3072,6 +3276,7 @@ extern "C"
                 _musicIntro[0x01] = 0x5735;
 
                 Tz::HookIntro::Add(UINT32_MAX, _musicIntro);
+                */
             }
 
             // Re:Fined Module Initialization, brought to you by Topaz' Reality (Patent Pending!)
@@ -3145,7 +3350,7 @@ extern "C"
                         uint16_t* (*checkConfig)() = (uint16_t * (*)())GetProcAddress(_moduleHandle, "RF_CheckConfig");
 
                         vector<uint32_t> _vectorIntro(0);
-                        vector<uint16_t> _vectorConfig(0);
+                        // vector<uint16_t> _vectorConfig(0);
 
                         if (checkIntro)
                         {
@@ -3163,6 +3368,7 @@ extern "C"
                             *introSeek = reinterpret_cast<uint32_t*>(YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x200 + ((Tz::HookIntro::Entries.size() - 1) * 0x04));
                         }
 
+                        /*
                         if (checkConfig)
                         {
                             auto _fetchConfig = checkConfig();
@@ -3206,6 +3412,7 @@ extern "C"
                                 }
                             }
                         }
+                        */
 
                     CONFIG_LOOP_END:
 
@@ -3272,6 +3479,8 @@ extern "C"
             for (auto _execPair : _execModule)
                 _execPair.second();
             #endif
+
+
         }
     }
 }
