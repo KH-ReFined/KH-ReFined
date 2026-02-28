@@ -106,17 +106,17 @@ extern "C"
 
 		bool* _isMenu  = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsMenu@MENU@YS@@2PEA_NEA");
 		bool* _isTitle = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsTitle@TITLE@YS@@2PEA_NEA");
-		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@YS@@2PEA_NEA");
+		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@@2PEA_NEA");
 		char* _menuType = *(char**)GetProcAddress(MAIN_HANDLE, "?MenuType@MENU@YS@@2PEADEA");
 		char* _subMenuType = *(char**)GetProcAddress(MAIN_HANDLE, "?SubMenuType@MENU@YS@@2PEADEA");
 		char* _memberTable = *(char**)GetProcAddress(MAIN_HANDLE, "?MemberTable@MEMBER_TABLE@YS@@2PEADEA");
-		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@YS@@2PEADEA");
+		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@@2PEADEA");
 
 		uint16_t* _hardpadInput = *(uint16_t**)GetProcAddress(MAIN_HANDLE, "?Input@HARDPAD@YS@@2PEAGEA");
 
-		uint64_t _jiminyMenuPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_jiminymenu@MENU@YS@@2_KA");
-		uint64_t _commandMenuPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_commandmenu@COMMAND_DRAW@YS@@2_KA");
-		uint64_t _subOptionSelectPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_suboptionselect@MENU@YS@@2_KA");
+		char** _jiminyMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?Jiminy@MENU@YS@@2PEAPEADEA");
+		char** _commandMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?CommandMenu@COMMAND_DRAW@YS@@2PEAPEADEA");
+		char** _subOptionSelectPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?SubOptionSel@MENU@YS@@2PEAPEADEA");
 		
 		using PlaySFX_t = void(*)(uint32_t);
 		using GetData_t = const char*(*)(int);
@@ -125,7 +125,7 @@ extern "C"
 		using EncodeKHSCII_t = vector<char>(*)(string);
 		using UpdateListShortcut_t = void(*)(uint32_t);
 
-		PlaySFX_t _playSFX = *(PlaySFX_t*)GetProcAddress(MAIN_HANDLE, "?PlaySFX@SOUND@YS@@2P6AXI@ZEA");
+		PlaySFX_t _playSFX = *(PlaySFX_t*)GetProcAddress(MAIN_HANDLE, "?PlaySFX@SOUND@@2P6AXI@ZEA");
 		GetData_t _getData = *(GetData_t*)GetProcAddress(MAIN_HANDLE, "?GetData@MESSAGE@YS@@2P6APEADH@ZEA");
 		GetSize_t _getSize = *(GetSize_t*)GetProcAddress(MAIN_HANDLE, "?GetSize@MESSAGE@YS@@2P6A?B_KPEBD@ZEA");
 		UpdateListShortcut_t _updateListShortcut = *(UpdateListShortcut_t*)GetProcAddress(MAIN_HANDLE, "?UpdateListShortcut@MENU@YS@@2P6AXI@ZEA");
@@ -137,9 +137,8 @@ extern "C"
 		
 		// === BOOLEAN SPACE === //
 
-
-		bool IS_CUSTOMIZE = *_isMenu && *_menuType == 0x08 && *_subMenuType == 0x19 && *reinterpret_cast<uint64_t*>(_jiminyMenuPtr) == 0x00;
-		bool IS_SHORTEDIT = *_isMenu && *_menuType == 0x08 && (*_subMenuType == 0x1A || *_subMenuType == 0x1D || *_subMenuType == 0x1E || *_subMenuType == 0x1F) && *reinterpret_cast<uint64_t*>(_jiminyMenuPtr) == 0x00;
+		bool IS_CUSTOMIZE = *_isMenu && *_menuType == 0x08 && *_subMenuType == 0x19 && !*_jiminyMenuPtr;
+		bool IS_SHORTEDIT = *_isMenu && *_menuType == 0x08 && (*_subMenuType == 0x1A || *_subMenuType == 0x1D || *_subMenuType == 0x1E || *_subMenuType == 0x1F) && !*_jiminyMenuPtr;
 
 		bool IS_INPUT_MENU = (*_hardpadInput & 0x0400) == 0x0400 || (*_hardpadInput & 0x0800) == 0x0800;
 		bool IS_INPUT_GAME = (*_hardpadInput & 0x0010) == 0x0010 || (*_hardpadInput & 0x0040) == 0x0040;
@@ -248,8 +247,8 @@ extern "C"
 				}
 			}
 
-			auto _commandType = *reinterpret_cast<uint8_t**>(_commandMenuPtr);
-			auto _subOptionSelect = *reinterpret_cast<uint8_t**>(_subOptionSelectPtr);
+			auto _commandType = *_commandMenuPtr ? reinterpret_cast<uint8_t*>(*_commandMenuPtr) : nullptr;
+			auto _subOptionSelect = *_subOptionSelectPtr ? reinterpret_cast<uint8_t*>(*_subOptionSelectPtr) : nullptr;
 
 			// If the command type pointer is not null;
 			if (_commandType != nullptr)
