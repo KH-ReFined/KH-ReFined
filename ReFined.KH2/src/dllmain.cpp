@@ -1103,6 +1103,9 @@ void AUTOSAVE()
                 _stringStream << setw(2) << setfill('0') << (_saveOffset - 1);
 
                 _saveName = "BISLPM-66675FM-" + _stringStream.str();
+                
+                if (_fetchCheck == UINT32_MAX)
+                    break;
             }
 
             if (_saveSlot >= 99)
@@ -1778,11 +1781,10 @@ void RETRY_BATTLES()
 
 
         // Fetch Menu selection and the pointer to the Game Over screen.
-        uint8_t _fetchSelectMenu = *YS::MENU::DialogBase ? (*(*YS::MENU::DialogBase + 0xD48) ? *(*YS::MENU::DialogBase + 0xD48) : 0x80) : 0x80;
-        char* _continuePoint = *YS::MENU::GameOver;
+        uint8_t _fetchSelectMenu = *YS::MENU::DialogBase ? ((*YS::MENU::DialogBase + 0xD48) ? *(*YS::MENU::DialogBase + 0xD48) : 0x80) : 0x80;
 
         // If the Game Over menu exists and the Retry State has been noted:
-        if (_continuePoint != 0x00 && RETRY_STATE.size() != 0x00)
+        if (*YS::MENU::GameOver && RETRY_STATE.size() != 0x00)
         {
             // If on Hades Escape, reset all Hades Escape variables.
             if (HADES_ESCAPE && HADES_ITERATOR != 0x00)
