@@ -1,9 +1,9 @@
 #include "itempic.h"
 
-int* YS::ITEMPIC::Phase =	 ResolveRelativeAddress<int*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0xE9);
-int* YS::ITEMPIC::UserNum =	 ResolveRelativeAddress<int*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0xEF);
-int* YS::ITEMPIC::CachePic = ResolveRelativeAddress<int*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0xE3);
-char* YS::ITEMPIC::Task =	 ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0x105);
+uint32_t* YS::ITEMPIC::Phase = ResolveRelativeAddress<uint32_t*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0xE9);
+uint32_t* YS::ITEMPIC::UserNum = ResolveRelativeAddress<uint32_t*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0xEF);
+uint32_t* YS::ITEMPIC::CachePic = ResolveRelativeAddress<uint32_t*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0xE3);
+char* YS::ITEMPIC::Task = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0x105);
 
 YS::ITEMPIC::ReadImage_t YS::ITEMPIC::ReadImage = SignatureScan<YS::ITEMPIC::ReadImage_t>("\x83\xF9\xFF\x74\x4D\x53\x48\x83\xEC\x40\x48\x8D\x05\x00\x00\x00\x00\xC7\x44\x24\x30\x8C\x00\x00\x00", "xxxxxxxxxxxxx????xxxxxxxx");
 YS::ITEMPIC::FreeImageData_t YS::ITEMPIC::FreeImageData = SignatureScan<YS::ITEMPIC::FreeImageData_t>("\x48\x83\xEC\x28\x83\x2D\x00\x00\x00\x00\x01\xB9\x00\x00\x00\x00\x8B\x05\x00\x00\x00\x00\x0F\x44\xC1\x83\x3D\x00\x00\x00\x00\xFF\x89\x05\x00\x00\x00\x00\x74\x2E", "xxxxxx????xxxxxxxx????xxxxx????xxx????xx");
@@ -19,10 +19,12 @@ char* YS::ITEMPIC::ReadImageThread(char* task)
     char nameBuff[40];
     auto _itempicID = *reinterpret_cast<uint16_t*>(task + 0x18);
 
+    fprintf(stdout, "[YS::ITEMPIC::ReadImageThread] | Requested file for ITEMPIC ID: %d\n", _itempicID);
+
 	if (*Phase != 0x00)
 		TASK::sleep(task, 0);
 
-    if (*CachePic != -1)
+    if (*CachePic != UINT32_MAX)
     {
         auto _releaseResult = YI::IMAGE::ReleaseImage(ImageBuff);
 
@@ -43,7 +45,7 @@ char* YS::ITEMPIC::ReadImageThread(char* task)
                     *reinterpret_cast<uint32_t*>(_fetchAddr + 0xB4) = 0x01;
 
                     if (_compareNoName)
-                        *reinterpret_cast<uint64_t*>(_fetchAddr + 0xB8) = 0;
+                        *reinterpret_cast<uint64_t*>(_fetchAddr + 0xB8) = 0x00;
 
                     else
                         *reinterpret_cast<uint64_t*>(_fetchAddr + 0xB8) = UINT64_MAX;
@@ -51,7 +53,7 @@ char* YS::ITEMPIC::ReadImageThread(char* task)
             }
         }
 
-        *CachePic = -1;
+        *CachePic = UINT32_MAX;
     }
 
     *Phase = 1;
@@ -63,6 +65,8 @@ char* YS::ITEMPIC::ReadImageThread(char* task)
 
     if (!YS::FILE::GetSize(nameBuff))
         sprintf(nameBuff, "itempic/item-%03d.imd", _itempicID);
+
+    fprintf(stdout, "[YS::ITEMPIC::ReadImageThread] | Reading File: %s\n", nameBuff);
 
     YS::FILE::Read(nameBuff, ImageBuff);
     YI::IMAGE::CreateImage(ImageBuff);
