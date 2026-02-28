@@ -2024,7 +2024,7 @@ extern "C"
         // Nullify all SaveID checks according to the platform in use.
 
         auto _saveCheckFunction = IS_STEAM ? SignatureScan<char*>("\x40\x55\x56\x57\x48\x81\xEC\xA0\x00\x00\x00\x48\xC7\x44\x24\x38\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\xD0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x90\x00\x00\x00\x8B\xF1\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xED\x8D\x5D\x01\x48\x39\x2D\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x85\xC0\x74\x1D", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxx????xx????xxxxxxxx????xx????xxxxxx????xxxxxxxxxx")
-            : SignatureScan<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
+                                           : SignatureScan<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
 
         memcpy(_saveCheckFunction + (IS_STEAM ? 0x189 : 0x138), "\x90\x90\x90\x90\x90", 0x05);
         memcpy(_saveCheckFunction + (IS_STEAM ? 0x196 : 0x145), "\x90\x90", 0x02);
@@ -2239,48 +2239,6 @@ extern "C"
 
         */
 
-        // This code addresses an issue with PARTY_LIMIT crashing the game at the end of a fight.
-
-        auto _funcLimitCheck = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x30\x8B\x79\x10\x48\x8B\xF1\x0F\x29\x74\x24\x20\xF3\x0F\x10\x71\x18\x8B\x49\x08\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x8B\x0E\x48\x8B\xD8\xE8\x00\x00\x00\x00\x0F\x28\xDE\x44\x8B\xC7\x48\x8B\xD3\x48\x8B\xC8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxx????xxxxxxxxxxxx");
-        auto _funcLimitPoint = ResolveRelativeAddress<uint64_t>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x20\x57\x48\x83\xEC\x30\x48\x8B\xFA\x8B\xD9\xE8\x00\x00\x00\x00\x48\x8B\xE8\x0F\xB7\x08\xE8\x00\x00\x00\x00\x48\x8B\xF0\x48\x85\xC0\x0F\x84\xCF\x00\x00\x00\xB9\x28\x01\x00\x00\xE8\x00\x00\x00\x00\x33\xDB\x48\x85\xC0", "xxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxx????xxxxxxxxxxxxxxxxxx????xxxxx", 0x6A);
-
-        // This patch basically checks at any point this is called if the PARTY_LIMIT is null. If it is, it skips the whole function.
-        vector<uint8_t> _patchLimitCheck
-        {
-            0x4C, 0x8B, 0x1D, 0x00, 0x00, 0x00, 0x00, // mov r11, [someAddress]
-            0x4D, 0x85, 0xDB,                         // test r11, r11
-            0x75, 0x0A,                               // jne 0x0A
-            0xEB, 0x02,                               // jmp 0x02
-            0xEB, 0xF0,                               // jmp 0xF0
-            0x4D, 0x31, 0xDB,                         // xor r11,r11
-            0xC3,                                     // ret
-            0x90,                                     // nop
-            0x90                                      // nop
-        };
-
-        auto _limitAddrCalc = _funcLimitPoint - reinterpret_cast<uint64_t>(_funcLimitCheck - 0x0E) - 0x07;
-        memcpy(_patchLimitCheck.data() + 0x03, &_limitAddrCalc, 0x04);
-
-        // In here we fetch the function that exists where we are going to place our patch so that we can move it.
-        vector<uint64_t> _fetchFunction(0x68);
-        memcpy(_fetchFunction.data(), _funcLimitCheck, 0x68);
-
-        // We move the thing by 8 bytes/
-        memcpy(_funcLimitCheck + 0x08, _fetchFunction.data(), 0x68);
-
-        // Address correction for the 8 byte offset.
-
-        auto _tempPtr = reinterpret_cast<uint32_t*>(_funcLimitCheck + 0x4E);
-        *_tempPtr -= 0x08;
-
-        _tempPtr = reinterpret_cast<uint32_t*>(_funcLimitCheck + 0x2B);
-        *_tempPtr -= 0x08;
-        _tempPtr = reinterpret_cast<uint32_t*>(_funcLimitCheck + 0x33);
-        *_tempPtr -= 0x08;
-        _tempPtr = reinterpret_cast<uint32_t*>(_funcLimitCheck + 0x3D);
-        *_tempPtr -= 0x08;
-
-        memcpy(_funcLimitCheck - 0x0E, _patchLimitCheck.data(), 0x16);
 
         // Initialization of all MENU handlers [INTRO, CONFIG, CONTINUE]
 

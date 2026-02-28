@@ -121,3 +121,49 @@ uint32_t YS::VM::trap_obj_effect_start_bind_other(uint32_t* bdvalue)
 
     return _dwordReturn;
 }
+
+uint32_t YS::VM::trap_limit_motion_start(uint32_t* bdvalue)
+{
+    auto _motionPtr = bdvalue[4];
+    auto _targetObj = bdvalue[2];
+    auto _targetLimit = bdvalue[0];
+
+    if (*bdvalue == 0x00 || *bdvalue == UINT32_MAX)
+        return 0x00;
+
+    if (_targetLimit == 0x00 || _targetLimit == UINT32_MAX)
+        return 0x00;
+
+    if (_targetObj == 0x00 || _targetObj == UINT32_MAX)
+        return 0x00;
+
+    if (_motionPtr == 0x00 || _motionPtr == UINT32_MAX)
+        return 0x00;
+
+    auto _targetLimitPtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetLimit));
+
+    if (!_targetLimitPtr || _targetLimitPtr > moduleInfo.endAddr)
+        return 0x00;
+
+    auto _targetObjectPtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetObj));
+
+    if (!_targetObjectPtr || _targetObjectPtr > moduleInfo.endAddr)
+        return 0x00;
+
+    auto _motionQueuePtr = *reinterpret_cast<uint32_t*>(_targetObjectPtr + 0x04);
+
+    if (_motionQueuePtr == 0x00 || _motionQueuePtr == UINT32_MAX)
+        return 0x00;
+
+    auto _targetMotionQueuePtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_motionQueuePtr));
+
+    if (!_targetMotionQueuePtr || _targetMotionQueuePtr > moduleInfo.endAddr)
+        return 0x00;
+
+    auto _dwordReturn = YS::LIMIT::motion_start(_targetLimitPtr, _targetMotionQueuePtr, _motionPtr, 0x00);
+
+    *bdvalue = _dwordReturn;
+    bdvalue[1] = 1414416704;
+
+    return _dwordReturn;
+}
