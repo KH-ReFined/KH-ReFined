@@ -44,17 +44,14 @@ extern "C"
 	__declspec(dllexport) void RF_ModuleExecute()
 	{
 		bool* _isTitle = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsTitle@TITLE@YS@@2PEA_NEA");
-		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@YS@@2PEADEA");
-		char* _currArea = *(char**)GetProcAddress(MAIN_HANDLE, "?Current@AREA@YS@@2PEAUINFO@12@EA");
-		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@YS@@2PEA_NEA");
-		bool* _isVendor = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsVendor@AREA@YS@@2PEADEA");
+		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@@2PEADEA");
+		char* _currArea = *(char**)GetProcAddress(MAIN_HANDLE, "?Current@AREA@@2PEAUINFO@1@EA");
+		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@@2PEA_NEA");
+		bool* _isVendor = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsVendor@AREA@@2PEADEA");
 
-		uint64_t _enemyInfoPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_enemyinfo@AREA@YS@@2_KA");
+		char** _enemyInfoPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?EnemyData@AREA@@2PEAPEADEA");
 
-		uint64_t _roomInfoBase = 0;
-		memcpy(&_roomInfoBase, reinterpret_cast<char*>(_enemyInfoPtr), 0x08);
-
-		auto _roomInfo = reinterpret_cast<char*>(_roomInfoBase + 0x08);
+		auto _roomInfo = reinterpret_cast<char*>(*_enemyInfoPtr + 0x08);
 
 		vector<uint16_t> _abilityRead(0x60);
 		memcpy(_abilityRead.data(), _saveData + 0x2544, 0xC0);
@@ -70,7 +67,7 @@ extern "C"
 			*(_saveData + 0x2544 + (_indexZero * 2)) = 0xF8;
 		}
 
-		if (!*_isInMap && _abilityActive && !ENCOUNTER_ACTIVE && _roomInfoBase != 0x00)
+		if (!*_isInMap && _abilityActive && !ENCOUNTER_ACTIVE && *_enemyInfoPtr != 0x00)
 		{
 			char _fillZero[0x100];
 
