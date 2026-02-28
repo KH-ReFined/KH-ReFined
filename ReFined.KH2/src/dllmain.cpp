@@ -15,6 +15,7 @@
 #include "area.h"
 #include "areainfo.h"
 #include "cache_buff.h"
+#include "binarc.h"
 #include "cmconfig.h"
 #include "command_draw.h"
 #include "command_elem.h"
@@ -49,6 +50,7 @@
 #include "region.h"
 #include "sequence.h"
 #include "shake.h"
+#include "save_indicator.h"
 #include "softreset.h"
 #include "sora.h"
 #include "sound.h"
@@ -93,233 +95,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 // Redirected Constructors live here! //
 
-char* MDLX_WRITE_BUFFER = ResolveRelativeAddress<char*>("\x4D\x8D\x47\x08\x48\x8D\x15\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x85\xC0\x74\x36\xE8\x00\x00\x00\x00", "xxxxxxx????xxx????x????x????xxxxx????", 0x0E);
-char* APDX_WRITE_BUFFER = MDLX_WRITE_BUFFER + 0x28;
-char* MSET_WRITE_BUFFER = APDX_WRITE_BUFFER + 0x28;
-
-char* BGM_WRITE_BUFFER;
-
 char* MENU_FNAME_BUFFER = ResolveRelativeAddress<char*>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x0D);
 char* FAC_WRITE_BUFFER = ResolveRelativeAddress<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x", 0x1F9);
-
-// 3D Path Constructors.
-
-char* ConstructMDLX(char* objentryEntry, char* buff)
-{
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
-    string _constructPath = _fetchConfig & 0x0200 ? "obj_2nd/%s.mdlx" : (_fetchConfig & 0x0400 ? "obj_3rd/%s.mdlx" : "obj/%s.mdlx");
-
-    char* _mdlxName = objentryEntry + 0x08;
-    char* _useBuff = !buff ? MDLX_WRITE_BUFFER : buff;
-
-    sprintf(_useBuff, _constructPath.c_str(), _mdlxName);
-
-    if (!YS::FILE::GetSize(_useBuff))
-        sprintf(_useBuff, "obj/%s.mdlx", _mdlxName);
-
-    return _useBuff;
-}
-
-char* ConstructAPDX(char* objentryEntry, char* buff)
-{
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
-
-    string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
-                           (_fetchConfig & 0x0008 ? "es" :
-                           (_fetchConfig & 0x0010 ? "de" :
-                           (_fetchConfig & 0x0020 ? "bg" : "us")));
-
-    char* _apdxName = objentryEntry + 0x08;
-    char* _useBuff = !buff ? APDX_WRITE_BUFFER : buff;
-
-    const char* _regionStr = !YS::REGION::Get() || YS::REGION::Get() == 0x07 ? "fm" : reinterpret_cast<char*>(*YS::REGION::pint_region);
-
-    string _constructPath = _fetchConfig & 0x0200 ? "obj_2nd/%s.a.%s" : (_fetchConfig & 0x0400 ? "obj_3rd/%s.a.%s" : "obj/%s.a.%s");
-
-    if ((*(objentryEntry + 0x48) & 0x01) != 0x00)
-        return nullptr;
-
-    sprintf(_useBuff, _constructPath.c_str(), _apdxName, _encodedRegion.c_str());
-
-    if (!YS::FILE::GetSize(_useBuff))
-        sprintf(_useBuff, _constructPath.c_str(), _apdxName, _regionStr);
-
-    if (!YS::FILE::GetSize(_useBuff))
-        sprintf(_useBuff, _constructPath.c_str(), _apdxName, "us");
-
-    if (!YS::FILE::GetSize(_useBuff))
-    {
-        sprintf(_useBuff, "obj/%s.a.%s", _apdxName, _encodedRegion.c_str() );
-
-        if (!YS::FILE::GetSize(_useBuff))
-            sprintf(_useBuff, "obj/%s.a.%s", _apdxName, _regionStr);
-
-        if (!YS::FILE::GetSize(_useBuff))
-            sprintf(_useBuff, "obj/%s.a.us", _apdxName);
-    }
-
-    return _useBuff;
-
-}
-
-char* ConstructMSET(char* objentryEntry, uint32_t objectID, char* buff)
-{
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
-
-    char* _mdlxName = objentryEntry + 0x08;
-    char* _msetName = objentryEntry + 0x28;
-
-    char* _useBuff = !buff ? MSET_WRITE_BUFFER : buff;
-
-    string _fetchMSET = _fetchConfig & 0x0200 ? "obj_2nd/%s.mset" : (_fetchConfig & 0x0400 ? "obj_3rd/%s.mset" : "obj/%s.mset");
-    string _fetchMEMO = _fetchConfig & 0x0200 ? "obj_2nd/%s_MEMO.mset" : (_fetchConfig & 0x0400 ? "obj_3rd/%s_MEMO.mset" : "obj/%s_MEMO.mset");
-
-    if (!*_msetName)
-    {
-        if ((objectID & 0x10000000) == 0x00)
-            return nullptr;
-
-        sprintf(_useBuff, _fetchMEMO.c_str(), _mdlxName);
-
-        if (!YS::FILE::GetSize(_useBuff))
-            sprintf(_useBuff, "obj/%s_MEMO.mset", _mdlxName);
-
-        return _useBuff;
-    }
-
-    auto _fetchNameMSET = string(_msetName);
-    _fetchNameMSET.resize(_fetchNameMSET.size() - 0x05);
-
-    sprintf(_useBuff, _fetchMSET.c_str(), _fetchNameMSET.c_str());
-
-    if (!YS::FILE::GetSize(_useBuff))
-        sprintf(_useBuff, "obj/%s.mset", _fetchNameMSET.c_str());
-
-    if ((objectID & 0x10000000) != 0x00)
-    {
-    LABEL_12:
-        sprintf(_useBuff, _fetchMEMO.c_str(), _fetchNameMSET.c_str());
-
-        if (!YS::FILE::GetSize(_useBuff))
-            sprintf(_useBuff, "obj/%s_MEMO.mset", _fetchNameMSET.c_str());
-
-        return _useBuff;
-    }
-
-    if (objectID <= 0x31A)
-    {
-        if (objectID > 0x318)
-            goto LABEL_10;
-
-    LABEL_9:
-        if ((objectID & 0x20000000) == 0x00)
-            return _useBuff;
-
-        goto LABEL_10;
-    }
-
-    if (objectID != 0x03EE)
-        goto LABEL_9;
-
-LABEL_10:
-    if (*(objentryEntry + 0x04) != 0x00 && YS::CACHE_BUFF::GetStatus(_useBuff) < 2)
-        goto LABEL_12;
-
-    return _useBuff;
-}
-
-// Misc. Path Constructors. 
-
-char* ConstructBGM(int number)
-{
-    auto _calcNumber = number;
-
-    if (BGM_WRITE_BUFFER == nullptr)
-        BGM_WRITE_BUFFER = (char*)malloc(0x28);
-
-    if (YS::AREA::Current->World == 0x0B)
-    {
-        _calcNumber = 517;
-
-        if (number != 117)
-            _calcNumber = number;
-
-        if (number == 121)
-            _calcNumber = 521;
-    }
-
-    if (YS::REGION::Get() && YS::REGION::Get() != 0x07 && (_calcNumber <= 3 || _calcNumber == 113))
-        _calcNumber += 400;
-
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
-    auto _fetchMusic = (_fetchConfig & 0x0080) == 0x0080 ? 0x0080 : ((_fetchConfig & 0x0100) == 0x0100 ? 0x0100 : 0x0000);
-
-    string _constructPath = _fetchConfig & 0x0080 ? "bgm_2nd/music%03d.win32.scd" : (_fetchConfig & 0x0100 ? "bgm_3rd/music%03d.win32.scd" : "bgm/music%03d.win32.scd");
-
-    sprintf(BGM_WRITE_BUFFER, _constructPath.c_str(), _calcNumber);
-
-    if (YS::FILE::GetSize(BGM_WRITE_BUFFER) == 0x00)
-        sprintf(BGM_WRITE_BUFFER, "bgm/music%03d.win32.scd", _calcNumber);
-
-    return BGM_WRITE_BUFFER;
-}
-
-char* ConstructMENU(char* buff, char* fileName)
-{
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
-    auto _regionPointer = (!YS::REGION::Get() || YS::REGION::Get() == 7) ? reinterpret_cast<char*>(*YS::REGION::pint_region_default) : reinterpret_cast<char*>(*YS::REGION::pint_region);
-
-    if (!strcmp(*reinterpret_cast<char**>(MENU_FNAME_BUFFER), fileName))
-    {
-        string _constructFile = _fetchConfig & 0x0200 ? "file_2nd/%s/%s" : (_fetchConfig & 0x0400 ? "file_3rd/%s/%s" : "file/%s/%s");
-
-        sprintf(buff, _constructFile.c_str(), _regionPointer, fileName);
-
-        if (!YS::FILE::GetSize(buff))
-        {
-            _constructFile.resize(_constructFile.size() - 0x03);
-            sprintf(buff, _constructFile.c_str(), fileName);
-
-            if (!YS::FILE::GetSize(buff))
-            {
-                sprintf(buff, "file/%s/%s", _regionPointer, fileName);
-
-                if (!YS::FILE::GetSize(buff))
-                    sprintf(buff, "file/%s", fileName);
-            }
-        }
-
-        return buff;
-    }
-
-    else
-    {
-        string _constructMenu = _fetchConfig & 0x0200 ? "menu_2nd/%s/%s" : (_fetchConfig & 0x0400 ? "menu_3rd/%s/%s" : "menu/%s/%s");
-
-        auto _checkPhoto = strstr(fileName, "jm_photo/");
-        sprintf(buff, _constructMenu.c_str(), _regionPointer, fileName);
-
-        if (!YS::FILE::GetSize(buff))
-        {
-            if (_checkPhoto)
-                goto SKIP_PHOTO;
-
-            _constructMenu.resize(_constructMenu.size() - 0x03);
-            sprintf(buff, _constructMenu.c_str(), fileName);
-
-            if (!YS::FILE::GetSize(buff))
-            {
-            SKIP_PHOTO:
-                sprintf(buff, "menu/%s/%s", _regionPointer, fileName);
-
-                if (!YS::FILE::GetSize(buff) && !_checkPhoto)
-                    sprintf(buff, "menu/%s", fileName);
-            }
-        }
-
-        return buff;
-    }
-}
 
 // 2D Path Constructors.
 
@@ -543,6 +320,13 @@ uint8_t SAVE_SLOT_OFFSET = 99;
 
 uint16_t RESET_COMBO = YS::HARDPAD::BUTTONS::NONE;
 
+// MAKE THESE PROPER LATER
+
+char* AUTO_LOCKON_FUNC = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x30\xF3\x0F\x10\x44\x24\x68", "xxxxxxxxxxxxxxxxxxxxxxxxxx");
+uint32_t* ACTIVE_ENEMY = reinterpret_cast<uint32_t*>(ResolveRelativeAddress<char*>(AUTO_LOCKON_FUNC, 0x51) + 0x04);
+
+bool POINT_GIVEN_ENEMY = false;
+
 // Function Block. Everything is here now :D
 
 uint32_t trap_obj_get_entry_id(uint32_t* bdvalue)
@@ -668,7 +452,7 @@ uint32_t trap_obj_effect_start_bind_other(uint32_t* bdvalue)
 void SOFT_RESET()
 {
     auto _fetchButtons = *YS::HARDPAD::Input;
-    auto _commandPointer = *reinterpret_cast<const char**>(YS::COMMAND_DRAW::pint_commanddraw);
+    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
 
     bool _canReset = _commandPointer != 0x00 && *YS::AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
 
@@ -679,8 +463,8 @@ void SOFT_RESET()
         IS_RESETING = true;
 
         // Initiate the fadeout for BGMs.
-        YS::SOUND::BGMFadeOut(200, 0x00);
-        YS::SOUND::BGMFadeOut(200, 0x01);
+        SOUND::BGMFadeOut(200, 0x00);
+        SOUND::BGMFadeOut(200, 0x01);
 
         // Initiate fade-to-black.
         dk::JUMPEFFECT::Out(0x01);
@@ -730,11 +514,11 @@ void HANDLE_MUSIC()
 
             auto _fetchMode = *YS::AREA::BattleStatus == 0x00 ? 0x00 : 0x01;
 
-            auto _fetchVolumeStart = *reinterpret_cast<uint32_t*>(YS::SOUND::CurrentMusic + 0x04);
-            auto _fetchVolumeFinish = *reinterpret_cast<uint32_t*>(YS::SOUND::CurrentMusic + 0x08);
+            auto _fetchVolumeStart = *reinterpret_cast<uint32_t*>(SOUND::CurrentMusic + 0x04);
+            auto _fetchVolumeFinish = *reinterpret_cast<uint32_t*>(SOUND::CurrentMusic + 0x08);
 
-            auto _fetchCurrentField = *reinterpret_cast<uint16_t*>(YS::SOUND::CurrentMusic);
-            auto _fetchCurrentBattle = *reinterpret_cast<uint16_t*>(YS::SOUND::CurrentMusic + 0x10);
+            auto _fetchCurrentField = *reinterpret_cast<uint16_t*>(SOUND::CurrentMusic);
+            auto _fetchCurrentBattle = *reinterpret_cast<uint16_t*>(SOUND::CurrentMusic + 0x10);
 
             char _fieldMusicPath[0x28];
             char _battleMusicPath[0x28];
@@ -765,22 +549,22 @@ void HANDLE_MUSIC()
                 auto _loadField = YS::FILE::Read(_fieldMusicPath, FIELD_ALLOC);
 
                 if (_fetchMode == 0x00 && _fetchVolumeStart != 0x00)
-                    YS::SOUND::KillBGM(0x00);
+                    SOUND::KillBGM(0x00);
 
-                YS::SOUND::SetTransfer(0x00, 0x02, FIELD_ALLOC, _sizeField, nullptr, nullptr);
+                SOUND::SetTransfer(0x00, 0x02, FIELD_ALLOC, _sizeField, nullptr, nullptr);
                 TRANSFER_FIELD = true;
             }
 
         FIELD_AFTERMATH:
 
-            if (*YS::SOUND::IsTransferActive != 0x00)
+            if (*SOUND::IsTransferActive != 0x00)
                 return;
 
             free(FIELD_ALLOC);
             TRANSFER_FIELD = false;
 
             if (_fetchMode == 0x00 && _fetchVolumeStart != 0x00)
-                YS::SOUND::StartBGM(0x00, 0x3000, 0x3000, 0x00);
+                SOUND::StartBGM(0x00, 0x3000, 0x3000, 0x00);
 
             BATTLE_ALLOC = (char*)malloc(_sizeBattle);
 
@@ -789,22 +573,22 @@ void HANDLE_MUSIC()
                 auto _loadBattle = YS::FILE::Read(_battleMusicPath, BATTLE_ALLOC);
 
                 if (_fetchMode == 0x01 && _fetchVolumeStart != 0x00)
-                    YS::SOUND::KillBGM(0x01);
+                    SOUND::KillBGM(0x01);
 
-                YS::SOUND::SetTransfer(0x01, 0x02, BATTLE_ALLOC, _sizeBattle, nullptr, nullptr);
+                SOUND::SetTransfer(0x01, 0x02, BATTLE_ALLOC, _sizeBattle, nullptr, nullptr);
                 TRANSFER_BATTLE = true;
             }
 
         BATTLE_AFTERMATH:
 
-            if (*YS::SOUND::IsTransferActive != 0x00)
+            if (*SOUND::IsTransferActive != 0x00)
                 return;
 
             free(BATTLE_ALLOC);
             TRANSFER_BATTLE = false;
 
             if (_fetchMode == 0x01 && _fetchVolumeStart != 0x00)
-                YS::SOUND::StartBGM(0x01, 0x3000, 0x3000, 0x00);
+                SOUND::StartBGM(0x01, 0x3000, 0x3000, 0x00);
 
             CURRENT_MUSIC = _fetchMusic;
         }
@@ -882,7 +666,7 @@ void HANDLE_AUDIO()
         {
             if (*YS::MENU::IsMenu)
             {
-                YS::SOUND::StreamAllStop(true);
+                SOUND::StreamAllStop(true);
 
                 auto _fetchSora = *reinterpret_cast<const uint16_t*>(YS::MEMBER_TABLE::MemberTable);
 
@@ -898,7 +682,7 @@ void HANDLE_AUDIO()
                     auto _allocLoad = (char*)malloc(_fetchSize);
                     YS::FILE::Read(_loadBuff, _allocLoad);
 
-                    YS::SOUND::PlayVSB(_allocLoad, _fetchSize, 0x3FAC, 0x00);
+                    SOUND::PlayVSB(_allocLoad, _fetchSize, 0x3FAC, 0x00);
                     QUEUE_VSB = true;
                 }
             }
@@ -913,7 +697,7 @@ void HANDLE_AUDIO()
 
             else if (CURRENT_VSB != 0x0000 && CURRENT_VSB <= 0x0238)
             {
-                if (*YS::SOUND::IsTransferActive != 0x00)
+                if (*SOUND::IsTransferActive != 0x00)
                     return;
 
                 else
@@ -954,7 +738,7 @@ void HANDLE_AUDIO()
                 ALLOCATE_VSB = (char*)malloc(_fetchSize);
 
                 YS::FILE::Read(_loadBuff, ALLOCATE_VSB);
-                YS::SOUND::SetTransfer(CURRENT_VSB - 0x0236, 0x03, ALLOCATE_VSB, _fetchSize, nullptr, nullptr);
+                SOUND::SetTransfer(CURRENT_VSB - 0x0236, 0x03, ALLOCATE_VSB, _fetchSize, nullptr, nullptr);
 
                 return;
             }
@@ -1016,7 +800,7 @@ void ENFORCE_LOCKON()
 
     if (PAST_LOCKON != _fetchTarget && !LOCKON_PLAY)
     {
-        YS::SOUND::PlaySFX(7);
+        SOUND::PlaySFX(7);
         LOCKON_PLAY = true;
     }
 
@@ -1330,15 +1114,15 @@ void AUTOSAVE()
         }
     }
 
-    auto _commandPointer = *reinterpret_cast<const char**>(YS::COMMAND_DRAW::pint_commanddraw);
-    const char* _gaugeTypePointer = CalculatePointer(dk::GAUGE::pint_playergauge, { 0x88 });
-    const char* _mainPointer = *reinterpret_cast<const char**>(YS::EVENT::pint_eventinfo);
+    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
+    auto _gaugeTypePointer = *dk::GAUGE::PlayerGauge ? *reinterpret_cast<char**>(*dk::GAUGE::PlayerGauge + 0x88) : nullptr;
+    auto _mainPointer = *YS::EVENT::Event;
 
-    uint64_t _savePointer = IS_STEAM ? PC::STEAM::pint_saveinformation : PC::EGS::pint_saveinformation;
+    auto _savePointer = IS_STEAM ? PC::STEAM::MareSave : PC::EGS::MareSave;
 
     if (!SYSTEM_WRITTEN)
     {
-        char* _systemInfo = const_cast<char*>(CalculatePointer(_savePointer, { 0x10, 0x10 }));
+        char* _systemInfo = *reinterpret_cast<char**>(*_savePointer + 0x10) + 0x10;
 
         const char* _systemText = "BISLPM-66675FM-SYS";
         uint32_t _systemLength = 0x400;
@@ -1427,7 +1211,7 @@ void AUTOSAVE()
 
         vector<string> _usedSlots;
 
-        char* _saveFilePath = const_cast<char*>(CalculatePointer(_savePointer, { 0x40 }));
+        char* _saveFilePath = *_savePointer + 0x40;
         string _saveFileString(_saveFilePath);
 
         _saveFileString = _saveFileString.append(IS_STEAM ? "\\KHIIFM_WW.png" : "\\KHIIFM.png");
@@ -1446,8 +1230,8 @@ void AUTOSAVE()
         uint32_t _saveInfoStartFILE = 0x1C8;
         uint32_t _saveDataStartFILE = 0x19690;
 
-        char* _saveInfoStartRAM = CalculatePointer(_savePointer, { 0x10, 0x168 });
-        char* _saveDataStartRAM = CalculatePointer(_savePointer, { 0x10, 0x19630 });
+        char* _saveInfoStartRAM = *reinterpret_cast<char**>(*_savePointer + 0x10) + 0x168;
+        char* _saveDataStartRAM = *reinterpret_cast<char**>(*_savePointer + 0x10) + 0x19630;
 
         memcpy(YS::AREA::SaveData + 0x10, &_autoSaveTag, 0x04);
 
@@ -1578,8 +1362,10 @@ void AUTOSAVE()
 
         if (*reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A4) & 0x0004)
         {
-            const char* _saveMessage = YS::MESSAGE::GetData(0x5702);
-            dk::INFORMATION::openInformationWindow(_saveMessage);
+            // const char* _saveMessage = YS::MESSAGE::GetData(0x5702);
+            // dk::INFORMATION::openInformationWindow(_saveMessage);
+
+            YS::SAVE_INDICATOR::create(NEGATIVE_ASPECT_OFFSET);
         }
 
         SAVE_INITIATE = false;
@@ -1675,7 +1461,7 @@ void REGISTER_MAGIC()
                 auto _loadBAR = (char*)malloc(_fetchSize);
 
                 // If the magic file can load (Meaning it exists and we have allocated the memory successfully):
-                if (YS::FILE::LoadBAR(_currentTable->Filename, _loadBAR) != 0x00)
+                if (YS::FILE::ReadBAR(_currentTable->Filename, _loadBAR) != 0x00)
                 {
                     // Denote the address of the loaded file for future handling.
                     MAGIC_FILES[i] = _loadBAR;
@@ -1732,19 +1518,16 @@ void REGISTER_MAGIC()
 void REGISTER_ABILITY()
 {
     // Fetch the presence of Sora's Gauge [Edge Case for 100 Acre Woods minigames.]
-    auto _soraGauge = CalculatePointer(dk::GAUGE::pint_playergauge, { 0x88, 0x00 });
+    auto _soraGauge = *dk::GAUGE::PlayerGauge ? *reinterpret_cast<char**>(*dk::GAUGE::PlayerGauge + 0x88) : nullptr;
 
     // See if there is specifically a Cutscene playing.
-    auto _eventPointer = *reinterpret_cast<const char**>(YS::EVENT::pint_eventinfo);
+    bool _isCutscene = *YS::EVENT::Event && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xCAFEEFAC
+                                         && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xEFACCAFE;
 
-    auto _fetchEvent = CalculatePointer(YS::EVENT::pint_eventinfo, { 0x04 });
-    bool _isCutscene = _fetchEvent != 0x00 && *reinterpret_cast<const uint32_t*>(_fetchEvent) != 0xCAFEEFAC &&
-                       *reinterpret_cast<const uint32_t*>(_fetchEvent) != 0xEFACCAFE;
-
-    auto _commandPointer = *reinterpret_cast<const char**>(YS::COMMAND_DRAW::pint_commanddraw);
+    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
 
     // If the game is loaded:
-    if (*YS::AREA::IsInMap && _commandPointer != 0x00 && _soraGauge != 0x00 && !_isCutscene && _eventPointer == 0x00)
+    if (*YS::AREA::IsInMap && _commandPointer != 0x00 && _soraGauge != 0x00 && !_isCutscene)
     {
         // If  the ability denotation is not initialized:
         if (ABILITY_ARRAY.size() == 0x00)
@@ -1789,20 +1572,17 @@ void REGISTER_ABILITY()
 void SHOW_INFORMATION()
 {
     // Fetch the presence of Sora's Gauge [Edge Case for 100 Acre Woods minigames.]
-    auto _soraGauge = CalculatePointer(dk::GAUGE::pint_playergauge, { 0x88, 0x00 });
+    auto _soraGauge = *dk::GAUGE::PlayerGauge ? *reinterpret_cast<char**>(*dk::GAUGE::PlayerGauge + 0x88) : nullptr;
 
-    auto _commandPointer = *reinterpret_cast<const char**>(YS::COMMAND_DRAW::pint_commanddraw);
+    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
     auto _reactionCommand = *reinterpret_cast<const uint16_t*>(YS::COMMAND_ELEM::ReactionID);
 
     // See if there is specifically a Cutscene playing.
-    auto _eventPointer = *reinterpret_cast<const char**>(YS::EVENT::pint_eventinfo);
-
-    auto _fetchEvent = CalculatePointer(YS::EVENT::pint_eventinfo, { 0x04 });
-    bool _isCutscene = _eventPointer != nullptr && _fetchEvent != 0x00 && *reinterpret_cast<const uint32_t*>(_fetchEvent) != 0xCAFEEFAC &&
-                                                                          *reinterpret_cast<const uint32_t*>(_fetchEvent) != 0xEFACCAFE;
+    bool _isCutscene = *YS::EVENT::Event && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xCAFEEFAC
+                                         && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xEFACCAFE;
 
     // If the game is loaded, and there isn't a menu present, and it's not a cutscene:
-    if (*YS::AREA::IsInMap && _commandPointer != 0x00 && !*YS::MENU::IsMenu && !_isCutscene && _soraGauge != 0x00 && _eventPointer == 0x00)
+    if (*YS::AREA::IsInMap && _commandPointer != 0x00 && !*YS::MENU::IsMenu && !_isCutscene && _soraGauge != 0x00)
     {
         // Fetch the fade status and the enable line.
         auto _fetchFade = *(dk::JUMPEFFECT::FadeStatus + 0x108);
@@ -1853,10 +1633,10 @@ void SHOW_INFORMATION()
 void PROCESS_DEATH()
 {
     // Fetch the presence of Sora's Gauge [Edge Case for 100 Acre Woods minigames.]
-    auto _soraGauge = CalculatePointer(dk::GAUGE::pint_playergauge, { 0x88, 0x00 });
+    auto _soraGauge = *dk::GAUGE::PlayerGauge ? *reinterpret_cast<char**>(*dk::GAUGE::PlayerGauge + 0x88) : nullptr;
 
     // Fetch Sora's pointer as well as his UCM.
-    auto _soraSelf = *reinterpret_cast<const uint64_t*>(YS::SORA::pint_sora);
+    auto _soraSelf = *YS::SORA::Sora;
     auto _fetchSora = *reinterpret_cast<const uint16_t*>(YS::MEMBER_TABLE::MemberTable);
 
     // If Sora's HP is 0, and he isn't Mermaid Sora, and his gauge is present, and he isn't dead:
@@ -2002,8 +1782,8 @@ void HANDLE_ASPECT()
 
         memcpy(INFORMATION_OFFSET + 0x0B, &_offsetInformation, 0x02);
 
-        auto _eventPointer = *reinterpret_cast<const char**>(YS::EVENT::pint_eventinfo);
-        auto _commandPointer = *reinterpret_cast<const char**>(YS::COMMAND_DRAW::pint_commanddraw);
+        auto _eventPointer = *YS::EVENT::Event;
+        auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
 
         if ((_commandPointer == 0x00 || _eventPointer != 0x00 || !*YS::AREA::IsInMap) && POSITIVE_ASPECT_OFFSET != 0x55)
         {
@@ -2069,8 +1849,8 @@ void RETRY_BATTLES()
     if (!_checkBlacklist)
     {
         // Check if we are in a cutscene.
-        const char* _eventPointer = CalculatePointer(YS::EVENT::pint_eventinfo, { 0x04 });
-        bool _isCutscene = _eventPointer != 0x00 && *reinterpret_cast<const uint32_t*>(_eventPointer) != 0xCAFEEFAC && *reinterpret_cast<const uint32_t*>(_eventPointer) != 0xEFACCAFE;
+        bool _isCutscene = *YS::EVENT::Event && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xCAFEEFAC
+                                             && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xEFACCAFE;
 
         // If not in a cutscene, and is in a Boss Battle, and Retry State is not denoted:
         if (!_isCutscene && *YS::AREA::BattleStatus == 0x02 && RETRY_STATE.size() == 0x00)
@@ -2173,12 +1953,10 @@ void RETRY_BATTLES()
             }
         }
 
-        // Fetch the current dialog state (Necessary for Game Over screen.)
-        auto _fetchDialog = CalculatePointer(YS::MENU::pint_dialogbase, { 0xD48 });
 
         // Fetch Menu selection and the pointer to the Game Over screen.
-        uint8_t _fetchSelectMenu = _fetchDialog != 0x00 ? *_fetchDialog : 0x80;
-        uint64_t _continuePoint = *reinterpret_cast<const uint64_t*>(YS::MENU::pint_gameover);
+        uint8_t _fetchSelectMenu = *YS::MENU::DialogBase ? (*(*YS::MENU::DialogBase + 0xD48) ? *(*YS::MENU::DialogBase + 0xD48) : 0x80) : 0x80;
+        char* _continuePoint = *YS::MENU::GameOver;
 
         // If the Game Over menu exists and the Retry State has been noted:
         if (_continuePoint != 0x00 && RETRY_STATE.size() != 0x00)
@@ -2240,7 +2018,7 @@ void PROCESS_FORM_KEYBLADES()
 {
     if (*YS::MENU::IsMenu && *YS::MENU::SubMenuType == 0x02 && *CURRENT_SUBMENU == 0x00 && *YS::HARDPAD::Input & 0x1000 && !KEYBLADE_DEBOUNCE)
     {
-        auto _fetchSelect = *reinterpret_cast<uint8_t**>(YS::MENU::pint_suboptionselect);
+        auto _fetchSelect = *YS::MENU::SubOptionSel;
 
         // Calculate the maximum selection we can make.
         auto _calculateForms = YS::ITEM::GetNumBackyard(0x001A) + YS::ITEM::GetNumBackyard(0x001D) + YS::ITEM::GetNumBackyard(0x001F);
@@ -2295,7 +2073,7 @@ void PROCESS_FORM_KEYBLADES()
 
                 ITEM_COMMIT();
 
-                YS::SOUND::PlaySFX(0x02);
+                SOUND::PlaySFX(0x02);
 
                 PENDING_KEYBLADE_UPDATE = true;
             }
@@ -2479,53 +2257,6 @@ extern "C"
 
         memcpy(_funcCheckWeapon - 0x0B, _secondPatchPax.data(), 0x09);
 
-        // Redirect MDLX and APDX file construction (within YS::OBJENTRY::GetCacheBuffStatus) to [YS::OBJENTRY::get_mdlx] and [YS::OBJENTRY::get_apdx] instead.
-
-        vector<uint8_t> _instructionREPLACE =
-        {
-            0x48, 0x8D, 0x0E,               // lea rcx, [rsi/r15]
-            0x48, 0x31, 0xD2,               // xor rdx, rdx
-            0xE8, 0x00, 0x00, 0x00, 0x00,   // call [someFunction]
-            0x48, 0x31, 0xC0                // xor rax, rax
-        };
-
-        auto _getCacheBuffStatusMDLX = SignatureScan<char*>("\x4C\x8D\x46\x08\x48\x8D\x15\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x85\xC0\x74\x00\xE8\x00\x00\x00\x00", "xxxxxxx????xxx????x????x????xxx?x????");
-        uint32_t _calculateGetMDLX = _addrGetMDLX - (_getCacheBuffStatusMDLX + 0x0B);
-        
-        fill(_getCacheBuffStatusMDLX, _getCacheBuffStatusMDLX + 0x56, 0x90);
-
-        memcpy(_instructionREPLACE.data() + 0x07, &_calculateGetMDLX, 0x04);
-        memcpy(_getCacheBuffStatusMDLX, _instructionREPLACE.data(), _instructionREPLACE.size());
-
-        auto _getCacheBuffStatusAPDX = _getCacheBuffStatusMDLX + 0xDA;
-        uint32_t _calculateGetAPDX = _addrGetAPDX - (_getCacheBuffStatusAPDX + 0x0B);
-
-        fill(_getCacheBuffStatusAPDX, _getCacheBuffStatusAPDX + 0x62, 0x90);
-
-        memcpy(_instructionREPLACE.data() + 0x07, &_calculateGetAPDX, 0x04);
-        memcpy(_getCacheBuffStatusAPDX, _instructionREPLACE.data(), _instructionREPLACE.size());
-
-        // Redirect MDLX and APDX file construction (within YS::OBJENTRY::ReadRequestSub) to [YS::OBJENTRY::get_mdlx] and [YS::OBJENTRY::get_apdx] instead.
-
-        auto _readRequestSubMDLX = SignatureScan<char*>("\x4D\x8D\x47\x08\x48\x8D\x15\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x85\xC0\x74\x00\xE8\x00\x00\x00\x00", "xxxxxxx????xxx????x????x????xxx?x????");
-        _calculateGetMDLX = _addrGetMDLX - (_readRequestSubMDLX + 0x0B);
-
-        _instructionREPLACE[0] += 0x01;
-        _instructionREPLACE[2] += 0x01;
-
-        fill(_readRequestSubMDLX, _readRequestSubMDLX + 0x56, 0x90);
-
-        memcpy(_instructionREPLACE.data() + 0x07, &_calculateGetMDLX, 0x04);
-        memcpy(_readRequestSubMDLX, _instructionREPLACE.data(), _instructionREPLACE.size());
-        
-        auto _readRequestSubAPDX = _readRequestSubMDLX + 0xCA;      
-        _calculateGetAPDX = _addrGetAPDX - (_readRequestSubAPDX + 0x0B);
-
-        fill(_readRequestSubAPDX, _readRequestSubAPDX + 0x62, 0x90);
-
-        memcpy(_instructionREPLACE.data() + 0x07, &_calculateGetAPDX, 0x04);
-        memcpy(_readRequestSubAPDX, _instructionREPLACE.data(), _instructionREPLACE.size());
-
         vector<uint8_t> _absoluteInstructionJMP =
         {
             0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
@@ -2593,23 +2324,9 @@ extern "C"
         memcpy(_hotpatchNullTask + 0x17, "\xEB\x22\x89\x01\xC3", 0x05);
         memcpy(_hotpatchNullTask + 0x3B, "\x83\xFA\x04\x74\xDB\x8B\x02\xEB\xD5", 0x09);
 
-        // Redirect all [YS::OBJENTRY::get_mdlx], [YS::OBJENTRY::get_apdx], and [YS::OBJENTRY::get_mset] calls to Re:Fined code.
-
-        fill(_addrGetMDLX, _addrGetMDLX + 0x71, 0x90);
-        fill(_addrGetAPDX, _addrGetAPDX + 0x92, 0x90);
-        fill(_addrGetMSET, _addrGetMSET + 0xE3, 0x90);
-
-        for (int i = 0; i < 3; i++)
-        {
-            auto _constFunction = i == 1 ? (uint64_t)ConstructAPDX : (i == 2 ? (uint64_t)ConstructMSET : (uint64_t)ConstructMDLX);
-            auto _constWrite = i == 1 ? _addrGetAPDX : (i == 2 ? _addrGetMSET : _addrGetMDLX);
-
-            memcpy(_absoluteInstructionJMP.data() + 0x06, &_constFunction, 0x08);
-            memcpy(_constWrite, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-        }
-
         // Redirect ITEMPIC and FAC file construction to Re:Fined code.
 
+        /*
         auto _funcOpenEventBox = SignatureScan<char*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx") + 0x6F;
         auto _funcReadThreadIMD = SignatureScan<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x") + 0x7D;
         auto _funcReadThreadFAC = SignatureScan<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x") + 0x231;
@@ -2664,25 +2381,7 @@ extern "C"
         memcpy(_patchThreadFAC.data() + 0x0B, &_constFunction, 0x08);
         memcpy(_funcReadThreadFAC, _patchThreadFAC.data(), _patchThreadFAC.size());
 
-        // Redirect BGM file construction to Re:Fined code.
-
-        auto _constrcutBGM = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x80\x3D\x00\x00\x00\x00\x0D\x8B\xD9\x75\x00\x83\xF9\x75\xBB\x05\x02\x00\x00\xB8\x09\x02\x00\x00\x0F\x45", "xxxxxxxx????xxxx?xxxxxxxxxxxxxxx");
-        _constFunction = reinterpret_cast<uint64_t>(ConstructBGM);
-
-        fill(_constrcutBGM, _constrcutBGM + 0x78, 0x90);
-
-        memcpy(_absoluteInstructionJMP.data() + 0x06, &_constFunction, 0x08);
-        memcpy(_constrcutBGM, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-        
-        // Redirect "file/%s/%s" and "menu/%s/%s" construction to Re:Fined code.
-
-        auto _constructMENU = SignatureScan<char*>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx");
-        _constFunction = reinterpret_cast<uint64_t>(ConstructMENU);
-
-        fill(_constructMENU, _constructMENU + 0x191, 0x90);
-
-        memcpy(_absoluteInstructionJMP.data() + 0x06, &_constFunction, 0x08);
-        memcpy(_constructMENU, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+        */
 
         // This code addresses an issue with PARTY_LIMIT crashing the game at the end of a fight.
 
@@ -2898,13 +2597,13 @@ extern "C"
             *reinterpret_cast<uint64_t*>(dk::NEXT_FORM::instance) = reinterpret_cast<uint64_t>(dk::NEXT_FORM::VTABLE_CLASS);
             *reinterpret_cast<uint64_t*>(dk::NEXT_FORM::instance + 0x38) = reinterpret_cast<uint64_t>(dk::NEXT_FORM::VTABLE_SPRITE);
 
-            YI::SEQUENCE::CreateNew(dk::NEXT_FORM::instance + 0x58);
+            YI::SEQUENCE::_SEQUENCE(dk::NEXT_FORM::instance + 0x58);
 
             char* _seqdChain = dk::NEXT_FORM::instance + 0x230;
 
             for (int i = 0; i < 7; i++)
             {
-                YI::SEQUENCE::CreateNew(_seqdChain);
+                YI::SEQUENCE::_SEQUENCE(_seqdChain);
                 _seqdChain += 0x1A0;
             }
 
@@ -3029,100 +2728,6 @@ extern "C"
                     RedirectLEA(_patchShopfaceSecond + 0x83, _structOffset + 0x08);
                 }
             }
-
-            #ifdef BUILD_EXPERIMENTAL
-            // If "00helpimage.bin" exists, patch all HELPIMAGE functions to use the file instead.
-            if (YS::FILE::GetSize("00helpimage.bin"))
-            {
-                vector<char*> _patchHelpImage
-                {
-                    SignatureScan<char*>("\x40\x53\x57\x41\x57\x48\x83\xEC\x50\x48\x8B\x0D\x00\x00\x00\x00\x48\x81\xC1\x40\x05\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxx????xxxxxxxx????"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x20\x8B\xF1\xE8\x00\x00\x00\x00\x48\x8B\x15\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\x48\x8B\xE8\x4C\x8D\x35\x00\x00\x00\x00\x33\xC0", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx????xxx????xxxxxx????xx"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x48\x63\xFA\x48\x8D\x2D\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx????"),
-                    SignatureScan<char*>("\x48\x83\xEC\x28\x4C\x8B\x05\x00\x00\x00\x00\x49\x0F\xBE\x50\x0E\x41\x0F\xBE\x48\x0D\x8D\x42\x01\x3B\xC1\x7C\x23\x48\x8B\x0D\x00\x00\x00\x00\xBA\x14\x00\x00\x00", "xxxxxxx????xxxxxxxxxxxxxxxxxxxx????xxxxx"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x20\x40\x32\xF6\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x48\x89\x74\x24\x20\x57\x48\x81\xEC\xD0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\xC0\x00\x00\x00\x33\xC9\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxx????"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x0F\xB7\x0D\x00\x00\x00\x00\x4C\x8D\x35\x00\x00\x00\x00\x33\xFF", "xxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx????xxx????xx"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x8B\xF9\x48\x8D\x1D\x00\x00\x00\x00\x83\xFF\xFF\x74\x08\x0F\xB6\x43\x02\x3B\xC7\x75\x0C\x0F\xB7\x0B\xE8\xC8\x34\x03\x00\x84\xC0\x75\x17", "xxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxx"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x50\x48\x8B\x0D\x00\x00\x00\x00\x48\x81\xC1\x20\x03\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxx????xxxxxxxx????"),
-                    SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x20\x8B\xF1\x8B\xDA\xB1\x01\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????"),
-                };
-
-                char* _allocHelpimage = (char*)malloc(YS::FILE::GetSize("00helpimage.bin"));
-                auto _readHelpimage = YS::FILE::Read("00helpimage.bin", _allocHelpimage);
-
-                if (_readHelpimage != 0x00)
-                {
-                    uint8_t _structCount = *_allocHelpimage;
-                    uint8_t _stringCount = *(_allocHelpimage + 0x08);
-
-                    uint32_t _structStart = *reinterpret_cast<uint32_t*>(_allocHelpimage + 0x04);
-                    uint32_t _stringStart = *reinterpret_cast<uint32_t*>(_allocHelpimage + 0x0C);
-
-                    YS::PANACEA_ALLOC::Allocate("HELPIMAGE_STRUCT", 0x10 * _structCount);
-                    YS::PANACEA_ALLOC::Allocate("HELPIMAGE_STRING", 0x04 * _stringCount);
-                    YS::PANACEA_ALLOC::Allocate("HELPIMAGE_FNAMES", 0x10 * _structCount);
-
-                    for (int i = 0; i < _structCount; i++)
-                    {
-                        auto _namePtr = _allocHelpimage + _structStart + (0x10 * i);
-                        auto _structPtr = reinterpret_cast<uint32_t*>(_allocHelpimage + _structStart + 0x0C + (0x10 * i));
-
-                        auto _fileNamePtr = reinterpret_cast<uint64_t>(YS::PANACEA_ALLOC::Get("HELPIMAGE_FNAMES") + 0x10 * i);
-
-                        memcpy(YS::PANACEA_ALLOC::Get("HELPIMAGE_FNAMES") + 0x10 * i, _namePtr, 0x0C);
-
-                        memcpy(YS::PANACEA_ALLOC::Get("HELPIMAGE_STRUCT") + 0x10 * i, &_fileNamePtr, 0x08);
-                        memcpy(YS::PANACEA_ALLOC::Get("HELPIMAGE_STRUCT") + 0x10 * i + 0x08, _structPtr, 0x04);
-                    }
-
-                    for (int i = 0; i < _stringCount; i++)
-                    {
-                        auto _stringPtr = reinterpret_cast<uint16_t*>(_allocHelpimage + _stringStart + (0x02 * i));
-                        memcpy(YS::PANACEA_ALLOC::Get("HELPIMAGE_STRING") + 0x02 * i, _stringPtr, 0x02);
-                    }
-
-                    char* _startAddr = const_cast<char*>(moduleInfo.startAddr);
-                    char* _getStructPtr = YS::PANACEA_ALLOC::Get("HELPIMAGE_STRUCT");
-
-                    uint32_t _structOffset = static_cast<uint32_t>(YS::PANACEA_ALLOC::Get("HELPIMAGE_STRUCT") - _startAddr);
-                    uint32_t _stringOffset = static_cast<uint32_t>(YS::PANACEA_ALLOC::Get("HELPIMAGE_STRING") - _startAddr);
-
-                    RedirectLEA(_patchHelpImage[9] + 0x03A, _getStructPtr);
-                    RedirectLEA(_patchHelpImage[9] + 0x053, _getStructPtr + 0x08);
-
-                    RedirectLEA(_patchHelpImage[0] + 0x0A0, _getStructPtr);
-                    RedirectLEA(_patchHelpImage[1] + 0x032, _getStructPtr);
-                    RedirectLEA(_patchHelpImage[3] + 0x045, _getStructPtr);
-                    RedirectLEA(_patchHelpImage[4] + 0x024, _getStructPtr);
-
-                    RedirectLEA(_patchHelpImage[1] + 0x028, _getStructPtr + 0x08);
-                    RedirectLEA(_patchHelpImage[6] + 0x026, _getStructPtr + 0x08);
-                    RedirectLEA(_patchHelpImage[7] + 0x00C, _getStructPtr + 0x08);
-
-                    RedirectMOVZX(_patchHelpImage[5] + 0x171, _getStructPtr + 0x08);
-                    RedirectMOVZX(_patchHelpImage[6] + 0x01F, _getStructPtr + 0x08);
-                    RedirectMOVZX(_patchHelpImage[4] + 0x030, _getStructPtr + 0x08);
-                    RedirectMOVZX(_patchHelpImage[4] + 0x05A, _getStructPtr + 0x08);
-
-                    memcpy(_patchHelpImage[8] + 0x1DE + 0x04, &_stringOffset, 0x04);
-                    memcpy(_patchHelpImage[2] + 0x099 + 0x04, &_structOffset, 0x04);
-
-                    auto _offsetCalc01 = _structOffset + 0x08;
-                    memcpy(_patchHelpImage[5] + 0x1B5 + 0x04, &_offsetCalc01, 0x04);
-
-                    auto _offsetCalc02 = _structOffset + 0x0A;
-                    memcpy(_patchHelpImage[5] + 0x101 + 0x03, &_offsetCalc02, 0x04);
-                    memcpy(_patchHelpImage[5] + 0x3F6 + 0x03, &_offsetCalc02, 0x04);
-                    memcpy(_patchHelpImage[8] + 0x1D6 + 0x04, &_offsetCalc02, 0x04);
-                    memcpy(_patchHelpImage[5] + 0x0F9 + 0x04, &_offsetCalc02, 0x04);
-                    memcpy(_patchHelpImage[5] + 0x3EA + 0x05, &_offsetCalc02, 0x04);
-
-                    _offsetCalc02++;
-                    memcpy(_patchHelpImage[2] + 0x029 + 0x04, &_offsetCalc02, 0x04);
-                }
-            }
-            #endif
 
             static Tz::HookConfig::Entry _musicConfig{ 0x01, 0x5718, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 } };
             static Tz::HookConfig::Entry _resourceConfig{ 0x01, 0x571F, vector<uint16_t>{ 0x573A }, vector<uint16_t>{ 0x573B }, vector<uint16_t>{ 0x0000 } };
@@ -3462,6 +3067,7 @@ extern "C"
 
             #endif
 
+
             INITIALIZED = true;
         }
     
@@ -3479,8 +3085,6 @@ extern "C"
             for (auto _execPair : _execModule)
                 _execPair.second();
             #endif
-
-
         }
     }
 }

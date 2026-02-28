@@ -15,8 +15,8 @@ extern "C"
 			using Get_t = uint32_t(*)();
 			static Get_t Get;
 
-			static uint64_t* pint_region;
-			static uint64_t* pint_region_default;
+			static char** Region;
+			static char** DefaultRegion;
 		};
 	}
 }

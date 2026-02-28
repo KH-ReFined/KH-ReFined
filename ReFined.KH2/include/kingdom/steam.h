@@ -19,7 +19,7 @@ extern "C"
 			static FetchMareConfig_t FetchMareConfig;
 
 			static char* MareConfig;
-			static uint64_t pint_saveinformation;
+			static char** MareSave;
 		};
 	}
 }

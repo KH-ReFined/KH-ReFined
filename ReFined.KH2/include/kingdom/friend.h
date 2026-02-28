@@ -14,4 +14,14 @@ extern "C"
 			static uint64_t pint_friend;
 		};
 	}
+
+	namespace kn
+	{
+		class DLL_EXPORT Friend
+		{
+		public:
+			using equippedAbility_t = bool(*)(char* obj, int abilityID, int abilityItemID);
+			static equippedAbility_t equippedAbility;
+		};
+	}
 }

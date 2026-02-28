@@ -261,6 +261,30 @@
     <ClInclude Include="include\kingdom\task.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\kingdom\binarc.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\cmdata.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\image.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\image_cache.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\save_indicator.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\enemy.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\obj.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\saveram_battle.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\discord\activity_manager.cpp">
@@ -486,6 +510,30 @@
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
     <ClCompile Include="src\kingdom\task.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\binarc.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\cmdata.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\image.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\image_cache.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\save_indicator.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\enemy.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\obj.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\saveram_battle.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
   </ItemGroup>

@@ -104,15 +104,14 @@ void YS::PARTY::ChangeWeapon(char* task, int part, bool hand_secondary, int item
 			for (int _charIterator = 0; _charIterator <= 3; _charIterator++)
 			{
 				if (_charIterator == 0x03 && _currentStack[0] == 0x01)
-					_charPtr = *reinterpret_cast<char**>(YS::SORA::pint_sora);
+					_charPtr = *YS::SORA::Sora;
 
 				// Else, break out. We will parse the character we need another way.
 				else if (_charIterator == 0x03)
 					break;
 
 				// Fetch the pointer in which the party member is initialized.
-				_charPtr = _charIterator == 0x00 ? *reinterpret_cast<char**>(YS::SORA::pint_sora) :
-					*reinterpret_cast<char**>(YS::FRIEND::pint_friend + 0x08 * (_charIterator - 1));
+				_charPtr = _charIterator == 0x00 ? *YS::SORA::Sora : *reinterpret_cast<char**>(YS::FRIEND::pint_friend + 0x08 * (_charIterator - 1));
 
 				// If the pointer does not exist, kindly continue.
 				if (_charPtr == nullptr)
@@ -246,9 +245,9 @@ void YS::PARTY::ChangeWeapon(char* task, int part, bool hand_secondary, int item
 					}
 
 					if (*ACTIVE_VOICE_COUNT == 0x0F)
-						YS::SOUND::StreamAllStop(true);
+						SOUND::StreamAllStop(true);
 
-					YS::SOUND::PlayVSB(ALLOC_VSB, _sizeVSB, 0x3FAC, 0x00);
+					SOUND::PlayVSB(ALLOC_VSB, _sizeVSB, 0x3FAC, 0x00);
 				}
 			}
 

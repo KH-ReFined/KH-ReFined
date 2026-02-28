@@ -15,8 +15,8 @@ extern "C"
 			using GetSize_t = size_t(*)(const char* fileName);
 			static GetSize_t GetSize;
 
-			using LoadBAR_t = size_t(*)(const char* fileName, char* address);
-			static LoadBAR_t LoadBAR;
+			using ReadBAR_t = size_t(*)(const char* fileName, char* address);
+			static ReadBAR_t ReadBAR;
 
 			using Read_t = size_t(*)(const char* fileName, char* address);
 			static Read_t Read;

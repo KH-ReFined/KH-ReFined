@@ -17,6 +17,8 @@ extern "C"
 			static setNum_t setNum;
 			static create_t create;
 			static setPos_t setPos;
+
+			static void _Sprite(char* self);
 		};
 	}
 }

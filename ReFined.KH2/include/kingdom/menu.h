@@ -25,13 +25,13 @@ extern "C"
 
 			static uint8_t* CampOptions;
 
-			static uint64_t pint_config;
-			static uint64_t pint_gameover;
-			static uint64_t pint_camp2ld;
-			static uint64_t pint_suboptionselect;
-			static uint64_t pint_dialogbase;
+			static char** Config;
+			static char** GameOver;
+			static char** Camp2LD;
+			static char** SubOptionSel;
+			static char** DialogBase;
 
-			static uint64_t pint_jiminymenu;
+			static char** Jiminy;
 		};
 	}
 }

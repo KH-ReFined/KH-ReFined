@@ -1,6 +1,6 @@
 #include "region.h"
 
-YS::REGION::Get_t YS::REGION::Get = ResolveFunctionFromCall<YS::REGION::Get_t>("\x40\x57\x48\x83\xEC\x20\x0F\xB6\x41\x48", "xxxxxxxxxx", 0x2E);
+YS::REGION::Get_t YS::REGION::Get = ResolveFunctionFromCall<YS::REGION::Get_t>("\x40\x53\x48\x83\xEC\x30\x48\x83\x79\x40\x00\x48\x8B\xD9\x75\x28", "xxxxxxxxxxxxxxxx", 0x3F);
 
-uint64_t* YS::REGION::pint_region = ResolveRelativeAddress<uint64_t*>("\x40\x57\x48\x83\xEC\x20\x0F\xB6\x41\x48", "xxxxxxxxxx", 0x44);
-uint64_t* YS::REGION::pint_region_default = ResolveRelativeAddress<uint64_t*>("\x40\x57\x48\x83\xEC\x20\x0F\xB6\x41\x48", "xxxxxxxxxx", 0x44) - 0x08;
+char** YS::REGION::Region = ResolveRelativeAddress<char**>("\x83\xF9\x07\x0F\x87\xDC\x00\x00\x00\x48\x63\xC1", "xxxxxxxxxxxx", 0x37);
+char** YS::REGION::DefaultRegion = ResolveRelativeAddress<char**>("\x83\xF9\x07\x0F\x87\xDC\x00\x00\x00\x48\x63\xC1", "xxxxxxxxxxxx", 0x29);

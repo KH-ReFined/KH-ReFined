@@ -14,7 +14,7 @@ extern "C"
 		class DLL_EXPORT EVENT
 		{
 		public:
-			static uint64_t pint_eventinfo;
+			static char** Event;
 		};
 	}
 

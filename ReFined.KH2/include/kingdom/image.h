@@ -1,0 +1,26 @@
+#pragma once
+
+#define DLL_EXPORT __declspec(dllexport)
+
+#include <cstdint>
+#include <Windows.h>
+#include <SigScan.h>
+
+extern "C"
+{
+	namespace YI
+	{
+		class DLL_EXPORT IMAGE
+		{
+		public:
+			using IMAGE_t = void(*)(char* imageBuff);
+			static IMAGE_t _IMAGE;
+
+			using Init_t = void(*)(char* imageBuff, char* imd);
+			static Init_t Init;
+
+			using InitLoadImage_t = void(*)(char* imageBuff);
+			static InitLoadImage_t InitLoadImage;
+		};
+	}
+}

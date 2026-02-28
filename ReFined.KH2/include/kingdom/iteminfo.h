@@ -16,6 +16,8 @@ extern "C"
 
 			using MakeMsgTbl_t = void(*)(char* itemInfo, int pos, int max);
 			static MakeMsgTbl_t MakeMsgTbl;
+
+			static char** ItemInfoPtr;
 		};
 	}
 }

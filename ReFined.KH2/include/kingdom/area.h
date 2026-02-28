@@ -49,7 +49,7 @@ extern "C"
 			static char* BattleStatus;
 			static char* IsVendor;
 
-			static uint64_t pint_enemyinfo;
+			static char** EnemyData;
 		};
 	}
 }

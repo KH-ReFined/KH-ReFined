@@ -13,8 +13,8 @@ extern "C"
 			using Init_t = void(*)();
 			static Init_t Init;
 
-			static uint64_t pint_playergauge;
-			static uint64_t pint_friendgauge;
+			static char** PlayerGauge;
+			static char** FriendGauge;
 		};
 	}
 }

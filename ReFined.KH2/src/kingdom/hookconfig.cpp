@@ -30,17 +30,18 @@ vector<char*> Tz::HookConfig::CONFIG_OFFSETS = vector<char*>
 #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE) && !defined(BUILD_NMC)
 vector<Tz::HookConfig::Entry> Tz::HookConfig::Entries = vector<Tz::HookConfig::Entry>
 {
-	Tz::HookConfig::Entry { 0x02, 0xB717, vector<uint16_t> { 0xB71E, 0xB71F }, vector<uint16_t> { 0xB720, 0xB721 }, vector<uint16_t> { 0x0000, 0x0010 }, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x02, 0xB718, vector<uint16_t> { 0xB722, 0xB723 }, vector<uint16_t> { 0xB724, 0xB725 }, vector<uint16_t> { 0x0000, 0x0020 }, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x02, 0xC2F5, vector<uint16_t> { 0xC2F8, 0xC2F9 }, vector<uint16_t> { 0xC2FA, 0xC2FB }, vector<uint16_t> { 0x0000, 0x0100 }, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x02, 0xC2F6, vector<uint16_t> { 0xC2FC, 0xC2FD }, vector<uint16_t> { 0xC2FE, 0xC2FF }, vector<uint16_t> { 0x0000, 0x0080 }, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x03, 0xC2F7, vector<uint16_t> { 0xC302, 0xC300, 0xC301 }, vector<uint16_t> { 0xC305, 0xC303, 0xC304 }, vector<uint16_t> { 0x0200, 0x0400, 0x0000}, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x02, 0xB719, vector<uint16_t> { 0xB726, 0xB727 }, vector<uint16_t> { 0xB728, 0xB729 }, vector<uint16_t> { 0x0008, 0x0000 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xB717, vector<uint16_t> { 0xB71E, 0xB71F },		   vector<uint16_t> { 0xB720, 0xB721 },			vector<uint16_t> { 0x0000, 0x0010 },		 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xB718, vector<uint16_t> { 0xB722, 0xB723 },		   vector<uint16_t> { 0xB724, 0xB725 },			vector<uint16_t> { 0x0000, 0x0020 },		 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xC2F5, vector<uint16_t> { 0xC2F8, 0xC2F9 },		   vector<uint16_t> { 0xC2FA, 0xC2FB },			vector<uint16_t> { 0x0000, 0x0100 },	 	 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xC2F6, vector<uint16_t> { 0xC2FC, 0xC2FD },		   vector<uint16_t> { 0xC2FE, 0xC2FF },			vector<uint16_t> { 0x0000, 0x0080 },		 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x03, 0xC2F7, vector<uint16_t> { 0xC302, 0xC300, 0xC301 }, vector<uint16_t> { 0xC305, 0xC303, 0xC304 }, vector<uint16_t> { 0x0200, 0x0400, 0x0000},  0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xB719, vector<uint16_t> { 0xB726, 0xB727 },		   vector<uint16_t> { 0xB728, 0xB729 },			vector<uint16_t> { 0x0008, 0x0000 },		 0x0000, nullptr },
 	Tz::HookConfig::Entry { 0x03, 0x5704, vector<uint16_t> { 0x5705, 0x5707, 0x5709 }, vector<uint16_t> { 0x5706, 0x5708, 0x570A }, vector<uint16_t> { 0x0004, 0x0002, 0x0000 }, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x02, 0x5722, vector<uint16_t> { 0x5723, 0x5725 }, vector<uint16_t> { 0x5724, 0x5726 }, vector<uint16_t> { 0x2000, 0x0010 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0x5722, vector<uint16_t> { 0x5723, 0x5725 },		   vector<uint16_t> { 0x5724, 0x5726 },			vector<uint16_t> { 0x2000, 0x0010 },		 0x0000, nullptr },
 	Tz::HookConfig::Entry { 0x03, 0x5754, vector<uint16_t> { 0x5755, 0x5756, 0x5757 }, vector<uint16_t> { 0x5758, 0x5759, 0x575A }, vector<uint16_t> { 0x4000, 0x8000, 0x0000 }, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x02, 0xB71A, vector<uint16_t> { 0xB72A, 0xB752 }, vector<uint16_t> { 0xB72C, 0xB72D }, vector<uint16_t> { 0x0001, 0x0000 }, 0x0000, nullptr },
+	Tz::HookConfig::Entry { 0x02, 0xB71A, vector<uint16_t> { 0xB72A, 0xB752 },		   vector<uint16_t> { 0xB72C, 0xB72D },			vector<uint16_t> { 0x0001, 0x0000 },	     0x0000, nullptr },
 	Tz::HookConfig::Entry { 0x03, 0xB71C, vector<uint16_t> { 0xB734, 0x572C, 0xB735 }, vector<uint16_t> { 0xB736, 0x572D, 0xB737 }, vector<uint16_t> { 0x0000, 0x0800, 0x0040 }, 0x0000, nullptr },
+
 	Tz::HookConfig::Entry { 0x01, 0xB71D, vector<uint16_t> { 0xB738, 0xB739, 0xB73A, 0xCE30 }, vector<uint16_t> { 0xB73B, 0xB73C, 0xB73D, 0xCE31 }, vector<uint16_t> { 0x0000, 0x0000, 0x0000, 0x0000 }, 0x0000, nullptr }
 };
 #elif BUILD_NMC
@@ -193,9 +194,9 @@ void Tz::HookConfig::Submit()
 		memcpy(_menuSelectInst, MENUSELECT_OFFSET + 0x46, 0x04);
 		memcpy(MENUSELECT_OFFSET + 0x46, _nopArray, 0x04);
 
-		auto _pointPage = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x12 });
-		auto _pointCurrent = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x00 });
-		auto _pointMaximum = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x16 });
+		auto _pointPage = *YS::MENU::SubOptionSel + 0x12;
+		auto _pointCurrent = *YS::MENU::SubOptionSel;
+		auto _pointMaximum = *YS::MENU::SubOptionSel + 0x16;
 
 		uint8_t _configSize = Entries.size();
 		memcpy(const_cast<char*>(_pointMaximum), &_configSize, 0x01);
@@ -222,7 +223,7 @@ void Tz::HookConfig::Submit()
 
 void Tz::HookConfig::Handle()
 {
-	auto _configMemory = *reinterpret_cast<const uint64_t*>(YS::MENU::pint_config);
+	auto _configMemory = *YS::MENU::Config;
 
 	auto _primaryBitwise = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A4);
 	auto _secondaryBitwise = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
@@ -316,9 +317,9 @@ void Tz::HookConfig::Handle()
 					memcpy(_menuSelectInst, MENUSELECT_OFFSET + 0x46, 0x04);
 					memcpy(MENUSELECT_OFFSET + 0x46, _nopArray, 0x04);
 
-					auto _pointPage = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x12 });
-					auto _pointCurrent = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x00 });
-					auto _pointMaximum = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x16 });
+					auto _pointPage = *YS::MENU::SubOptionSel + 0x12;
+					auto _pointCurrent = *YS::MENU::SubOptionSel;
+					auto _pointMaximum = *YS::MENU::SubOptionSel + 0x16;
 
 					memcpy(const_cast<char*>(_pointMaximum), &_configSize, 0x01);
 
@@ -432,13 +433,11 @@ void Tz::HookConfig::Handle()
 				}
 			}
 
-			auto _pointLayout = CalculatePointer(YS::MENU::pint_camp2ld, { 0x00 });
-			auto _pointCurrent = CalculatePointer(YS::MENU::pint_suboptionselect, { 0x12 });
+			auto _pointCurrent = *YS::MENU::SubOptionSel + 0x12;
 
-			if (_pointCurrent != nullptr)
+			if (_pointCurrent && *YS::MENU::Camp2LD)
 			{
-				uint32_t _barFileOffset = *reinterpret_cast<const uint32_t*>(_pointLayout + 0x08);
-				uint32_t _campFileOffset = *reinterpret_cast<const uint32_t*>(_pointLayout + 0x28) - _barFileOffset;
+				char* _fetchCampSQD = YS::BINARC::get_info_by_tag(*YS::MENU::Camp2LD, 0x1C, 0x706D6163, 0);
 
 				uint8_t _pageCount = Entries.size() - 0x09;
 				uint8_t _pageFactor = 0x18 * _pageCount;
@@ -449,16 +448,16 @@ void Tz::HookConfig::Handle()
 				auto _floatCalc = (0xC0 - _pageFactor) * 0.01F;
 				auto _factorCalc = 0x64 - (_pageFactor + 0x01) + _pageOffset;
 
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x21498), &_offsetCalc, 0x04);
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x2149C), &_offsetCalc, 0x04);
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x21528), &_offsetCalc, 0x04);
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x2152C), &_offsetCalc, 0x04);
-
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x21568), &_floatCalc, 0x04);
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x2156C), &_floatCalc, 0x04);
-
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x215B8), &_factorCalc, 0x04);
-				memcpy(const_cast<char*>(_pointLayout + _campFileOffset + 0x215BC), &_factorCalc, 0x04);
+				memcpy(_fetchCampSQD + 0x21498, &_offsetCalc, 0x04);
+				memcpy(_fetchCampSQD + 0x2149C, &_offsetCalc, 0x04);
+				memcpy(_fetchCampSQD + 0x21528, &_offsetCalc, 0x04);
+				memcpy(_fetchCampSQD + 0x2152C, &_offsetCalc, 0x04);
+					   
+				memcpy(_fetchCampSQD + 0x21568, &_floatCalc, 0x04);
+				memcpy(_fetchCampSQD + 0x2156C, &_floatCalc, 0x04);
+					   
+				memcpy(_fetchCampSQD + 0x215B8, &_factorCalc, 0x04);
+				memcpy(_fetchCampSQD + 0x215BC, &_factorCalc, 0x04);
 			}
 		}
 

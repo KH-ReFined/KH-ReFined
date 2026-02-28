@@ -23,7 +23,7 @@ extern "C"
 			using IsChanging_t = bool(*)(char* playerObject);
 			static IsChanging_t IsChanging;
 
-			static uint64_t pint_sora;
+			static char** Sora;
 		};
 	}
 }

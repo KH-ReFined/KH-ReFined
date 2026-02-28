@@ -20,7 +20,6 @@ extern "C"
 			static ReduceBackyard_t ReduceBackyard;
 
 			static char* ImageBuff;
-			static uint64_t pint_itemmenuinfo;
 		};
 	}
 }

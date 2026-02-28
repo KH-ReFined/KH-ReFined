@@ -8,6 +8,7 @@
 #include "gauge.h"
 #include "title.h"
 #include "steam.h"
+#include "binarc.h"
 #include "party.h"
 #include "menu.h"
 #include "message.h"

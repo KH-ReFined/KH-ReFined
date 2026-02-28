@@ -4,15 +4,17 @@
 
 #include <cstdint>
 #include <Windows.h>
+#include <SigScan.h>
+
 extern "C"
 {
-	namespace YS
+	namespace YI
 	{
-		class DLL_EXPORT COMMAND_DRAW
+		class DLL_EXPORT IMAGE_CACHE
 		{
 		public:
-			static char** CommandMenu;
-			static char** CommandDraw;
+			using Load_t = char*(*)(char* imageBuff);
+			static Load_t Load;
 		};
 	}
 }
