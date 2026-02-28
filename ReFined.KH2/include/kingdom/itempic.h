@@ -27,9 +27,9 @@ extern "C"
 			static char* ImageBuff;
 			static uint16_t** ToLoadID;
 
-			static int* Phase;
-			static int* UserNum;
-			static int* CachePic;
+			static uint32_t* Phase;
+			static uint32_t* UserNum;
+			static uint32_t* CachePic;
 			static char* Task;
 
 			static char* ReadImageThread(char* task);

@@ -13,7 +13,7 @@ YS::VOICE::staticInitializer YS::VOICE::initialize;
 
 void YS::VOICE::ReadEntryId(uint16_t entryID, char* buff)
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
     string _constructPath = _fetchConfig & 0x0004 ? "voice/jp/battle/%s%d_%s.win32.scd" : 
                            (_fetchConfig & 0x0008 ? "voice/es/battle/%s%d_%s.win32.scd" : 
@@ -34,7 +34,7 @@ void YS::VOICE::ReadEntryId(uint16_t entryID, char* buff)
 
             if (_entryPart <= 0x0E)
             {
-                auto _areaInfo = YS::AREAINFO::Get(-1, -1);
+                auto _areaInfo = AREAINFO::Get(-1, -1);
                 auto _areaVoice = *reinterpret_cast<uint16_t*>(_areaInfo + 0x30);
 
                 uint32_t _queueOffset = 0;
@@ -71,7 +71,7 @@ void YS::VOICE::ReadEntryId(uint16_t entryID, char* buff)
                 *reinterpret_cast<uint32_t*>(YS::VOICE::Cache + 0x0C * _queueOffset + 0x04) = _entryPart;
                 *reinterpret_cast<uint32_t*>(YS::VOICE::Cache + 0x0C * _queueOffset + 0x08) = _areaVoice;
 
-                auto _worldName = YS::WORLD::GetName(YS::AREA::Current->World);
+                auto _worldName = WORLD::GetName(AREA::Current->World);
 
                 if (YS::REGION::Get() && YS::REGION::Get() != 0x07)
                 {

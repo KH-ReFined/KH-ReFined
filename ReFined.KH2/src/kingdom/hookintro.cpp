@@ -166,10 +166,10 @@ void Tz::HookIntro::Handle()
 		}
 	}
 
-	else if (!*YS::TITLE::IsTitle && !INTRO_APPLIED && ENFORCE_INTRO && YS::AREA::Current->World == 0x02 && (YS::AREA::Current->Room == 0x01 || YS::AREA::Current->Room == 0x20))
+	else if (!*YS::TITLE::IsTitle && !INTRO_APPLIED && ENFORCE_INTRO && AREA::Current->World == 0x02 && (AREA::Current->Room == 0x01 || AREA::Current->Room == 0x20))
 	{
-		memcpy(YS::AREA::SaveData + 0x41A4, &FIRST_CONFIG, 0x02);
-		memcpy(YS::AREA::SaveData + 0x41A6, &SECOND_CONFIG, 0x02);
+		memcpy(AREA::SaveData + 0x41A4, &FIRST_CONFIG, 0x02);
+		memcpy(AREA::SaveData + 0x41A6, &SECOND_CONFIG, 0x02);
 
 		ENFORCE_INTRO = false;
 		INTRO_APPLIED = true;

@@ -23,7 +23,7 @@ sa::EVENT::staticInitializer sa::EVENT::initialize;
 
 char* sa::EVENT::audio_read_set(char* name, int allocType)
 {
-	auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+	auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
 	string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
 		(_fetchConfig & 0x0008 ? "es" :
@@ -57,7 +57,7 @@ char* sa::EVENT::audio_read_set(char* name, int allocType)
 
 char* sa::EVENT::motion_read_set(char* name, int allocType, uint32_t entryId, int put_id, uint8_t deleteFlag)
 {
-	auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+	auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
 	string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
 						   (_fetchConfig & 0x0008 ? "es" :

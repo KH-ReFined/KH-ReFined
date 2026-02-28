@@ -58,7 +58,7 @@ char* YS::ITEMPIC::ReadImageThread(char* task)
 
     *Phase = 1;
 
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
     string _constructPath = _fetchConfig & 0x0200 ? "itempic_2nd/item-%03d.imd" : (_fetchConfig & 0x0400 ? "itempic_3rd/item-%03d.imd" : "itempic/item-%03d.imd");
 
     sprintf(nameBuff, _constructPath.c_str(), _itempicID);

@@ -93,16 +93,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-// Redirected Constructors live here! //
-
-char* MENU_FNAME_BUFFER = ResolveRelativeAddress<char*>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x0D);
-
-// 2D Path Constructors.
-
-
-
-// =================================== //
-
 wchar_t* MOD_PATH;
 
 multimap<uint8_t, void(*)(), std::greater<uint8_t>> _execModule;
@@ -188,7 +178,7 @@ bool SYSTEM_WRITTEN = false;
 
 bool ROUND_BACK = false;
 
-YS::AREA::INFO SAVE_AREA;
+AREA::INFO SAVE_AREA;
 int SAVE_ITERATOR = 0;
 
 int SAVE_FRAME_ITERATOR = 0;
@@ -287,7 +277,7 @@ void SOFT_RESET()
     auto _fetchButtons = *YS::HARDPAD::Input;
     auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
 
-    bool _canReset = _commandPointer != 0x00 && *YS::AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
+    bool _canReset = _commandPointer != 0x00 && *AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
 
     // If the buttons are pushed, a reset can happen and it isn't happening:
     if (RESET_COMBO != YS::HARDPAD::BUTTONS::NONE && _fetchButtons == RESET_COMBO && _canReset && !IS_RESETING)
@@ -314,13 +304,13 @@ void SOFT_RESET()
 
 void HANDLE_MUSIC()
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
     auto _fetchMusic = (_fetchConfig & 0x0080) == 0x0080 ? 0x0080 : ((_fetchConfig & 0x0100) == 0x0100 ? 0x0100 : 0x0000);
 
     if (*YS::TITLE::IsTitle)
         CURRENT_MUSIC = 0xFFFF;
 
-    if (*YS::AREA::IsInMap)
+    if (*AREA::IsInMap)
     {
         if (CURRENT_MUSIC == 0xFFFF)
             CURRENT_MUSIC = _fetchMusic;
@@ -332,7 +322,7 @@ void HANDLE_MUSIC()
                 _fetchMusic -= 0x0080;
                 _fetchConfig -= 0x0080;
 
-                *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0080;
+                *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0080;
             }
 
             if (_fetchMusic == 0x0100 && !YS::MESSAGE::GetData(0x571D))
@@ -340,12 +330,12 @@ void HANDLE_MUSIC()
                 _fetchMusic -= 0x0100;
                 _fetchConfig -= 0x0100;
 
-                *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0100;
+                *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0100;
             }
 
             string _fetchPath = _fetchMusic == 0x0080 ? "bgm_2nd/music%03d.win32.scd" : (_fetchMusic == 0x0100 ? "bgm_3rd/music%03d.win32.scd" : "bgm/music%03d.win32.scd");
 
-            auto _fetchMode = *YS::AREA::BattleStatus == 0x00 ? 0x00 : 0x01;
+            auto _fetchMode = *AREA::BattleStatus == 0x00 ? 0x00 : 0x01;
 
             auto _fetchVolumeStart = *reinterpret_cast<uint32_t*>(SOUND::CurrentMusic + 0x04);
             auto _fetchVolumeFinish = *reinterpret_cast<uint32_t*>(SOUND::CurrentMusic + 0x08);
@@ -427,16 +417,16 @@ void HANDLE_MUSIC()
         }
     }
 
-    else if (!*YS::AREA::IsInMap && !*YS::TITLE::IsTitle && CURRENT_MUSIC != _fetchMusic)
+    else if (!*AREA::IsInMap && !*YS::TITLE::IsTitle && CURRENT_MUSIC != _fetchMusic)
     {
         if (CURRENT_MUSIC == 0xFFFF)
             CURRENT_MUSIC = _fetchMusic;
 
         else if (_fetchMusic == 0x0080 && !YS::MESSAGE::GetData(0x571B))
-            *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0080;
+            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0080;
 
         if (_fetchMusic == 0x0100 && !YS::MESSAGE::GetData(0x571D))
-            *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0100;
+            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0100;
 
         CURRENT_MUSIC = _fetchMusic;
     }
@@ -444,10 +434,10 @@ void HANDLE_MUSIC()
 
 void HANDLE_RESOURCE()
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
     auto _fetchObject = (_fetchConfig & 0x0200) == 0x0200 ? 0x0200 : ((_fetchConfig & 0x0400) == 0x0400 ? 0x0400 : 0x0000);
 
-    if (!*YS::AREA::IsInMap)
+    if (!*AREA::IsInMap)
     {
         if (!*YS::TITLE::IsTitle)
         {
@@ -455,30 +445,30 @@ void HANDLE_RESOURCE()
                 CURRENT_OBJECTS = _fetchObject;
 
             if (_fetchObject == 0x0200 && !YS::MESSAGE::GetData(0x573C))
-                *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0080;
+                *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0080;
 
             else if (_fetchObject == 0x0400 && !YS::MESSAGE::GetData(0x573E))
-                *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0100;
+                *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0100;
         }
 
         else
             CURRENT_OBJECTS = 0xFFFF;
     }
 
-    if (*YS::AREA::IsInMap)
+    if (*AREA::IsInMap)
     {
         if (CURRENT_OBJECTS == 0xFFFF)
             CURRENT_OBJECTS = _fetchObject;
 
         if (_fetchObject == 0x0200 && !YS::MESSAGE::GetData(0x573C))
-            *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0080;
+            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0080;
 
         else if (_fetchObject == 0x0400 && !YS::MESSAGE::GetData(0x573E))
-            *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6) -= 0x0100;
+            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0100;
 
         else if (CURRENT_OBJECTS != _fetchObject && !*YS::MENU::IsMenu)
         {
-            YS::AREA::MapJump(YS::AREA::Current, 0x01, 0x00, false);
+            AREA::MapJump(AREA::Current, 0x01, 0x00, false);
             CURRENT_OBJECTS = _fetchObject;
         }
     }
@@ -486,7 +476,7 @@ void HANDLE_RESOURCE()
 
 void HANDLE_AUDIO()
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
     string _constructPath = _fetchConfig & 0x0004 ? "voice/jp/battle" :
                            (_fetchConfig & 0x0008 ? "voice/es/battle" :
@@ -559,7 +549,7 @@ void HANDLE_AUDIO()
                 char _loadBuff[64];
 
                 auto _entryPart = *reinterpret_cast<uint16_t*>(_fetchObject + 0x4C);
-                auto _worldName = YS::WORLD::GetName(YS::AREA::Current->World);
+                auto _worldName = WORLD::GetName(AREA::Current->World);
 
                 auto _areaInfo = YS::AREAINFO::Get(-1, -1);
                 auto _areaVoice = *reinterpret_cast<uint16_t*>(_areaInfo + 0x30);
@@ -581,7 +571,7 @@ void HANDLE_AUDIO()
 
 void ENFORCE_LOCKON()
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A4);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A4);
     auto _fetchControl = (_fetchConfig & 0x4000) == 0x4000 ? 0x00 : ((_fetchConfig & 0x8000) == 0x8000 ? 0x01 : 0x02);
 
     auto _fetchChange = *(YS::HARDPAD::Input - 0x02);
@@ -651,11 +641,11 @@ void DISPLAY_NEXT_EXP()
     if (_maxSummLevel == 0x06)
         _maxSummLevel = 0x07;
 
-    if (*YS::AREA::IsInMap && !*YS::TITLE::IsTitle)
+    if (*AREA::IsInMap && !*YS::TITLE::IsTitle)
     {
-        if (*(YS::AREA::SaveData + 0x3524) != 0x00)
+        if (*(AREA::SaveData + 0x3524) != 0x00)
         {
-            uint8_t _currLevel = *(YS::AREA::SaveData + 0x32F4 + (0x38 * (*(YS::AREA::SaveData + 0x3524) - 1)) + 0x02);
+            uint8_t _currLevel = *(AREA::SaveData + 0x32F4 + (0x38 * (*(AREA::SaveData + 0x3524) - 1)) + 0x02);
 
             if (_maxFormLevel == _currLevel && PAST_EXP_FORM != 0x00)
             {
@@ -663,8 +653,8 @@ void DISPLAY_NEXT_EXP()
                 PAST_EXP_FORM = 0x00;
             }
 
-            uint32_t _currExp = *reinterpret_cast<uint32_t*>(YS::AREA::SaveData + 0x32F4 + (0x38 * (*(YS::AREA::SaveData + 0x3524) - 1)) + 0x04);
-            uint32_t _expFetch = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::Search(*(YS::AREA::SaveData + 0x3524), _currLevel) + 0x04);
+            uint32_t _currExp = *reinterpret_cast<uint32_t*>(AREA::SaveData + 0x32F4 + (0x38 * (*(AREA::SaveData + 0x3524) - 1)) + 0x04);
+            uint32_t _expFetch = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::Search(*(AREA::SaveData + 0x3524), _currLevel) + 0x04);
 
             if (PAST_EXP_FORM == 0x00)
                 PAST_EXP_FORM = _currExp;
@@ -676,9 +666,9 @@ void DISPLAY_NEXT_EXP()
             }
         }
 
-        else if (*(YS::AREA::SaveData + 0x3525) != 0x00)
+        else if (*(AREA::SaveData + 0x3525) != 0x00)
         {
-            uint8_t _currLevel = *(YS::AREA::SaveData + 0x3526);
+            uint8_t _currLevel = *(AREA::SaveData + 0x3526);
 
             if (_maxSummLevel == _currLevel && PAST_EXP_SUMM != 0x00)
             {
@@ -686,7 +676,7 @@ void DISPLAY_NEXT_EXP()
                 PAST_EXP_SUMM = 0x00;
             }
 
-            uint32_t _currExp = *reinterpret_cast<uint32_t*>(YS::AREA::SaveData + 0x36E4);
+            uint32_t _currExp = *reinterpret_cast<uint32_t*>(AREA::SaveData + 0x36E4);
             uint32_t* _expFetch = reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::GetSummonTable() + 0x04);
 
             if (_expFetch == nullptr)
@@ -709,7 +699,7 @@ void DISPLAY_NEXT_EXP()
         }
     }
 
-    else if (*(YS::AREA::IsInMap) == 0 || *(YS::TITLE::IsTitle) == 1)
+    else if (*(AREA::IsInMap) == 0 || *(YS::TITLE::IsTitle) == 1)
     { 
         PAST_EXP_FORM = 0x00;
         PAST_EXP_SUMM = 0x00;
@@ -718,11 +708,11 @@ void DISPLAY_NEXT_EXP()
 
 void HANDLE_GOA_LAND()
 {
-    auto _gardenKnown = (*(YS::AREA::SaveData + 0x231B) & 0x04) == 0x04;
-    auto _canLandGarden = (*(YS::AREA::SaveData + 0x1EF6) & 0x40) == 0x40;
+    auto _gardenKnown = (*(AREA::SaveData + 0x231B) & 0x04) == 0x04;
+    auto _canLandGarden = (*(AREA::SaveData + 0x1EF6) & 0x40) == 0x40;
 
     if (_gardenKnown && !_canLandGarden)
-        *(YS::AREA::SaveData + 0x1EF6) += 0x40;
+        *(AREA::SaveData + 0x1EF6) += 0x40;
 }
 
 void ENFORCE_FRAMERATE()
@@ -827,9 +817,9 @@ void DISCORD_RPC()
         RICH_PRESENCE.GetAssets().SetSmallImage("");
     }
 
-    else if (YS::AREA::Current->World >= 0x02 && YS::AREA::Current->World <= 0x12)
+    else if (AREA::Current->World >= 0x02 && AREA::Current->World <= 0x12)
     {
-        bool _checkUnderdrome = YS::AREA::Current->World == 0x06 && YS::AREA::Current->Room == 0x09 && YS::AREA::Current->Set.Map >= 0xBD && YS::AREA::Current->Set.Map >= 0xC4;
+        bool _checkUnderdrome = AREA::Current->World == 0x06 && AREA::Current->Room == 0x09 && AREA::Current->Set.Map >= 0xBD && AREA::Current->Set.Map >= 0xC4;
 
         auto _detailText = _checkUnderdrome ? TEXT_PRESENCE.at(0x02) : TEXT_PRESENCE.at(0x00);
 
@@ -837,18 +827,18 @@ void DISCORD_RPC()
         _detailText.replace(_detailText.find("[1]"), 0x03, *(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180) > 0x00 ? to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180)) : TEXT_PRESENCE.at(0x04));
 
         if (_checkUnderdrome)
-            _detailText.replace(_detailText.find("[2]"), 0x03, to_string(YS::AREA::Current->Entrance));
+            _detailText.replace(_detailText.find("[2]"), 0x03, to_string(AREA::Current->Entrance));
 
         RICH_PRESENCE.SetDetails(_detailText.c_str());
 
         auto _stateText = TEXT_PRESENCE.at(0x01);
 
-        _stateText.replace(_stateText.find("[0]"), 0x03, to_string(*(YS::AREA::SaveData + 0x24FF)));
-        _stateText.replace(_stateText.find("[1]"), 0x03, *(YS::AREA::SaveData + 0x3524) == 0x00 ? "N/A" : (*COMMAND_TYPE == 0x01 ? "Mickey" : TEXT_FORM.at(*(YS::AREA::SaveData + 0x3524) - 0x01)));
+        _stateText.replace(_stateText.find("[0]"), 0x03, to_string(*(AREA::SaveData + 0x24FF)));
+        _stateText.replace(_stateText.find("[1]"), 0x03, *(AREA::SaveData + 0x3524) == 0x00 ? "N/A" : (*COMMAND_TYPE == 0x01 ? "Mickey" : TEXT_FORM.at(*(AREA::SaveData + 0x3524) - 0x01)));
 
         RICH_PRESENCE.SetState(_stateText.c_str());
 
-        auto _fetchTime = floorf(*reinterpret_cast<const uint32_t*>(YS::AREA::SaveData + 0x2444) / 60.0F);
+        auto _fetchTime = floorf(*reinterpret_cast<const uint32_t*>(AREA::SaveData + 0x2444) / 60.0F);
 
         auto _playHours = floorf(_fetchTime / 3600.0F);
         auto _playMinutes = floorf(fmodf(_fetchTime, 3600.0F) / 60.0F);
@@ -862,10 +852,10 @@ void DISCORD_RPC()
         _timeText.replace(_timeText.find("[0]"), 0x03, _timeStream.str());
 
         RICH_PRESENCE.GetAssets().SetLargeText(_timeText.c_str());
-        RICH_PRESENCE.GetAssets().SetSmallText(TEXT_MODE.at(*(YS::AREA::SaveData + 0x2498)).c_str());
+        RICH_PRESENCE.GetAssets().SetSmallText(TEXT_MODE.at(*(AREA::SaveData + 0x2498)).c_str());
 
-        RICH_PRESENCE.GetAssets().SetSmallImage(*YS::AREA::BattleStatus == 0x00 ? "safe" : (*YS::AREA::BattleStatus == 0x01 ? "mob" : "boss"));
-        RICH_PRESENCE.GetAssets().SetLargeImage(IS_MIRAGE && YS::AREA::Current->World == 0x0B ? "ma" : string(YS::WORLD::GetName(YS::AREA::Current->World), 0x02).c_str());
+        RICH_PRESENCE.GetAssets().SetSmallImage(*AREA::BattleStatus == 0x00 ? "safe" : (*AREA::BattleStatus == 0x01 ? "mob" : "boss"));
+        RICH_PRESENCE.GetAssets().SetLargeImage(IS_MIRAGE && AREA::Current->World == 0x0B ? "ma" : string(WORLD::GetName(AREA::Current->World), 0x02).c_str());
     }
 
     Discord->ActivityManager().UpdateActivity(RICH_PRESENCE, [&_resultant](discord::Result v) { _resultant = (int)v; });
@@ -921,7 +911,7 @@ void HANDLE_SHAKE()
 void ENFORCE_PROMPTS()
 {
     bool _isEnforced = *(PROMPT_INSTRUCTION + 0x06) == 0x00 ? true : false;
-    bool _fetchConfig = *reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A4) & 0x2000;
+    bool _fetchConfig = *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4) & 0x2000;
 
     if (_isEnforced != _fetchConfig)
     {
@@ -976,32 +966,32 @@ void AUTOSAVE()
         SYSTEM_WRITTEN = true;
     }
 
-    if (*YS::AREA::IsInMap && !*YS::TITLE::IsTitle && !SYSTEM_LOADED)
+    if (*AREA::IsInMap && !*YS::TITLE::IsTitle && !SYSTEM_LOADED)
         SYSTEM_LOADED = true;
 
     else if (*YS::TITLE::IsTitle && SYSTEM_LOADED)
     {
         SAVE_ITERATOR = 0;
         SYSTEM_LOADED = false;
-        SAVE_AREA = *YS::AREA::Current;
+        SAVE_AREA = *AREA::Current;
     }
 
     if (_commandPointer != 0x00 && _gaugeTypePointer != 0x00)
     {
-        bool _checkBlacklist = YS::AREA::Current->World == 0x0F || YS::AREA::Current->World == 0x0B ||
-            (YS::AREA::Current->World == 0x08 && YS::AREA::Current->Room == 0x03) ||
-            (YS::AREA::Current->World == 0x0C && YS::AREA::Current->Room == 0x02) ||
-            (YS::AREA::Current->World == 0x02 && YS::AREA::Current->Room <= 0x01) ||
-            (YS::AREA::Current->World == 0x04 && YS::AREA::Current->Room == 0x10) ||
-            (YS::AREA::Current->World == 0x12 && YS::AREA::Current->Room >= 0x13 && YS::AREA::Current->Room <= 0x1D);
+        bool _checkBlacklist = AREA::Current->World == 0x0F || AREA::Current->World == 0x0B ||
+            (AREA::Current->World == 0x08 && AREA::Current->Room == 0x03) ||
+            (AREA::Current->World == 0x0C && AREA::Current->Room == 0x02) ||
+            (AREA::Current->World == 0x02 && AREA::Current->Room <= 0x01) ||
+            (AREA::Current->World == 0x04 && AREA::Current->Room == 0x10) ||
+            (AREA::Current->World == 0x12 && AREA::Current->Room >= 0x13 && AREA::Current->Room <= 0x1D);
 
-        if (!*YS::TITLE::IsTitle && *YS::AREA::IsInMap && !_checkBlacklist)
+        if (!*YS::TITLE::IsTitle && *AREA::IsInMap && !_checkBlacklist)
         {
             if (SAVE_AREA.World == 0x00)
-                SAVE_AREA = *YS::AREA::Current;
+                SAVE_AREA = *AREA::Current;
 
-            bool _isAutosave = (*reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A4) & 0x0002) || (*reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A4) & 0x0004);
-            bool _checkStatus = !*YS::MENU::IsMenu && _commandPointer != 0x00 && *YS::AREA::IsInMap && _mainPointer == 0x00 && *YS::AREA::BattleStatus == 0x00 && SAVE_AREA.World >= 0x02 && SYSTEM_LOADED && _isAutosave && *(dk::JUMPEFFECT::FadeStatus + 0x108) == 0x00;
+            bool _isAutosave = (*reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4) & 0x0002) || (*reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4) & 0x0004);
+            bool _checkStatus = !*YS::MENU::IsMenu && _commandPointer != 0x00 && *AREA::IsInMap && _mainPointer == 0x00 && *AREA::BattleStatus == 0x00 && SAVE_AREA.World >= 0x02 && SYSTEM_LOADED && _isAutosave && *(dk::JUMPEFFECT::FadeStatus + 0x108) == 0x00;
 
             if (!_checkStatus)
             {
@@ -1009,13 +999,13 @@ void AUTOSAVE()
                 return;
             }
 
-            if (SAVE_AREA.World != YS::AREA::Current->World)
+            if (SAVE_AREA.World != AREA::Current->World)
             {
                 SAVE_INITIATE = true;
                 SAVE_ITERATOR = 0;
             }
 
-            if (SAVE_AREA.Room != YS::AREA::Current->Room)
+            if (SAVE_AREA.Room != AREA::Current->Room)
             {
                 SAVE_ITERATOR++;
 
@@ -1026,7 +1016,7 @@ void AUTOSAVE()
                 }
             }
 
-            SAVE_AREA = *YS::AREA::Current;
+            SAVE_AREA = *AREA::Current;
         }
     }
 
@@ -1066,7 +1056,7 @@ void AUTOSAVE()
         char* _saveInfoStartRAM = *reinterpret_cast<char**>(*_savePointer + 0x10) + 0x168;
         char* _saveDataStartRAM = *reinterpret_cast<char**>(*_savePointer + 0x10) + 0x19630;
 
-        memcpy(YS::AREA::SaveData + 0x10, &_autoSaveTag, 0x04);
+        memcpy(AREA::SaveData + 0x10, &_autoSaveTag, 0x04);
 
         const char* _saveSlotRAM = _saveInfoStartRAM + (_saveInfoLength * _saveSlot);
 
@@ -1126,8 +1116,8 @@ void AUTOSAVE()
         char* _magicData = (char*)malloc(0x08);
         char* _saveData = (char*)malloc(0x10FB4);
 
-        memcpy(_magicData, YS::AREA::SaveData, 0x08);
-        memcpy(_saveData, YS::AREA::SaveData + 0x0C, 0x10FB4);
+        memcpy(_magicData, AREA::SaveData, 0x08);
+        memcpy(_saveData, AREA::SaveData + 0x0C, 0x10FB4);
 
         auto _calculateChecksum = [](uint32_t _startChecksum, char* _dataArray, int _dataLength)
             {
@@ -1159,7 +1149,7 @@ void AUTOSAVE()
 
         memcpy(_saveDataAddrRAM + 0x0c, _saveData, 0x10FB4);
 
-        memcpy(YS::AREA::SaveData + 0x10, &_regularSaveTag, 0x04);
+        memcpy(AREA::SaveData + 0x10, &_regularSaveTag, 0x04);
 
         uint32_t _saveInfoAddr = _saveInfoStartFILE + _saveInfoLength * _saveSlot;
         uint32_t _saveDataAddr = _saveDataStartFILE + _saveDataLength * _saveSlot;
@@ -1193,7 +1183,7 @@ void AUTOSAVE()
         free(_saveData);
         free(_magicData);
 
-        if (*reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A4) & 0x0004)
+        if (*reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4) & 0x0004)
         {
             // const char* _saveMessage = YS::MESSAGE::GetData(0x5702);
             // dk::INFORMATION::openInformationWindow(_saveMessage);
@@ -1207,7 +1197,7 @@ void AUTOSAVE()
 
 void FIX_SAVE_POINT()
 {
-    if (*reinterpret_cast<const uint16_t*>(YS::COMMAND_ELEM::ReactionID) == 0x0037 && *YS::AREA::IsInMap && !*YS::TITLE::IsTitle)
+    if (*reinterpret_cast<const uint16_t*>(YS::COMMAND_ELEM::ReactionID) == 0x0037 && *AREA::IsInMap && !*YS::TITLE::IsTitle)
     {
         auto _statsSlot1 = YS::MEMBER_TABLE::MemberStatsAnchor + 0xC30C;
         auto _statsSlot2 = YS::MEMBER_TABLE::MemberStatsAnchor + 0xC30C - 0x278;
@@ -1237,7 +1227,7 @@ void FIX_SAVE_POINT()
         }
     }
 
-    else if (!*YS::AREA::IsInMap || *YS::TITLE::IsTitle)
+    else if (!*AREA::IsInMap || *YS::TITLE::IsTitle)
         SAVE_CHECK = 0x75;
 
     memcpy(SAVE_OFFSET + 0x25B, &SAVE_CHECK, 0x01);
@@ -1247,12 +1237,12 @@ void REGISTER_MAGIC()
 {
     // Fetch the current levels or magic.
 
-    uint32_t _magicFirst = *reinterpret_cast<const uint32_t*>(YS::AREA::SaveData + 0x3594);
-    uint16_t _magicSecond = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x35CF);
+    uint32_t _magicFirst = *reinterpret_cast<const uint32_t*>(AREA::SaveData + 0x3594);
+    uint16_t _magicSecond = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x35CF);
 
     // If the game is loaded, and if the Tier 1 Magic or the Tier 2 Magic levels do not match what is previously recorded.
 
-    if (*YS::AREA::IsInMap && (_magicFirst != MAGIC_FIRST || _magicSecond != MAGIC_SECOND))
+    if (*AREA::IsInMap && (_magicFirst != MAGIC_FIRST || _magicSecond != MAGIC_SECOND))
     {
         // Initialize the array we will be using for the commands.
         vector<uint16_t> _commandArray;
@@ -1339,7 +1329,7 @@ void REGISTER_MAGIC()
     }
 
     // If the game isn't loaded, free every single magic that we have processed ourselves.
-    else if (!*YS::AREA::IsInMap)
+    else if (!*AREA::IsInMap)
     {
         for (auto _magicEntry : MAGIC_FILES)
             free(_magicEntry.second);
@@ -1360,7 +1350,7 @@ void REGISTER_ABILITY()
     auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
 
     // If the game is loaded:
-    if (*YS::AREA::IsInMap && _commandPointer != 0x00 && _soraGauge != 0x00 && !_isCutscene)
+    if (*AREA::IsInMap && _commandPointer != 0x00 && _soraGauge != 0x00 && !_isCutscene)
     {
         // If  the ability denotation is not initialized:
         if (ABILITY_ARRAY.size() == 0x00)
@@ -1369,7 +1359,7 @@ void REGISTER_ABILITY()
             ABILITY_ARRAY.resize(0x60);
 
             // Denote all of Sora's current abilities and sort them.
-            memcpy(ABILITY_ARRAY.data(), YS::AREA::SaveData + 0x2544, 0xC0);
+            memcpy(ABILITY_ARRAY.data(), AREA::SaveData + 0x2544, 0xC0);
             sort(ABILITY_ARRAY.begin(), ABILITY_ARRAY.end());
         }
 
@@ -1378,7 +1368,7 @@ void REGISTER_ABILITY()
         vector<uint16_t> _currentAbility(0x60);
 
         // Denote all of Sora's current abilities and sort them.
-        memcpy(_currentAbility.data(), YS::AREA::SaveData + 0x2544, 0xC0);
+        memcpy(_currentAbility.data(), AREA::SaveData + 0x2544, 0xC0);
         sort(_currentAbility.begin(), _currentAbility.end());
 
         // Get all the abilities that differ between the old and current denotation.
@@ -1415,7 +1405,7 @@ void SHOW_INFORMATION()
                                          && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xEFACCAFE;
 
     // If the game is loaded, and there isn't a menu present, and it's not a cutscene:
-    if (*YS::AREA::IsInMap && _commandPointer != 0x00 && !*YS::MENU::IsMenu && !_isCutscene && _soraGauge != 0x00)
+    if (*AREA::IsInMap && _commandPointer != 0x00 && !*YS::MENU::IsMenu && !_isCutscene && _soraGauge != 0x00)
     {
         // Fetch the fade status and the enable line.
         auto _fetchFade = *(dk::JUMPEFFECT::FadeStatus + 0x108);
@@ -1473,7 +1463,7 @@ void PROCESS_DEATH()
     auto _fetchSora = *reinterpret_cast<const uint16_t*>(YS::MEMBER_TABLE::MemberTable);
 
     // If Sora's HP is 0, and he isn't Mermaid Sora, and his gauge is present, and he isn't dead:
-    if (*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308) == 0x00 && *YS::AREA::IsInMap && !*YS::MENU::IsMenu && (_fetchSora != 0x03BE && _fetchSora != 0x0656) && _soraGauge != 0x00 && !IS_DEAD)
+    if (*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308) == 0x00 && *AREA::IsInMap && !*YS::MENU::IsMenu && (_fetchSora != 0x03BE && _fetchSora != 0x0656) && _soraGauge != 0x00 && !IS_DEAD)
     {
         // Process his death and mark it.
         YS::SORA::AddHP(reinterpret_cast<char*>(_soraSelf), 0x00, 0x00, false);
@@ -1618,7 +1608,7 @@ void HANDLE_ASPECT()
         auto _eventPointer = *YS::EVENT::Event;
         auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
 
-        if ((_commandPointer == 0x00 || _eventPointer != 0x00 || !*YS::AREA::IsInMap) && POSITIVE_ASPECT_OFFSET != 0x55)
+        if ((_commandPointer == 0x00 || _eventPointer != 0x00 || !*AREA::IsInMap) && POSITIVE_ASPECT_OFFSET != 0x55)
         {
             vector<char*> _fetchMission =
             {
@@ -1659,8 +1649,8 @@ void HANDLE_ASPECT()
 void RETRY_BATTLES()
 {
     // Declare the worlds and rooms in which Retry **cannot** execute.
-    auto _checkBlacklist = (YS::AREA::Current->World == 0x04 && YS::AREA::Current->Room >= 0x15 && YS::AREA::Current->Room <= 0x1A) ||
-        (YS::AREA::Current->World == 0x12 && ((YS::AREA::Current->Room >= 0x16 && YS::AREA::Current->Room <= 0x1C) || YS::AREA::Current->Room == 0x14));
+    auto _checkBlacklist = (AREA::Current->World == 0x04 && AREA::Current->Room >= 0x15 && AREA::Current->Room <= 0x1A) ||
+        (AREA::Current->World == 0x12 && ((AREA::Current->Room >= 0x16 && AREA::Current->Room <= 0x1C) || AREA::Current->Room == 0x14));
 
     // If the arrays are not yet initialize, initialize them.
     if (INST_MAPJUMPTASK.size() == 0x00)
@@ -1671,8 +1661,8 @@ void RETRY_BATTLES()
         INST_CAMPBITWISE.resize(0x07);
         INST_CAMPINIT.resize(0x08);
 
-        memcpy(INST_MAPJUMPTASK.data(), reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1F2, 0x05);
-        memcpy(INST_CONTINUELOAD.data(), reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1D8, 0x05);
+        memcpy(INST_MAPJUMPTASK.data(), reinterpret_cast<char*>(AREA::MapJump) + 0x1F2, 0x05);
+        memcpy(INST_CONTINUELOAD.data(), reinterpret_cast<char*>(AREA::MapJump) + 0x1D8, 0x05);
 
         memcpy(INST_CAMPBITWISE.data(), reinterpret_cast<char*>(CMENU_OFFSET) + 0x1A7, 0x07);
         memcpy(INST_CAMPINIT.data(), reinterpret_cast<char*>(CMENUINIT_OFFSET), 0x08);
@@ -1686,10 +1676,10 @@ void RETRY_BATTLES()
                                              && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xEFACCAFE;
 
         // If not in a cutscene, and is in a Boss Battle, and Retry State is not denoted:
-        if (!_isCutscene && *YS::AREA::BattleStatus == 0x02 && RETRY_STATE.size() == 0x00)
+        if (!_isCutscene && *AREA::BattleStatus == 0x02 && RETRY_STATE.size() == 0x00)
         {
             // Check if on Hades Escape.
-            HADES_ESCAPE = YS::AREA::Current->World == 0x06 && YS::AREA::Current->Room == 0x05 && YS::AREA::Current->Set.Event == 0x6F;
+            HADES_ESCAPE = AREA::Current->World == 0x06 && AREA::Current->Room == 0x05 && AREA::Current->Set.Event == 0x6F;
 
             // If on Hades Escape, denote and initialize it.
             if (HADES_ESCAPE && HADES_ITERATOR == 0xFF)
@@ -1697,7 +1687,7 @@ void RETRY_BATTLES()
 
             // Read the current state of the room for Retry.
             RETRY_STATE.resize(0x10FC0);
-            memcpy(RETRY_STATE.data(), YS::AREA::SaveData, 0x10FC0);
+            memcpy(RETRY_STATE.data(), AREA::SaveData, 0x10FC0);
 
             // Add the entries for Retry as well as Prepare.
             ReFined::Continue::Add(0x00, PREPARE_ENTRY);
@@ -1708,14 +1698,14 @@ void RETRY_BATTLES()
         if (RETRY_MODE == 0x00 && HADES_ESCAPE && HADES_ITERATOR != 0xFF)
         {
             // If Hades Escape hit an intermission, note it down.
-            if (*YS::AREA::BattleStatus == 0x01 && !HADES_CHANGED)
+            if (*AREA::BattleStatus == 0x01 && !HADES_CHANGED)
             {
                 HADES_ITERATOR++;
                 HADES_CHANGED = true;
             }
 
             // If Hades Escape is in battle once again, note it down.
-            if (*YS::AREA::BattleStatus != 0x01 && HADES_CHANGED)
+            if (*AREA::BattleStatus != 0x01 && HADES_CHANGED)
                 HADES_CHANGED = false;
 
             // If there have been 3 intermissions:
@@ -1726,19 +1716,19 @@ void RETRY_BATTLES()
                 HADES_ESCAPE = false;
 
                 // Reinstate Area Initializers to allow for game progression.
-                memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
-                memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
+                memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
+                memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
             }
         }
 
         // If on title or the battle isn't a Boss Battle:
-        else if (*YS::TITLE::IsTitle || *YS::AREA::BattleStatus != 0x02)
+        else if (*YS::TITLE::IsTitle || *AREA::BattleStatus != 0x02)
         {
             // If retrying, not on title, and Retry State has been noted:
             if (RETRY_MODE != 0x00 && RETRY_STATE.size() != 0x00 && !*YS::TITLE::IsTitle)
             {
                 // Restore the Retry State.
-                memcpy(const_cast<char*>(YS::AREA::SaveData), RETRY_STATE.data(), 0x10FC0);
+                memcpy(const_cast<char*>(AREA::SaveData), RETRY_STATE.data(), 0x10FC0);
 
                 // If Retry Mode is 0x02, meaning a Prepare Menu has been requested:
                 if (RETRY_MODE == 0x02)
@@ -1767,8 +1757,8 @@ void RETRY_BATTLES()
             if (RETRY_MODE == 0x00 && RETRY_STATE.size() != 0x00 && !*YS::MENU::IsMenu)
             {
                 // Restore the Area Init functions so we can progress.
-                memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
-                memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
+                memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
+                memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
 
                 // Restore all Camp initialization instructions.
                 memcpy(CMENUINIT_OFFSET, INST_CAMPINIT.data(), 0x08);
@@ -1814,25 +1804,25 @@ void RETRY_BATTLES()
                     char* _nopArray = new char[0x05];
                     fill(_nopArray, _nopArray + 0x05, 0x90);
 
-                    memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1F2, _nopArray, 0x05);
-                    memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1D8, _nopArray, 0x05);
+                    memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1F2, _nopArray, 0x05);
+                    memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1D8, _nopArray, 0x05);
                 }
 
                 // If we are not, restore the prior instructions.
                 else
                 {
-                    memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
-                    memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
+                    memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
+                    memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
                 }
             }
         }
 
         // If we are retrying, we are still in a boss battle, and the command menu type is "MICKEY"
-        else if (RETRY_MODE > 0x00 && *YS::AREA::BattleStatus == 0x02 && *COMMAND_TYPE == 0x01)
+        else if (RETRY_MODE > 0x00 && *AREA::BattleStatus == 0x02 && *COMMAND_TYPE == 0x01)
         {
             // Restore the Area Init functions so we don't loop after Mickey leaves.
-            memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
-            memcpy(reinterpret_cast<char*>(YS::AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
+            memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
+            memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1D8, INST_CONTINUELOAD.data(), 0x05);
 
             // If the continue menu has been edited, remove all Retry elements.
             if (ReFined::Continue::Children.size() > 0x02)
@@ -1861,14 +1851,14 @@ void PROCESS_FORM_KEYBLADES()
             if (*_fetchSelect != 0x00 && *_fetchSelect <= _calculateForms)
             {
                 uint16_t* _currentFormKeyPtr = nullptr;
-                uint16_t* _currentRegularKeyPtr = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x24F0);
+                uint16_t* _currentRegularKeyPtr = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x24F0);
 
                 auto _fetchItemTable = YS::ITEM_TABLE::Each(nullptr);
                 bool _isCurrentForm = false;
 
                 for (int i = 1; i <= 5; i++)
                 {
-                    auto _fetchFormKey = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x32BC + 0x38 * i);
+                    auto _fetchFormKey = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x32BC + 0x38 * i);
                     _fetchItemTable = YS::ITEM_TABLE::Get(*_fetchFormKey);
 
                     if (*_fetchFormKey == 0x0000)
@@ -1880,7 +1870,7 @@ void PROCESS_FORM_KEYBLADES()
                     {
                         _currentFormKeyPtr = _fetchFormKey;
 
-                        if (*(YS::AREA::SaveData + 0x3524) == i)
+                        if (*(AREA::SaveData + 0x3524) == i)
                             _isCurrentForm = true;
 
                         break;
@@ -2021,10 +2011,6 @@ extern "C"
         // If NOASPECT is active, remove the Aspect Handler.
         if (IS_NOASPECT)
             FUNCTION_ARRAY.erase("HANDLE_ASPECT");
-
-        auto _addrGetMDLX = reinterpret_cast<char*>(YS::OBJENTRY::get_mdlx);
-        auto _addrGetAPDX = reinterpret_cast<char*>(YS::OBJENTRY::get_apdx);
-        auto _addrGetMSET = reinterpret_cast<char*>(YS::OBJENTRY::get_mset);
 
         vector<uint8_t> _absoluteInstructionJMP =
         {
@@ -2621,13 +2607,13 @@ extern "C"
 
                                         if (_checkBitwise & _fetchBitwise && i == _seekConfig)
                                         {
-                                            *configSeek = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A6);
+                                            *configSeek = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6);
                                             goto CONFIG_LOOP_END;
                                         }
 
                                         else if (i == Tz::HookConfig::Entries.size() - 1)
                                         {
-                                            *configSeek = reinterpret_cast<uint16_t*>(YS::AREA::SaveData + 0x41A4);
+                                            *configSeek = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4);
                                             goto CONFIG_LOOP_END;
                                         }
 

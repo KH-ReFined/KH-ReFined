@@ -225,8 +225,8 @@ void Tz::HookConfig::Handle()
 {
 	auto _configMemory = *YS::MENU::Config;
 
-	auto _primaryBitwise = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A4);
-	auto _secondaryBitwise = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+	auto _primaryBitwise = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A4);
+	auto _secondaryBitwise = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
 	auto _menuOK = *YS::MENU::MenuType == 0x08 && (*YS::MENU::SubMenuType == 0x24 || *(YS::MENU::SubMenuType + 0x04) == 0x24);
 
@@ -253,7 +253,7 @@ void Tz::HookConfig::Handle()
 					CONFIG_FETCH = true;
 				}
 
-				bool _isQuadratum = *(YS::AREA::SaveData + 0x41A7);
+				bool _isQuadratum = *(AREA::SaveData + 0x41A7);
 
 				vector<uint8_t> _configArray;
 				uint8_t _configSize = Entries.size();
@@ -300,7 +300,7 @@ void Tz::HookConfig::Handle()
 					printf("%s is set: %d\n", _decodedName.c_str(), _configArray[i]);
 				}
 				
-				_configArray.push_back(*(YS::AREA::SaveData + 0x2498));
+				_configArray.push_back(*(AREA::SaveData + 0x2498));
 
 				if (_configMemory == 0x00)
 					return;
@@ -393,8 +393,8 @@ void Tz::HookConfig::Handle()
 				memcpy(COMMAND_MENU_ADDR, _fileName, 0x19);
 				memcpy(COMMAND_MENU_ADDR + 0x20, _fileName + 0x0B, 0x0E);
 
-				memcpy(YS::AREA::SaveData + 0x41A4, &_constructPrimary, 0x02);
-				memcpy(YS::AREA::SaveData + 0x41A6, &_constructSecondary, 0x02);
+				memcpy(AREA::SaveData + 0x41A4, &_constructPrimary, 0x02);
+				memcpy(AREA::SaveData + 0x41A6, &_constructSecondary, 0x02);
 
 				memcpy(COMMAND_FLAG_ADDR, &_switchFlag, 0x01);
 

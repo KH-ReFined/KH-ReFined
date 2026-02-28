@@ -9,7 +9,7 @@ char* dk::NEXT_FORM::VTABLE_SPRITE = ResolveRelativeAddress<char*>("\x48\x89\x5C
 void dk::NEXT_FORM::create(int nextExp, int offset16x9)
 {
     auto _mainObject = dk::NEXT_FORM::instance + 0x38;
-    auto _formID = *(YS::AREA::SaveData + 0x3524);
+    auto _formID = *(AREA::SaveData + 0x3524);
 
     if (dk::Obj2D::isExist(_mainObject))
     {
@@ -71,7 +71,7 @@ void dk::NEXT_FORM::initNumber(int offset16x9)
 
     for (int i = 0; i < 0x08; i++)
     {
-        auto _formVar = *(YS::AREA::SaveData + 0x3524);
+        auto _formVar = *(AREA::SaveData + 0x3524);
 
         if (_outArray[i] == 0xCCCCCCCC)
             break;

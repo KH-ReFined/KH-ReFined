@@ -229,7 +229,7 @@ void YS::PARTY::ChangeWeapon(char* task, int part, bool hand_secondary, int item
 			YS::OBJENTRY::ReadRequestWeapon(_wpnPart, _currentStack[1], _fetchWeaponID, _wpnPriority, _wpnBank);
 			YS::CACHE_BUFF::Flush(task);
 
-			if (!*YS::AREA::IsInMap)
+			if (!*AREA::IsInMap)
 				return;
 
 			if (!_wpnHide && _currentStack[3])

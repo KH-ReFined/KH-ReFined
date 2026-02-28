@@ -23,7 +23,7 @@ char* SOUND::getBgmFileName(int number)
     if (BGM_WRITE_BUFFER == nullptr)
         BGM_WRITE_BUFFER = (char*)malloc(0x28);
 
-    if (YS::AREA::Current->World == 0x0B)
+    if (AREA::Current->World == 0x0B)
     {
         _calcNumber = 517;
 
@@ -37,7 +37,7 @@ char* SOUND::getBgmFileName(int number)
     if (YS::REGION::Get() && YS::REGION::Get() != 0x07 && (_calcNumber <= 3 || _calcNumber == 113))
         _calcNumber += 400;
 
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
     auto _fetchMusic = (_fetchConfig & 0x0080) == 0x0080 ? 0x0080 : ((_fetchConfig & 0x0100) == 0x0100 ? 0x0100 : 0x0000);
 
     string _constructPath = _fetchConfig & 0x0080 ? "bgm_2nd/music%03d.win32.scd" : (_fetchConfig & 0x0100 ? "bgm_3rd/music%03d.win32.scd" : "bgm/music%03d.win32.scd");

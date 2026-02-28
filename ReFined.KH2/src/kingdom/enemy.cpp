@@ -21,6 +21,6 @@ char* YS::ENEMY::_OVR__dead(char* enemy)
 			YS::FORM_LEVEL::CheckWisdomAndFinal(_enemyPartNum, _attackerObj);
 	}
 
-	YS::SAVERAM_BATTLE::inc_kill_count(YS::AREA::SaveData + 0x24F0, _enemyPartNum);
+	YS::SAVERAM_BATTLE::inc_kill_count(AREA::SaveData + 0x24F0, _enemyPartNum);
 	return ENEMYBASE_OVR_DEAD(enemy);
 }

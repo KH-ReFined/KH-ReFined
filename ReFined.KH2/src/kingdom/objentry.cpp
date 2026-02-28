@@ -12,7 +12,7 @@ YS::OBJENTRY::ReadRequestWeapon_t YS::OBJENTRY::ReadRequestWeapon = ResolveFunct
 
 char* YS::OBJENTRY::get_mdlx(char* objentryEntry, char* buff)
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
     string _constructPath = _fetchConfig & 0x0200 ? "obj_2nd/%s.mdlx" : (_fetchConfig & 0x0400 ? "obj_3rd/%s.mdlx" : "obj/%s.mdlx");
 
     char* _mdlxName = objentryEntry + 0x08;
@@ -29,7 +29,7 @@ char* YS::OBJENTRY::get_mdlx(char* objentryEntry, char* buff)
 
 char* YS::OBJENTRY::get_apdx(char* objentryEntry, char* buff)
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
     string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
         (_fetchConfig & 0x0008 ? "es" :
@@ -71,7 +71,7 @@ char* YS::OBJENTRY::get_apdx(char* objentryEntry, char* buff)
 
 char* YS::OBJENTRY::get_mset(char* objentryEntry, uint32_t objectID, char* buff)
 {
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
+    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
     char* _mdlxName = objentryEntry + 0x08;
     char* _msetName = objentryEntry + 0x28;
