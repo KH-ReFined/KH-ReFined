@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include "SigScan.h"
+#include "memorymgr.h"
 #include "file.h"
 #include "area.h"
 #include "region.h"

@@ -162,7 +162,7 @@
     <ClInclude Include="include\continue_menu.h">
       <Filter>Header Files\refined_classes</Filter>
     </ClInclude>
-    <ClInclude Include="include\SigScan.h">
+    <ClInclude Include="include\memorymgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\kingdom\world.h">

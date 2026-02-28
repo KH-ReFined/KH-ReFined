@@ -4,6 +4,8 @@
 
 #include <cstdint>
 #include <Windows.h>
+#include "memorymgr.h"
+
 extern "C"
 {
 	namespace PC

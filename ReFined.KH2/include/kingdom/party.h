@@ -2,10 +2,28 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
-#include <Windows.h>
-#include "SigScan.h"
+#include "sora.h"
+#include "friend.h"
+#include "converter.h"
+#include "member.h"
+#include "weapon_entry.h"
+#include "weapon_mset.h"
+#include "weapon.h"
+#include "objentry.h"
+#include "panacea_alloc.h"
+#include "sheet.h"
+#include "cache_buff.h"
+#include "file.h"
+#include "pax.h"
+#include "area.h"
+#include "field.h"
+#include "item.h"
 #include "sound.h"
+#include "memorymgr.h"
+
+#include <thread>
+#include <cassert>
+#include <member_table.h>
 
 extern "C"
 {

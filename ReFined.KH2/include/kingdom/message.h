@@ -6,6 +6,11 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <Windows.h>
+#include <regex>
+#include <iomanip> 
+
+#include "memorymgr.h"
 
 using namespace std;
 extern "C"

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "SigScan.h"
+#include "memorymgr.h"
 
 using namespace std;
 

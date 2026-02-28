@@ -1,5 +1,4 @@
 #include "next_form.h"
-#include <area.h>
 
 char* dk::NEXT_FORM::instance = nullptr;
 

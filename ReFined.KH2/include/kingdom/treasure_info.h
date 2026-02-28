@@ -3,6 +3,8 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include "itempic.h"
+#include "memorymgr.h"
+
 extern "C"
 {
 	namespace dk {

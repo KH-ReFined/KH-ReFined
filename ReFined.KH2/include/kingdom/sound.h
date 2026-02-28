@@ -4,7 +4,7 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <stdint.h>
-#include "SigScan.h"
+#include "memorymgr.h"
 
 #include "area.h"
 #include "region.h"
@@ -46,6 +46,7 @@ extern "C"
 		{
 			staticInitializer()
 			{
+				printf("======================================================\n");
 				printf("Handling hooks and redirections concerning SOUND...\n\n");
 
 				vector<uint8_t> _absoluteInstructionJMP =
@@ -66,7 +67,8 @@ extern "C"
 
 				printf("Hooked SOUND::getBgmFileName [0x%p] to Re:Fined function @ 0x%p\n", getBgmFileName_orig, SOUND::getBgmFileName);
 
-				printf("\nSuccessfully handled SOUND concerns.\n\n");
+				printf("\nSuccessfully handled SOUND concerns.\n");
+				printf("======================================================\n\n");
 			}
 		};
 

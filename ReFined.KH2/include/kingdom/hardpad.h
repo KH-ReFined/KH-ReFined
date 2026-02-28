@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <map>
 #include <string>
+#include "memorymgr.h"
 
 using namespace std;
 extern "C"

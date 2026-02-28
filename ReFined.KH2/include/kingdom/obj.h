@@ -1,8 +1,9 @@
 #pragma once
 
 #define DLL_EXPORT __declspec(dllexport)
+
 #include <cstdint>
-#include "SigScan.h"
+#include "memorymgr.h"
 #include "collision_data.h"
 
 extern "C"
@@ -28,6 +29,7 @@ extern "C"
             {
                 staticInitializer()
                 {
+                    printf("======================================================\n");
                     printf("Handling hooks and redirections concerning YS::OBJ...\n\n");
 
                     vector<uint8_t> _absoluteInstructionJMP =
@@ -48,7 +50,8 @@ extern "C"
 
                     printf("Hooked YS::OBJ::get_top_matrix [0x%p] to Re:Fined function @ 0x%p\n", _getTopMatrix_orig, get_top_matrix);
 
-                    printf("\nSuccessfully handled YS::OBJ concerns.\n\n");
+                    printf("\nSuccessfully handled YS::OBJ concerns.\n");
+                    printf("======================================================\n\n");
                 }
             };
 

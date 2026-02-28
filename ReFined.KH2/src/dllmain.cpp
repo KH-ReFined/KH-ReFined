@@ -67,7 +67,7 @@
 #include "item_table.h"
 #include "voice.h"
 
-#include "SigScan.h"
+#include "memorymgr.h"
 #include "continue_menu.h"
 
 #include "ini.h"

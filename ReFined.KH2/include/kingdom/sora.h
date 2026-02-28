@@ -3,7 +3,8 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <stdint.h>
-#include "SigScan.h"
+#include "memorymgr.h"
+
 extern "C"
 {
 	namespace YS

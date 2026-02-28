@@ -4,15 +4,16 @@
 
 #include <cstdint>
 #include <Windows.h>
-#include <SigScan.h>
 
 #include "obj2d.h"
 #include "sprite.h"
 #include "sequence.h"
 #include "exp.h"
 #include "field2dd.h"
+#include "area.h"
 #include "info_base.h"
 #include "lockon.h"
+#include "memorymgr.h"
 
 extern "C"
 {

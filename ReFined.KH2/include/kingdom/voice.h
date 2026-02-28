@@ -3,7 +3,7 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <stdint.h>
-#include "SigScan.h"
+#include "memorymgr.h"
 
 #include "area.h"
 #include "areainfo.h"
@@ -33,6 +33,7 @@ extern "C"
 			{
 				staticInitializer()
 				{
+					printf("======================================================\n");
 					printf("Handling hooks and redirections concerning YS::VOICE...\n\n");
 
 					vector<uint8_t> _absoluteInstructionJMP =
@@ -53,7 +54,8 @@ extern "C"
 
 					printf("Hooked YS::VOICE::ReadEntryId [0x%p] to Re:Fined function @ 0x%p\n", _readEntryIdFunc_orig, ReadEntryId);
 
-					printf("\nSuccessfully handled YS::VOICE concerns.\n\n");
+					printf("\nSuccessfully handled YS::VOICE concerns.\n");
+					printf("======================================================\n\n");
 				}
 			};
 

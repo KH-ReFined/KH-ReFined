@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <Windows.h>
 
+#include "memorymgr.h"
+
 extern "C"
 {
 	class DLL_EXPORT  AREA

@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#include "SigScan.h"
+#include "memorymgr.h"
 
 using namespace std;
 

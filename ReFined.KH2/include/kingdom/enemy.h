@@ -8,7 +8,7 @@
 #include <iostream>
 #include <map>
 
-#include "SigScan.h"
+#include "memorymgr.h"
 #include "file.h"
 #include "form_level.h"
 #include "obj.h"
@@ -34,6 +34,7 @@ extern "C"
             {
                 staticInitializer()
                 {
+                    printf("======================================================\n");
                     printf("Handling hooks and redirections concerning YS::ENEMY...\n\n");
 
                     vector<uint8_t> _absoluteInstructionJMP =
@@ -54,7 +55,8 @@ extern "C"
 
                     printf("Hooked YS::ENEMY::_OVR__dead [0x%p] to Re:Fined function @ 0x%p\n", _OVR__dead_orig, YS::ENEMY::_OVR__dead);
 
-                    printf("\nSuccessfully handled YS::ENEMY concerns.\n\n");
+                    printf("\nSuccessfully handled YS::ENEMY concerns.\n");
+                    printf("======================================================\n\n");
                 }
             };
 

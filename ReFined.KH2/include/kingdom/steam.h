@@ -3,7 +3,8 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <cstdint>
-#include <Windows.h>
+#include "memorymgr.h"
+
 extern "C"
 {
 	namespace PC

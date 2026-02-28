@@ -1,11 +1,13 @@
 #pragma once
 
+#define _CRT_SECURE_NO_WARNINGS
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <stdint.h>
 #include "region.h"
 #include "file.h"
 #include "area.h"
+#include "memorymgr.h"
 
 extern "C"
 {

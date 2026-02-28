@@ -4,7 +4,7 @@
 
 #include <cstdint>
 #include <Windows.h>
-#include <SigScan.h>
+#include "memorymgr.h"
 
 #include "pax.h"
 #include "converter.h"
@@ -26,6 +26,7 @@ extern "C"
                 {
                     staticInitializer()
                     {
+                        printf("======================================================\n");
                         printf("Handling hooks and redirections concerning YS::VM...\n\n");
 
                         vector<uint8_t> _absoluteInstructionJMP =
@@ -82,7 +83,8 @@ extern "C"
 
                         printf("Hooked YS::trap_limit_motion_start [0x%p] to Re:Fined function @ 0x%p\n", _limitMotionStart_orig, trap_limit_motion_start);
 
-                        printf("\nSuccessfully handled YS::VM concerns.\n\n");
+                        printf("\nSuccessfully handled YS::VM concerns.\n");
+                        printf("======================================================\n\n");
                     }
                 };
 

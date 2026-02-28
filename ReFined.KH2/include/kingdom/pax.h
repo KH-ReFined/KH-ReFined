@@ -3,6 +3,9 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <cstdint>
+#include "memorymgr.h"
+#include "converter.h"
+
 extern "C"
 {
 	namespace ryj

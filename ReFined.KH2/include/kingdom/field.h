@@ -2,7 +2,7 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include "SigScan.h"
+#include "memorymgr.h"
 
 #include <cstdint>
 #include <Windows.h>

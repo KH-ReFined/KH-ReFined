@@ -1,6 +1,4 @@
 #include "treasure_info.h"
-#include "SigScan.h"
-#include <Windows.h>
 
 dk::TREASURE_INFO::openPrizeWindow_t dk::TREASURE_INFO::openPrizeWindow = SignatureScan<dk::TREASURE_INFO::openPrizeWindow_t>("\x40\x53\x48\x83\xEC\x20\x48\x8B\x15\x00\x00\x00\x00\x48\x8B\xD9\x4C\x63\x82\x00\x00\x00\x00", "xxxxxxxxx????xxxxxx????");
 

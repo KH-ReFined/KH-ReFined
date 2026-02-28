@@ -1,5 +1,4 @@
 #include "magic.h"
-#include "SigScan.h"
 
 YS::MAGIC::GetTable_t YS::MAGIC::GetTable = SignatureScan<YS::MAGIC::GetTable_t>("\x40\x53\x48\x83\xEC\x20\x4C\x8B\x15\x00\x00\x00\x00\x45\x33\xC9\x41\x8B\xD1", "xxxxxxxxx????xxxxxx");
 

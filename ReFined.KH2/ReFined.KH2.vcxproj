@@ -153,7 +153,7 @@
     <ClInclude Include="include\kingdom\weapon.h" />
     <ClInclude Include="include\kingdom\weapon_entry.h" />
     <ClInclude Include="include\kingdom\world.h" />
-    <ClInclude Include="include\SigScan.h" />
+    <ClInclude Include="include\memorymgr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="beads.cpp" />

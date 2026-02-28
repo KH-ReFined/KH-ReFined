@@ -1,24 +1,4 @@
 #include "party.h"
-#include "sora.h"
-#include "friend.h"
-#include "converter.h"
-#include "member.h"
-#include "weapon_entry.h"
-#include "weapon_mset.h"
-#include "weapon.h"
-#include "objentry.h"
-#include "panacea_alloc.h"
-#include "sheet.h"
-#include "cache_buff.h"
-#include "file.h"
-#include "pax.h"
-#include "area.h"
-#include "field.h"
-#include "item.h"
-
-#include <thread>
-#include <cassert>
-#include <member_table.h>
 
 bool THREAD_RUNNING = false;
 uint8_t CHECK_VSB_THROUGHPUT = 0x00;

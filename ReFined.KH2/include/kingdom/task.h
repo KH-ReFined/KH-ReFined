@@ -3,7 +3,7 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <cstdint>
-#include <SigScan.h>
+#include "memorymgr.h"
 #include <Windows.h>
 
 extern "C"

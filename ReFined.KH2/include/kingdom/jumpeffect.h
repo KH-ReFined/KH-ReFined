@@ -3,6 +3,8 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <stdint.h>
+#include "memorymgr.h"
+
 extern "C"
 {
 	namespace dk

@@ -1,7 +1,9 @@
 #pragma once
-#include <cstdint>
 
 #define DLL_EXPORT __declspec(dllexport)
+
+#include "memorymgr.h"
+#include <cstdint>
 
 extern "C"
 {

@@ -4,7 +4,7 @@
 
 #include <cstdint>
 #include <Windows.h>
-#include "SigScan.h"
+#include "memorymgr.h"
 #include "sound.h"
 
 extern "C"

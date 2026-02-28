@@ -3,12 +3,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define DLL_EXPORT __declspec(dllexport)
 
-#include "SigScan.h"
 #include "image.h"
 #include "task.h"
 #include "file.h"
 #include "converter.h"
 #include "area.h"
+#include "memorymgr.h"
 
 extern "C"
 {
@@ -38,6 +38,7 @@ extern "C"
             {
                 staticInitializer()
                 {
+                    printf("======================================================\n");
                     printf("Handling hooks and redirections concerning YS::ITEMPIC...\n\n");
 
                     vector<uint8_t> _absoluteInstructionJMP =
@@ -58,7 +59,8 @@ extern "C"
 
                     printf("Hooked YS::ITEMPIC::ReadImageThread [0x%p] to Re:Fined function @ 0x%p\n", _readImageThread_orig, ReadImageThread);
 
-                    printf("\nSuccessfully handled YS::ITEMPIC concerns.\n\n");
+                    printf("\nSuccessfully handled YS::ITEMPIC concerns.\n");
+                    printf("======================================================\n\n");
                 }
             };
 
