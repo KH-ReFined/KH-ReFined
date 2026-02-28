@@ -2113,29 +2113,6 @@ extern "C"
         memcpy(_jumpSpace, _instHotpatchWeapon.data(), 0x1A);
         memcpy(_jumpSpace - 0x5B, _instHotpatchCont.data(), 0x06);
 
-        // Fixes key-bound PAX effects crashing whilst switching weapons.
-
-        char* _funcCheckWeapon = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x33\xDB\x48\x8B\xF2\x48\x8B\xF9\x48\x39\x99", "xxxxxxxxxxxxxxxxxxxxxxxxxx");
-
-        fill(_funcCheckWeapon + 0x17, _funcCheckWeapon + 0x1D, 0x90);
-        memcpy(_funcCheckWeapon + 0x17, "\xEB\xB8", 0x02);
-
-        vector<uint8_t> _firstPatchPax
-        {
-            0x48, 0x85, 0xC9, // test rcx, rcx
-            0x0F, 0x84, 0x95, 0x00, 0x00, 0x00, // je 0x95
-            0xEB, 0x19 // jmp 0x19
-        };
-
-        memcpy(_funcCheckWeapon - 0x2F, _firstPatchPax.data(), 0x0B);
-
-        vector<uint8_t> _secondPatchPax
-        {
-            0x48, 0x39, 0x99, 0xB8, 0x0A, 0x00, 0x00, // cmp [rcx + 0x0AB8], rbx
-            0xEB, 0x20 // jmp 0x20
-        };
-
-        memcpy(_funcCheckWeapon - 0x0B, _secondPatchPax.data(), 0x09);
 
         vector<uint8_t> _absoluteInstructionJMP =
         {
@@ -2238,7 +2215,6 @@ extern "C"
         memcpy(_funcReadThreadFAC, _patchThreadFAC.data(), _patchThreadFAC.size());
 
         */
-
 
         // Initialization of all MENU handlers [INTRO, CONFIG, CONTINUE]
 
@@ -2899,6 +2875,7 @@ extern "C"
             for (auto _execPair : _execModule)
                 _execPair.second();
             #endif
+
         }
     }
 }

@@ -94,6 +94,7 @@
     <ClInclude Include="include\kingdom\cache_buff.h" />
     <ClInclude Include="include\kingdom\cmconfig.h" />
     <ClInclude Include="include\kingdom\cmdata.h" />
+    <ClInclude Include="include\kingdom\collision_data.h" />
     <ClInclude Include="include\kingdom\command_draw.h" />
     <ClInclude Include="include\kingdom\command_elem.h" />
     <ClInclude Include="include\kingdom\enemy.h" />
@@ -182,6 +183,7 @@
     <ClCompile Include="src\kingdom\cache_buff.cpp" />
     <ClCompile Include="src\kingdom\cmconfig.cpp" />
     <ClCompile Include="src\kingdom\cmdata.cpp" />
+    <ClCompile Include="src\kingdom\collision_data.cpp" />
     <ClCompile Include="src\kingdom\command_draw.cpp" />
     <ClCompile Include="src\kingdom\command_elem.cpp" />
     <ClCompile Include="src\kingdom\enemy.cpp" />
