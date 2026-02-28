@@ -67,6 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="beads.h" />
     <ClInclude Include="include\continue_menu.h" />
     <ClInclude Include="include\discord\achievement_manager.h" />
     <ClInclude Include="include\discord\activity_manager.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="include\SigScan.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="beads.cpp" />
     <ClCompile Include="include\kingdom\item_table.h" />
     <ClCompile Include="include\kingdom\weapon_mset.h">
       <FileType>CppHeader</FileType>
