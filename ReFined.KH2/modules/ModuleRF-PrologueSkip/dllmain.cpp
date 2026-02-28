@@ -61,23 +61,22 @@ extern "C"
 	__declspec(dllexport) void RF_ModuleExecute()
 	{
 		bool* _isTitle = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsTitle@TITLE@YS@@2PEA_NEA");
-		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@YS@@2PEADEA");
-		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@YS@@2PEA_NEA");
-		bool* _isVendor = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsVendor@AREA@YS@@2PEADEA");
+		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@@2PEADEA");
+		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@@2PEA_NEA");
 		char* _introSelect = *(char**)GetProcAddress(MAIN_HANDLE, "?IntroSelect@TITLE@YS@@2PEAEEA");
-		char* _currArea = *(char**)GetProcAddress(MAIN_HANDLE, "?Current@AREA@YS@@2PEAUINFO@12@EA");
+		char* _currArea = *(char**)GetProcAddress(MAIN_HANDLE, "?Current@AREA@@2PEAUINFO@1@EA");
 		char* _memberStatsAnchor = *(char**)GetProcAddress(MAIN_HANDLE, "?MemberStatsAnchor@MEMBER_TABLE@YS@@2PEADEA");
 
-		uint64_t _eventInfoPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_eventinfo@EVENT@YS@@2_KA");
+		char** _eventInfoPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?Event@EVENT@YS@@2PEAPEADEA");
 
 		using MapJump_t = void (*)(char*, uint32_t, uint32_t, bool);
-		MapJump_t _mapJump = *(MapJump_t*)GetProcAddress(MAIN_HANDLE, "?MapJump@AREA@YS@@2P6AXPEAUINFO@12@II_N@ZEA");
+		MapJump_t _mapJump = *(MapJump_t*)GetProcAddress(MAIN_HANDLE, "?MapJump@AREA@@2P6AXPEAUINFO@1@II_N@ZEA");
 
 		using GetFileSize_t = size_t (*)(const char*);
 		GetFileSize_t _getFileSize = *(GetFileSize_t*)GetProcAddress(MAIN_HANDLE, "?GetSize@FILE@YS@@2P6A_KPEBD@ZEA");
 
-		using LoadBAR_t = size_t (*)(const char*, char*);
-		LoadBAR_t _barLoad = *(LoadBAR_t*)GetProcAddress(MAIN_HANDLE, "?LoadBAR@FILE@YS@@2P6A_KPEBDPEAD@ZEA");
+		using ReadBAR_t = size_t (*)(const char*, char*);
+		ReadBAR_t _barLoad = *(ReadBAR_t*)GetProcAddress(MAIN_HANDLE, "?ReadBAR@FILE@YS@@2P6A_KPEBDPEAD@ZEA");
 
 		if (*_isTitle)
 		{
@@ -90,9 +89,6 @@ extern "C"
 
 		if (!*_isTitle)
 		{
-			uint64_t _eventPointer = *reinterpret_cast<uint64_t*>(_eventInfoPtr);
-			_eventPointer = _eventPointer == 0x00 ? 0x00 : *reinterpret_cast<uint64_t*>(_eventPointer + 0x04);
-
 			if (*_currArea == 0x02 && *(_currArea + 0x01) == 0x01 && *(_currArea + 0x04) == 0x38 && ROXAS_SKIP_STAGE == 0x00)
 			{
 				if (*INTRO_SEEK)
@@ -113,7 +109,7 @@ extern "C"
 					ROXAS_SKIP_STAGE = 0x02;
 			}
 
-			if (*_currArea == 0x02 && *(_currArea + 0x01) == 0x20 && *(_currArea + 0x04) == 0x01 && ROXAS_SKIP_STAGE == 0x01 && _eventPointer != 0x00)
+			if (*_currArea == 0x02 && *(_currArea + 0x01) == 0x20 && *(_currArea + 0x04) == 0x01 && ROXAS_SKIP_STAGE == 0x01 && *_eventInfoPtr != 0x00)
 			{
 				size_t _fetchSize = _getFileSize("00prologue.bin");
 				auto _loadBAR = (char*)malloc(_fetchSize);
