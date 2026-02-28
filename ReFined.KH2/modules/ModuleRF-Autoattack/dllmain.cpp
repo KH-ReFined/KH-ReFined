@@ -75,15 +75,15 @@ extern "C"
 	__declspec(dllexport) void RF_ModuleExecute()
 	{
 		bool* _isTitle = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsTitle@TITLE@YS@@2PEA_NEA");
-		uint8_t* _battleStatus = *(uint8_t**)GetProcAddress(MAIN_HANDLE, "?BattleStatus@AREA@YS@@2PEADEA");
+		uint8_t* _battleStatus = *(uint8_t**)GetProcAddress(MAIN_HANDLE, "?BattleStatus@AREA@@2PEADEA");
 		uint16_t* _hardpadInput = *(uint16_t**)GetProcAddress(MAIN_HANDLE, "?Input@HARDPAD@YS@@2PEAGEA");
-		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@YS@@2PEADEA");
+		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@@2PEADEA");
 		char* _memberAnchor = *(char**)GetProcAddress(MAIN_HANDLE, "?MemberStatsAnchor@MEMBER_TABLE@YS@@2PEADEA");
 		char* _mareConfig = FindModule("steam_api64.dll") ? *(char**)GetProcAddress(MAIN_HANDLE, "?MareConfig@STEAM@PC@@2PEADEA") : *(char**)GetProcAddress(MAIN_HANDLE, "?MareConfig@EGS@PC@@2PEADEA");
 
 		uint64_t _commandElem = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?CommandElem@COMMAND_ELEM@YS@@2_KA");
-		uint64_t _commandDrawPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_commanddraw@COMMAND_DRAW@YS@@2_KA");
-		uint64_t _commandMenuPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_commandmenu@COMMAND_DRAW@YS@@2_KA");
+		char** _commandDrawPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?CommandDraw@COMMAND_DRAW@YS@@2PEAPEADEA");
+		char** _commandMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?CommandMenu@COMMAND_DRAW@YS@@2PEAPEADEA");
 
 		using ExecuteCommand_t = void(*)(char* playerObject, char* command);
 		ExecuteCommand_t _executeCommand = *(ExecuteCommand_t*)GetProcAddress(MAIN_HANDLE, "?ExecuteCommand@PARTY@YS@@2P6AXPEAD0@ZEA");
@@ -94,17 +94,16 @@ extern "C"
 		using IntToLong_t = uint64_t(*)(uint32_t);
 		IntToLong_t _intToLong = *(IntToLong_t*)GetProcAddress(MAIN_HANDLE, "?INT_TO_LONG_ADDRESS@CONVERTER@PC@@2P6A_KI@ZEA");
 
-		uint64_t _playerMainPtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_sora@SORA@YS@@2_KA");
-		auto _soraPtr = *reinterpret_cast<uint64_t*>(_playerMainPtr);
+		char** _playerMainPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?Sora@SORA@YS@@2PEAPEADEA");
+		auto _soraPtr = *_playerMainPtr;
 
 		auto _pointAction = *reinterpret_cast<uint64_t*>(_commandElem);
 		_pointAction = _pointAction + 0x0A;
 
 		auto _currAction = *reinterpret_cast<const uint32_t*>(_pointAction);
-		auto _commandPointer = *reinterpret_cast<const char**>(_commandDrawPtr);
 
-		auto _currMainMenu = *reinterpret_cast<const uint64_t*>(_commandMenuPtr);
-		auto _currChildMenu = *reinterpret_cast<const uint64_t*>(_commandMenuPtr + 0x08);
+		auto _currMainMenu = *_commandMenuPtr;
+		auto _currChildMenu = *reinterpret_cast<const uint8_t*>(_commandMenuPtr + 0x08);
 
 		auto _confirmConfig = *(_mareConfig + 0x1E);
 
@@ -113,7 +112,7 @@ extern "C"
 
 		auto _shortcutStart = reinterpret_cast<uint16_t*>(_saveData + 0x36F8);
 
-		if (!*_isTitle && _commandPointer != 0x00)
+		if (!*_isTitle && *_commandDrawPtr && *_commandMenuPtr)
 		{
 			auto _currCommand = *reinterpret_cast<const uint8_t*>(*reinterpret_cast<uint64_t*>(_commandMenuPtr) + 0x74);
 			auto _mainMenuType = *reinterpret_cast<const uint8_t*>(*reinterpret_cast<uint64_t*>(_commandMenuPtr) + 0x00);
