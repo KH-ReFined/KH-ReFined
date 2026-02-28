@@ -96,57 +96,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 // Redirected Constructors live here! //
 
 char* MENU_FNAME_BUFFER = ResolveRelativeAddress<char*>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x0D);
-char* FAC_WRITE_BUFFER = ResolveRelativeAddress<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x", 0x1F9);
 
 // 2D Path Constructors.
 
-void ConstructFAC(uint16_t id)
-{
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
-    auto _writeBuff = *reinterpret_cast<char**>(FAC_WRITE_BUFFER);
 
-    string _fetchFilePath(_writeBuff);
-
-    _fetchFilePath = _fetchFilePath.substr(0x04, _fetchFilePath.size() - 0x04);
-    _fetchFilePath = _fetchFilePath.substr(0x00, _fetchFilePath.size() - 0x04);
-
-    string _constructPath = _fetchConfig & 0x0200 ? "menu_2nd" : (_fetchConfig & 0x0400 ? "menu_3rd" : "menu");
-
-    _constructPath = _constructPath.append(_fetchFilePath);
-    _constructPath = _constructPath.append("%d.imd");
-
-    sprintf(_writeBuff, _constructPath.c_str(), id);
-
-    if (!YS::FILE::GetSize(_writeBuff))
-    {
-        _constructPath = "menu";
-
-        _constructPath = _constructPath.append(_fetchFilePath);
-        _constructPath = _constructPath.append("%d.imd");
-
-        sprintf(_writeBuff, _constructPath.c_str(), id);
-    }
-}
-
-void ConstructITEMPIC(char* buff, uint16_t id)
-{
-    auto _fetchPicturePtr = *YS::ITEMPIC::ToLoadID;
-    auto _fetchPictureID = 0x00;
-
-    if (_fetchPicturePtr != nullptr)
-        _fetchPictureID = *_fetchPicturePtr;
-
-    else
-        _fetchPictureID = id;
-
-    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(YS::AREA::SaveData + 0x41A6);
-    string _constructPath = _fetchConfig & 0x0200 ? "itempic_2nd/item-%03d.imd" : (_fetchConfig & 0x0400 ? "itempic_3rd/item-%03d.imd" : "itempic/item-%03d.imd");
-
-    sprintf(buff, _constructPath.c_str(), _fetchPictureID);
-
-    if (!YS::FILE::GetSize(buff))
-        sprintf(buff, "itempic/item-%03d.imd", _fetchPictureID);
-}
 
 // =================================== //
 
@@ -2026,21 +1979,21 @@ extern "C"
         auto _saveCheckFunction = IS_STEAM ? SignatureScan<char*>("\x40\x55\x56\x57\x48\x81\xEC\xA0\x00\x00\x00\x48\xC7\x44\x24\x38\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\xD0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x90\x00\x00\x00\x8B\xF1\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xED\x8D\x5D\x01\x48\x39\x2D\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x85\xC0\x74\x1D", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxx????xx????xxxxxxxx????xx????xxxxxx????xxxxxxxxxx")
                                            : SignatureScan<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
 
-        memcpy(_saveCheckFunction + (IS_STEAM ? 0x189 : 0x138), "\x90\x90\x90\x90\x90", 0x05);
-        memcpy(_saveCheckFunction + (IS_STEAM ? 0x196 : 0x145), "\x90\x90", 0x02);
+        memset(_saveCheckFunction + (IS_STEAM ? 0x189 : 0x138), 0x90, 0x05);
+        memset(_saveCheckFunction + (IS_STEAM ? 0x196 : 0x145), 0x90, 0x02);
 
         memcpy(_saveCheckFunction + (IS_STEAM ? 0x1A1 : 0x150), "\xEB", 0x01);
 
         // Prevent SOFTRESET from resetting Fade status for a smooth-ass transition.
 
-        memcpy(reinterpret_cast<char*>(dk::SOFTRESET::SoftResetThread) + 0x1ED, "\x90\x90\x90\x90\x90", 0x05);
+        memset(reinterpret_cast<char*>(dk::SOFTRESET::SoftResetThread) + 0x1ED, 0x90, 0x05);
 
         // I do not remember what this fucking does. But I believe it is important.
 
         auto _fetchAdjustment = SignatureScan<char*>("\x48\x83\xEC\x28\x0F\x10\x41\x48\x4C\x8B\xC9\x4C\x8B\xD2\xF3\x0F\x10\x25\x00\x00\x00\x00\x0F\x57\xED\x0F\x11\x02\x41\x0F\x10\x00\x49\x8B\x41\x40", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxx");
 
-        memcpy(_fetchAdjustment + 0xF6, "\x90\x90\x90\x90\x90\x90", 0x06);
-        memcpy(_fetchAdjustment + 0x101, "\x90\x90\x90\x90\x90\x90", 0x06);
+        memset(_fetchAdjustment + 0xF6,  0x90, 0x06);
+        memset(_fetchAdjustment + 0x101, 0x90, 0x06);
 
         #ifndef BUILD_ARCHIPELAGO_LITE
         Tz::HookIntro::Submit();
@@ -2073,76 +2026,11 @@ extern "C"
         auto _addrGetAPDX = reinterpret_cast<char*>(YS::OBJENTRY::get_apdx);
         auto _addrGetMSET = reinterpret_cast<char*>(YS::OBJENTRY::get_mset);
 
-        // Fixes a crash with switching weapons without a thread present.
-
-        auto _fixWeaponHotswap = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\x33\xC0\x0F\x1F\x44\x00\x00\x48\x85\xC0\x75\x09\x48\x8B\x05\x00\x00\x00\x00\xEB\x08\x8B\x48\x70\xE8\x00\x00\x00\x00\x48\x85\xC0\x74\x15\x48\x39\x58\x58\x75\xDF\xB9\xFF\xFF\x00\x00\x66\x01\x48\x02\x48\x83\xC4\x20\x5B\xC3\xB9\xFF\xFF\x00\x00\x66\x01\x48\x02\x48\x83\xC4\x20\x5B\xC3", "xxxxxxxxxxxxxxxxxxxxxxxx????xxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-
-        auto _jumpSpace = _fixWeaponHotswap + 0x294;
-        auto _moduleStart = reinterpret_cast<uint64_t>(moduleInfo.startAddr) - reinterpret_cast<uint64_t>(_jumpSpace) - 0x07;
-
-        vector<uint8_t> _instJumpWorkaround
-        {
-            0xE9, 0x59, 0x02, 0x00, 0x00,
-            0x90, 0x90, 0x90, 0x90, 0x90,
-            0xB9, 0xFF, 0xFF, 0x00, 0x00,
-            0xE9, 0x4A, 0x02, 0x00, 0x00
-        };
-
-        memcpy(_fixWeaponHotswap + 0x36, _instJumpWorkaround.data(), 0x14);
-
-        vector<uint8_t> _instHotpatchWeapon
-        {
-            0x4C, 0x8D, 0x15, 0x00, 0x00, 0x00, 0x00,
-            0x4C, 0x39, 0xD0,
-            0xEB, 0x03,
-            0xC2, 0x00, 0x00,
-            0x7C, 0x04,
-            0x66, 0x01, 0x48, 0x02,
-            0x4D, 0x31, 0xD2,
-            0xEB, 0x8B
-        };
-
-        vector<uint8_t> _instHotpatchCont
-        {
-            0x48, 0x83, 0xC4, 0x20,
-            0x5B, 0xC3
-        };
-
-        memcpy(_instHotpatchWeapon.data() + 0x03, &_moduleStart, 0x04);
-
-        memcpy(_jumpSpace, _instHotpatchWeapon.data(), 0x1A);
-        memcpy(_jumpSpace - 0x5B, _instHotpatchCont.data(), 0x06);
-
-
         vector<uint8_t> _absoluteInstructionJMP =
         {
             0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
-
-        auto _voiceReadFunc = (uint64_t)YS::VOICE::ReadEntryId;
-        auto _fetchVoiceReadFunc = SignatureScan<char*>("\x85\xC9\x0F\x84\x93\x01\x00\x00\x41\x56\x48\x83\xEC\x70\x48\x8B", "xxxxxxxxxxxxxxxx");
-
-        fill(_fetchVoiceReadFunc, _fetchVoiceReadFunc + 0x9C, 0x90);
-
-        memcpy(_absoluteInstructionJMP.data() + 0x06, &_voiceReadFunc, 0x08);
-        memcpy(_fetchVoiceReadFunc, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-        auto _anbLoadFunc = (uint64_t)sa::EVENT::motion_read_set;
-        auto _fetchAnbLoad = SignatureScan<char*>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx");
-
-        fill(_fetchAnbLoad, _fetchAnbLoad + 0x28F, 0x90);
-
-        memcpy(_absoluteInstructionJMP.data() + 0x06, &_anbLoadFunc, 0x08);
-        memcpy(_fetchAnbLoad, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-        auto _eventVoiceLoadFunc = (uint64_t)sa::EVENT::audio_read_set;
-        auto _fetchEventVoiceLoad = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-
-        fill(_fetchEventVoiceLoad, _fetchEventVoiceLoad + 0x12B, 0x90);
-
-        memcpy(_absoluteInstructionJMP.data() + 0x06, &_eventVoiceLoadFunc, 0x08);
-        memcpy(_fetchEventVoiceLoad, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
 
         auto _fVectorAddr = (uint64_t)kn::FVector::Init;
         auto _fVectorInitialize = SignatureScan<char*>("\x48\x3B\xCA\x74\x16\x8B\x02\x89\x01", "xxxxxxxxx");
@@ -2156,65 +2044,6 @@ extern "C"
 
         memcpy(_hotpatchNullTask + 0x17, "\xEB\x22\x89\x01\xC3", 0x05);
         memcpy(_hotpatchNullTask + 0x3B, "\x83\xFA\x04\x74\xDB\x8B\x02\xEB\xD5", 0x09);
-
-        // Redirect ITEMPIC and FAC file construction to Re:Fined code.
-
-        /*
-        auto _funcOpenEventBox = SignatureScan<char*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx") + 0x6F;
-        auto _funcReadThreadIMD = SignatureScan<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x") + 0x7D;
-        auto _funcReadThreadFAC = SignatureScan<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x") + 0x231;
-
-        auto _treasurePtr = ResolveRelativeAddress<char*>(_funcOpenEventBox, 0x7A);
-
-        fill(_funcOpenEventBox, _funcOpenEventBox + 0x21, 0x90);
-        fill(_funcReadThreadIMD, _funcReadThreadIMD + 0x14, 0x90);
-        fill(_funcReadThreadFAC, _funcReadThreadFAC + 0x14, 0x90);
-
-        auto _constFunction = reinterpret_cast<uint64_t>(ConstructITEMPIC);
-
-        memcpy(_absoluteInstructionJMP.data() + 0x06, &_constFunction, 0x08);
-        memcpy(_addrGetMDLX + 0x10, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-        vector<uint8_t> _patchEventBox =
-        {
-            0xC7, 0x05, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, // mov [0x00], 0x00000001
-            0x48, 0x8B, 0x53, 0x18,                                     // mov rdx, [rbx + 0x18]
-            0x48, 0x8D, 0x4C, 0x24, 0x20,                               // lea rcx, [rsp + 0x20]
-            0x48, 0x8B, 0xFA,                                           // mov rdi, rdx
-            0xE8, 0x00, 0x00, 0x00, 0x00                                // call [someFunction]
-        };
-
-        uint32_t _calculateTrsr = _treasurePtr - (_funcOpenEventBox + 0x0A);
-        uint32_t _calculateCall = (_addrGetMDLX + 0x10) - (_funcOpenEventBox + 0x1B);
-
-        memcpy(_patchEventBox.data() + 0x17, &_calculateCall, 0x04);
-        memcpy(_patchEventBox.data() + 0x02, &_calculateTrsr, 0x04);
-
-        memcpy(_funcOpenEventBox, _patchEventBox.data(), _patchEventBox.size());
-
-        vector<uint8_t> _patchThreadIMD =
-        {
-            0x48, 0x8D, 0x4C, 0x24, 0x30, // lea rcx, [rsp + 0x30]
-            0xE8, 0x00, 0x00, 0x00, 0x00  // call [someFunction] 
-        };
-
-        _calculateCall = (_addrGetMDLX + 0x10) - (_funcReadThreadIMD + 0x0A);
-
-        memcpy(_patchThreadIMD.data() + 0x06, &_calculateCall, 0x04);
-        memcpy(_funcReadThreadIMD, _patchThreadIMD.data(), _patchThreadIMD.size());
-
-        vector<uint8_t> _patchThreadFAC =
-        {
-            0x48, 0x8B, 0xCD,                                                                               // mov rcx, rbp
-            0xFF, 0x15, 0x02, 0x00, 0x00, 0x00, 0xEB, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // call [someAbsoluteFunction]
-        };
-
-        _constFunction = reinterpret_cast<uint64_t>(ConstructFAC);
-
-        memcpy(_patchThreadFAC.data() + 0x0B, &_constFunction, 0x08);
-        memcpy(_funcReadThreadFAC, _patchThreadFAC.data(), _patchThreadFAC.size());
-
-        */
 
         // Initialization of all MENU handlers [INTRO, CONFIG, CONTINUE]
 
@@ -2306,8 +2135,8 @@ extern "C"
                 0x41, 0xB9, 0xC0, 0x00, 0x00, 0x00 // mov r9d, 0xC0
             };
 
-            memcpy(_fetchInformation + 0x06, "\x90\x90\x90\x90\x90\x90\x90\x90", 0x08);
-            memcpy(_fetchInformation + 0x20, "\x90\x90\x90\x90\x90\x90", 0x06);
+            memset(_fetchInformation + 0x06, 0x90, 0x08);
+            memset(_fetchInformation + 0x20, 0x90, 0x06);
 
             memcpy(_fetchInformation + 0x06, _informationFunc.data(), 0x07);
             memcpy(_fetchInformation + 0x20, _redirInformation.data(), 0x06);
@@ -2364,16 +2193,16 @@ extern "C"
 
             auto _fetchCulling3D = SignatureScan<char*>("\x48\x8B\xC4\x48\x89\x58\x18\x48\x89\x70\x20\x55\x57\x41\x54\x41", "xxxxxxxxxxxxxxxx");
 
-            memcpy(_fetchCulling3D + 0x11D, "\xEB", 0x01);
-            memcpy(_fetchCulling3D + 0x12B, "\xEB", 0x01);
-            memcpy(_fetchCulling3D + 0x133, "\xEB", 0x01);
-            memcpy(_fetchCulling3D + 0x141, "\xEB", 0x01);
-            memcpy(_fetchCulling3D + 0x149, "\xEB", 0x01);
-            memcpy(_fetchCulling3D + 0x152, "\xEB", 0x01);
+            memset(_fetchCulling3D + 0x11D, 0xEB, 0x01);
+            memset(_fetchCulling3D + 0x12B, 0xEB, 0x01);
+            memset(_fetchCulling3D + 0x133, 0xEB, 0x01);
+            memset(_fetchCulling3D + 0x141, 0xEB, 0x01);
+            memset(_fetchCulling3D + 0x149, 0xEB, 0x01);
+            memset(_fetchCulling3D + 0x152, 0xEB, 0x01);
 
             auto _fetchCulling2D = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
 
-            memcpy(_fetchCulling2D + 0x06C, "\x00", 0x01);
+            memset(_fetchCulling2D + 0x06C, 0x00, 0x01);
         }
     
         // This block initializes NEXT_FORM.
@@ -2406,7 +2235,7 @@ extern "C"
             // Prevent MAGIC clearing since we handle that now, and because it causes a crash.
 
             auto _funcMagicClear = SignatureScan<char*>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x57\x48\x83\xEC\x40\x48\x8B\x05\x00\x00\x00\x00\x48\x89\x74\x24\x50\x48\x8B\xD8\x4C\x89\x74\x24\x58\x48\x85\xC0\x0F\x84\x00\x00\x00\x00\x0F\x29\x74\x24\x30\xF3\x0F\x10\x35\x00\x00\x00\x00\x0F\x29\x7C\x24\x20\x0F\x57\xFF\x48\x85\xDB\x75\x08", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxxxxxxxxxxx");
-            memcpy(_funcMagicClear + 0x18A, "\x90\x90\x90\x90\x90", 0x05);
+            memset(_funcMagicClear + 0x18A, 0x90, 0x05);
 
         #ifndef BUILD_ARCHIPELAGO_LITE
             // Handle reFined.cfg file.
