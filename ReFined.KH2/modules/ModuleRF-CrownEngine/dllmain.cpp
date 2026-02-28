@@ -37,13 +37,13 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 map<uint8_t, string> SORA_FORMS
 {
-	{0x00, "P_EX100"},
-	{0x01, "P_EX100_BTLF"},
-	{0x02, "P_EX100_MAGF"},
-	{0x03, "P_EX100_KH1F"},
-	{0x04, "P_EX100_TRIF"},
-	{0x05, "P_EX100_ULTF"},
-	{0x06, "P_EX100_HTLF"}
+	{ 0x00, "P_EX100" },
+	{ 0x01, "P_EX100_BTLF" },
+	{ 0x02, "P_EX100_MAGF" },
+	{ 0x03, "P_EX100_KH1F" },
+	{ 0x04, "P_EX100_TRIF" },
+	{ 0x05, "P_EX100_ULTF" },
+	{ 0x06, "P_EX100_HTLF" }
 };
 
 extern "C"
@@ -61,16 +61,15 @@ extern "C"
 	__declspec(dllexport) void RF_ModuleExecute()
 	{
 		bool* _isTitle = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsTitle@TITLE@YS@@2PEA_NEA");
-		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@YS@@2PEADEA");
-		char* _currArea = *(char**)GetProcAddress(MAIN_HANDLE, "?Current@AREA@YS@@2PEAUINFO@12@EA");
-		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@YS@@2PEA_NEA");
-		bool* _isVendor = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsVendor@AREA@YS@@2PEADEA");
+		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@@2PEADEA");
+		char* _currArea = *(char**)GetProcAddress(MAIN_HANDLE, "?Current@AREA@@2PEAUINFO@1@EA");
+		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@@2PEA_NEA");
 		char* _memberTable = *(char**)GetProcAddress(MAIN_HANDLE, "?MemberTable@MEMBER_TABLE@YS@@2PEADEA");
 
 		using SearchByName_t = char* (*)(const char*, int);
 		SearchByName_t _searchByName = *(SearchByName_t*)GetProcAddress(MAIN_HANDLE, "?SearchByName@CACHE_BUFF@YS@@2P6APEADPEBDH@ZEA");
 
-		uint64_t _playerGaugePtr = *(uint64_t*)GetProcAddress(MAIN_HANDLE, "?pint_playergauge@GAUGE@dk@@2_KA");
+		char** _playerGaugePtr = *(char***)GetProcAddress(MAIN_HANDLE, "?PlayerGauge@GAUGE@dk@@2PEAPEADEA");
 
 		// Fetch Sora's UCM.
 		auto _fetchCharacter = *reinterpret_cast<const uint16_t*>(_memberTable);
@@ -86,8 +85,7 @@ extern "C"
 		auto _areaCheck = *_currArea >= 0x02 && *_currArea != 0x0F;
 
 		// Check if Sora's gauge exists.
-		auto _gaugeSora = *reinterpret_cast<uint64_t*>(_playerGaugePtr);
-		_gaugeSora = _gaugeSora != 0x00 ? *reinterpret_cast<uint64_t*>(_gaugeSora + 0x88) : 0x00;
+		auto _gaugeSora = *_playerGaugePtr ? *reinterpret_cast<char*>(*_playerGaugePtr + 0x88) : 0x00;
 
 		// If in the title, or the game is loaded, or there was a Drive Form change, or there was a crown change: Reset everything.
 		if (*_isTitle || !*_isInMap || PAST_FORM != *(_saveData + 0x3524) || PAST_CROWN != _calculateCrown)
