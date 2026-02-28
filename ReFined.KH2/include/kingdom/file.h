@@ -26,6 +26,9 @@ extern "C"
 
 			using ReadBarBack_t = char*(*)(const char* fileName, char* address, ReadCallback callback, uint32_t* arguments);
 			static ReadBarBack_t ReadBarBack;
+
+			using IsReading_t = bool(*)();
+			static IsReading_t IsReading;
 		};
 	}
 }
