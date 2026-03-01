@@ -95,6 +95,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 wchar_t* MOD_PATH;
 
+bool GAUGE_WAIT = false;
+uint8_t GAUGE_TIME = 0;
+
 multimap<uint8_t, void(*)(), std::greater<uint8_t>> _execModule;
 multimap<uint8_t, void(*)(const wchar_t*), std::greater<uint8_t>> _initModule;
 
@@ -1632,10 +1635,27 @@ void HANDLE_ASPECT()
 
                 memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x21, &_positiveDefault, 0x04);
                 memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x29, &_negativeDefault, 0x04);
+
+                GAUGE_WAIT = true;
             }
 
             else
             {
+                if (GAUGE_WAIT)
+                {
+                    if (GAUGE_TIME >= 30)
+                    {
+                        GAUGE_WAIT = false;
+                        GAUGE_TIME = 0;
+                    }
+
+                    else
+                    {
+                        GAUGE_TIME++;
+                        return;
+                    }
+                }
+
                 memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x21, &POSITIVE_ASPECT_OFFSET, 0x04);
                 memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x29, &NEGATIVE_ASPECT_OFFSET, 0x04);
             }
@@ -1643,6 +1663,21 @@ void HANDLE_ASPECT()
 
         else
         {
+            if (GAUGE_WAIT)
+            {
+                if (GAUGE_TIME >= 30)
+                {
+                    GAUGE_WAIT = false;
+                    GAUGE_TIME = 0;
+                }
+
+                else
+                {
+                    GAUGE_TIME++;
+                    return;
+                }
+            }
+
             memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x21, &POSITIVE_ASPECT_OFFSET, 0x04);
             memcpy(YS::PANACEA_ALLOC::Get("GAUGE_ASPECT_OVERRIDE") + 0x29, &NEGATIVE_ASPECT_OFFSET, 0x04);
         }
