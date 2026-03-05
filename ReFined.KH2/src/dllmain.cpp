@@ -1191,10 +1191,8 @@ void AUTOSAVE()
 
         if (*reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4) & 0x0004)
         {
-            // const char* _saveMessage = YS::MESSAGE::GetData(0x5702);
-            // dk::INFORMATION::openInformationWindow(_saveMessage);
-
-            YS::SAVE_INDICATOR::create(NEGATIVE_ASPECT_OFFSET);
+            const char* _saveMessage = YS::MESSAGE::GetData(0x5702);
+            dk::INFORMATION::openInformationWindow(_saveMessage);
         }
 
         SAVE_INITIATE = false;
@@ -1976,7 +1974,7 @@ extern "C"
             {"HANDLE_RESOURCE", HANDLE_RESOURCE},
             {"HANDLE_AUDIO", HANDLE_AUDIO},
             {"RETRY_BATTLES", RETRY_BATTLES},
-            {"DISPLAY_NEXT_EXP", DISPLAY_NEXT_EXP},
+            // {"DISPLAY_NEXT_EXP", DISPLAY_NEXT_EXP},
             {"HANDLE_SHAKE", HANDLE_SHAKE},
             {"ENFORCE_PROMPTS", ENFORCE_PROMPTS},
             {"FIX_SAVE_POINT", FIX_SAVE_POINT},

@@ -285,13 +285,13 @@
     <ClInclude Include="include\kingdom\saveram_battle.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
-    <ClInclude Include="beads.h">
-      <Filter>Header Files\kingdom_internal</Filter>
-    </ClInclude>
     <ClInclude Include="include\kingdom\limit.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
     <ClInclude Include="include\kingdom\collision_data.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\beads.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
   </ItemGroup>
@@ -545,13 +545,13 @@
     <ClCompile Include="src\kingdom\saveram_battle.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
-    <ClCompile Include="beads.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
     <ClCompile Include="src\kingdom\limit.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
     <ClCompile Include="src\kingdom\collision_data.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\beads.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
   </ItemGroup>
