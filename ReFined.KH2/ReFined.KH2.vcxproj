@@ -126,7 +126,9 @@
     <ClInclude Include="include\kingdom\member.h" />
     <ClInclude Include="include\kingdom\member_table.h" />
     <ClInclude Include="include\kingdom\menu.h" />
+    <ClInclude Include="include\kingdom\menuutil.h" />
     <ClInclude Include="include\kingdom\message.h" />
+    <ClInclude Include="include\kingdom\newgame.h" />
     <ClInclude Include="include\kingdom\next_form.h" />
     <ClInclude Include="include\kingdom\obj.h" />
     <ClInclude Include="include\kingdom\obj2d.h" />
@@ -137,6 +139,7 @@
     <ClInclude Include="include\kingdom\region.h" />
     <ClInclude Include="include\kingdom\saveram_battle.h" />
     <ClInclude Include="include\kingdom\save_indicator.h" />
+    <ClInclude Include="include\kingdom\select.h" />
     <ClInclude Include="include\kingdom\sequence.h" />
     <ClInclude Include="include\kingdom\shake.h" />
     <ClInclude Include="include\kingdom\sheet.h" />
@@ -216,7 +219,9 @@
     <ClCompile Include="src\kingdom\member.cpp" />
     <ClCompile Include="src\kingdom\member_table.cpp" />
     <ClCompile Include="src\kingdom\menu.cpp" />
+    <ClCompile Include="src\kingdom\menuutil.cpp" />
     <ClCompile Include="src\kingdom\message.cpp" />
+    <ClCompile Include="src\kingdom\newgame.cpp" />
     <ClCompile Include="src\kingdom\next_form.cpp" />
     <ClCompile Include="src\kingdom\obj.cpp" />
     <ClCompile Include="src\kingdom\obj2d.cpp" />
@@ -227,6 +232,7 @@
     <ClCompile Include="src\kingdom\region.cpp" />
     <ClCompile Include="src\kingdom\saveram_battle.cpp" />
     <ClCompile Include="src\kingdom\save_indicator.cpp" />
+    <ClCompile Include="src\kingdom\select.cpp" />
     <ClCompile Include="src\kingdom\sequence.cpp" />
     <ClCompile Include="src\kingdom\shake.cpp" />
     <ClCompile Include="src\kingdom\sheet.cpp" />

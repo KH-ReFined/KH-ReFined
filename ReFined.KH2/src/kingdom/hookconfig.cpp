@@ -16,6 +16,8 @@ char* CAMPINIT_OFFSET = SignatureScan<char*>("\x66\x44\x89\x35\x00\x00\x00\x00\x
 
 char* MENUSELECT_OFFSET = SignatureScan<char*>("\x40\x55\x53\x48\x8D\x6C\x24\xB1\x48\x81\xEC\x98\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????");
 
+char* (*MENUSEQ_POINTER)() = ResolveRelativeAddress<char*(*)()>(reinterpret_cast<char*>(Tz::CmConfig::UpdateList), 0x12);
+
 vector<char*> Tz::HookConfig::CONFIG_OFFSETS = vector<char*>
 {
 	SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x0F\xB6\xD9\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x4C\x8B\x1D\x00\x00\x00\x00", "xxxxxxxxxxxx????x????xxx????"),
@@ -335,7 +337,11 @@ void Tz::HookConfig::Handle()
 						memcpy(const_cast<char*>(_pointCurrent), &_indexCalcuation, 0x01);
 					}
 
-					Tz::CmConfig::UpdateList();
+					auto _calcSeqPoint = MENUSEQ_POINTER() + 0x448B;
+
+					if (*reinterpret_cast<char**>(_calcSeqPoint) != nullptr)
+						Tz::CmConfig::UpdateList();
+					
 					Tz::CmConfig::UpdateActive();
 
 					memcpy(MENUSELECT_OFFSET + 0x46, _menuSelectInst, 0x04);

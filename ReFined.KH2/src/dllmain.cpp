@@ -76,6 +76,9 @@
 #include <sheet.h>
 #include <fvector.h>
 
+bool AGRABAH_FOUND = false;
+bool POOH_FOUND = false;
+
 using namespace std;
 using namespace discord;
 
@@ -2726,6 +2729,39 @@ extern "C"
                 _execPair.second();
             #endif
 
+
+            if (*YS::SORA::Sora)
+            {
+                auto _positionX = reinterpret_cast<float*>(*YS::SORA::Sora + 0x670);
+                auto _positionY = reinterpret_cast<float*>(*YS::SORA::Sora + 0x674);
+                auto _positionZ = reinterpret_cast<float*>(*YS::SORA::Sora + 0x678);
+
+                if (AREA::Current->World == 0x07 && AREA::Current->Room == 0x00)
+                {
+                    auto _satisfyX = *_positionX <= -3100 && *_positionX >= -3300;
+                    auto _satisfyY = *_positionY == -500;
+                    auto _satisfyZ = *_positionZ >= 700 && *_positionZ <= 800;
+
+                    if (_satisfyX && _satisfyY && _satisfyZ && !AGRABAH_FOUND)
+                    {
+                        dk::INFORMATION::openInformationWindow(nullptr);
+                        AGRABAH_FOUND = true;
+                    }
+                }
+
+                else if (AREA::Current->World == 0x09 && AREA::Current->Room == 0x02)
+                {
+                    auto _satisfyX = *_positionX <= -800 && *_positionX >= -900;
+                    auto _satisfyY = *_positionY <= -154 && *_positionY >= -158;
+                    auto _satisfyZ = *_positionZ >= 1000 && *_positionZ <= 1200;
+
+                    if (_satisfyX && _satisfyY && _satisfyZ && !POOH_FOUND)
+                    {
+                        dk::INFORMATION::openInformationWindow(nullptr);
+                        POOH_FOUND = true;
+                    }
+                }
+            }
         }
     }
 }
