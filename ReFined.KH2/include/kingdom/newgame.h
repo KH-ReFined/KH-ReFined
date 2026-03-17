@@ -61,7 +61,7 @@ extern "C"
                     memcpy(_fetchInit + 0x16B, "\xE0\x1E\x00\x00", 0x04);
                     memcpy(_fetchInit + 0x264, "\xE0\x0E\x00\x00", 0x04);
 
-                    printf("Edited Title::NewGame::Init [0x%p] to allocate more space for Re:Fined options.\n", _fetchInit, SetupResult);
+                    printf("Edited Title::NewGame::Init [0x%p] to allocate more space for Re:Fined options.\n", _fetchInit);
 
                     printf("\nSuccessfully handled Title::NewGame concerns.\n");
                     printf("======================================================\n\n");

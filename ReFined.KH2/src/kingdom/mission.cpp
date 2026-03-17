@@ -1,0 +1,3 @@
+#include "mission.h"
+
+YS::MISSION::GetAntiRate_t YS::MISSION::GetAntiRate = SignatureScan<YS::MISSION::GetAntiRate_t>("\x48\x8B\x05\x00\x00\x00\x00\x48\x85\xC0\x74\x09\x48\x8B\x40\x08\x0F\xB6\x40\x0E\xC3\xB8\x01\x00\x00\x00", "xxx????xxxxxxxxxxxxxxxxxxx");

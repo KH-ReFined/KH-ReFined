@@ -16,6 +16,10 @@ extern "C"
 			using Get_t = char* (*)(uint64_t id);
 			static Get_t Get;
 
+			// Originally GetForm
+			using GetDrive_t = char* (*)(uint64_t form);
+			static GetDrive_t GetDrive;
+
 			static char* ReactionID;
 			static uint64_t CommandElem;
 		};

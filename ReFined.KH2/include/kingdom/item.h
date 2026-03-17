@@ -13,7 +13,7 @@ extern "C"
 			using GetNumBackyard_t = uint64_t(*)(uint64_t item);
 			static GetNumBackyard_t GetNumBackyard;
 
-			using GetBackyard_t = void(*)(uint16_t item, int num);
+			using GetBackyard_t = void(*)(int item, int num);
 			static GetBackyard_t GetBackyard;
 
 			using ReduceBackyard_t = void(*)(uint16_t item, int num);
