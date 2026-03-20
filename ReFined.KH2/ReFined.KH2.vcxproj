@@ -121,6 +121,7 @@
     <ClInclude Include="include\kingdom\iteminfo.h" />
     <ClInclude Include="include\kingdom\itempic.h" />
     <ClInclude Include="include\kingdom\jumpeffect.h" />
+    <ClInclude Include="include\kingdom\libretto.h" />
     <ClInclude Include="include\kingdom\limit.h" />
     <ClInclude Include="include\kingdom\lockon.h" />
     <ClInclude Include="include\kingdom\magic.h" />
@@ -133,7 +134,6 @@
     <ClInclude Include="include\kingdom\pref.h" />
     <ClInclude Include="include\kingdom\progress.h" />
     <ClInclude Include="include\kingdom\newgame.h" />
-    <ClInclude Include="include\kingdom\next_form.h" />
     <ClInclude Include="include\kingdom\obj.h" />
     <ClInclude Include="include\kingdom\obj2d.h" />
     <ClInclude Include="include\kingdom\objentry.h" />
@@ -219,6 +219,7 @@
     <ClCompile Include="src\kingdom\itempic.cpp" />
     <ClCompile Include="src\kingdom\item_table.cpp" />
     <ClCompile Include="src\kingdom\jumpeffect.cpp" />
+    <ClCompile Include="src\kingdom\libretto.cpp" />
     <ClCompile Include="src\kingdom\limit.cpp" />
     <ClCompile Include="src\kingdom\lockon.cpp" />
     <ClCompile Include="src\kingdom\magic.cpp" />
@@ -229,7 +230,6 @@
     <ClCompile Include="src\kingdom\message.cpp" />
     <ClCompile Include="src\kingdom\mission.cpp" />
     <ClCompile Include="src\kingdom\newgame.cpp" />
-    <ClCompile Include="src\kingdom\next_form.cpp" />
     <ClCompile Include="src\kingdom\obj.cpp" />
     <ClCompile Include="src\kingdom\obj2d.cpp" />
     <ClCompile Include="src\kingdom\objentry.cpp" />

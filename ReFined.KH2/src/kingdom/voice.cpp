@@ -18,7 +18,7 @@ void YS::VOICE::ReadEntryId(uint16_t entryID, char* buff)
     string _constructPath = _fetchConfig & 0x0004 ? "voice/jp/battle/%s%d_%s.win32.scd" : 
                            (_fetchConfig & 0x0008 ? "voice/es/battle/%s%d_%s.win32.scd" : 
                            (_fetchConfig & 0x0010 ? "voice/de/battle/%s%d_%s.win32.scd" : 
-                           (_fetchConfig & 0x0020 ? "voice/bg/battle/%s%d_%s.win32.scd" : "voice/us/battle/%s%d_%s.win32.scd")));
+                           (_fetchConfig & 0x0020 ? "voice/bg/battle/%s%d_%s.win32.scd" :"voice/us/battle/%s%d_%s.win32.scd")));
 
     char _fileNameBuff[48];
 

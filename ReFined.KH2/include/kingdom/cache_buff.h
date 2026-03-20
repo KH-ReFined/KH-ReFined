@@ -26,6 +26,9 @@ extern "C"
 
 			using GetStatus_t = int(*)(const char* name);
 			static GetStatus_t GetStatus;
+
+			using ReadRequestSub_t = char*(*)(const char* name, int pri, size_t size);
+			static ReadRequestSub_t ReadRequestSub;
 		};
 	}
 }

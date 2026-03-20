@@ -25,6 +25,7 @@
 #include "exp.h"
 #include "event.h"
 #include "field2dd.h"
+#include "field.h"
 #include "file.h"
 #include "form_level.h"
 #include "friend.h"
@@ -41,7 +42,6 @@
 #include "member_table.h"
 #include "menu.h"
 #include "message.h"
-#include "next_form.h"
 #include "obj2d.h"
 #include "objentry.h"
 #include "panacea_alloc.h"
@@ -66,6 +66,7 @@
 #include "world.h"
 #include "item_table.h"
 #include "voice.h"
+#include "select.h"
 
 #include "memorymgr.h"
 #include "continue_menu.h"
@@ -76,8 +77,7 @@
 #include <sheet.h>
 #include <fvector.h>
 
-bool AGRABAH_FOUND = false;
-bool POOH_FOUND = false;
+bool MAKE_MENU = false;
 
 using namespace std;
 using namespace discord;
@@ -212,6 +212,10 @@ vector<char*> NEGATIVE_ASPECT_LONG = MultiSignatureScan("\xC7\x00\x00\x00\x00\x0
 
 vector<char*> POSITIVE_ASPECT_BYTE;
 vector<char*> NEGATIVE_ASPECT_BYTE;
+
+vector<char> INSTRUCTION_LIMIT_ASPECT;
+
+char* VIEWPORT_LIMIT = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\xE8\x00\x00\x00\x00\xF3\x0F\x10\x15\x00\x00\x00\x00\x48\x8B\xC8\xF3\x0F\x10\x25\x00\x00\x00\x00\xF3\x0F\x5D\x50\x28", "xxxxxxxxxx????xxxx????xxxxxxx????xxxxx");
 
 char* VIEWPORT3D_ADDR = ResolveRelativeAddress<char*>("\x48\x8B\xC4\x57\x41\x56\x41\x57\x48\x81\xEC\x50\x01\x00\x00\x48\xC7\x44\x24\x20\xFE\xFF\xFF\xFF\x48\x89\x58\x10\x48\x89\x68\x18\x48\x89\x70\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x40\x01\x00\x00\x48\x8B\xE9\x33\xD2\x41\xB8\x00\x01\x00\x00\x48\x8D\x4C\x24\x30\xE8\x00\x00\x00\x00\x45\x33\xFF", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", 0x311);
 char* INFORMATION_OFFSET = SignatureScan<char*>("\x41\xB8\x40\x00\x00\x00\xB9\xAA\x00\x00\x00\x66\x2B\xC1\x66\x44\x89\x44\x24\x20\x44\x0F\xB7\x43\x2C\x48\x8D\x8B\x60\x02\x00\x00\x44\x0F\xB7\xC8\x33\xD2", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
@@ -637,79 +641,6 @@ void ENFORCE_LOCKON()
         LOCKON_PLAY = false;
 
     PAST_LOCKON = _fetchTarget;
-}
-
-void DISPLAY_NEXT_EXP()
-{
-    auto _maxSummLevel = 0x02 + YS::ITEM::GetNumBackyard(0x0019) + YS::ITEM::GetNumBackyard(0x017F) + YS::ITEM::GetNumBackyard(0x009F) + YS::ITEM::GetNumBackyard(0x00A0);
-    auto _maxFormLevel = 0x02 + YS::ITEM::GetNumBackyard(0x001A) + YS::ITEM::GetNumBackyard(0x001B) + YS::ITEM::GetNumBackyard(0x001D) + YS::ITEM::GetNumBackyard(0x001F) + YS::ITEM::GetNumBackyard(0x0233);
-
-    if (_maxSummLevel == 0x06)
-        _maxSummLevel = 0x07;
-
-    if (*AREA::IsInMap && !*YS::TITLE::IsTitle)
-    {
-        if (*(AREA::SaveData + 0x3524) != 0x00)
-        {
-            uint8_t _currLevel = *(AREA::SaveData + 0x32F4 + (0x38 * (*(AREA::SaveData + 0x3524) - 1)) + 0x02);
-
-            if (_maxFormLevel == _currLevel && PAST_EXP_FORM != 0x00)
-            {
-                dk::NEXT_FORM::create(0x00, NEGATIVE_ASPECT_OFFSET);
-                PAST_EXP_FORM = 0x00;
-            }
-
-            uint32_t _currExp = *reinterpret_cast<uint32_t*>(AREA::SaveData + 0x32F4 + (0x38 * (*(AREA::SaveData + 0x3524) - 1)) + 0x04);
-            uint32_t _expFetch = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::Search(*(AREA::SaveData + 0x3524), _currLevel) + 0x04);
-
-            if (PAST_EXP_FORM == 0x00)
-                PAST_EXP_FORM = _currExp;
-
-            else if (PAST_EXP_FORM != _currExp)
-            {
-                dk::NEXT_FORM::create(_expFetch - _currExp, NEGATIVE_ASPECT_OFFSET);
-                PAST_EXP_FORM = _currExp;
-            }
-        }
-
-        else if (*(AREA::SaveData + 0x3525) != 0x00)
-        {
-            uint8_t _currLevel = *(AREA::SaveData + 0x3526);
-
-            if (_maxSummLevel == _currLevel && PAST_EXP_SUMM != 0x00)
-            {
-                dk::NEXT_FORM::create(0x00, NEGATIVE_ASPECT_OFFSET);
-                PAST_EXP_SUMM = 0x00;
-            }
-
-            uint32_t _currExp = *reinterpret_cast<uint32_t*>(AREA::SaveData + 0x36E4);
-            uint32_t* _expFetch = reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::GetSummonTable() + 0x04);
-
-            if (_expFetch == nullptr)
-                return;
-
-            if (PAST_EXP_SUMM == 0x00)
-                PAST_EXP_SUMM = _currExp;
-
-            else if (PAST_EXP_SUMM != _currExp)
-            {
-                dk::NEXT_FORM::create(*_expFetch - _currExp, NEGATIVE_ASPECT_OFFSET);
-                PAST_EXP_SUMM = _currExp;
-            }
-        }
-
-        else
-        {
-            PAST_EXP_FORM = 0x00;
-            PAST_EXP_SUMM = 0x00;
-        }
-    }
-
-    else if (*(AREA::IsInMap) == 0 || *(YS::TITLE::IsTitle) == 1)
-    { 
-        PAST_EXP_FORM = 0x00;
-        PAST_EXP_SUMM = 0x00;
-    }
 }
 
 void HANDLE_GOA_LAND()
@@ -1526,6 +1457,26 @@ void HANDLE_ASPECT()
         auto _heightFactor = _resolutionVertical / 1080;
         auto _widthCalc = floorf(_resolutionHorizontal / _heightFactor);
 
+        if (INSTRUCTION_LIMIT_ASPECT.size() == 0x00)
+        {
+            INSTRUCTION_LIMIT_ASPECT.resize(0x09);
+            memcpy(INSTRUCTION_LIMIT_ASPECT.data(), VIEWPORT_LIMIT + 0x98, 0x09);
+        }
+
+        auto _zoomMultiplier = 16 / _ratioNum;
+
+        if (_ratioMultiplier < 1)
+        {
+            memset(VIEWPORT_LIMIT + 0x98, 0x90, 0x09);
+            memcpy(VIEWPORT3D_ADDR + 0x28, &_zoomMultiplier, 0x04);
+        }
+
+        else
+        {
+            memcpy(VIEWPORT_LIMIT + 0x98, INSTRUCTION_LIMIT_ASPECT.data(), 0x09);
+            memcpy(VIEWPORT3D_ADDR + 0x28, "\x00\x00\x80\x3F", 0x04);
+        }
+
         POSITIVE_ASPECT_OFFSET = ceilf(0.177F * (_widthCalc - 1440));
         NEGATIVE_ASPECT_OFFSET = POSITIVE_ASPECT_OFFSET * -1;
 
@@ -1977,7 +1928,6 @@ extern "C"
             {"HANDLE_RESOURCE", HANDLE_RESOURCE},
             {"HANDLE_AUDIO", HANDLE_AUDIO},
             {"RETRY_BATTLES", RETRY_BATTLES},
-            // {"DISPLAY_NEXT_EXP", DISPLAY_NEXT_EXP},
             {"HANDLE_SHAKE", HANDLE_SHAKE},
             {"ENFORCE_PROMPTS", ENFORCE_PROMPTS},
             {"FIX_SAVE_POINT", FIX_SAVE_POINT},
@@ -2068,6 +2018,10 @@ extern "C"
 
         memcpy(_hotpatchNullTask + 0x17, "\xEB\x22\x89\x01\xC3", 0x05);
         memcpy(_hotpatchNullTask + 0x3B, "\x83\xFA\x04\x74\xDB\x8B\x02\xEB\xD5", 0x09);
+
+        // Patch the voice line thingie.
+        auto _voiceLinePatch = SignatureScan<char*>("\x40\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x8D\x6C\x24\xE0\x48\x81\xEC\x20\x01\x00\x00\x48\xC7\x44\x24\x60\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\x60\x01\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
+        memcpy(_voiceLinePatch + 0x162, "\x31\xC0\x90\x90\x90", 0x05);
 
         // Initialization of all MENU handlers [INTRO, CONFIG, CONTINUE]
 
@@ -2227,31 +2181,6 @@ extern "C"
             auto _fetchCulling2D = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
 
             memset(_fetchCulling2D + 0x06C, 0x00, 0x01);
-        }
-    
-        // This block initializes NEXT_FORM.
-
-        dk::NEXT_FORM::instance = (char*)malloc(0xDB8);
-
-        if (dk::NEXT_FORM::instance != nullptr)
-        {
-            memset(dk::NEXT_FORM::instance, 0x00, 0xDB8);
-
-            *reinterpret_cast<uint64_t*>(dk::NEXT_FORM::instance) = reinterpret_cast<uint64_t>(dk::NEXT_FORM::VTABLE_CLASS);
-            *reinterpret_cast<uint64_t*>(dk::NEXT_FORM::instance + 0x38) = reinterpret_cast<uint64_t>(dk::NEXT_FORM::VTABLE_SPRITE);
-
-            YI::SEQUENCE::_SEQUENCE(dk::NEXT_FORM::instance + 0x58);
-
-            char* _seqdChain = dk::NEXT_FORM::instance + 0x230;
-
-            for (int i = 0; i < 7; i++)
-            {
-                YI::SEQUENCE::_SEQUENCE(_seqdChain);
-                _seqdChain += 0x1A0;
-            }
-
-            *reinterpret_cast<uint32_t*>(dk::NEXT_FORM::instance + 0x048) = 0x00;
-            *reinterpret_cast<uint32_t*>(dk::NEXT_FORM::instance + 0x214) = 0x00;
         }
         #endif
 
@@ -2730,38 +2659,6 @@ extern "C"
             #endif
 
 
-            if (*YS::SORA::Sora)
-            {
-                auto _positionX = reinterpret_cast<float*>(*YS::SORA::Sora + 0x670);
-                auto _positionY = reinterpret_cast<float*>(*YS::SORA::Sora + 0x674);
-                auto _positionZ = reinterpret_cast<float*>(*YS::SORA::Sora + 0x678);
-
-                if (AREA::Current->World == 0x07 && AREA::Current->Room == 0x00)
-                {
-                    auto _satisfyX = *_positionX <= -3100 && *_positionX >= -3300;
-                    auto _satisfyY = *_positionY == -500;
-                    auto _satisfyZ = *_positionZ >= 700 && *_positionZ <= 800;
-
-                    if (_satisfyX && _satisfyY && _satisfyZ && !AGRABAH_FOUND)
-                    {
-                        dk::INFORMATION::openInformationWindow(nullptr);
-                        AGRABAH_FOUND = true;
-                    }
-                }
-
-                else if (AREA::Current->World == 0x09 && AREA::Current->Room == 0x02)
-                {
-                    auto _satisfyX = *_positionX <= -800 && *_positionX >= -900;
-                    auto _satisfyY = *_positionY <= -154 && *_positionY >= -158;
-                    auto _satisfyZ = *_positionZ >= 1000 && *_positionZ <= 1200;
-
-                    if (_satisfyX && _satisfyY && _satisfyZ && !POOH_FOUND)
-                    {
-                        dk::INFORMATION::openInformationWindow(nullptr);
-                        POOH_FOUND = true;
-                    }
-                }
-            }
         }
     }
 }

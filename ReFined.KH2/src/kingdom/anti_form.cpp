@@ -64,8 +64,6 @@ int YS::ANTI_FORM::CheckForm(char* player, int form)
 
         return 6;
     }
-
-
 }
 
 YS::ANTI_FORM::staticInitializer YS::ANTI_FORM::initialize;
