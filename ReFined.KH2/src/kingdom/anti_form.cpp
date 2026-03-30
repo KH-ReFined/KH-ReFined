@@ -29,7 +29,7 @@ int YS::ANTI_FORM::CheckForm(char* player, int form)
     mt19937 rng(dev());
     uniform_int_distribution<mt19937::result_type> randDist(1, 100);
 
-    if (randDist(rng) >= _calcAntiChance || AREA::BattleStatus == 0x00)
+    if (randDist(rng) >= _calcAntiChance || *AREA::BattleStatus == 0x00)
         return form;
 
     auto _doesHaveFinal = YS::ITEM::GetNumBackyard(0x1D) || YS::SACRIFICE::GetFormStatus(0x05) || *(*reinterpret_cast<char**>(player + 0x5C0) + 0x1B1) < *(YS::COMMAND_ELEM::GetDrive(0x05) + 0x1C);
