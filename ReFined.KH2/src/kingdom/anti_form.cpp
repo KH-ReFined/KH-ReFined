@@ -8,7 +8,7 @@ int YS::ANTI_FORM::CheckForm(char* player, int form)
 
     if (form == 0x05)
     {
-        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam - 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x0A4);
+        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x0A4);
 
         if (_calcAntiPoints <= 0)
             _calcAntiPoints = 0;
@@ -43,24 +43,24 @@ int YS::ANTI_FORM::CheckForm(char* player, int form)
         *reinterpret_cast<int*>(_finalFormRam + 0x04) = 0x00;
         YS::ITEM::GetBackyard(0x1D, 0x01);
 
-        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam - 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x0A4);
+        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x0A4);
 
         if (_calcAntiPoints <= 0)
             _calcAntiPoints = 0;
 
-        *reinterpret_cast<int*>(_antiFormRam - 0x04) = _calcAntiPoints;
+        *reinterpret_cast<int*>(_antiFormRam + 0x04) = _calcAntiPoints;
 
         return 5;
     }
 
     else
     {
-        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam - 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x090);
+        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x090);
 
         if (_calcAntiPoints <= 0)
             _calcAntiPoints = 0;
 
-        *reinterpret_cast<int*>(_antiFormRam - 0x04) = _calcAntiPoints;
+        *reinterpret_cast<int*>(_antiFormRam + 0x04) = _calcAntiPoints;
 
         return 6;
     }
