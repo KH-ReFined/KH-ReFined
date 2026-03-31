@@ -585,7 +585,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\Desktop\openkh\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">
