@@ -1960,6 +1960,13 @@ extern "C"
 
             memset(_campSwitcherFunction + 0xAF, 0xEB, 0x01);
             memset(_campCopierFunction + 0x1A, 0x90, 0x4E);
+
+            auto _titleCopierFunction = SignatureScan<char*>("\x48\x89\x5C\x24\x10\x57\x48\x81\xEC\xB0\x00\x00\x00\x48\x8B\x05", "xxxxxxxxxxxxxxxx");
+            auto _titleSwitcherFunction = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x3D", "xxxxxxxxxxxxxxxx????xxx");
+
+            memset(_titleSwitcherFunction + 0xAE, 0xEB, 0x01);
+            memset(_titleCopierFunction + 0x2C, 0x90, 0x4E);
+
         }
 
         // Nullify all SaveID checks according to the platform in use.
