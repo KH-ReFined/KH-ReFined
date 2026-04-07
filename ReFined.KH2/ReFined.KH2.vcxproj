@@ -134,6 +134,7 @@
     <ClInclude Include="include\kingdom\message.h" />
     <ClInclude Include="include\kingdom\messagedraw.h" />
     <ClInclude Include="include\kingdom\mission.h" />
+    <ClInclude Include="include\kingdom\mission_gauge.h" />
     <ClInclude Include="include\kingdom\pref.h" />
     <ClInclude Include="include\kingdom\progress.h" />
     <ClInclude Include="include\kingdom\newgame.h" />
@@ -238,6 +239,7 @@
     <ClCompile Include="src\kingdom\message.cpp" />
     <ClCompile Include="src\kingdom\messagedraw.cpp" />
     <ClCompile Include="src\kingdom\mission.cpp" />
+    <ClCompile Include="src\kingdom\mission_gauge.cpp" />
     <ClCompile Include="src\kingdom\newgame.cpp" />
     <ClCompile Include="src\kingdom\obj.cpp" />
     <ClCompile Include="src\kingdom\obj2d.cpp" />

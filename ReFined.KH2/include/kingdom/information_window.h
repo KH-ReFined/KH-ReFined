@@ -43,7 +43,7 @@ extern "C"
 
                     printf("Hooked dk::INFORMATION_WINDOW::init [0x%p] to Re:Fined function @ 0x%p\n", _draw_orig, init);
 
-                    printf("\nSuccessfully handled dk::SpriteMessage concerns.\n");
+                    printf("\nSuccessfully handled dk::INFORMATION_WINDOW concerns.\n");
                     printf("======================================================\n\n");
                 }
             };

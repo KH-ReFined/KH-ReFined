@@ -3,6 +3,11 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include "memorymgr.h"
+#include "obj2d.h"
+#include "sprite.h"
+#include "image.h"
+#include "sequence.h"
+#include "mission_gauge.h"
 
 extern "C"
 {
