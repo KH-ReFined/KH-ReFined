@@ -21,3 +21,4 @@ YI::SEQUENCE::GetActiveX_t YI::SEQUENCE::GetActiveX = reinterpret_cast<YI::SEQUE
 YI::SEQUENCE::GetActiveY_t YI::SEQUENCE::GetActiveY = reinterpret_cast<YI::SEQUENCE::GetActiveY_t>(reinterpret_cast<char*>(YI::SEQUENCE::GetActiveX) + 0x80);
 YI::SEQUENCE::SetScaleX_t YI::SEQUENCE::SetScaleX = SignatureScan<YI::SEQUENCE::SetScaleX_t>("\xF3\x0F\x10\x81\x78\x01\x00\x00\xF3\x0F\x10\x15\x00\x00\x00\x00\x0F\x2E\xC2\xF3\x0F\x11\x89\x7C\x01\x00\x00", "xxxxxxxxxxxx????xxxxxxxxxxx");
 
+YI::SEQUENCE::GetActiveRGBA_t YI::SEQUENCE::GetActiveRGBA = ResolveFunctionFromCall<YI::SEQUENCE::GetActiveRGBA_t>("\x40\x56\x48\x81\xEC\xF0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\xD0\x00\x00\x00\x48\x8B\xF1\x48\x8B\x89", "xxxxxxxxxxxx????xxxxxxxxxxxxxxxxx", 0xD9);

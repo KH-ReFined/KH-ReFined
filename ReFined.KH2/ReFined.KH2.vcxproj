@@ -93,6 +93,7 @@
     <ClInclude Include="include\kingdom\beads.h" />
     <ClInclude Include="include\kingdom\binarc.h" />
     <ClInclude Include="include\kingdom\cache_buff.h" />
+    <ClInclude Include="include\kingdom\circle_mask.h" />
     <ClInclude Include="include\kingdom\cmconfig.h" />
     <ClInclude Include="include\kingdom\cmdata.h" />
     <ClInclude Include="include\kingdom\collision_data.h" />
@@ -116,6 +117,7 @@
     <ClInclude Include="include\kingdom\image.h" />
     <ClInclude Include="include\kingdom\image_cache.h" />
     <ClInclude Include="include\kingdom\information.h" />
+    <ClInclude Include="include\kingdom\information_window.h" />
     <ClInclude Include="include\kingdom\info_base.h" />
     <ClInclude Include="include\kingdom\item.h" />
     <ClInclude Include="include\kingdom\iteminfo.h" />
@@ -130,6 +132,7 @@
     <ClInclude Include="include\kingdom\menu.h" />
     <ClInclude Include="include\kingdom\menuutil.h" />
     <ClInclude Include="include\kingdom\message.h" />
+    <ClInclude Include="include\kingdom\messagedraw.h" />
     <ClInclude Include="include\kingdom\mission.h" />
     <ClInclude Include="include\kingdom\pref.h" />
     <ClInclude Include="include\kingdom\progress.h" />
@@ -144,6 +147,7 @@
     <ClInclude Include="include\kingdom\sacrifice.h" />
     <ClInclude Include="include\kingdom\saveram_battle.h" />
     <ClInclude Include="include\kingdom\save_indicator.h" />
+    <ClInclude Include="include\kingdom\scis.h" />
     <ClInclude Include="include\kingdom\select.h" />
     <ClInclude Include="include\kingdom\sequence.h" />
     <ClInclude Include="include\kingdom\shake.h" />
@@ -152,6 +156,7 @@
     <ClInclude Include="include\kingdom\sora.h" />
     <ClInclude Include="include\kingdom\sound.h" />
     <ClInclude Include="include\kingdom\sprite.h" />
+    <ClInclude Include="include\kingdom\spritemessage.h" />
     <ClInclude Include="include\kingdom\steam.h" />
     <ClInclude Include="include\kingdom\task.h" />
     <ClInclude Include="include\kingdom\title.h" />
@@ -190,6 +195,7 @@
     <ClCompile Include="src\kingdom\beads.cpp" />
     <ClCompile Include="src\kingdom\binarc.cpp" />
     <ClCompile Include="src\kingdom\cache_buff.cpp" />
+    <ClCompile Include="src\kingdom\circle_mask.cpp" />
     <ClCompile Include="src\kingdom\cmconfig.cpp" />
     <ClCompile Include="src\kingdom\cmdata.cpp" />
     <ClCompile Include="src\kingdom\collision_data.cpp" />
@@ -213,6 +219,7 @@
     <ClCompile Include="src\kingdom\image.cpp" />
     <ClCompile Include="src\kingdom\image_cache.cpp" />
     <ClCompile Include="src\kingdom\information.cpp" />
+    <ClCompile Include="src\kingdom\information_window.cpp" />
     <ClCompile Include="src\kingdom\info_base.cpp" />
     <ClCompile Include="src\kingdom\item.cpp" />
     <ClCompile Include="src\kingdom\iteminfo.cpp" />
@@ -228,6 +235,7 @@
     <ClCompile Include="src\kingdom\menu.cpp" />
     <ClCompile Include="src\kingdom\menuutil.cpp" />
     <ClCompile Include="src\kingdom\message.cpp" />
+    <ClCompile Include="src\kingdom\messagedraw.cpp" />
     <ClCompile Include="src\kingdom\mission.cpp" />
     <ClCompile Include="src\kingdom\newgame.cpp" />
     <ClCompile Include="src\kingdom\obj.cpp" />
@@ -242,6 +250,7 @@
     <ClCompile Include="src\kingdom\sacrifice.cpp" />
     <ClCompile Include="src\kingdom\saveram_battle.cpp" />
     <ClCompile Include="src\kingdom\save_indicator.cpp" />
+    <ClCompile Include="src\kingdom\scis.cpp" />
     <ClCompile Include="src\kingdom\select.cpp" />
     <ClCompile Include="src\kingdom\sequence.cpp" />
     <ClCompile Include="src\kingdom\shake.cpp" />
@@ -250,6 +259,7 @@
     <ClCompile Include="src\kingdom\sora.cpp" />
     <ClCompile Include="src\kingdom\sound.cpp" />
     <ClCompile Include="src\kingdom\sprite.cpp" />
+    <ClCompile Include="src\kingdom\spritemessage.cpp" />
     <ClCompile Include="src\kingdom\steam.cpp" />
     <ClCompile Include="src\kingdom\task.cpp" />
     <ClCompile Include="src\kingdom\title.cpp" />
@@ -585,7 +595,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">

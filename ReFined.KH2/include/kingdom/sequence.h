@@ -26,6 +26,7 @@ extern "C"
 			using GetActiveX_t = uint32_t(*)(char* SEQUENCE);
 			using GetActiveY_t = uint32_t(*)(char* SEQUENCE);
 			using SetScaleX_t = void(*)(char* SEQUENCE, float scaleX);
+			using GetActiveRGBA_t = uint32_t(*)(char* SEQUENCE);
 
 			static SEQUENCE_t _SEQUENCE;
 			static Dispose_t Dispose;
@@ -42,6 +43,7 @@ extern "C"
 			static GetActiveX_t GetActiveX;
 			static GetActiveY_t GetActiveY;
 			static SetScaleX_t SetScaleX;
+			static GetActiveRGBA_t GetActiveRGBA;
 		};
 	}
 }
