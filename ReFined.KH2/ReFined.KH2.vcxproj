@@ -148,6 +148,7 @@
     <ClInclude Include="include\kingdom\saveram_battle.h" />
     <ClInclude Include="include\kingdom\save_indicator.h" />
     <ClInclude Include="include\kingdom\scis.h" />
+    <ClInclude Include="include\kingdom\sector_mask.h" />
     <ClInclude Include="include\kingdom\select.h" />
     <ClInclude Include="include\kingdom\sequence.h" />
     <ClInclude Include="include\kingdom\shake.h" />
@@ -251,6 +252,7 @@
     <ClCompile Include="src\kingdom\saveram_battle.cpp" />
     <ClCompile Include="src\kingdom\save_indicator.cpp" />
     <ClCompile Include="src\kingdom\scis.cpp" />
+    <ClCompile Include="src\kingdom\sector_mask.cpp" />
     <ClCompile Include="src\kingdom\select.cpp" />
     <ClCompile Include="src\kingdom\sequence.cpp" />
     <ClCompile Include="src\kingdom\shake.cpp" />

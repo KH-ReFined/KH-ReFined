@@ -93,8 +93,6 @@ void dk::Sprite::draw(char* Sprite)
 	auto _didObjectInit = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0800;
 	auto _canObjectDraw = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x1000;
 
-	auto _canSequenceDraw = reinterpret_cast<uint32_t*>(_fetchSequence + 0x0140) != 0x00;
-
 	if (_didObjectInit != 0x0000)
 	{
 		if (_fetchObject)
@@ -102,8 +100,12 @@ void dk::Sprite::draw(char* Sprite)
 				return;
 
 		if (_fetchSequence)
+		{
+			auto _canSequenceDraw = *reinterpret_cast<uint32_t*>(_fetchSequence + 0x0140) != 0x00;
+
 			if (!_canSequenceDraw)
 				return;
+		}
 	}
 
 	if (_fetchObject)
@@ -124,17 +126,25 @@ void dk::Sprite::draw(char* Sprite)
 		*reinterpret_cast<int*>(Sprite + 0x01C4) = _activeY;
 	}
 
-	/*
-	if ((_fetchObject || _fetchSequence) && *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0200 != 0x0000)
+	if ((_fetchObject || _fetchSequence) && (*reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0200) != 0x0000)
 	{
-		auto _fetchRGBA = YI::SEQUENCE::GetActiveRGBA(_fetchObject ? _fetchObject : _fetchSequence);
+		auto _activeRGBA = YI::SEQUENCE::GetActiveRGBA(_fetchObject ? _fetchObject + 0x0020: _fetchSequence);
+
+		auto _factorA = static_cast<float>((_activeRGBA & 0xFF000000) >> 0x18) * 0.0078125;
+
+		auto _factorR = *reinterpret_cast<float*>(Sprite + 0x017C);
+		auto _factorG = *reinterpret_cast<float*>(Sprite + 0x0180);
+		auto _factorB = *reinterpret_cast<float*>(Sprite + 0x0184);
 
 		if ((*reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0400) == 0x0000)
-			_fetchRGBA = HIWORD(_fetchRGBA);
+		{
+			_factorB = ((_activeRGBA & 0x00FF0000) >> 0x10) * 0.0078125;
+			_factorG = ((_activeRGBA & 0x0000FF00) >> 0x08) * 0.0078125;
+			_factorR = (_activeRGBA & 0x000000FF) * 0.0078125;
+		}
 
-		YI::SEQUENCE::SetColorRate(Sprite + 0x0020, _fetchRGBA);
+		YI::SEQUENCE::SetColorRate(Sprite + 0x0020, _factorR, _factorG, _factorB, _factorA);
 	}
-	*/
 
 	if (_canObjectDraw == 0x0000)
 	{

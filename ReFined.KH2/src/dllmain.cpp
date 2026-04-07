@@ -118,7 +118,7 @@ bool IS_RESETING = false;
 uint16_t CURRENT_MUSIC = 0xFFFF;
 uint16_t CURRENT_OBJECTS = 0xFFFF;
 
-char* INFORMATION_STRUCT;
+char** RADAR_STRUCT = ResolveRelativeAddress<char**>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x56\x57\x41\x54\x48\x83", "xxxxxxxxxxxxxxxx", 0xD4);
 
 bool TRANSFER_FIELD = false;
 bool TRANSFER_BATTLE = false;
@@ -1420,9 +1420,6 @@ void PROCESS_DEATH()
 
 void HANDLE_ASPECT()
 {
-    if (!INFORMATION_STRUCT)
-        INFORMATION_STRUCT = ResolveRelativeAddress<char*>((char*)dk::INFORMATION::openInformationWindow, 0x0C);
-
     float _resolutionHorizontal = *reinterpret_cast<float*>(VIEWPORT3D_ADDR + 0x10);
     float _resolutionVertical = *reinterpret_cast<float*>(VIEWPORT3D_ADDR + 0x14);
 
@@ -1494,6 +1491,12 @@ void HANDLE_ASPECT()
         {
             memcpy(_fetchMemory, &POSITIVE_ASPECT_OFFSET, 0x04);
             memcpy(_fetchMemory + 0x04, &NEGATIVE_ASPECT_OFFSET, 0x04);
+        }
+
+        if (*RADAR_STRUCT)
+        {
+            *reinterpret_cast<int*>(*RADAR_STRUCT + 0xBBC) = POSITIVE_ASPECT_OFFSET;
+            *reinterpret_cast<int*>(*RADAR_STRUCT + 0xBE0) = POSITIVE_ASPECT_OFFSET;
         }
     }
 }

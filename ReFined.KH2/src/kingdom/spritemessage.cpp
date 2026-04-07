@@ -18,8 +18,6 @@ void dk::SpriteMessage::draw(char* Sprite)
 	auto _isColored = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0004;
 	auto _isColorSpecial = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0008;
 
-	auto _canSequenceDraw = reinterpret_cast<uint32_t*>(_fetchSequence + 0x0140) != 0x00;
-
 	if (_didObjectInit != 0x0000)
 	{
 		if (_fetchObject)
@@ -27,8 +25,12 @@ void dk::SpriteMessage::draw(char* Sprite)
 				return;
 
 		if (_fetchSequence)
+		{
+			auto _canSequenceDraw = *reinterpret_cast<uint32_t*>(_fetchSequence + 0x0140) - 1 != 0x00;
+
 			if (!_canSequenceDraw)
 				return;
+		}
 	}
 
 	_activeX = YI::SEQUENCE::GetActiveX(Sprite + 0x0020) + *reinterpret_cast<int*>(Sprite + 0x01C8);
@@ -70,7 +72,7 @@ void dk::SpriteMessage::draw(char* Sprite)
 		if (_fetchMemory)
 			memcpy(&_offsetValue, _fetchMemory, 0x04);
 
-		auto _fetchAspect = *reinterpret_cast<int*>(Sprite + 0x1DC);
+		auto _fetchAspect = *reinterpret_cast<int*>(Sprite + 0x0218);
 		auto _applyAspect = _fetchAspect == 0x00 ? 0x00 : (_fetchAspect > 0x00 ? _offsetValue : _offsetValue * -1);
 
 		auto _objectStart = Sprite + 0x0020;
