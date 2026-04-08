@@ -29,8 +29,6 @@ void dk::MISSION_GAUGE::updateGauge(char* missionGauge)
 	auto _fetchActiveX = YI::SEQUENCE::GetActiveX(missionGauge + 0x160);
 	auto _fetchNumber = *reinterpret_cast<uint32_t*>(missionGauge + 0x160 + 0x158);
 
-
-
 	switch (_fetchNumber)
 	{
 		case 0x10:

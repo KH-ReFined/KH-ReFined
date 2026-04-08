@@ -1,6 +1,6 @@
 #include "spritemessage.h"
 
-void dk::SpriteMessage::draw(char* Sprite)
+void dk::SpriteMessage::drawMessage(char* Sprite)
 {
 	char _messageDrawInst[0x100];
 

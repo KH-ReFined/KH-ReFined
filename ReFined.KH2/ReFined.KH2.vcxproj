@@ -99,6 +99,7 @@
     <ClInclude Include="include\kingdom\collision_data.h" />
     <ClInclude Include="include\kingdom\command_draw.h" />
     <ClInclude Include="include\kingdom\command_elem.h" />
+    <ClInclude Include="include\kingdom\command_one.h" />
     <ClInclude Include="include\kingdom\enemy.h" />
     <ClInclude Include="include\kingdom\field.h" />
     <ClInclude Include="include\kingdom\fvector.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="src\kingdom\collision_data.cpp" />
     <ClCompile Include="src\kingdom\command_draw.cpp" />
     <ClCompile Include="src\kingdom\command_elem.cpp" />
+    <ClCompile Include="src\kingdom\command_one.cpp" />
     <ClCompile Include="src\kingdom\enemy.cpp" />
     <ClCompile Include="src\kingdom\field.cpp" />
     <ClCompile Include="src\kingdom\fvector.cpp" />
