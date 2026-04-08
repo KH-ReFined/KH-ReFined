@@ -1963,10 +1963,10 @@ extern "C"
 
         if (!IS_NOASPECT)
         { 
-            // Kill the enforcer in INFORMATION_WINDOW::update so we can edit it in init.
+            // Kill the enforcer in dk::MISSION_GAUGE::update so I don't want to kill myself.
             
-            // auto _fetchInformation = SignatureScan<char*>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x30\x48\x8B\xD9\xE8", "xxxxxxxxxxxxxx");
-            // memset(_fetchInformation + 0x16B, 0x90, 0x0A);
+            auto _fetchMissionUpdate = SignatureScan<char*>("\x48\x89\x5C\x24\x18\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8", "xxxxxxxxxxxxxx");
+            memset(_fetchMissionUpdate + 0x119, 0xEB, 0x01);
 
             // Fetch all functions that handle fade-in and fade-outs in any way within the 2dFade rectangle.
 

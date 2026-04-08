@@ -2,11 +2,14 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
+#include <algorithm>
+
 #include "memorymgr.h"
 #include "obj2d.h"
 #include "sprite.h"
 #include "image.h"
 #include "sequence.h"
+#include "cache_buff.h"
 
 extern "C"
 {

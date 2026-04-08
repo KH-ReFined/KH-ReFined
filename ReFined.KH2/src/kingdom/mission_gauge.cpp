@@ -10,6 +10,11 @@ void dk::MISSION_GAUGE::updateGauge(char* missionGauge)
 	if (_fetchMemory)
 		memcpy(&_offsetValue, _fetchMemory, 0x04);
 
+	auto _fetchMission = YS::CACHE_BUFF::SearchByName("msn/us/HB33_FM_LEX.bar", -1) || YS::CACHE_BUFF::SearchByName("msn/us/EH14_MS103.bar", -1) || YS::CACHE_BUFF::SearchByName("msn/us/EH26_MS108.bar", -1);
+
+	if (_fetchMission && _offsetValue > 85)
+		_offsetValue = 85;
+
 	auto _applyAspect = 0x00;
 
 	auto _factorFloat = *reinterpret_cast<float*>(missionGauge + 0x0CD8);
@@ -24,17 +29,19 @@ void dk::MISSION_GAUGE::updateGauge(char* missionGauge)
 	auto _fetchActiveX = YI::SEQUENCE::GetActiveX(missionGauge + 0x160);
 	auto _fetchNumber = *reinterpret_cast<uint32_t*>(missionGauge + 0x160 + 0x158);
 
+
+
 	switch (_fetchNumber)
 	{
-	case 0x10:
-		_applyAspect = _offsetValue * -1;
-		break;
-	case 0x0F:
-		_applyAspect = _offsetValue;
-		break;
-	default:
-		_applyAspect = 0x00;
-		break;
+		case 0x10:
+			_applyAspect = _offsetValue * -1;
+			break;
+		case 0x11:
+			_applyAspect = _offsetValue;
+			break;
+		default:
+			_applyAspect = 0x00;
+			break;
 	}
 
 	*reinterpret_cast<int*>(missionGauge + 0x0028) = _applyAspect + _fetchActiveX;

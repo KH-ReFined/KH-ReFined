@@ -12,7 +12,7 @@ void dk::Scis::setScis(char* scissor, short x, short y, short width, short heigh
 
 	long long _calcScis = 0x00;
 
-	_calcScis |= (static_cast<long long>(x + _applyAspect) & 0x000000000000FFFF);
+	_calcScis |= (static_cast<long long>(x + (_offsetValue > 85 ? _applyAspect : 0x00)) & 0x000000000000FFFF);
 	_calcScis |= (static_cast<long long>(width + (x + _applyAspect) - 1) & 0x000000000000FFFF) << 16;
 	_calcScis |= (static_cast<long long>(y) & 0x000000000000FFFF) << 32;
 	_calcScis |= (static_cast<long long>(height + y - 1) & 0x000000000000FFFF) << 48;
