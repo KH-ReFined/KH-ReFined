@@ -22,9 +22,11 @@ extern "C"
 		public:
 			using GetData_t = char* (*)(int id);
 			using GetSize_t = const size_t(*)(const char* message);
+			using Sprintf_t = char*(*)(char* buff, const char* string, ...);
 
 			static GetData_t GetData;
 			static GetSize_t GetSize;
+			static Sprintf_t Sprintf;
 
 			static char* SizeTable;
 

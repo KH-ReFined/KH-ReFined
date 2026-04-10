@@ -15,7 +15,7 @@ void dk::INFORMATION_WINDOW::init(char* infoWindow, char* message)
 	SOUND::PlaySFX(0x22);
 	*reinterpret_cast<int*>(infoWindow + 0x049C) &= ~2;
 	*reinterpret_cast<int*>(infoWindow + 0x02B0) &= ~0x0040;
-	YS::MESSAGEDRAW::CreateNew(_messageDrawInst, 0x00, message, 0, 0x00);
+	YS::MESSAGEDRAW::_MESSAGEDRAW(_messageDrawInst, 0x00, message, 0, 0x00);
 
 	int _paramX = YI::SEQUENCE::GetParamX(infoWindow + 0x0060);
 	auto _messageEndPoint = *reinterpret_cast<int*>(_messageDrawInst + 0x70);

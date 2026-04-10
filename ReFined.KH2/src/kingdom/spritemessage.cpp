@@ -80,7 +80,7 @@ void dk::SpriteMessage::drawMessage(char* Sprite)
 		auto _fetchCurrentX = _activeX + *reinterpret_cast<int*>(Sprite + 0x01C0) + static_cast<int>(*reinterpret_cast<float*>(Sprite + 0x0200));
 		auto _fetchCurrentY = _activeY + *reinterpret_cast<int*>(Sprite + 0x01C4) + static_cast<int>(*reinterpret_cast<float*>(Sprite + 0x0204));
 
-		YS::MESSAGEDRAW::CreateNew(_messageDrawInst, *reinterpret_cast<int*>(Sprite + 0x0210), _fetchMessage, *reinterpret_cast<int*>(Sprite + 0x020C), *reinterpret_cast<int*>(Sprite + 0x0214));
+		YS::MESSAGEDRAW::_MESSAGEDRAW(_messageDrawInst, *reinterpret_cast<int*>(Sprite + 0x0210), _fetchMessage, *reinterpret_cast<int*>(Sprite + 0x020C), *reinterpret_cast<int*>(Sprite + 0x0214));
 		YS::MESSAGEDRAW::set_line_space(_messageDrawInst, YI::SEQUENCE::GetParamCr(Sprite + 0x0020));
 		YS::MESSAGEDRAW::draw(_messageDrawInst, _fetchCurrentX + _applyAspect, _fetchCurrentY, _activeRGBA);
 	}

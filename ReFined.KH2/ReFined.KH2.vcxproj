@@ -124,6 +124,7 @@
     <ClInclude Include="include\kingdom\iteminfo.h" />
     <ClInclude Include="include\kingdom\itempic.h" />
     <ClInclude Include="include\kingdom\jumpeffect.h" />
+    <ClInclude Include="include\kingdom\level_up.h" />
     <ClInclude Include="include\kingdom\libretto.h" />
     <ClInclude Include="include\kingdom\limit.h" />
     <ClInclude Include="include\kingdom\lockon.h" />
@@ -230,6 +231,7 @@
     <ClCompile Include="src\kingdom\itempic.cpp" />
     <ClCompile Include="src\kingdom\item_table.cpp" />
     <ClCompile Include="src\kingdom\jumpeffect.cpp" />
+    <ClCompile Include="src\kingdom\level_up.cpp" />
     <ClCompile Include="src\kingdom\libretto.cpp" />
     <ClCompile Include="src\kingdom\limit.cpp" />
     <ClCompile Include="src\kingdom\lockon.cpp" />

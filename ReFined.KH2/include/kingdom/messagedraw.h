@@ -13,11 +13,11 @@ extern "C"
         class DLL_EXPORT MESSAGEDRAW
         {
         public:
-            using CreateNew_t = void(*)(char* MessageDraw, int type, char* message, int size, int align);
+            using _MESSAGEDRAW_t = void(*)(char* MessageDraw, int type, char* message, int size, int align);
             using set_line_space_t = void(*)(char* MessageDraw, int space);
             using draw_t = void(*)(char* MessageDraw, int x, int y, uint32_t color);
 
-            static CreateNew_t CreateNew;
+            static _MESSAGEDRAW_t _MESSAGEDRAW;
             static set_line_space_t set_line_space;
             static draw_t draw;
         };
