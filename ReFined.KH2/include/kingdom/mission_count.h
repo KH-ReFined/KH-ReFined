@@ -6,18 +6,16 @@
 #include <Windows.h>
 #include "memorymgr.h"
 #include "sound.h"
+#include "limit.h"
 
 extern "C"
 {
 	namespace YS
 	{
-		class DLL_EXPORT LIMIT
+		class DLL_EXPORT MISSION_COUNT
 		{
 		public:
-			using motion_start_t = uint32_t(*)(char* limit_ptr, char* party_ptr, int motion, float blend);
-			static motion_start_t motion_start;
-
-			using destroy_t = void(*)(char* limit_ptr);
+			using destroy_t = void(*)(char* missionCount);
 			static destroy_t destroy;
 		};
 	}

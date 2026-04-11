@@ -100,6 +100,7 @@
     <ClInclude Include="include\kingdom\command_draw.h" />
     <ClInclude Include="include\kingdom\command_elem.h" />
     <ClInclude Include="include\kingdom\command_one.h" />
+    <ClInclude Include="include\kingdom\counter.h" />
     <ClInclude Include="include\kingdom\enemy.h" />
     <ClInclude Include="include\kingdom\field.h" />
     <ClInclude Include="include\kingdom\fvector.h" />
@@ -136,6 +137,7 @@
     <ClInclude Include="include\kingdom\message.h" />
     <ClInclude Include="include\kingdom\messagedraw.h" />
     <ClInclude Include="include\kingdom\mission.h" />
+    <ClInclude Include="include\kingdom\mission_count.h" />
     <ClInclude Include="include\kingdom\mission_gauge.h" />
     <ClInclude Include="include\kingdom\pref.h" />
     <ClInclude Include="include\kingdom\progress.h" />
@@ -206,6 +208,7 @@
     <ClCompile Include="src\kingdom\command_draw.cpp" />
     <ClCompile Include="src\kingdom\command_elem.cpp" />
     <ClCompile Include="src\kingdom\command_one.cpp" />
+    <ClCompile Include="src\kingdom\counter.cpp" />
     <ClCompile Include="src\kingdom\enemy.cpp" />
     <ClCompile Include="src\kingdom\field.cpp" />
     <ClCompile Include="src\kingdom\fvector.cpp" />
@@ -243,6 +246,7 @@
     <ClCompile Include="src\kingdom\message.cpp" />
     <ClCompile Include="src\kingdom\messagedraw.cpp" />
     <ClCompile Include="src\kingdom\mission.cpp" />
+    <ClCompile Include="src\kingdom\mission_count.cpp" />
     <ClCompile Include="src\kingdom\mission_gauge.cpp" />
     <ClCompile Include="src\kingdom\newgame.cpp" />
     <ClCompile Include="src\kingdom\obj.cpp" />

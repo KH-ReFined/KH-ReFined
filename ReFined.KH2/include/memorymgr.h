@@ -189,12 +189,12 @@ T ResolveRelativeAddress(const char* pattern, const char* mask, size_t callOffse
 }
 
 template <typename T>
-T ResolveRelativeAddress(const char* addr, size_t callOffset = 0)
+T ResolveRelativeAddress(char* addr, size_t callOffset = 0)
 {
     int32_t relOffset;
     std::memcpy(&relOffset, addr + callOffset, sizeof(relOffset));
 
-    return reinterpret_cast<T>(const_cast<char*>(addr) + relOffset + callOffset + 0x04);
+    return reinterpret_cast<T>(addr + relOffset + callOffset + 0x04);
 }
 
 

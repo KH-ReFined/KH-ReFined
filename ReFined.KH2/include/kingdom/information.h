@@ -8,6 +8,7 @@
 #include "image.h"
 #include "sequence.h"
 #include "mission_gauge.h"
+#include "mission_count.h"
 
 extern "C"
 {
@@ -20,6 +21,9 @@ extern "C"
 
 			using openGetMunny_t = void(*)(int munny);
 			static openGetMunny_t openGetMunny;
+
+			using forceLeaveCounter_t = void(*)(char* counter);
+			static forceLeaveCounter_t forceLeaveCounter;
 		};
 
 		class DLL_EXPORT NEXT_EXP
