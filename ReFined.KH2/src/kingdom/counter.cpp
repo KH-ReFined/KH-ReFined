@@ -11,6 +11,32 @@ void dk::COUNTER::update(char* counter)
 {
 	dk::INFO_BASE::update(counter);
 
+	auto _fetchMemory = YS::PANACEA_ALLOC::Get("ASPECT_INFORMATION");
+	auto _offsetValue = 85;
+
+	if (_fetchMemory)
+		memcpy(&_offsetValue, _fetchMemory, 0x04);
+
+	auto _applyAspect = 0x00;
+
+	auto _fetchActiveX = YI::SEQUENCE::GetActiveX(counter + 0x160);
+	auto _fetchNumber = *reinterpret_cast<uint32_t*>(counter + 0x160 + 0x158);
+
+	switch (_fetchNumber)
+	{
+	case 0x24:
+		_applyAspect = _offsetValue * -1;
+		break;
+	case 0x25:
+		_applyAspect = _offsetValue;
+		break;
+	default:
+		_applyAspect = 0x00;
+		break;
+	}
+
+	*reinterpret_cast<int*>(counter + 0x0028) = _applyAspect + _fetchActiveX;
+
 	if (*reinterpret_cast<uint32_t*>(counter + 0x1CC0) == 0x01)
 	{
 		if (!dk::Obj2D::isExist(counter + 0x0300))
