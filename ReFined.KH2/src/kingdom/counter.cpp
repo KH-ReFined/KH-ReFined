@@ -17,7 +17,7 @@ void dk::COUNTER::update(char* counter)
 	if (_fetchMemory)
 		memcpy(&_offsetValue, _fetchMemory, 0x04);
 
-	auto _fetchMission = YS::CACHE_BUFF::SearchByName("msn/us/HB33_FM_LEX.bar", -1);
+	auto _fetchMission = YS::CACHE_BUFF::SearchByName("msn/us/HB33_FM_LEX.bar", -1) && *reinterpret_cast<int*>(counter + 0x1CB8) == 0x05;
 
 	if (_fetchMission && _offsetValue != 85)
 		_offsetValue = 85;

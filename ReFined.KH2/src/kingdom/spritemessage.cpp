@@ -1,6 +1,6 @@
 #include "spritemessage.h"
 
-void dk::SpriteMessage::drawMessage(char* Sprite)
+uint32_t dk::SpriteMessage::drawMessage(char* Sprite)
 {
 	char _messageDrawInst[0x100];
 
@@ -9,7 +9,6 @@ void dk::SpriteMessage::drawMessage(char* Sprite)
 
 	auto _fetchObject = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01E0));
 	auto _fetchSequence = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01E8));
-	auto _fetchMessage = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01F8));
 	
 	auto _didObjectInit = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0800;
 	auto _canObjectDraw = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x1000;
@@ -22,14 +21,14 @@ void dk::SpriteMessage::drawMessage(char* Sprite)
 	{
 		if (_fetchObject)
 			if (!dk::Obj2D::isExist(_fetchObject))
-				return;
+				return 0x00;
 
 		if (_fetchSequence)
 		{
-			auto _canSequenceDraw = *reinterpret_cast<uint32_t*>(_fetchSequence + 0x0140) - 1 != 0x00;
+			auto _canSequenceDraw = *reinterpret_cast<uint32_t*>(_fetchSequence + 0x0140) - 1 <= 0x01;
 
 			if (!_canSequenceDraw)
-				return;
+				return 0x00;
 		}
 	}
 
@@ -64,6 +63,8 @@ void dk::SpriteMessage::drawMessage(char* Sprite)
 		_activeRGBA = _valueR | ((_valueG | ((_valueB | (_valueA << 8)) << 8)) << 8);
 	}
 
+	auto _fetchMessage = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01F8));
+
 	if (_fetchMessage)
 	{
 		auto _fetchMemory = YS::PANACEA_ALLOC::Get("ASPECT_INFORMATION");
@@ -84,6 +85,8 @@ void dk::SpriteMessage::drawMessage(char* Sprite)
 		YS::MESSAGEDRAW::set_line_space(_messageDrawInst, YI::SEQUENCE::GetParamCr(Sprite + 0x0020));
 		YS::MESSAGEDRAW::draw(_messageDrawInst, _fetchCurrentX + _applyAspect, _fetchCurrentY, _activeRGBA);
 	}
+
+	return _activeRGBA;
 }
 
 dk::SpriteMessage::staticInitializer initialize;

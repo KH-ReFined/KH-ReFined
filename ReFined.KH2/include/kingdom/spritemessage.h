@@ -6,6 +6,7 @@
 #include "obj2d.h"
 #include "sequence.h"
 #include "messagedraw.h"
+#include "message.h"
 #include "panacea_alloc.h"
 
 extern "C"
@@ -15,7 +16,7 @@ extern "C"
         class DLL_EXPORT SpriteMessage
         {
         public:
-            static void drawMessage(char* Sprite);
+            static uint32_t drawMessage(char* Sprite);
 
             struct staticInitializer
             {
