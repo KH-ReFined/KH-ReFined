@@ -20,15 +20,15 @@ void dk::TIMER::update(char* timer)
 
 	switch (_fetchNumber)
 	{
-	case 0x1A:
-		_applyAspect = _offsetValue * -1;
-		break;
-	case 0x1B:
-		_applyAspect = _offsetValue;
-		break;
-	default:
-		_applyAspect = 0x00;
-		break;
+		case 0x1A:
+			_applyAspect = _offsetValue * -1;
+			break;
+		case 0x1B:
+			_applyAspect = _offsetValue;
+			break;
+		default:
+			_applyAspect = 0x00;
+			break;
 	}
 
 	*reinterpret_cast<int*>(timer + 0x0028) = _applyAspect + _fetchActiveX;
