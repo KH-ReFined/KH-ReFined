@@ -17,11 +17,6 @@ void dk::COUNTER::update(char* counter)
 	if (_fetchMemory)
 		memcpy(&_offsetValue, _fetchMemory, 0x04);
 
-	auto _fetchMission = YS::CACHE_BUFF::SearchByName("msn/us/HB33_FM_LEX.bar", -1);
-
-	if (_fetchMission && _offsetValue != 85)
-		_offsetValue = 85;
-
 	auto _applyAspect = 0x00;
 
 	auto _fetchActiveX = YI::SEQUENCE::GetActiveX(counter + 0x160);
@@ -65,13 +60,13 @@ void dk::COUNTER::update(char* counter)
 			auto _articleCount = *reinterpret_cast<int*>(counter + 0x1CB8) - 1;
 
 			char _numSeqDictionary[0x0A] = { 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15 };
-			char _arraySequenceNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+			char _arraySequenceNum[0x05] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 			sprintf(_arraySequenceNum, "%d", _comboCurrent);
 
 			vector<char> _arrayFinalSequence;
 
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 5; i++)
 			{
 				if (!_arraySequenceNum[i])
 					_arrayFinalSequence.push_back(0x0C);
@@ -116,13 +111,13 @@ void dk::COUNTER::update(char* counter)
 			auto _articleCount = *reinterpret_cast<int*>(counter + 0x1CB8) - 1;
 
 			char _numSeqDictionary[0x0A] = { 0x18, 0x19, 0x1A, 0xAB, 0x1C, 0x1B, 0x1E, 0x1F, 0x20, 0x21 };
-			char _arraySequenceNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+			char _arraySequenceNum[0x05] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-			sprintf(_arraySequenceNum, "%d", _maxComboCurrent);
+			sprintf(_arraySequenceNum, "%d", _comboCurrent);
 
 			vector<char> _arrayFinalSequence;
 
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 5; i++)
 			{
 				if (!_arraySequenceNum[i])
 					_arrayFinalSequence.push_back(0x18);
