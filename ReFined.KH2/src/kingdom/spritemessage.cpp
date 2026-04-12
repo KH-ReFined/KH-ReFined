@@ -22,14 +22,14 @@ uint32_t dk::SpriteMessage::drawMessage(char* Sprite)
 	{
 		if (_fetchObject)
 			if (!dk::Obj2D::isExist(_fetchObject))
-				return 0x00;
+				return NULL;
 
 		if (_fetchSequence)
 		{
 			auto _canSequenceDraw = *reinterpret_cast<uint32_t*>(_fetchSequence + 0x0140) - 1 <= 0x01;
 
 			if (!_canSequenceDraw)
-				return 0x00;
+				return NULL;
 		}
 	}
 

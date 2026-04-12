@@ -165,6 +165,7 @@
     <ClInclude Include="include\kingdom\spritemessage.h" />
     <ClInclude Include="include\kingdom\steam.h" />
     <ClInclude Include="include\kingdom\task.h" />
+    <ClInclude Include="include\kingdom\timer.h" />
     <ClInclude Include="include\kingdom\title.h" />
     <ClInclude Include="include\kingdom\treasure_info.h" />
     <ClInclude Include="include\kingdom\voice.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="src\kingdom\spritemessage.cpp" />
     <ClCompile Include="src\kingdom\steam.cpp" />
     <ClCompile Include="src\kingdom\task.cpp" />
+    <ClCompile Include="src\kingdom\timer.cpp" />
     <ClCompile Include="src\kingdom\title.cpp" />
     <ClCompile Include="src\kingdom\treasure_info.cpp" />
     <ClCompile Include="src\kingdom\voice.cpp" />
