@@ -9,7 +9,8 @@ uint32_t dk::SpriteMessage::drawMessage(char* Sprite)
 
 	auto _fetchObject = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01E0));
 	auto _fetchSequence = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01E8));
-	
+	auto _fetchMessage = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01F8));
+
 	auto _didObjectInit = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0800;
 	auto _canObjectDraw = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x1000;
 	auto _hasParamXY = *reinterpret_cast<uint32_t*>(Sprite + 0x0010) & 0x0010;
@@ -62,8 +63,6 @@ uint32_t dk::SpriteMessage::drawMessage(char* Sprite)
 
 		_activeRGBA = _valueR | ((_valueG | ((_valueB | (_valueA << 8)) << 8)) << 8);
 	}
-
-	auto _fetchMessage = reinterpret_cast<char*>(*reinterpret_cast<uint64_t*>(Sprite + 0x01F8));
 
 	if (_fetchMessage)
 	{
