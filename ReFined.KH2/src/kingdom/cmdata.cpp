@@ -3,6 +3,8 @@
 char* Tz::CmData::MENU_FNAME_BUFFER = nullptr;
 char* Tz::CmData::FAC_WRITE_BUFFER = nullptr;
 
+char* Tz::CmData::FileInfo = ResolveRelativeAddress<char*>("\x48\x63\xC1\x48\x8D\x0C\x40\x48\x8D\x05\x00\x00\x00\x00\x48\x83\x7C", "xxxxxxxxxx????xxx", 0x0A);
+
 char Tz::CmData::call_statement[0x20];
 
 Tz::CmData::staticInitializer Tz::CmData::initialize;
@@ -32,7 +34,6 @@ char* Tz::CmData::MakeFname(char* buff, char* fileName)
             }
         }
 
-        printf("[Tz::CmData::MakeFname] | Fulfilling FILE request for: \"%s\"\n", buff);
         return buff;
     }
 
@@ -61,7 +62,6 @@ char* Tz::CmData::MakeFname(char* buff, char* fileName)
             }
         }
 
-        printf("[Tz::CmData::MakeFname] | Fulfilling MENU request for: \"%s\"\n", buff);
         return buff;
     }
 }
@@ -118,5 +118,4 @@ void Tz::CmData::MakeFnameItempic(char* buff, uint16_t id)
         sprintf(buff, "itempic/item-%03d.imd", _fetchPictureID);
 
     printf("[Tz::CmData::MakeFnameItempic] | Fulfilling ITEMPIC request for: \"%s\"\n", buff);
-
 }

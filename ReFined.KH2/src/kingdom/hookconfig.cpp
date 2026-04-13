@@ -1,4 +1,5 @@
 #include "hookconfig.h"
+#include <cmdata.h>
 
 bool CONFIG_INIT;
 bool CONFIG_FETCH;
@@ -338,8 +339,9 @@ void Tz::HookConfig::Handle()
 					}
 
 					auto _calcSeqPoint = MENUSEQ_POINTER() + 0x448B;
+					auto _fetchSeqPoint = *reinterpret_cast<char**>(_calcSeqPoint);
 
-					if (*reinterpret_cast<char**>(_calcSeqPoint) != nullptr)
+					if (_fetchSeqPoint != nullptr && _fetchSeqPoint > moduleInfo.startAddr && _fetchSeqPoint < moduleInfo.endAddr)
 						Tz::CmConfig::UpdateList();
 					
 					Tz::CmConfig::UpdateActive();
@@ -440,10 +442,12 @@ void Tz::HookConfig::Handle()
 			}
 
 			auto _pointCurrent = *YS::MENU::SubOptionSel + 0x12;
+			auto _fetchCampBinarc = *reinterpret_cast<char**>(Tz::CmData::FileInfo + 0x40);
 
-			if (_pointCurrent && *YS::MENU::Camp2LD)
+			if (*YS::MENU::SubOptionSel && _fetchCampBinarc)
 			{
-				char* _fetchCampSQD = YS::BINARC::get_info_by_tag(*YS::MENU::Camp2LD, 0x1C, 0x706D6163, 0);
+				auto _intptrSQD = *reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchCampBinarc, 0x1C, 0x706D6163, 0) + 0x08);
+				auto _addressSQD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_intptrSQD));
 
 				uint8_t _pageCount = Entries.size() - 0x09;
 				uint8_t _pageFactor = 0x18 * _pageCount;
@@ -454,16 +458,16 @@ void Tz::HookConfig::Handle()
 				auto _floatCalc = (0xC0 - _pageFactor) * 0.01F;
 				auto _factorCalc = 0x64 - (_pageFactor + 0x01) + _pageOffset;
 
-				memcpy(_fetchCampSQD + 0x21498, &_offsetCalc, 0x04);
-				memcpy(_fetchCampSQD + 0x2149C, &_offsetCalc, 0x04);
-				memcpy(_fetchCampSQD + 0x21528, &_offsetCalc, 0x04);
-				memcpy(_fetchCampSQD + 0x2152C, &_offsetCalc, 0x04);
+				memcpy(_addressSQD + 0x21498, &_offsetCalc, 0x04);
+				memcpy(_addressSQD + 0x2149C, &_offsetCalc, 0x04);
+				memcpy(_addressSQD + 0x21528, &_offsetCalc, 0x04);
+				memcpy(_addressSQD + 0x2152C, &_offsetCalc, 0x04);
 					   
-				memcpy(_fetchCampSQD + 0x21568, &_floatCalc, 0x04);
-				memcpy(_fetchCampSQD + 0x2156C, &_floatCalc, 0x04);
+				memcpy(_addressSQD + 0x21568, &_floatCalc, 0x04);
+				memcpy(_addressSQD + 0x2156C, &_floatCalc, 0x04);
 					   
-				memcpy(_fetchCampSQD + 0x215B8, &_factorCalc, 0x04);
-				memcpy(_fetchCampSQD + 0x215BC, &_factorCalc, 0x04);
+				memcpy(_addressSQD + 0x215B8, &_factorCalc, 0x04);
+				memcpy(_addressSQD + 0x215BC, &_factorCalc, 0x04);
 			}
 		}
 

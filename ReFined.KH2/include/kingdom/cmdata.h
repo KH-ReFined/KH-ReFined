@@ -28,6 +28,8 @@ extern "C"
             static char* MENU_FNAME_BUFFER;
             static char* FAC_WRITE_BUFFER;
 
+            static char* FileInfo;
+
             static char* MakeFname(char* buff, char* fileName);
             static void MakeFnameItempic(char* buff, uint16_t id);
             static void MakeFnameFace(uint16_t id);
