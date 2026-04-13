@@ -38,7 +38,8 @@ void dk::MISSION_GAUGE::updateGauge(char* missionGauge)
 	}
 
 	if (YI::SEQUENCE::GetParamSize(missionGauge + 0x160) == -1)
-		_applyAspect = -85;
+		_applyAspect = _fetchNumber == 0x10 ? -85 : (_fetchNumber == 0x11 ? 85 : 0x00);
+
 
 	*reinterpret_cast<int*>(missionGauge + 0x0028) = _applyAspect + _fetchActiveX;
 }
