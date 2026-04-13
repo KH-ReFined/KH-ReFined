@@ -77,7 +77,10 @@ void dk::COUNTER::update(char* counter)
 					_arrayFinalSequence.push_back(0x0C);
 
 				else
-					_arrayFinalSequence.insert(_arrayFinalSequence.begin(), _numSeqDictionary[_arraySequenceNum[i] - 0x30]);
+				{
+					auto _fetchArr = _numSeqDictionary[_arraySequenceNum[i] - 0x30];
+					_arrayFinalSequence.insert(_arrayFinalSequence.begin(), _fetchArr);
+				}
 			}
 
 			for (int i = _articleCount; i >= 0; i--)
@@ -115,20 +118,24 @@ void dk::COUNTER::update(char* counter)
 		{
 			auto _articleCount = *reinterpret_cast<int*>(counter + 0x1CB8) - 1;
 
-			char _numSeqDictionary[0x0A] = { 0x18, 0x19, 0x1A, 0xAB, 0x1C, 0x1B, 0x1E, 0x1F, 0x20, 0x21 };
-			char _arraySequenceNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+			char _subNumSeqDictionary[0x0A] = { 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21 };
+			char _arraySequenceSubNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-			sprintf(_arraySequenceNum, "%d", _maxComboCurrent);
+			sprintf(_arraySequenceSubNum, "%d", _maxComboCurrent);
 
 			vector<char> _arrayFinalSequence;
 
 			for (int i = 0; i < 6; i++)
 			{
-				if (!_arraySequenceNum[i])
+
+				if (!_arraySequenceSubNum[i])
 					_arrayFinalSequence.push_back(0x18);
 
 				else
-					_arrayFinalSequence.insert(_arrayFinalSequence.begin(), _numSeqDictionary[_arraySequenceNum[i] - 0x30]);
+				{
+					auto _fetchArr = _subNumSeqDictionary[_arraySequenceSubNum[i] - 0x30];
+					_arrayFinalSequence.insert(_arrayFinalSequence.begin(), _fetchArr);
+				}
 			}
 
 			for (int i = _articleCount; i >= 0; i--)

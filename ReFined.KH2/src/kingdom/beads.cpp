@@ -1,7 +1,5 @@
 #include "beads.h"
 
-YS::VM::staticInitializer  YS::VM::initialize;
-
 uint32_t YS::VM::trap_obj_get_entry_id(uint32_t* bdvalue)
 {
     if (!bdvalue || (char*)bdvalue > moduleInfo.endAddr || *bdvalue == 0x00 || *bdvalue == UINT32_MAX)
@@ -167,3 +165,5 @@ uint32_t YS::VM::trap_limit_motion_start(uint32_t* bdvalue)
 
     return _dwordReturn;
 }
+
+YS::VM::staticInitializer  YS::VM::initialize;
