@@ -10,11 +10,6 @@ void dk::MISSION_GAUGE::updateGauge(char* missionGauge)
 	if (_fetchMemory)
 		memcpy(&_offsetValue, _fetchMemory, 0x04);
 
-	auto _fetchMission = YS::CACHE_BUFF::SearchByName("msn/us/EH14_MS103.bar", -1) || YS::CACHE_BUFF::SearchByName("msn/us/EH26_MS108.bar", -1);
-
-	if (_fetchMission && _offsetValue > 85)
-		_offsetValue = 85;
-
 	auto _applyAspect = 0x00;
 
 	auto _factorFloat = *reinterpret_cast<float*>(missionGauge + 0x0CD8);
