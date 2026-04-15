@@ -84,6 +84,15 @@ void dk::Sprite::create(char* Sprite, int priority, char* seqd, char* image, int
 
 void dk::Sprite::draw(char* Sprite)
 {
+	auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+	auto _isHudDraw = true;
+
+	if (_fetchHudDraw)
+		memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+	if (!_isHudDraw && !*YS::MENU::IsMenu)
+		return;
+
 	int _activeX = 0;
 	int _activeY = 0;
 

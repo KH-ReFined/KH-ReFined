@@ -2,6 +2,15 @@
 
 void dk::SECTOR_MASK::draw(char* MASK)
 {
+	auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+	auto _isHudDraw = true;
+
+	if (_fetchHudDraw)
+		memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+	if (!_isHudDraw)
+		return;
+
 	auto _fetchSprite = *reinterpret_cast<char**>(MASK + 0x0140);
 	auto _instanceMain = *reinterpret_cast<char**>(MASK + 0x0020);
 

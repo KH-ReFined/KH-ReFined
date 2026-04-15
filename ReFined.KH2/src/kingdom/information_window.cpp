@@ -2,6 +2,15 @@
 
 void dk::INFORMATION_WINDOW::init(char* infoWindow, char* message)
 {
+	auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+	auto _isHudDraw = true;
+
+	if (_fetchHudDraw)
+		memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+	if (!_isHudDraw && !*YS::MENU::IsMenu)
+		return;
+
 	auto _fetchMemory = YS::PANACEA_ALLOC::Get("ASPECT_INFORMATION");
 	auto _offsetValue = 85;
 

@@ -2,6 +2,15 @@
 
 uint32_t dk::SpriteMessage::drawMessage(char* Sprite)
 {
+	auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+	auto _isHudDraw = true;
+
+	if (_fetchHudDraw)
+		memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+	if (!_isHudDraw && !*YS::MENU::IsMenu)
+		return NULL;
+
 	char _messageDrawInst[0x100];
 
 	int _activeX = 0;

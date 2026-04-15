@@ -8,6 +8,7 @@
 #include "messagedraw.h"
 #include "message.h"
 #include "panacea_alloc.h"
+#include "menu.h"
 
 extern "C"
 {

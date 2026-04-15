@@ -2,6 +2,15 @@
 
 void dk::COMMAND_ONE::draw(char* Command)
 { 
+	auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+	auto _isHudDraw = true;
+
+	if (_fetchHudDraw)
+		memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+	if (!_isHudDraw && !*YS::MENU::IsMenu)
+		return;
+
 	dk::Sprite::draw(Command);
 	dk::SpriteMessage::drawMessage(Command);
 

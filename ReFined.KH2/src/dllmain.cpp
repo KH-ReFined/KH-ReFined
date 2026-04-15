@@ -78,7 +78,7 @@
 #include <fvector.h>
 #include <cmdata.h>
 
-bool MAKE_MENU = false;
+bool TOGGLE_HUD = false;
 
 using namespace std;
 using namespace discord;
@@ -1495,8 +1495,17 @@ void HANDLE_ASPECT()
 
         if (*RADAR_STRUCT)
         {
+            auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+            auto _isHudDraw = true;
+
+            if (_fetchHudDraw)
+                memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
             *reinterpret_cast<int*>(*RADAR_STRUCT + 0xBBC) = POSITIVE_ASPECT_OFFSET;
             *reinterpret_cast<int*>(*RADAR_STRUCT + 0xBE0) = POSITIVE_ASPECT_OFFSET;
+
+            *reinterpret_cast<char*>(*RADAR_STRUCT + 0xBE5) = _isHudDraw ? 0x60 : 0x00;
+            *reinterpret_cast<float*>(*RADAR_STRUCT + 0xBC0) = _isHudDraw ? 1.0 : 0.0;
         }
     }
 }
@@ -1778,7 +1787,7 @@ void PROCESS_FORM_KEYBLADES()
 
 void FIX_UP_CONFIG()
 {
-    if (YS::TITLE::IsTitle)
+    if (*YS::TITLE::IsTitle)
     {
         char _makeFileName[48];
         Tz::CmData::MakeFname(_makeFileName, const_cast<char*>(IS_FASTBOOT ? "title_fast.2ld" : "title.2ld"));
@@ -1954,8 +1963,12 @@ extern "C"
 
         // Initialization of all MENU handlers [INTRO, CONFIG, CONTINUE]
 
+        YS::PANACEA_ALLOC::Allocate("IS_HUDDRAW", 0x04);
         YS::PANACEA_ALLOC::Allocate("ASPECT_INFORMATION", 0x08);
         YS::PANACEA_ALLOC::Allocate("CHANGE_WEAPON_QUEUE", 0x140);
+
+        auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+        memset(_fetchHudDraw, 0x01, 0x01);
 
         ReFined::Continue::Submit();
 
@@ -2474,7 +2487,26 @@ extern "C"
                 _execPair.second();
             #endif
 
+            if (*YS::HARDPAD::Input == YS::HARDPAD::BUTTONS::L3 && !TOGGLE_HUD)
+            {
+                auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+                auto _isHudDraw = true;
 
+                if (_fetchHudDraw)
+                {
+                    memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+                    _isHudDraw = !_isHudDraw;
+
+                    memcpy(_fetchHudDraw, &_isHudDraw, 0x01);
+
+                    SOUND::PlaySFX(0x06);
+                }
+
+                TOGGLE_HUD = true;
+            }
+
+            else if (*YS::HARDPAD::Input != YS::HARDPAD::BUTTONS::L3 && TOGGLE_HUD)
+                TOGGLE_HUD = false;
         }
     }
 }

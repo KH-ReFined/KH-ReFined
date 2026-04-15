@@ -7,6 +7,7 @@
 #include "sequence.h"
 #include "messagedraw.h"
 #include "sound.h"
+#include "menu.h"
 #include "panacea_alloc.h"
 
 extern "C"

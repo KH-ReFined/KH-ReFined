@@ -6,6 +6,7 @@
 #include "obj2d.h"
 #include "sequence.h"
 #include "panacea_alloc.h"
+#include "menu.h"
 
 extern "C"
 {
