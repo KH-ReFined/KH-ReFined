@@ -75,20 +75,20 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | Free-Cam Mode [[11]](#reference) |
 | - | :heavy_check_mark: | HUD Disable [[12]](#reference) |
 
-| Extra | Module/PAK | Description |
+| Extra | Module/Pack | Description |
 |---------|-------------|-------------|
 | Crown Engine | Module | The HUD will show the corresponding Crown currently unlocked |
 | Encounter Plus | Module | [New Abillity unlocked via Moogle Level 5] Mobs will respawn one (1) room away, instead of two (2) [[7]](#reference) |
 | Prolouge Skip | Module | Skip Roxas' Story and go straight into playing as Sora |
 | Shortcut Forms | Module | Can set Drive Forms in the Shortcut Menu |
 | Shortcut Sets | Module | Can utilize three different Shortcut Sets [[8]](#reference)|
-| Vanilla Heartless | PAK | Enable non-Final Mix Heartless Colors |
-| Vanilla OST | PAK | Enable Original PlayStation 2 Soundtrack |
-| Japanese VO | PAK | Enable Japanese Voice Over [[9]](#reference) |
-| German VO | PAK | Enable German Voice Over |
-| French VO | PAK | Enable French Voice Over |
-| Spanish VO | PAK | Enable Spanish Voice Over |
-| Revert Outfits | PAK | Disables the custom Pirate/Disney World Outfits |
+| Vanilla Heartless | Pack | Enable non-Final Mix Heartless Colors |
+| Vanilla OST | Pack | Enable Original PlayStation 2 Soundtrack |
+| Japanese VO | Pack | Enable Japanese Voice Overs [[9]](#reference) |
+| German VO | Pack | Enable German Voice Overs |
+| French VO | Pack | Enable French Voice Overs |
+| Spanish VO | Pack | Enable Spanish Voice Overs |
+| Revert Outfits | Pack | Disables the custom Pirate/Disney World Outfits |
 
 #### Reference
 
