@@ -75,7 +75,7 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | Free-Cam Mode [[11]](#reference) |
 | - | :heavy_check_mark: | HUD Disable [[12]](#reference) |
 
-| Extra | Feature/Module/PAK | Description |
+| Extra | Module/PAK | Description |
 |---------|-------------|-------------|
 | Crown Engine | Module | The HUD will show the corresponding Crown currently unlocked |
 | Encounter Plus | Module | [New Abillity unlocked via Moogle Level 5] Mobs will respawn one (1) room away, instead of two (2) [[7]](#reference) |
@@ -124,7 +124,6 @@ Thank you for your consideration, all support is appreciated!
 - **blobdash** for the French translation.
 - **iTeoh**, **kuxir**, and **atlas_0x** for the Italian translation.
 - **SapphireSaphic** and **ALOE** for the upcoming Japanese translation.
-- 
 
 ### Re:Chain of Memories
 - **TheLegendOfLame** and **GICU** for their input on making the No Experience toggle.
