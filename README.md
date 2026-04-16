@@ -50,6 +50,7 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
 | - | :heavy_check_mark: | Soft Reset implementation [R2, L2, START, SELECT; Customizable]. |
 | - | :heavy_check_mark: | Advanced Ratio Support, aiming to improve the experience on 32:9, 21:9, 16:10, and 4:3 aspect ratios. |
+| - | :heavy_check_mark: | Mod Supporters Are Shown On Startup |
 
 ### Kingdom Hearts II
 
@@ -58,23 +59,23 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | :heavy_check_mark: | - | Fixed Save Point VFX |
 | :heavy_check_mark: | - | Restored Missing Boss Battle Dialogue & SFX |
 | :heavy_check_mark: | - | Corrected Limit Form Names [[4]](#reference) |
+| :heavy_check_mark: | - | Restored Right Stick Command Menu Control |
+| :heavy_check_mark: | - | Restored Screen Shake |
 | - | :heavy_check_mark: | 60 FPS Cutscenes |
 | - | :heavy_check_mark: | The player can now retry all forced encounters. [[5]](#reference) |
 | - | :heavy_check_mark: | Prepare & Retry [[6]](#reference) |
 | - | :heavy_check_mark: | Can Now Skip Ending FMV |
 | - | :heavy_check_mark: | HUD Now Displays Next Summon/Form EXP |
-| - | :heavy_check_mark: | Quadratunm Command Menu |
-| - | :heavy_check_mark: | Restored Right Stick Command Menu Control |
-| - | :heavy_check_mark: | Restored Screen Shake |
+| - | :heavy_check_mark: | Quadratum Command Menu |
 | - | :heavy_check_mark: | New GoA Gummi Ship Landing Spot |
 | - | :heavy_check_mark: | Unpause Atlantica Mini-Games |
 | - | :heavy_check_mark: | English Translation of Sora's Album Notes |
-| - | :heavy_check_mark: | Can Now Refight Sephiroth |
+| - | :heavy_check_mark: | The ability to challenge Sephiroth again has been added [[10]](#reference) |
 | - | :heavy_check_mark: | Pirate & Disney Outfits |
-| - | :heavy_check_mark: | Free-Cam Mode + HUD Disable with L3 |
-| - | :heavy_check_mark: | Mod Supporters Are Shown On Startup |
+| - | :heavy_check_mark: | Free-Cam Mode [[11]](#reference) |
+| - | :heavy_check_mark: | HUD Disable [[12]](#reference) |
 
-| Extra | Module/PAK | Description |
+| Extra | Feature/Module/PAK | Description |
 |---------|-------------|-------------|
 | Crown Engine | Module | The HUD will show the corresponding Crown currently unlocked |
 | Encounter Plus | Module | [New Abillity unlocked via Moogle Level 5] Mobs will respawn one (1) room away, instead of two (2) [[7]](#reference) |
@@ -100,6 +101,9 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 7. In Kingdom Hearts, there was a convenient "Encounter Plus" ability to make the grinding experience more bearable. Re:Fined implements this ability into Kingdom Hearts II.
 8. In Kingdom Hearts III, the player can have up to 3 shortcut sets and can cycle between them by using the DPAD. This feature is neat, so now it's in Kingdom Hearts II.
 9. CrazyCatz00's English Patch for Kingdom Hearts II - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games, along with the other respective language paks chosen to be installed.
+10. After defeating Sephiroth and obtaining Fenrir, you can now interact with an Absent Silhouette-like object in the Dark Depths to challenge Sepiroth again.
+11. You can now hide all of the HUD (besides off-action menus and some oddities) by pressing L3. You have to set "allowNoHud" in reFined.cfg to true for this to work.
+12. You can now halt the game to take pictures and cool action shots by pressing L3. You have to set "allowTimeStop" in reFined.cfg to true for this to work.
 
 ## Support
 
@@ -120,6 +124,7 @@ Thank you for your consideration, all support is appreciated!
 - **blobdash** for the French translation.
 - **iTeoh**, **kuxir**, and **atlas_0x** for the Italian translation.
 - **SapphireSaphic** and **ALOE** for the upcoming Japanese translation.
+- 
 
 ### Re:Chain of Memories
 - **TheLegendOfLame** and **GICU** for their input on making the No Experience toggle.
@@ -136,13 +141,12 @@ Thank you for your consideration, all support is appreciated!
 - **TieuLink** for the origins of all Voice Packs.
 - **Napstio** for implementing FrenchVO and GermanVO.
 - **Jaster** for adding in Sora's Scribbles back.
+- **cam ✰ your local ram!** for Autosave Sound
+- **ATKOtter** for Morgan the Moogle (Autosave Asset)
 
 ## Third Party Libraries
 
 Re:Fined makes use of the following third-party libraries for it's functionality:
 
-[Tommy by dezhidki](https://github.com/dezhidki/Tommy)
-
-[MemorySharp by JamesMenetrey](https://github.com/JamesMenetrey/MemorySharp)
-
-
+[mINI by metayeti](https://github.com/metayeti/mINI)
+[Discord Game SDK](https://docs.discord.com/developers/developer-tools/game-sdk)
