@@ -36,4 +36,113 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 
 ## The Featureset
 
-Currently, this part of the ReadME is still being written! Please check back at another time.
+### All Games
+
+| Error/Bug Fix | Enhancement | Description |
+|---------------|-------------|-------------|
+| :heavy_check_mark: | - | Disable cutscene framelimiter. [[1]](#reference) |
+| :heavy_check_mark: | - | The game will no longer infinitely freeze while shutting down. |
+| :heavy_check_mark: | - | Removed Save File Restrictions. [[2]](#reference) |
+| :heavy_check_mark: | - | Fixed broken and/or missing sound effects and quotes. [[3]](#reference) |
+| - | :heavy_check_mark: | Added an option to skip Copyright Notices [For legal reasons, they will always play on First Boot]. |
+| - | :heavy_check_mark: | Added in the option to force controller prompts and camera at will. [[13]](#reference) |
+| - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
+| - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
+| - | :heavy_check_mark: | Soft Reset implementation [R2, L2, START, SELECT; Customizable]. |
+| - | :heavy_check_mark: | Advanced Ratio Support, aiming to improve the experience on 32:9, 21:9, 16:10, and 4:3 aspect ratios. |
+
+### Kingdom Hearts II
+
+| Error/Bug Fix | Enhancement | Description |
+|---------|-------------|-------------|
+| :heavy_check_mark: | - | Fixed Save Point VFX |
+| :heavy_check_mark: | - | Restored Missing Boss Battle Dialogue & SFX |
+| :heavy_check_mark: | - | Corrected Limit Form Names [[4]](#reference) |
+| - | :heavy_check_mark: | 60 FPS Cutscenes |
+| - | :heavy_check_mark: | The player can now retry all forced encounters. [[5]](#reference) |
+| - | :heavy_check_mark: | Prepare & Retry [[6]](#reference) |
+| - | :heavy_check_mark: | Can Now Skip Ending FMV |
+| - | :heavy_check_mark: | HUD Now Displays Next Summon/Form EXP |
+| - | :heavy_check_mark: | Quadratunm Command Menu |
+| - | :heavy_check_mark: | Restored Right Stick Command Menu Control |
+| - | :heavy_check_mark: | Restored Screen Shake |
+| - | :heavy_check_mark: | New GoA Gummi Ship Landing Spot |
+| - | :heavy_check_mark: | Unpause Atlantica Mini-Games |
+| - | :heavy_check_mark: | English Translation of Sora's Album Notes |
+| - | :heavy_check_mark: | Can Now Refight Sephiroth |
+| - | :heavy_check_mark: | Pirate & Disney Outfits |
+| - | :heavy_check_mark: | Free-Cam Mode + HUD Disable with L3 |
+| - | :heavy_check_mark: | Mod Supporters Are Shown On Startup |
+
+| Extra | Module/PAK | Description |
+|---------|-------------|-------------|
+| Crown Engine | Module | The HUD will show the corresponding Crown currently unlocked |
+| Encounter Plus | Module | [New Abillity unlocked via Moogle Level 5] Mobs will respawn one (1) room away, instead of two (2) [[7]](#reference) |
+| Prolouge Skip | Module | Skip Roxas' Story and go straight into playing as Sora |
+| Shortcut Forms | Module | Can set Drive Forms in the Shortcut Menu |
+| Shortcut Sets | Module | Can utilize three different Shortcut Sets [[8]](#reference)|
+| Vanilla Heartless | PAK | Enable non-Final Mix Heartless Colors |
+| Vanilla OST | PAK | Enable Original PlayStation 2 Soundtrack |
+| Japanese VO | PAK | Enable Japanese Voice Over [[9]](#reference) |
+| German VO | PAK | Enable German Voice Over |
+| French VO | PAK | Enable French Voice Over |
+| Spanish VO | PAK | Enable Spanish Voice Over |
+| Revert Outfits | PAK | Disables the custom Pirate/Disney World Outfits |
+
+#### Reference
+
+1. Cutscenes will by default lock the game to 30fps. This alleviates that.
+2. The Save Data is normally locked to a specific account. Re:Fined removes this restriction.
+3. Most sound effects are broken (Like Sephiroth's Deflect and Xigbar's Shots) and some boss quotes are missing (Genie Jafar's Beginning Quote, Saix's Desperation Move). Re:Fined fixes this.
+4. In the HD remaster of Kingdom Hearts II, the localization team changed the translation of certain attacks to contrast with their usual translations from Japanese. E.g. Ragnarok -> Infinity. This fix reverts that decision.
+5. Starting in Birth by Sleep, the player is given an option to retry a forced encounter instead of being sent to the room before. Re:Fined implements this feature to Kingdom Hearts II.
+6. In Kingdom Hearts III, the player is able to press "Prepare and Retry" after dying to enter the loadout menu. Re:Fined implements this feature into Kingdom Hearts II.
+7. In Kingdom Hearts, there was a convenient "Encounter Plus" ability to make the grinding experience more bearable. Re:Fined implements this ability into Kingdom Hearts II.
+8. In Kingdom Hearts III, the player can have up to 3 shortcut sets and can cycle between them by using the DPAD. This feature is neat, so now it's in Kingdom Hearts II.
+9. CrazyCatz00's English Patch for Kingdom Hearts II - Final Mix on the PS2 had an option in the menu to switch from and to English or Japanese voice acting. This mod reimplements that to the games, along with the other respective language paks chosen to be installed.
+
+## Support
+
+All of Topaz' Kingdom Hearts projects are now his full time gig, and thus a Patreon exists to support him and any of his projects you may like.  
+You can use the badge that is present at the start of this ReadME to check the Patreon out. There are benefits like private conversation, early BETA testing, and mentions in releases!  
+Thank you for your consideration, all support is appreciated!
+
+## Credits
+
+### All Games
+- **KHOmega** for his countless hours of contributions to Re:Fined overall.
+- **Televo** and **deltaemeraldin** for almost every asset Re:Fined uses.
+- **Denhonator** for his work on Soft Reset, and Volume Mute in the past.
+- **Xeeynamo** for the functions used to calculate the Save Checksum.
+- **Alison** for her work on Enemy Journal Entries.
+- **UtenaSW**, **dedede123**, and **Ruby-Chan** for the German translation.
+- **Svenchu**, **Mikote11**, and **Abelatox** for the Spanish translation.
+- **blobdash** for the French translation.
+- **iTeoh**, **kuxir**, and **atlas_0x** for the Italian translation.
+- **SapphireSaphic** and **ALOE** for the upcoming Japanese translation.
+
+### Re:Chain of Memories
+- **TheLegendOfLame** and **GICU** for their input on making the No Experience toggle.
+
+### Kingdom Hearts 2
+- **CrazyCatz00** for his contributions to Ultrawide Compatibility and Boss Quote Fixes.
+- **TieuLink** for providing the Japanese voices for the Multi Audio Add-on.
+- **DA** and **AntonioDePau** for their help with injecting ".a.jp" files for the Multi Audio Add-on.
+- **Y2K** for his past work on the Prologue Skip.
+- **VladABDF** for his work on the Crown Engine as well as the Quadratum Menu.
+- **Some1fromthedark** for his contributions to the new Configuration System.
+- **gg3502** for his help in the SharpHook Engine.
+- **MainMemory** for her help in fixing Panacea related issues.
+- **TieuLink** for the origins of all Voice Packs.
+- **Napstio** for implementing FrenchVO and GermanVO.
+- **Jaster** for adding in Sora's Scribbles back.
+
+## Third Party Libraries
+
+Re:Fined makes use of the following third-party libraries for it's functionality:
+
+[Tommy by dezhidki](https://github.com/dezhidki/Tommy)
+
+[MemorySharp by JamesMenetrey](https://github.com/JamesMenetrey/MemorySharp)
+
+
