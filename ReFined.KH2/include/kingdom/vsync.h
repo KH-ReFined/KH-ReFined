@@ -13,6 +13,7 @@ extern "C"
 		{
 		public:
 			static bool* IsFrameLimited;
+			static float* GameSpeed;
 		};
 	}
 }

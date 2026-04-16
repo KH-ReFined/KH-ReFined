@@ -66,7 +66,9 @@
 #include "world.h"
 #include "item_table.h"
 #include "voice.h"
+#include "messagedraw.h"
 #include "select.h"
+#include "spritemessage.h"
 
 #include "memorymgr.h"
 #include "continue_menu.h"
@@ -79,6 +81,9 @@
 #include <cmdata.h>
 
 bool TOGGLE_HUD = false;
+
+bool ALLOW_NOHUD = false;
+bool ALLOW_TIMESTOP = false;
 
 using namespace std;
 using namespace discord;
@@ -1961,6 +1966,19 @@ extern "C"
         auto _voiceLinePatch = SignatureScan<char*>("\x40\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x8D\x6C\x24\xE0\x48\x81\xEC\x20\x01\x00\x00\x48\xC7\x44\x24\x60\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\x60\x01\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
         memcpy(_voiceLinePatch + 0x162, "\x31\xC0\x90\x90\x90", 0x05);
 
+        // Decouple the camera from delta time.
+
+        uint32_t _fetchAddress = 0x00;
+        auto _fpsCameraUpdate = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x60\x8B\x81\xE0\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx");
+        auto _addressCameraFloat = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x60\x8B\x81\xE0\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x4B);
+
+        *reinterpret_cast<float*>(_addressCameraFloat - 0x04) = 1.0;
+
+        memcpy(&_fetchAddress, _fpsCameraUpdate + 0x4B, 0x04);
+        _fetchAddress -= 0x04;
+
+        memcpy(_fpsCameraUpdate + 0x4B, &_fetchAddress, 0x04);
+
         // Initialization of all MENU handlers [INTRO, CONFIG, CONTINUE]
 
         YS::PANACEA_ALLOC::Allocate("IS_HUDDRAW", 0x04);
@@ -2057,6 +2075,9 @@ extern "C"
             }
 
             DISCORD_ENABLED = _configStruct["General"]["discordRPC"] == "true" ? true : false;
+
+            ALLOW_NOHUD = _configStruct["General"]["allowNoHud"] == "true" ? true : false;
+            ALLOW_TIMESTOP = _configStruct["General"]["allowTimeStop"] == "true" ? true : false;
 
             if (!DISCORD_ENABLED)
                 FUNCTION_ARRAY.erase("DISCORD_RPC");
@@ -2468,7 +2489,6 @@ extern "C"
 
             #endif
 
-
             INITIALIZED = true;
         }
     
@@ -2486,27 +2506,36 @@ extern "C"
             for (auto _execPair : _execModule)
                 _execPair.second();
             #endif
-
-            if (*YS::HARDPAD::Input == YS::HARDPAD::BUTTONS::L3 && !TOGGLE_HUD)
+            
+            if (ALLOW_NOHUD || ALLOW_TIMESTOP)
             {
-                auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
-                auto _isHudDraw = true;
-
-                if (_fetchHudDraw)
+                if (*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !TOGGLE_HUD)
                 {
-                    memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
-                    _isHudDraw = !_isHudDraw;
+                    auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+                    auto _isHudDraw = true;
 
-                    memcpy(_fetchHudDraw, &_isHudDraw, 0x01);
+                    if (_fetchHudDraw)
+                    {
+                        if (ALLOW_NOHUD)
+                        {
+                            memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
 
-                    SOUND::PlaySFX(0x06);
+                            _isHudDraw = !_isHudDraw;
+                            memcpy(_fetchHudDraw, &_isHudDraw, 0x01);
+                        }
+
+                        if (ALLOW_TIMESTOP)
+                            *dk::VSYNC::GameSpeed = _isHudDraw ? 1.0 : 0.0;
+
+                        SOUND::PlaySFX(0x06);
+                    }
+
+                    TOGGLE_HUD = true;
                 }
 
-                TOGGLE_HUD = true;
+                else if ((*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x00 && TOGGLE_HUD)
+                    TOGGLE_HUD = false;
             }
-
-            else if (*YS::HARDPAD::Input != YS::HARDPAD::BUTTONS::L3 && TOGGLE_HUD)
-                TOGGLE_HUD = false;
         }
     }
 }
