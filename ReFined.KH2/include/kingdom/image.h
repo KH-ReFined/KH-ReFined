@@ -22,6 +22,9 @@ extern "C"
 			using InitLoadImage_t = void(*)(char* imageBuff);
 			static InitLoadImage_t InitLoadImage;
 
+			using LoadTexture_t = void(*)(char* imageBuff);
+			static LoadTexture_t LoadTexture;
+
 			using ReleaseImage_t = char*(*)(char* imd);
 			static ReleaseImage_t ReleaseImage;
 

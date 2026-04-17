@@ -5,6 +5,7 @@ char* VIEWPORT_ADDR = ResolveRelativeAddress<char*>("\x48\x8B\xC4\x57\x41\x56\x4
 
 dk::Sprite::setNum_t dk::Sprite::setNum = SignatureScan<dk::Sprite::setNum_t>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\x89\x91\xD4\x01\x00\x00\x48", "xxxxxxxxxxxxxxxx");
 dk::Sprite::setPos_t dk::Sprite::setPos = ResolveFunctionFromCall<dk::Sprite::setPos_t>("\x48\x89\x5C\x24\x18\x48\x89\x74\x24\x20\x57\x48\x83\xEC\x40\x48\x8B\xF9\x8B\xF2\x48\x83\xC1\x38\xE8\x00\x00\x00\x00\x84\xC0\x00\x00\x39\xB7\xAC\x0D\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxx????xx??xxxxxx", 0xBB);
+dk::Sprite::update_t dk::Sprite::update = SignatureScan<dk::Sprite::update_t>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\x8B\x49\x10\x8B\xC1\xC1\xE8", "xxxxxxxxxxxxxxxx");
 
 void dk::Sprite::_Sprite(char* self)
 {
@@ -15,6 +16,9 @@ void dk::Sprite::initWork(char* Sprite)
 {
 	memset(Sprite + 0x1C0, 0x00, 0x10);
 	*reinterpret_cast<float*>(Sprite + 0x1D0) = 1.0;
+
+	*reinterpret_cast<uint64_t*>(Sprite + 0x1C0) = 0x00;
+	*reinterpret_cast<uint64_t*>(Sprite + 0x1C8) = 0x00;
 
 	*reinterpret_cast<uint64_t*>(Sprite + 0x1E0) = 0x00;
 	*reinterpret_cast<uint32_t*>(Sprite + 0x010) |= 0x0800;
@@ -176,6 +180,7 @@ void dk::Sprite::draw(char* Sprite)
 
 		YI::SEQUENCE::Draw(Sprite + 0x0020);
 	}
+
 }
 
 dk::Sprite::staticInitializer initialize;

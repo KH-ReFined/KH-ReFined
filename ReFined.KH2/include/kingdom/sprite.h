@@ -18,9 +18,13 @@ extern "C"
 			using setNum_t = void(*)(char* Sprite, int num);
 			using create_t = void(*)(char* Sprite, int priority, char* seqd, char* image, int num, int group, int offset16x9);
 			using setPos_t = void(*)(char* Sprite, int x, int y);
+			using initSqd_t = void(*)(char* Sprite, char* sqd, char* image, int num);
+            using update_t = void(*)(char* Sprite);
 
 			static setNum_t setNum;
 			static setPos_t setPos;
+			static update_t update;
+            static initSqd_t initSqd;
 
 			static void _Sprite(char* self);
 			static void initWork(char* Sprite);
