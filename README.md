@@ -74,7 +74,7 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | Pirate & Disney Outfits |
 | - | :heavy_check_mark: | Free-Cam Mode [[11]](#reference) |
 | - | :heavy_check_mark: | HUD Disable [[12]](#reference) |
-| - | :heavy_check_mark: | Crown Engine (Sora's HUD Icon will now display a crown when a proof is obtained |
+| - | :heavy_check_mark: | Crown Engine (Sora's HUD Icon will now display a crown when a proof is obtained) |
 
 | Extra | Module/Pack | Description |
 |---------|-------------|-------------|
