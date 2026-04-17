@@ -28,7 +28,7 @@ extern "C"
             static void draw(char* face);
             static void update(char* face);
 
-            static void stubfunc(char* sprite);
+            static void emptyDraw(char* sprite);
 
             struct staticInitializer
             {

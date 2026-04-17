@@ -632,7 +632,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug [Nobody May Cry]|x64'">
@@ -653,7 +653,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">
@@ -675,7 +675,7 @@
       <OutputFile>$(OutDir)\\EnablersAP.dll</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -699,7 +699,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">
@@ -723,7 +723,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release [Nobody May Cry]|x64'">
@@ -747,7 +747,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">
@@ -772,7 +772,7 @@
       <OutputFile>$(OutDir)\\EnablersAP.dll</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\topaz\OneDrive\Desktop\openkh\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

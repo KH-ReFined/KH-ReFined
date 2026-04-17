@@ -2,6 +2,11 @@
 
 dk::FACE::getFaceSed_t dk::FACE::getFaceSed = SignatureScan<dk::FACE::getFaceSed_t>("\x40\x55\x48\x83\xEC\x20\xC6\x81\x04\x03\x00\x00\x00\x49\x8B\xC0", "xxxxxxxxxxxxxxxx");
 
+void dk::FACE::emptyDraw(char* face)
+{
+
+}
+
 void dk::FACE::create(char* face, int priority, int type, char* object, int status, int group, int offset16x9)
 {
 	*reinterpret_cast<uint32_t*>(face + 0x300) = type;
@@ -20,13 +25,23 @@ void dk::FACE::create(char* face, int priority, int type, char* object, int stat
 
 		if (YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0) != 0x00)
 		{
-			auto _allocCrown = (char*)malloc(0x300);
-			memset(_allocCrown, 0x00, 0x300);
+			auto _allocCrown = (char*)malloc(0x328);
+			memset(_allocCrown, 0x00, 0x328);
 
 			auto _addressCrownIMD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0) + 0x08)));
 			auto _addressCrownSQD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x19, 0x6E777263, 0) + 0x08)));
 
+
+			auto _fetchEmpty = &dk::FACE::emptyDraw;
+
 			dk::Sprite::_Sprite(_allocCrown);
+
+			memcpy(_allocCrown + 0x300, *reinterpret_cast<char**>(_allocCrown), 0x28);
+
+			memcpy(_allocCrown + 0x308, &_fetchEmpty, 0x08);
+			memcpy(_allocCrown + 0x310, &_fetchEmpty, 0x08);
+
+			*reinterpret_cast<char**>(_allocCrown) = _allocCrown + 0x300;
 
 			YI::IMAGE::_IMAGE(_allocCrown + 0x200);
 			YI::IMAGE::Init(_allocCrown + 0x200, _addressCrownIMD);
