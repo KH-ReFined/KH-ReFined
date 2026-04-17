@@ -16,6 +16,9 @@ extern "C"
 			using IMAGE_t = void(*)(char* imageBuff);
 			static IMAGE_t _IMAGE;
 
+			using MakePacket_t = void(*)(char* imageBuff);
+			static MakePacket_t MakePacket;
+
 			using Init_t = void(*)(char* imageBuff, char* imd);
 			static Init_t Init;
 

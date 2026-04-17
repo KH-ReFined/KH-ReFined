@@ -34,11 +34,10 @@ void dk::FACE::create(char* face, int priority, int type, char* object, int stat
 			*reinterpret_cast<uint32_t*>(_allocCrown + 0x210) = *reinterpret_cast<uint32_t*>(face + 0x210);
 			*reinterpret_cast<uint32_t*>(_allocCrown + 0x22C) = *reinterpret_cast<uint32_t*>(face + 0x22C);
 
-			reinterpret_cast<void(*)(char*)>(moduleInfo.startAddr + 0x191010)(_allocCrown + 0x200);
-
+			YI::IMAGE::MakePacket(_allocCrown + 0x200);
 			YI::IMAGE::InitLoadImage(_allocCrown + 0x200);
 
-			dk::Sprite::create(_allocCrown, priority, _addressCrownSQD, _allocCrown + 0x200, status, group, offset16x9);
+			dk::Sprite::create(_allocCrown, -1, _addressCrownSQD, _allocCrown + 0x200, status, group, offset16x9);
 
 			*reinterpret_cast<char**>(face + 0x0308) = _allocCrown;
 		}
@@ -55,13 +54,64 @@ void dk::FACE::create(char* face, int priority, int type, char* object, int stat
 	}
 }
 
+void dk::FACE::reload(char* face, char* object, int status)
+{
+	char* _fetchFaceSqd = nullptr;
+
+	if (dk::FACE::getFaceSed(face, &_fetchFaceSqd, object) == 1)
+	{
+		auto _statusCheck = 0x00;
+
+		if (!status || status != 0x01 && (_statusCheck = 0x02, status != 0x02))
+			_statusCheck = 0x03;
+
+		YI::SEQUENCE::Init(face + 0x20, _fetchFaceSqd, face + 0x0200);
+		*reinterpret_cast<uint32_t*>(face + 0x1D4) = _statusCheck;
+		YI::SEQUENCE::SetNumberForce(face + 0x20, _statusCheck);
+		*reinterpret_cast<uint32_t*>(face + 0x1F0) = 0x00;
+		*reinterpret_cast<uint32_t*>(face + 0x1D8) = UINT32_MAX;
+
+		auto _fetchObjectBinarc = *reinterpret_cast<char**>(object + 0x0928);
+
+		if (YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0) != 0x00)
+		{
+			auto _allocCrown = *reinterpret_cast<char**>(face + 0x0308);
+
+			if (_allocCrown)
+			{
+				auto _addressCrownIMD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0) + 0x08)));
+				auto _addressCrownSQD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x19, 0x6E777263, 0) + 0x08)));
+
+				YI::IMAGE::Init(_allocCrown + 0x200, _addressCrownIMD);
+
+				*reinterpret_cast<uint32_t*>(_allocCrown + 0x210) = *reinterpret_cast<uint32_t*>(face + 0x210);
+				*reinterpret_cast<uint32_t*>(_allocCrown + 0x22C) = *reinterpret_cast<uint32_t*>(face + 0x22C);
+
+				YI::IMAGE::MakePacket(_allocCrown + 0x200);
+				YI::IMAGE::InitLoadImage(_allocCrown + 0x200);
+
+				YI::SEQUENCE::Init(_allocCrown + 0x20, _addressCrownSQD, _allocCrown + 0x0200);
+				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1D4) = _statusCheck;
+				YI::SEQUENCE::SetNumberForce(_allocCrown + 0x20, _statusCheck);
+				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1F0) = 0x00;
+				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1D8) = UINT32_MAX;
+			}
+		}
+	}
+}
+
 void dk::FACE::update(char* face)
 {
-	auto _fetchCrown = *reinterpret_cast<uint32_t*>(face + 0x0308);
+	auto _fetchCrown = *reinterpret_cast<char**>(face + 0x0308);
 	auto _fetchIsDraw = *(face + 0x304);
 
 	if (_fetchIsDraw)
+	{
 		dk::Sprite::update(face);
+
+		if (_fetchCrown)
+			dk::Sprite::update(_fetchCrown);
+	}
 }
 
 void dk::FACE::draw(char* face)
@@ -75,11 +125,14 @@ void dk::FACE::draw(char* face)
 		YI::IMAGE::LoadTexture(face + 0x200);
 		dk::Sprite::draw(face);
 
-		if (_fetchCrown)
-		{
-			auto _fetchCacheId = *reinterpret_cast<int*>(_fetchCrown + 0x02F4);
+		auto _crownItemsArray = new char[0x03];
+		memcpy(_crownItemsArray, AREA::SaveData + 0x36B2, 0x03);
 
-			auto _fetchFaceNum = *reinterpret_cast<uint32_t*>(face + 0x1D4);
+		uint8_t _calculateCrown = _crownItemsArray[0] + _crownItemsArray[1] + _crownItemsArray[2];
+
+		if (_fetchCrown && _calculateCrown > 0)
+		{
+			auto _fetchFaceNum = *reinterpret_cast<uint32_t*>(face + 0x1D4) + 0x04 * (_calculateCrown -1);
 			auto _fetchFaceTime = *reinterpret_cast<float*>(face + 0x168);
 
 			if (*reinterpret_cast<uint32_t*>(_fetchCrown + 0x1D4) != _fetchFaceNum || _fetchFaceTime == 0x00)
@@ -89,6 +142,7 @@ void dk::FACE::draw(char* face)
 			*reinterpret_cast<int*>(_fetchCrown + 0x1C4) = *reinterpret_cast<int*>(face + 0x1C4);
 
 			YI::IMAGE::LoadTexture(_fetchCrown + 0x200);
+
 			dk::Sprite::draw(_fetchCrown);
 		}
 	}

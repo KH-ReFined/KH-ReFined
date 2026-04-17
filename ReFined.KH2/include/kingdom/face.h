@@ -3,6 +3,7 @@
 #define DLL_EXPORT __declspec(dllexport)
 #include <cstdint>
 
+#include "area.h"
 #include "obj2d.h"
 #include "binarc.h"
 #include "sprite.h"
@@ -23,6 +24,7 @@ extern "C"
             static getFaceSed_t getFaceSed;
 
             static void create(char* face, int priority, int type, char* object, int status, int group, int offset16x9);
+            static void reload(char* face, char* object, int status);
             static void draw(char* face);
             static void update(char* face);
 
@@ -40,7 +42,7 @@ extern "C"
                         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                     };
-
+                    
                     auto _createFunc = (uint64_t)create;
                     auto _create_orig = SignatureScan<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x40\x8B\xF2\x44\x89\x81\x00\x03\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxx");
 
@@ -76,6 +78,18 @@ extern "C"
                     memcpy(_draw_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
 
                     printf("Hooked dk::FACE::draw [0x%p] to Re:Fined function [0x%p].\n", _draw_orig, draw);
+
+                    auto _reloadFunc = (uint64_t)reload;
+                    auto _reload_orig = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x41\x8B\xD8\x33\xFF\x4C\x8B\xC2\x48", "xxxxxxxxxxxxxxxxxxxxxxxx");
+
+                    printf("Fetched dk::FACE::reload @ 0x%p.\n", _reload_orig);
+
+                    memset(_reload_orig, 0x90, 0x35);
+
+                    memcpy(_absoluteInstructionJMP.data() + 0x06, &_reloadFunc, 0x08);
+                    memcpy(_reload_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+
+                    printf("Hooked dk::FACE::reload [0x%p] to Re:Fined function [0x%p].\n", _reload_orig, reload);
 
                     printf("\nSuccessfully handled dk::FACE concerns.\n");
                     printf("======================================================\n\n");
