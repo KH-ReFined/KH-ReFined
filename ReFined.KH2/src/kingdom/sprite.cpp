@@ -76,14 +76,17 @@ void dk::Sprite::create(char* Sprite, int priority, char* seqd, char* image, int
 	dk::Obj2D::create(Sprite, priority, group);
 	dk::Sprite::initWork(Sprite);
 
-	YI::SEQUENCE::Init(Sprite + 0x20, seqd, image);
+	if (seqd && image)
+	{
+		YI::SEQUENCE::Init(Sprite + 0x20, seqd, image);
 
-	*reinterpret_cast<uint32_t*>(Sprite + 0x1D4) = num;
-	YI::SEQUENCE::SetNumberForce(Sprite + 0x20, num);
+		*reinterpret_cast<uint32_t*>(Sprite + 0x1D4) = num;
+		YI::SEQUENCE::SetNumberForce(Sprite + 0x20, num);
 
-	*(Sprite + 0x1F0) = 0x00;
-	*reinterpret_cast<uint32_t*>(Sprite + 0x1DC) = offset16x9;
-	*reinterpret_cast<uint32_t*>(Sprite + 0x1D8) = UINT32_MAX;
+		*(Sprite + 0x1F0) = 0x00;
+		*reinterpret_cast<uint32_t*>(Sprite + 0x1DC) = offset16x9;
+		*reinterpret_cast<uint32_t*>(Sprite + 0x1D8) = UINT32_MAX;
+	}
 }
 
 void dk::Sprite::draw(char* Sprite)

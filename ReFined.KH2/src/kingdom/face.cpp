@@ -9,8 +9,8 @@ void dk::FACE::emptyDraw(char* face)
 
 void dk::FACE::create(char* face, int priority, int type, char* object, int status, int group, int offset16x9)
 {
-	*reinterpret_cast<uint32_t*>(face + 0x300) = type;
 	char* _fetchFaceSqd = nullptr;
+	*reinterpret_cast<uint32_t*>(face + 0x300) = type;
 
 	if (dk::FACE::getFaceSed(face, &_fetchFaceSqd, object) == 1)
 	{
@@ -19,30 +19,34 @@ void dk::FACE::create(char* face, int priority, int type, char* object, int stat
 		if (!status || status != 0x01 && (_statusCheck = 0x02, status != 0x02))
 			_statusCheck = 0x03;
 
-		auto _fetchObjectBinarc = *reinterpret_cast<char**>(object + 0x0928);
-
 		dk::Sprite::create(face, priority, _fetchFaceSqd, face + 0x200, _statusCheck, group, offset16x9);
 
-		if (YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0) != 0x00)
+		auto _allocCrown = (char*)malloc(0x328);
+		auto _fetchEmpty = &dk::FACE::emptyDraw;
+
+		memset(_allocCrown, 0x00, 0x328);
+		dk::Sprite::_Sprite(_allocCrown);
+
+		memcpy(_allocCrown + 0x300, *reinterpret_cast<char**>(_allocCrown), 0x28);
+
+		memcpy(_allocCrown + 0x308, &_fetchEmpty, 0x08);
+		memcpy(_allocCrown + 0x310, &_fetchEmpty, 0x08);
+
+		*reinterpret_cast<char**>(_allocCrown) = _allocCrown + 0x300;
+		*reinterpret_cast<char**>(face + 0x0308) = _allocCrown;
+
+		auto _fetchObjectBinarc = *reinterpret_cast<char**>(object + 0x0928);
+
+		auto _intptrCrownIMD = YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0);
+		auto _intptrCrownSQD = YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x19, 0x6E777263, 0);
+		
+		if (_intptrCrownIMD && _intptrCrownSQD)
 		{
-			auto _allocCrown = (char*)malloc(0x328);
-			memset(_allocCrown, 0x00, 0x328);
-
-			auto _addressCrownIMD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0) + 0x08)));
-			auto _addressCrownSQD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x19, 0x6E777263, 0) + 0x08)));
-
-			auto _fetchEmpty = &dk::FACE::emptyDraw;
-
-			dk::Sprite::_Sprite(_allocCrown);
-
-			memcpy(_allocCrown + 0x300, *reinterpret_cast<char**>(_allocCrown), 0x28);
-
-			memcpy(_allocCrown + 0x308, &_fetchEmpty, 0x08);
-			memcpy(_allocCrown + 0x310, &_fetchEmpty, 0x08);
-
-			*reinterpret_cast<char**>(_allocCrown) = _allocCrown + 0x300;
+			auto _addressCrownIMD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(_intptrCrownIMD + 0x08)));
+			auto _addressCrownSQD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(_intptrCrownSQD + 0x08)));
 
 			YI::IMAGE::_IMAGE(_allocCrown + 0x200);
+
 			YI::IMAGE::Init(_allocCrown + 0x200, _addressCrownIMD);
 
 			*reinterpret_cast<uint32_t*>(_allocCrown + 0x210) = *reinterpret_cast<uint32_t*>(face + 0x210);
@@ -53,8 +57,13 @@ void dk::FACE::create(char* face, int priority, int type, char* object, int stat
 
 			dk::Sprite::create(_allocCrown, -1, _addressCrownSQD, _allocCrown + 0x200, status, group, offset16x9);
 
-			*reinterpret_cast<char**>(face + 0x0308) = _allocCrown;
 			*reinterpret_cast<int*>(face + 0x0310) = 1;
+		}
+
+		else
+		{
+			dk::Sprite::create(_allocCrown, -1, nullptr, nullptr, status, group, offset16x9);
+			*reinterpret_cast<int*>(face + 0x0310) = 0;
 		}
 	}
 
@@ -81,10 +90,11 @@ void dk::FACE::reload(char* face, char* object, int status)
 			_statusCheck = 0x03;
 
 		YI::SEQUENCE::Init(face + 0x20, _fetchFaceSqd, face + 0x0200);
-		*reinterpret_cast<uint32_t*>(face + 0x1D4) = _statusCheck;
 		YI::SEQUENCE::SetNumberForce(face + 0x20, _statusCheck);
+
 		*reinterpret_cast<uint32_t*>(face + 0x1F0) = 0x00;
 		*reinterpret_cast<uint32_t*>(face + 0x1D8) = UINT32_MAX;
+		*reinterpret_cast<uint32_t*>(face + 0x1D4) = _statusCheck;
 
 		auto _fetchObjectBinarc = *reinterpret_cast<char**>(object + 0x0928);
 
@@ -106,10 +116,11 @@ void dk::FACE::reload(char* face, char* object, int status)
 				YI::IMAGE::InitLoadImage(_allocCrown + 0x200);
 
 				YI::SEQUENCE::Init(_allocCrown + 0x20, _addressCrownSQD, _allocCrown + 0x0200);
-				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1D4) = _statusCheck;
 				YI::SEQUENCE::SetNumberForce(_allocCrown + 0x20, _statusCheck);
+
 				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1F0) = 0x00;
 				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1D8) = UINT32_MAX;
+				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1D4) = _statusCheck;
 
 				*reinterpret_cast<int*>(face + 0x0310) = 1;
 			}
