@@ -1892,7 +1892,6 @@ extern "C"
 
             memset(_titleSwitcherFunction + 0xAE, 0xEB, 0x01);
             memset(_titleCopierFunction + 0x2C, 0x90, 0x4E);
-
         }
 
         // Nullify all SaveID checks according to the platform in use.
@@ -1948,14 +1947,6 @@ extern "C"
             0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
-
-        auto _fVectorAddr = (uint64_t)kn::FVector::Init;
-        auto _fVectorInitialize = SignatureScan<char*>("\x48\x3B\xCA\x74\x16\x8B\x02\x89\x01", "xxxxxxxxx");
-
-        fill(_fVectorInitialize, _fVectorInitialize + 0x1F, 0x90);
-
-        memcpy(_absoluteInstructionJMP.data() + 0x06, &_fVectorAddr, 0x08);
-        memcpy(_fVectorInitialize, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
 
         auto _hotpatchNullTask = SignatureScan<char*>("\x49\x8B\x40\x18\xC7\x40\x04\x40\x3F\x3F\x3F\x49\x8B\x48\x18\x48\x8D\x41\x08\x49\x89\x40\x18\x8B\x02\x89\x01\xC3", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 

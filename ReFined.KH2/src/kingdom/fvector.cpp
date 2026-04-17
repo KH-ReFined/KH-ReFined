@@ -2,7 +2,7 @@
 
 uint32_t* kn::FVector::Init(uint32_t* _firstPtr, uint32_t* _secondPtr)
 {
-    if (!_firstPtr || !_secondPtr || reinterpret_cast<uint64_t>(_firstPtr) > 0x7FFF00000000 || reinterpret_cast<uint64_t>(_secondPtr) > 0x7FFF00000000)
+    if (!_firstPtr || !_secondPtr || reinterpret_cast<char*>(_firstPtr) > moduleInfo.endAddr || reinterpret_cast<char*>(_secondPtr) > moduleInfo.endAddr)
         return nullptr;
 
     if (_firstPtr != _secondPtr)
@@ -15,3 +15,5 @@ uint32_t* kn::FVector::Init(uint32_t* _firstPtr, uint32_t* _secondPtr)
 
     return _firstPtr;
 }
+
+kn::FVector::staticInitializer initialize;
