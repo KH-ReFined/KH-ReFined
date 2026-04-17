@@ -48,7 +48,7 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | Added in the option to force controller prompts and camera at will. [[13]](#reference) |
 | - | :heavy_check_mark: | Autosaving functionality, utilizing Slot #99. |
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
-| - | :heavy_check_mark: | Soft Reset implementation [R2, L2, START, SELECT; Customizable]. |
+| - | :heavy_check_mark: | Soft Reset implementation [L1 + L2 + R1 + R2 + SELECT; Customizable]. |
 | - | :heavy_check_mark: | Advanced Ratio Support, aiming to improve the experience on 32:9, 21:9, 16:10, and 4:3 aspect ratios. |
 | - | :heavy_check_mark: | Mod Supporters Are Shown On Startup |
 
