@@ -31,7 +31,6 @@ void dk::FACE::create(char* face, int priority, int type, char* object, int stat
 			auto _addressCrownIMD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x18, 0x6E777263, 0) + 0x08)));
 			auto _addressCrownSQD = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchObjectBinarc, 0x19, 0x6E777263, 0) + 0x08)));
 
-
 			auto _fetchEmpty = &dk::FACE::emptyDraw;
 
 			dk::Sprite::_Sprite(_allocCrown);
@@ -55,6 +54,7 @@ void dk::FACE::create(char* face, int priority, int type, char* object, int stat
 			dk::Sprite::create(_allocCrown, -1, _addressCrownSQD, _allocCrown + 0x200, status, group, offset16x9);
 
 			*reinterpret_cast<char**>(face + 0x0308) = _allocCrown;
+			*reinterpret_cast<int*>(face + 0x0310) = 1;
 		}
 	}
 
@@ -110,8 +110,13 @@ void dk::FACE::reload(char* face, char* object, int status)
 				YI::SEQUENCE::SetNumberForce(_allocCrown + 0x20, _statusCheck);
 				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1F0) = 0x00;
 				*reinterpret_cast<uint32_t*>(_allocCrown + 0x1D8) = UINT32_MAX;
+
+				*reinterpret_cast<int*>(face + 0x0310) = 1;
 			}
 		}
+
+		else
+			*reinterpret_cast<int*>(face + 0x0310) = 0;
 	}
 }
 
@@ -119,12 +124,13 @@ void dk::FACE::update(char* face)
 {
 	auto _fetchCrown = *reinterpret_cast<char**>(face + 0x0308);
 	auto _fetchIsDraw = *(face + 0x304);
+	auto _fetchIsDrawCrown = *(face + 0x0310);
 
 	if (_fetchIsDraw)
 	{
 		dk::Sprite::update(face);
 
-		if (_fetchCrown)
+		if (_fetchCrown && _fetchIsDrawCrown)
 			dk::Sprite::update(_fetchCrown);
 	}
 }
@@ -134,6 +140,7 @@ void dk::FACE::draw(char* face)
 	auto _fetchCrown = *reinterpret_cast<char**>(face + 0x0308);
 	auto _fetchCrownIMD = *reinterpret_cast<char**>(face + 0x0310);
 	auto _fetchIsDraw = *(face + 0x304);
+	auto _fetchIsDrawCrown = *(face + 0x0310);
 
 	if (_fetchIsDraw)
 	{
@@ -145,7 +152,7 @@ void dk::FACE::draw(char* face)
 
 		uint8_t _calculateCrown = _crownItemsArray[0] + _crownItemsArray[1] + _crownItemsArray[2];
 
-		if (_fetchCrown && _calculateCrown > 0)
+		if (_fetchCrown && _calculateCrown > 0 && _fetchIsDrawCrown)
 		{
 			auto _fetchFaceNum = *reinterpret_cast<uint32_t*>(face + 0x1D4) + 0x04 * (_calculateCrown -1);
 			auto _fetchFaceTime = *reinterpret_cast<float*>(face + 0x168);
