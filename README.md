@@ -74,10 +74,10 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | Pirate & Disney Outfits |
 | - | :heavy_check_mark: | Free-Cam Mode [[11]](#reference) |
 | - | :heavy_check_mark: | HUD Disable [[12]](#reference) |
+| - | :heavy_check_mark: | Crown Engine (Sora's HUD Icon will now display a crown when a proof is obtained |
 
 | Extra | Module/Pack | Description |
 |---------|-------------|-------------|
-| Crown Engine | Module | The HUD will show the corresponding Crown currently unlocked |
 | Encounter Plus | Module | [New Abillity unlocked via Moogle Level 5] Mobs will respawn one (1) room away, instead of two (2) [[7]](#reference) |
 | Prolouge Skip | Module | Skip Roxas' Story and go straight into playing as Sora |
 | Shortcut Forms | Module | Can set Drive Forms in the Shortcut Menu |
