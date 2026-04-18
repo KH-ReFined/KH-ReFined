@@ -16,7 +16,7 @@ void dk::MISSION_GAUGE::updateGauge(char* missionGauge)
 	auto _fetchParamEx = YI::SEQUENCE::GetParamEx(missionGauge + 0x0908);
 	 
 	YI::SEQUENCE::SetScaleX(missionGauge + 0x0518, *reinterpret_cast<float*>(missionGauge + 0x0CE8) / _factorFloat);
-	YI::SEQUENCE::SetScaleX(missionGauge + 0x0710, *reinterpret_cast<float*>(missionGauge + 0x0CE8) / _factorFloat);
+	YI::SEQUENCE::SetScaleX(missionGauge + 0x0710, 1.0 - *reinterpret_cast<float*>(missionGauge + 0x0CE8) / _factorFloat);
 
 	*reinterpret_cast<int*>(missionGauge + 0x08E8 + 0x01C8) = static_cast<int>((*reinterpret_cast<float*>(missionGauge + 0x0CE8) / _factorFloat) * static_cast<float>(_fetchParamEx));
 	*reinterpret_cast<int*>(missionGauge + 0x08E8 + 0x01CC) = 0x00;
