@@ -91,6 +91,17 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | Spanish VO | Pack | Enable Spanish Voice Overs |
 | Revert Outfits | Pack | Disables the custom Pirate/Disney World Outfits |
 
+### Additional Content
+
+| Mod Name | OpenKH Mod Link | Description | Other |
+|---------|-------------|-------------|-------------|
+| Vanilla OST | `KH-ReFined/KH2-VanillaMusicS1` *or* `KH-ReFined/KH2-VanillaMusicS2` [[13]](#reference) |  The Vanilla Music Pack for Kingdom Hearts II - Re:Fined. | Enable in Config Menu |
+| Vanilla Heartless | `KH-ReFined/KH2-VanillaHeartlessS1` *or* `KH-ReFined/KH2-VanillaHeartlessS2` [[14]](#reference) | The Vanilla Heartless Pack for Kingdom Hearts II - Re:Fined. | Enable in Config Menu |
+| Japanese Voice Over | `KH-ReFined/KH2-JapaneseVO` | The Japanese Audio Pack for Kingdom Hearts II - Re:Fined. | Enable in Config Menu |
+| German Voice Over | `KH-ReFined/KH2-GermanVO` | The German Audio Pack for Kingdom Hearts II - Re:Fined. | Enable in Config Menu |
+| French Voice Over | `KH-ReFined/KH2-FrenchVO` | The French Audio Pack for Kingdom Hearts II - Re:Fined. | Enable in Config Menu |
+| Spanish Voice Over | `KH-ReFined/KH2-SpanishVO` | The Spanish Audio Pack for Kingdom Hearts II - Re:Fined. | Enable in Config Menu |
+
 #### Reference
 
 1. Cutscenes will by default lock the game to 30fps. This alleviates that.
@@ -105,6 +116,8 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 10. After defeating Sephiroth and obtaining Fenrir, you can now interact with an Absent Silhouette-like object in the Dark Depths to challenge Sepiroth again.
 11. You can now hide all of the HUD (besides off-action menus and some oddities) by pressing L3. You have to set "allowNoHud" in reFined.cfg to true for this to work.
 12. You can now halt the game to take pictures and cool action shots by pressing L3. You have to set "allowTimeStop" in reFined.cfg to true for this to work.
+13. If you are ***not*** using another music pack for Re:Fined, you only have to install one pack.
+14. If you are ***not*** using another resource pack for Re:Fined, you only have to install one pack.
 
 ## Support
 
