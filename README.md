@@ -62,6 +62,7 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | :heavy_check_mark: | - | Restored Right Stick Command Menu Control |
 | :heavy_check_mark: | - | Restored Screen Shake |
 | - | :heavy_check_mark: | 60 FPS Cutscenes |
+| - | :heavy_check_mark: | Restored Roxas' Voicelines and Quotes |
 | - | :heavy_check_mark: | The player can now retry all forced encounters. [[5]](#reference) |
 | - | :heavy_check_mark: | Prepare & Retry [[6]](#reference) |
 | - | :heavy_check_mark: | Can Now Skip Ending FMV |
