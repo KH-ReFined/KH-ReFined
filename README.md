@@ -31,7 +31,7 @@ Compatibility for the Japanese releases is underway.
 The project also supports the Steam Deck and most all Linux distros. But setting it up on those may require extra steps. An install guide will be uploaded to the Wiki soon!
 
 > [!IMPORTANT]  
-> The games utilize OpenKH in order to add in new features and fix some bugs. Please refer to the Wiki for installation guides and general how-to stuff.
+> The games utilize OpenKH in order to add in new features and fix some bugs. Please refer to the [wiki](https://github.com/KH-ReFined/KH-ReFined/wiki) for **installation guides** and general how-to stuff.
 > If you need extensive help, <ins>please do not make an issue</ins>, but rather, join the Discord and make a ticket!
 
 ## The Featureset
