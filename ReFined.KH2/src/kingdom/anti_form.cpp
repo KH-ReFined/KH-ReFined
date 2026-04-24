@@ -18,7 +18,8 @@ int YS::ANTI_FORM::CheckForm(char* player, int form)
         return 5;
     }
 
-    auto _calcAntiChance = *reinterpret_cast<int*>(_antiFormRam + 0x04) * YS::MISSION::GetAntiRate();
+    auto _fetchAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04);
+    auto _calcAntiChance = (_fetchAntiPoints <= 0x04 ? 0 : (_fetchAntiPoints <= 0x09 ? 10 : 25)) * YS::MISSION::GetAntiRate();
 
     if (YS::MISSION::GetAntiRate() != 0x00 && *reinterpret_cast<uint16_t*>(*reinterpret_cast<char**>(player + 0x5C0) + 0x1E4) & 0x8000)
         _calcAntiChance = 100;
@@ -35,35 +36,35 @@ int YS::ANTI_FORM::CheckForm(char* player, int form)
     auto _doesHaveFinal = YS::ITEM::GetNumBackyard(0x1D) || YS::SACRIFICE::GetFormStatus(0x05) || *(*reinterpret_cast<char**>(player + 0x5C0) + 0x1B1) < *(YS::COMMAND_ELEM::GetDrive(0x05) + 0x1C);
     auto _ableToGetFinal = YS::PROGRESS::CheckFlag(0x4842);
 
-    auto _calcFinalChance = fminf(*reinterpret_cast<float*>(*YS::PREF::System + 0x00A0), powf(*reinterpret_cast<float*>(*YS::PREF::System + 0x009C), static_cast<float>(*reinterpret_cast<int*>(_finalFormRam + 0x04))) * *reinterpret_cast<float*>(*YS::PREF::System + 0x0098));
-    *reinterpret_cast<int*>(_finalFormRam + 0x04) += 0x01;
-
-    if (!_doesHaveFinal && _ableToGetFinal && randDist(rng) <= _calcFinalChance)
+    if (!_doesHaveFinal && _ableToGetFinal)
     {
-        *reinterpret_cast<int*>(_finalFormRam + 0x04) = 0x00;
-        YS::ITEM::GetBackyard(0x1D, 0x01);
+        auto _calcFinalChance = fminf(*reinterpret_cast<float*>(*YS::PREF::System + 0x00A0), powf(*reinterpret_cast<float*>(*YS::PREF::System + 0x009C), static_cast<float>(*reinterpret_cast<int*>(_finalFormRam + 0x04))) * *reinterpret_cast<float*>(*YS::PREF::System + 0x0098));
+        *reinterpret_cast<int*>(_finalFormRam + 0x04) += 0x01;
 
-        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x0A4);
+        if (randDist(rng) <= _calcFinalChance)
+        {
+            *reinterpret_cast<int*>(_finalFormRam + 0x04) = 0x00;
+            YS::ITEM::GetBackyard(0x1D, 0x01);
 
-        if (_calcAntiPoints <= 0)
-            _calcAntiPoints = 0;
+            auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x0A4);
 
-        *reinterpret_cast<int*>(_antiFormRam + 0x04) = _calcAntiPoints;
+            if (_calcAntiPoints <= 0)
+                _calcAntiPoints = 0;
 
-        return 5;
+            *reinterpret_cast<int*>(_antiFormRam + 0x04) = _calcAntiPoints;
+
+            return 5;
+        }
     }
 
-    else
-    {
-        auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x090);
+    auto _calcAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04) - *reinterpret_cast<int*>(*YS::PREF::System + 0x090);
 
-        if (_calcAntiPoints <= 0)
-            _calcAntiPoints = 0;
+    if (_calcAntiPoints <= 0)
+        _calcAntiPoints = 0;
 
-        *reinterpret_cast<int*>(_antiFormRam + 0x04) = _calcAntiPoints;
+    *reinterpret_cast<int*>(_antiFormRam + 0x04) = _calcAntiPoints;
 
-        return 6;
-    }
+    return 6;
 }
 
 YS::ANTI_FORM::staticInitializer YS::ANTI_FORM::initialize;
