@@ -55,7 +55,7 @@ void YS::BINARC::preSetup(char* binarc)
 						case 0x2E: // Binary Archive [???]
 							YS::BINARC::preSetup(_fetchAbsolute);
 							break;
-						case 0x04:
+						case 0x04: // VIF Packets [VIF]
 						{
 							YS::BINARC::modelInitVB(_fetchAbsolute, (*(binarc + 0x03) & 0xC0) == 0x80);
 							YS::BINARC::modelCreateVB(_fetchAbsolute, 0x00, *reinterpret_cast<uint32_t*>(binarc + 0x10 * i + 0x14) == 0x50414D ? _paramThingie : nullptr);
