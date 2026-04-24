@@ -288,6 +288,8 @@ uint32_t* ACTIVE_ENEMY = reinterpret_cast<uint32_t*>(ResolveRelativeAddress<char
 
 bool POINT_GIVEN_ENEMY = false;
 
+char TITLE_FILENAME[0x30];
+
 // Function Block. Everything is here now :D
 
 void SOFT_RESET()
@@ -1794,10 +1796,10 @@ void FIX_UP_CONFIG()
 {
     if (*YS::TITLE::IsTitle)
     {
-        char _makeFileName[48];
-        Tz::CmData::MakeFname(_makeFileName, const_cast<char*>(IS_FASTBOOT ? "title_fast.2ld" : "title.2ld"));
+        if (TITLE_FILENAME[0x00] == 0x00)
+            Tz::CmData::MakeFname(TITLE_FILENAME, const_cast<char*>(IS_FASTBOOT ? "title_fast.2ld" : "title.2ld"));
 
-        auto _fetchCacheBuff = YS::CACHE_BUFF::SearchByName(_makeFileName, -1);
+        auto _fetchCacheBuff = YS::CACHE_BUFF::SearchByName(TITLE_FILENAME, -1);
 
         if (!_fetchCacheBuff)
             return;
@@ -2511,7 +2513,7 @@ extern "C"
                         {
                             memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
 
-                            _isHudDraw = !_isHudDraw;
+                            _isHudDraw = !_isHudDraw; 
                             memcpy(_fetchHudDraw, &_isHudDraw, 0x01);
                         }
 
