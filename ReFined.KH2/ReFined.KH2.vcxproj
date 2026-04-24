@@ -129,6 +129,7 @@
     <ClInclude Include="include\kingdom\level_up.h" />
     <ClInclude Include="include\kingdom\libretto.h" />
     <ClInclude Include="include\kingdom\limit.h" />
+    <ClInclude Include="include\kingdom\limit_table.h" />
     <ClInclude Include="include\kingdom\lockon.h" />
     <ClInclude Include="include\kingdom\magic.h" />
     <ClInclude Include="include\kingdom\member.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="src\kingdom\anti_form.cpp" />
     <ClCompile Include="src\kingdom\area.cpp" />
     <ClCompile Include="src\kingdom\areainfo.cpp" />
+    <ClCompile Include="src\kingdom\axa.cpp" />
     <ClCompile Include="src\kingdom\beads.cpp" />
     <ClCompile Include="src\kingdom\binarc.cpp" />
     <ClCompile Include="src\kingdom\cache_buff.cpp" />
@@ -240,6 +242,7 @@
     <ClCompile Include="src\kingdom\level_up.cpp" />
     <ClCompile Include="src\kingdom\libretto.cpp" />
     <ClCompile Include="src\kingdom\limit.cpp" />
+    <ClCompile Include="src\kingdom\limit_table.cpp" />
     <ClCompile Include="src\kingdom\lockon.cpp" />
     <ClCompile Include="src\kingdom\magic.cpp" />
     <ClCompile Include="src\kingdom\member.cpp" />

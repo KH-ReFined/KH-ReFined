@@ -6,13 +6,13 @@
 
 extern "C"
 {
-	namespace PC
+	namespace Axa
 	{
-		class DLL_EXPORT AXA
+		class DLL_EXPORT ResourceEntry
 		{
 		public:
-			using DebugPrint_t = void(*)(const char* string);
-			static DebugPrint_t DebugPrint;
+			using ReadDataLocal_t = char*(*)(char* resourceEntry, char* base, const char* folder, const char* file);
+			static ReadDataLocal_t ReadDataLocal;
 		};
 	}
 }
