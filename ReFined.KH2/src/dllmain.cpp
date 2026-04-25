@@ -80,11 +80,6 @@
 #include <fvector.h>
 #include <cmdata.h>
 
-bool TOGGLE_HUD = false;
-
-bool ALLOW_NOHUD = false;
-bool ALLOW_TIMESTOP = false;
-
 using namespace std;
 using namespace discord;
 
@@ -102,34 +97,39 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-wchar_t* MOD_PATH;
-
-bool GAUGE_WAIT = false;
-uint8_t GAUGE_TIME = 0;
-
 multimap<uint8_t, void(*)(), std::greater<uint8_t>> _execModule;
 multimap<uint8_t, void(*)(const wchar_t*), std::greater<uint8_t>> _initModule;
 
+map<string, void(*)()> FUNCTION_ARRAY;
+
+wchar_t* MOD_PATH;
+
+bool IS_STEAM = false;
 bool INITIALIZED = false;
 
 bool IS_FASTBOOT = false;
 bool IS_NOASPECT = false;
 
-bool IS_STEAM = false;
+bool DEBOUNCE_HUDSTOP = false;
 
-bool IS_DEAD = false;
 bool IS_RESETING = false;
 
 uint16_t CURRENT_MUSIC = 0xFFFF;
-uint16_t CURRENT_OBJECTS = 0xFFFF;
-
-char** RADAR_STRUCT = ResolveRelativeAddress<char**>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x56\x57\x41\x54\x48\x83", "xxxxxxxxxxxxxxxx", 0xD4);
 
 bool TRANSFER_FIELD = false;
 bool TRANSFER_BATTLE = false;
 
 char* FIELD_ALLOC = nullptr;
 char* BATTLE_ALLOC = nullptr;
+
+uint16_t CURRENT_RESOURCE = 0xFFFF;
+
+string CURRENT_AUDIO = "voice/us/battle";
+
+bool QUEUE_VSB = false;
+int CURRENT_VSB = 0x0000;
+
+char* ALLOCATE_VSB = nullptr;
 
 uint32_t PAST_LOCKON;
 uint8_t LOCKON_TYPE = 0x00;
@@ -145,11 +145,7 @@ char* LOCKON_FLOATS = SignatureScan<char*>("\x00\x00\x80\xBF\xF3\x04\xB5\xBF\x00
 char* LOCKON_CHANGE = ResolveFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x55\x57\x41\x56\x48\x8B", "xxxxxxxxxxxxxxxx", 0x16A);
 uint32_t* LOCKON_TARGET = ResolveRelativeAddress<uint32_t*>(LOCKON_CHANGE, 0x0B);
 
-uint64_t PAST_EXP_FORM = 0;
-uint64_t PAST_EXP_SUMM = 0;
-
 vector<char> LIMITER_FUNCTION;
-char* VSYNC_SETLIMIT_FUNCTION = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x8D\x79\x01\x8B\xD9\x8B\xCF\xE8\x00\x00\x00\x00\xF3\x0F\x10\x0D\x00\x00\x00\x00\x33\xC0\x00\x00\x00\x00\x00\x00\x0F\x57\xC0\x89\x05\x00\x00\x00\x00\x0F\x57\xD2\x83\xFF\x08", "xxxxxxxxxxxxxxxxxx????xxxx????xx??????xxxxx????xxxxxx");
 
 Core* Discord;
 
@@ -162,9 +158,6 @@ vector<string> TEXT_FORM;
 
 bool IS_MIRAGE;
 bool IS_IN_FORM = false;
-bool RPC_ENABLED = true;
-
-uint8_t* COMMAND_TYPE = ResolveRelativeAddress<uint8_t*>("\x48\x83\xEC\x28\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\x48\x83\xC4\x28\xE9\x00\x00\x00\x00\xCC\xCC\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\xC3", "xxxxxxx????x????xxx????xxx????xxx????xxxxx????xxxxx????xxx????x", 0x1A);
 
 char* ADJUST_GLOW_FUNCTION = SignatureScan<char*>("\x4C\x8B\xDC\x49\x89\x5B\x20\x55\x56\x57\x41\x54\x41\x56\x49\x8D\xAB\x18\xF2\xFF\xFF\x48\x81\xEC\xC0\x0E\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
 char* INIT_VIEWPORT_FUNCTION = SignatureScan<char*>("\x48\x83\xEC\x38\xE8\x00\x00\x00\x00\x48\xC7\x44\x24\x20\x00\x00\x00\x00\x0F\x10\x54\x24\x20\xF3\x0F\x10\x48\x10\xF3\x0F\x10\x40\x14\x0F\xC6\xD2\xD2\xF3\x0F\x10\xD1\x0F\xC6\xD2\x27\xF3\x0F\x10\xD0\x0F\xC6\xD2\x39\x0F\x11\x90\x5C\x01\x00\x00\x48\x83\xC4\x38\xC3", "xxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
@@ -172,33 +165,30 @@ char* ADJUST_VIEWPORT_FUNCTION = SignatureScan<char*>("\x48\x83\xEC\x78\x0F\x29\
 
 bool SHAKE_WRITTEN;
 
-vector<char> CALL_FUNC_MUNNY;
-
 vector<char> ADJUST_GLOW_ARRAY;
 vector<char> INIT_VIEWPORT_ARRAY;
 vector<char> ADJUST_VIEWPORT_ARRAY;
 
-char* VIEWPORT3D = ResolveRelativeAddress<char*>("\x48\x8B\xC4\x57\x41\x56\x41\x57\x48\x81\xEC\x50\x01\x00\x00\x48\xC7\x44\x24\x20\xFE\xFF\xFF\xFF\x48\x89\x58\x10\x48\x89\x68\x18\x48\x89\x70\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x40\x01\x00\x00\x48\x8B\xE9\x33\xD2\x41\xB8\x00\x01\x00\x00\x48\x8D\x4C\x24\x30\xE8\x00\x00\x00\x00\x45\x33\xFF", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", 0x311);
+char* VIEWPORT3D_ADDR = ResolveRelativeAddress<char*>("\x48\x8B\xC4\x57\x41\x56\x41\x57\x48\x81\xEC\x50\x01\x00\x00\x48\xC7\x44\x24\x20\xFE\xFF\xFF\xFF\x48\x89\x58\x10\x48\x89\x68\x18\x48\x89\x70\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x40\x01\x00\x00\x48\x8B\xE9\x33\xD2\x41\xB8\x00\x01\x00\x00\x48\x8D\x4C\x24\x30\xE8\x00\x00\x00\x00\x45\x33\xFF", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", 0x311);
 
-char* PROMPT_INSTRUCTION = SignatureScan<char*>("\xC7\x05\x00\x00\x00\x00\x01\x00\x00\x00\xE8\x00\x00\x00\x00\x8B\x0D\x00\x00\x00\x00", "xx????xxxxx????xx????");
 bool* PROMPT_MODE;
+char* PROMPT_INSTRUCTION = SignatureScan<char*>("\xC7\x05\x00\x00\x00\x00\x01\x00\x00\x00\xE8\x00\x00\x00\x00\x8B\x0D\x00\x00\x00\x00", "xx????xxxxx????xx????");
 
 vector<uint32_t> CHECKSUM_TABLE;
 
-bool IS_SHOWN = false;
+bool SYSTEM_WRITTEN = false;
 bool SYSTEM_LOADED = false;
 bool SAVE_INITIATE = false;
-bool SYSTEM_WRITTEN = false;
+bool SAVE_ROUNDBACK = false;
 
-bool ROUND_BACK = false;
-
-AREA::INFO SAVE_AREA;
 int SAVE_ITERATOR = 0;
 
-int SAVE_FRAME_ITERATOR = 0;
+AREA::INFO SAVE_AREA;
 
-uint8_t SAVE_CHECK = 0xEB;
-char* SAVE_OFFSET = SignatureScan<char*>("\x40\x55\x53\x48\x8D\x6C\x24\xB1\x48\x81\xEC\xC8\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x45\x3F\x48\x8B\xD9\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxx????");
+uint8_t SAVE_REACTION = 0xEB;
+int SAVE_REACTION_FRAME = 0;
+
+char* SAVE_REACTION_FUNCTION = SignatureScan<char*>("\x40\x55\x53\x48\x8D\x6C\x24\xB1\x48\x81\xEC\xC8\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x45\x3F\x48\x8B\xD9\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxx????");
 
 uint32_t MAGIC_FIRST;
 uint16_t MAGIC_SECOND;
@@ -207,100 +197,78 @@ map<uint32_t, char*> MAGIC_FILES;
 
 vector<uint16_t> ABILITY_ARRAY;
 
-char* PICTURE_APPEAR_FUNC = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x30\x48\x63\x41\x34\x48\x8B\xD9\x3B\x41\x30\x0F\x84\x00\x00\x00\x00\x48\x69\xD0\x60\x05\x00\x00\x48\x89\x7C\x24\x48", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx");
 bool IS_PICTURE_EDITED = false;
+
+char* PICTURE_APPEAR_FUNC = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x30\x48\x63\x41\x34\x48\x8B\xD9\x3B\x41\x30\x0F\x84\x00\x00\x00\x00\x48\x69\xD0\x60\x05\x00\x00\x48\x89\x7C\x24\x48", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx");
+
+bool IS_DEAD = false;
 
 uint32_t POSITIVE_ASPECT_OFFSET = 0x55;
 uint32_t NEGATIVE_ASPECT_OFFSET = 0xFFFFFFAB;
 
-vector<char*> POSITIVE_ASPECT_SHORT;
-vector<char*> NEGATIVE_ASPECT_SHORT = MultiSignatureScan("\xC7\x00\x00\x00\xAB\xFF\xFF\xFF", "x???xxxx");
-vector<char*> POSITIVE_ASPECT_LONG;
-vector<char*> NEGATIVE_ASPECT_LONG = MultiSignatureScan("\xC7\x00\x00\x00\x00\x00\xAB\xFF\xFF\xFF", "x?????xxxx");
-
-vector<char*> POSITIVE_ASPECT_BYTE;
-vector<char*> NEGATIVE_ASPECT_BYTE;
-
 vector<char> INSTRUCTION_LIMIT_ASPECT;
 
 char* VIEWPORT_LIMIT = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\xE8\x00\x00\x00\x00\xF3\x0F\x10\x15\x00\x00\x00\x00\x48\x8B\xC8\xF3\x0F\x10\x25\x00\x00\x00\x00\xF3\x0F\x5D\x50\x28", "xxxxxxxxxx????xxxx????xxxxxxx????xxxxx");
+char** RADAR_STRUCT = ResolveRelativeAddress<char**>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x56\x57\x41\x54\x48\x83", "xxxxxxxxxxxxxxxx", 0xD4);
 
-char* VIEWPORT3D_ADDR = ResolveRelativeAddress<char*>("\x48\x8B\xC4\x57\x41\x56\x41\x57\x48\x81\xEC\x50\x01\x00\x00\x48\xC7\x44\x24\x20\xFE\xFF\xFF\xFF\x48\x89\x58\x10\x48\x89\x68\x18\x48\x89\x70\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x40\x01\x00\x00\x48\x8B\xE9\x33\xD2\x41\xB8\x00\x01\x00\x00\x48\x8D\x4C\x24\x30\xE8\x00\x00\x00\x00\x45\x33\xFF", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", 0x311);
-char* INFORMATION_OFFSET = SignatureScan<char*>("\x41\xB8\x40\x00\x00\x00\xB9\xAA\x00\x00\x00\x66\x2B\xC1\x66\x44\x89\x44\x24\x20\x44\x0F\xB7\x43\x2C\x48\x8D\x8B\x60\x02\x00\x00\x44\x0F\xB7\xC8\x33\xD2", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+vector<uint8_t> INST_CAMPINIT;
+vector<uint8_t> INST_CAMPBITWISE;
 
-auto SIMPLE_COUNTER_FUNC = MultiSignatureScan("\x41\x8D\x46\xAB\x41\x89\x84\x3F\x8C\x0D\x00\x00", "xxxxxxxxxxxx");
+vector<uint8_t> INST_MAPJUMPTASK;
+vector<uint8_t> INST_CONTINUELOAD;
 
 char* CMENU_OFFSET = SignatureScan<char*>("\x48\x8B\xC4\x48\x81\xEC\x88\x00\x00\x00\x48\x89\x58\x18\xBA\x02\x00\x00\x00\x48\x89\x68\xF8\x48\x89\x70\xF0", "xxxxxxxxxxxxxxxxxxxxxxxxxxx");
 char* CMENUINIT_OFFSET = SignatureScan<char*>("\x66\x44\x89\x35\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x44\x88\x35\x00\x00\x00\x00\x0F\x95\x05\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x4C\x8D\x05\x00\x00\x00\x00\xC7\x44\x24\x30\x8C\x00\x00\x00", "xxxx????x????xxxxx????xxx????x????xxx????xxxxxxxx");
 
-vector<uint8_t> INST_CAMPBITWISE;
-vector<uint8_t> INST_CAMPINIT;
-
-vector<uint8_t> INST_MAPJUMPTASK;
-vector<uint8_t> INST_CONTINUELOAD;
+uint8_t RETRY_MODE;
+bool RETRY_BLACKLIST;
 
 vector<uint8_t> RETRY_STATE;
 
 bool HADES_ESCAPE;
 bool HADES_CHANGED;
-uint8_t HADES_ITERATOR = 0xFF;
 
-bool RETRY_BLACKLIST;
-uint8_t RETRY_MODE;
+uint8_t HADES_ITERATOR = 0xFF;
 
 ReFined::Continue::Entry RETRY_ENTRY(0x0002, 0x8AB1);
 ReFined::Continue::Entry PREPARE_ENTRY(0x0002, 0x5727);
 
+uint8_t* COMMAND_TYPE = ResolveRelativeAddress<uint8_t*>("\x48\x83\xEC\x28\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\x48\x83\xC4\x28\xE9\x00\x00\x00\x00\xCC\xCC\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\xC3", "xxxxxxx????x????xxx????xxx????xxx????xxxxx????xxxxx????xxx????x", 0x1A);
+
 void(*ITEM_COMMIT)() = nullptr;
 
-char** MENU_ITEMS = ResolveRelativeAddress<char**>("\x40\x53\x55\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxx????xxx????xxx", 0x26);
-char* CURRENT_SUBMENU = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????x????", 0xF0);
-
-bool CAN_PROCESS_FORM_KEYBLADES = false;
 bool KEYBLADE_DEBOUNCE = false;
 bool PENDING_KEYBLADE_UPDATE = false;
+bool CAN_PROCESS_FORM_KEYBLADES = false;
 
 uint16_t TARGET_KEYBLADE = 0x0000;
 uint16_t TARGET_CURRENT_FORM_KEYBLADE = 0x0000;
 
-map<string, void(*)()> FUNCTION_ARRAY;
+char* CURRENT_SUBMENU = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????x????", 0xF0);
+char** MENU_ITEMS = ResolveRelativeAddress<char**>("\x40\x53\x55\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxx????xxx????xxx", 0x26);
 
-string CURRENT_AUDIO = "voice/us/battle";
-
-bool QUEUE_VSB = false;
-int CURRENT_VSB = 0x0000;
-
-char* ALLOCATE_VSB = nullptr;
+char TITLE_FILENAME[0x30];
 
 // Configuration Values.
 
 bool DISCORD_ENABLED = true;
+
+bool ALLOW_NOHUD = false;
+bool ALLOW_TIMESTOP = false;
 
 uint8_t ROOM_AMOUNT = 3;
 uint8_t SAVE_SLOT_OFFSET = 99;
 
 uint16_t RESET_COMBO = YS::HARDPAD::BUTTONS::NONE;
 
-// MAKE THESE PROPER LATER
-
-char* AUTO_LOCKON_FUNC = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x30\xF3\x0F\x10\x44\x24\x68", "xxxxxxxxxxxxxxxxxxxxxxxxxx");
-uint32_t* ACTIVE_ENEMY = reinterpret_cast<uint32_t*>(ResolveRelativeAddress<char*>(AUTO_LOCKON_FUNC, 0x51) + 0x04);
-
-bool POINT_GIVEN_ENEMY = false;
-
-char TITLE_FILENAME[0x30];
-
 // Function Block. Everything is here now :D
 
 void SOFT_RESET()
 {
-    auto _fetchButtons = *YS::HARDPAD::Input;
-    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
-
-    bool _canReset = _commandPointer != 0x00 && *AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
+    bool _canReset = *YS::COMMAND_DRAW::CommandDraw != 0x00 && *AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
 
     // If the buttons are pushed, a reset can happen and it isn't happening:
-    if (RESET_COMBO != YS::HARDPAD::BUTTONS::NONE && _fetchButtons == RESET_COMBO && _canReset && !IS_RESETING)
+    if (RESET_COMBO != YS::HARDPAD::BUTTONS::NONE && *YS::HARDPAD::Input == RESET_COMBO && _canReset && !IS_RESETING)
     {
         // Declare the reset is happening for timing purposes.
         IS_RESETING = true;
@@ -461,8 +429,8 @@ void HANDLE_RESOURCE()
     {
         if (!*YS::TITLE::IsTitle)
         {
-            if (CURRENT_OBJECTS == 0xFFFF)
-                CURRENT_OBJECTS = _fetchObject;
+            if (CURRENT_RESOURCE == 0xFFFF)
+                CURRENT_RESOURCE = _fetchObject;
 
             if (_fetchObject == 0x0200 && !YS::MESSAGE::GetData(0x573C))
                 *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0080;
@@ -472,13 +440,13 @@ void HANDLE_RESOURCE()
         }
 
         else
-            CURRENT_OBJECTS = 0xFFFF;
+            CURRENT_RESOURCE = 0xFFFF;
     }
 
     if (*AREA::IsInMap)
     {
-        if (CURRENT_OBJECTS == 0xFFFF)
-            CURRENT_OBJECTS = _fetchObject;
+        if (CURRENT_RESOURCE == 0xFFFF)
+            CURRENT_RESOURCE = _fetchObject;
 
         if (_fetchObject == 0x0200 && !YS::MESSAGE::GetData(0x573C))
             *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0080;
@@ -486,10 +454,10 @@ void HANDLE_RESOURCE()
         else if (_fetchObject == 0x0400 && !YS::MESSAGE::GetData(0x573E))
             *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0100;
 
-        else if (CURRENT_OBJECTS != _fetchObject && !*YS::MENU::IsMenu)
+        else if (CURRENT_RESOURCE != _fetchObject && !*YS::MENU::IsMenu)
         {
             AREA::MapJump(AREA::Current, 0x01, 0x00, false);
-            CURRENT_OBJECTS = _fetchObject;
+            CURRENT_RESOURCE = _fetchObject;
         }
     }
 }
@@ -655,8 +623,8 @@ void ENFORCE_LOCKON()
 
 void HANDLE_GOA_LAND()
 {
-    auto _gardenKnown = (*(AREA::SaveData + 0x231B) & 0x04) == 0x04;
-    auto _canLandGarden = (*(AREA::SaveData + 0x1EF6) & 0x40) == 0x40;
+    auto _gardenKnown = *(AREA::SaveData + 0x231B) & 0x04;
+    auto _canLandGarden = *(AREA::SaveData + 0x1EF6) & 0x40;
 
     if (_gardenKnown && !_canLandGarden)
         *(AREA::SaveData + 0x1EF6) += 0x40;
@@ -664,7 +632,7 @@ void HANDLE_GOA_LAND()
 
 void ENFORCE_FRAMERATE()
 {
-    auto _limiterOffset = VSYNC_SETLIMIT_FUNCTION + 0x20;
+    auto _limiterOffset = reinterpret_cast<char*>(dk::Vsync::setLimit) + 0x20;
 
     if (LIMITER_FUNCTION.size() == 0x00)
     {
@@ -678,7 +646,7 @@ void ENFORCE_FRAMERATE()
     if (_fetchFramerate == 0x00 && _fetchFunction == 0x90)
     {
         memcpy(_limiterOffset, LIMITER_FUNCTION.data(), 0x06);
-        *(dk::VSYNC::IsFrameLimited) = 0x01;
+        *(dk::Vsync::IsFrameLimited) = 0x01;
     }
 
     else if (_fetchFramerate != 0x00 && _fetchFunction != 0x90)
@@ -687,7 +655,7 @@ void ENFORCE_FRAMERATE()
         fill(_nopArray, _nopArray + 0x06, 0x90);
 
         memcpy(_limiterOffset, _nopArray, 0x06);
-        *(dk::VSYNC::IsFrameLimited) = 0x00;
+        *(dk::Vsync::IsFrameLimited) = 0x00;
     }
 }
 
@@ -695,13 +663,13 @@ void DISCORD_RPC()
 {
     int _resultant = 0xFF;
 
-    if (Discord == nullptr)
+    if (Discord == nullptr && DISCORD_ENABLED)
     {
         discord::Core::Create(833511404274974740, DiscordCreateFlags_NoRequireDiscord, &Discord);
 
         if (Discord == nullptr)
         {
-            RPC_ENABLED = false;
+            DISCORD_ENABLED = false;
             return;
         }
 
@@ -839,10 +807,10 @@ void HANDLE_SHAKE()
 
         _writeFloat[0x00] = *ryj::SHAKE::ShakeCoords;
         _writeFloat[0x01] = *(ryj::SHAKE::ShakeCoords + 0x02);
-        _writeFloat[0x02] = *(reinterpret_cast<int*>(VIEWPORT3D + 0x08)) + *ryj::SHAKE::ShakeCoords;
-        _writeFloat[0x03] = *(reinterpret_cast<int*>(VIEWPORT3D + 0x0C)) + *(ryj::SHAKE::ShakeCoords + 0x02);
+        _writeFloat[0x02] = *(reinterpret_cast<int*>(VIEWPORT3D_ADDR + 0x08)) + *ryj::SHAKE::ShakeCoords;
+        _writeFloat[0x03] = *(reinterpret_cast<int*>(VIEWPORT3D_ADDR + 0x0C)) + *(ryj::SHAKE::ShakeCoords + 0x02);
 
-        memcpy(VIEWPORT3D + 0x15C, _writeFloat, 0x10);
+        memcpy(VIEWPORT3D_ADDR + 0x15C, _writeFloat, 0x10);
     }
 
     else if (SHAKE_WRITTEN)
@@ -1033,17 +1001,17 @@ void AUTOSAVE()
 
                 if (_saveOffset == 0x00)
                 {
-                    if (!ROUND_BACK)
+                    if (!SAVE_ROUNDBACK)
                     {
                         _saveOffset = 99;
-                        ROUND_BACK = true;
+                        SAVE_ROUNDBACK = true;
                     }
 
                     else
                     {
                         const char* _unableMessage = YS::MESSAGE::GetData(0x5703);
                         dk::INFORMATION::openInformationWindow(_unableMessage);
-                        ROUND_BACK = false;
+                        SAVE_ROUNDBACK = false;
                         return;
                     }
                 }
@@ -1164,23 +1132,23 @@ void FIX_SAVE_POINT()
         _magicChecks += *_statsSlot2 == 0x00 ? 0x00 : (*(_statsSlot2 + 0x180) != *(_statsSlot2 + 0x180 - 0x04) ? 0x01 : 0x00);
         _magicChecks += *_statsSlot1 == 0x00 ? 0x00 : (*(_statsSlot1 + 0x180) != *(_statsSlot1 + 0x180 - 0x04) ? 0x01 : 0x00);
 
-        if (SAVE_CHECK == 0x75)
-            SAVE_FRAME_ITERATOR++;
+        if (SAVE_REACTION == 0x75)
+            SAVE_REACTION_FRAME++;
 
         if (_healthChecks > 0x00 || _magicChecks > 0x00)
-            SAVE_CHECK = 0x75;
+            SAVE_REACTION = 0x75;
 
-        else if (SAVE_CHECK == 0x75 && SAVE_FRAME_ITERATOR >= 80)
+        else if (SAVE_REACTION == 0x75 && SAVE_REACTION_FRAME >= 80)
         {
-            SAVE_CHECK = 0xEB;
-            SAVE_FRAME_ITERATOR = 0;
+            SAVE_REACTION = 0xEB;
+            SAVE_REACTION_FRAME = 0;
         }
     }
 
     else if (!*AREA::IsInMap || *YS::TITLE::IsTitle)
-        SAVE_CHECK = 0x75;
+        SAVE_REACTION = 0x75;
 
-    memcpy(SAVE_OFFSET + 0x25B, &SAVE_CHECK, 0x01);
+    memcpy(SAVE_REACTION_FUNCTION + 0x25B, &SAVE_REACTION, 0x01);
 }
 
 void REGISTER_MAGIC()
@@ -1844,13 +1812,9 @@ extern "C"
     {
         FUNCTION_ARRAY =
         {
-            #ifndef BUILD_ARCHIPELAGO_LITE
             {"SOFT_RESET", SOFT_RESET},
             {"AUTOSAVE", AUTOSAVE},
             {"ENFORCE_FRAMERATE", ENFORCE_FRAMERATE},
-            #endif
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             {"FIX_UP_CONFIG", FIX_UP_CONFIG},
             {"HANDLE_MUSIC", HANDLE_MUSIC},
             {"HANDLE_RESOURCE", HANDLE_RESOURCE},
@@ -1861,20 +1825,13 @@ extern "C"
             {"FIX_SAVE_POINT", FIX_SAVE_POINT},
             {"DISCORD_RPC", DISCORD_RPC},
             {"HANDLE_ASPECT", HANDLE_ASPECT},
-            #endif
-
-            #ifndef BUILD_NMC
             {"REGISTER_MAGIC", REGISTER_MAGIC},
             {"REGISTER_ABILITY", REGISTER_ABILITY},
             {"SHOW_INFORMATION", SHOW_INFORMATION},
             {"PROCESS_DEATH", PROCESS_DEATH},
-
-                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-                {"ENFORCE_LOCKON", ENFORCE_LOCKON},
-                {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
-                {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
-                #endif
-            #endif
+            {"ENFORCE_LOCKON", ENFORCE_LOCKON},
+            {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
+            {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
@@ -1968,6 +1925,8 @@ extern "C"
         // Initialization of all MENU handlers [INTRO, CONFIG, CONTINUE]
 
         YS::PANACEA_ALLOC::Allocate("IS_HUDDRAW", 0x04);
+        YS::PANACEA_ALLOC::Allocate("IS_TIMESTOP", 0x04);
+
         YS::PANACEA_ALLOC::Allocate("ASPECT_INFORMATION", 0x08);
         YS::PANACEA_ALLOC::Allocate("CHANGE_WEAPON_QUEUE", 0x140);
 
@@ -1998,7 +1957,7 @@ extern "C"
 
             for (auto _function : _fetchAllFade)
             {
-                uint32_t _fadeValue = 0x500;
+                uint32_t _fadeValue = 0x800;
                 vector<uint8_t> _replaceFade{ 0xBA, 0x00, 0xFF, 0x00, 0x00 };
 
                 memcpy(_function + 0x0D, "\x90\x90\x90\x90\x90\x90", 0x06);
@@ -2465,10 +2424,13 @@ extern "C"
             
             if (ALLOW_NOHUD || ALLOW_TIMESTOP)
             {
-                if (*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !TOGGLE_HUD)
+                if (*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
                 {
                     auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+                    auto _fetchTimeStop = YS::PANACEA_ALLOC::Get("IS_TIMESTOP");
+
                     auto _isHudDraw = true;
+                    auto _isTimeStop = false;
 
                     if (_fetchHudDraw)
                     {
@@ -2481,16 +2443,23 @@ extern "C"
                         }
 
                         if (ALLOW_TIMESTOP)
-                            *dk::VSYNC::GameSpeed = _isHudDraw ? 1.0 : 0.0;
+                        {
+                            memcpy(&_isTimeStop, _fetchTimeStop, 0x01);
+
+                            _isTimeStop = !_isTimeStop;
+                            memcpy(_fetchTimeStop, &_isTimeStop, 0x01);
+
+                            *dk::Vsync::GameSpeed = _isTimeStop ? 0.0 : 1.0;
+                        }
 
                         SOUND::PlaySFX(0x06);
                     }
 
-                    TOGGLE_HUD = true;
+                    DEBOUNCE_HUDSTOP = true;
                 }
 
-                else if ((*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x00 && TOGGLE_HUD)
-                    TOGGLE_HUD = false;
+                else if ((*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x00 && DEBOUNCE_HUDSTOP)
+                    DEBOUNCE_HUDSTOP = false;
             }
         }
     }

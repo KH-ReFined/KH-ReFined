@@ -20,6 +20,9 @@ void OvlShop::ItemShop::GetFaceFileNmae(int part, char* buff)
 			}
 		}
 	}
+
+	// Default edgecase, just to prevent crashes.
+	sprintf(buff, "menu/shopface/p_ex020.bin");
 }
 
 OvlShop::ItemShop::staticInitializer OvlShop::ItemShop::initialize;

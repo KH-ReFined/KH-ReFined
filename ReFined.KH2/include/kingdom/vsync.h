@@ -9,9 +9,11 @@ extern "C"
 {
 	namespace dk
 	{
-		class DLL_EXPORT VSYNC
+		class DLL_EXPORT Vsync
 		{
 		public:
+			static void(*setLimit)(int limit);
+
 			static bool* IsFrameLimited;
 			static float* GameSpeed;
 		};
