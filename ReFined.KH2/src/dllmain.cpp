@@ -2100,48 +2100,11 @@ extern "C"
             if (!ITEM_COMMIT)
                 ITEM_COMMIT = SignatureScan<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x40\x45\x32", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-            // If "00shopface.bin" exists, patch all SHOPFACE functions to use the file instead.
-            if (YS::FILE::GetSize("00shopface.bin"))
+            // Allocate space for "00shopface.bin".
+            if (!YS::PANACEA_ALLOC::Get("00shopface.bin"))
             {
-                char* _patchShopfaceFirst = SignatureScan<char*>("\x40\x56\x48\x81\xEC\xC0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\xA0\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x33\xF6\xE8\x00\x00\x00\x00", "xxxxxxxxxxxx????xxxxxxxxxxxxxx????xxx????");
-                char* _patchShopfaceSecond = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xDA\x8B\xF9\x48\x8B\xCB\x48\x8D\x15\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxx????x????");
-                char* _patchShopfaceThird = SignatureScan<char*>("\x40\x57\x48\x81\xEC\xB0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\xA0\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x33\xFF\xE8\x00\x00\x00\x00", "xxxxxxxxxxxx????xxxxxxxxxxxxxx????xxx????");
-
-                char* _allocShopface = (char*)malloc(YS::FILE::GetSize("00shopface.bin"));
-                auto _readShopface = YS::FILE::Read("00shopface.bin", _allocShopface);
-
-                if (_readShopface != 0x00)
-                {
-                    uint8_t _faceCount = *_allocShopface;
-
-                    YS::PANACEA_ALLOC::Allocate("SHOPFACE_NAMES", 0x10 * _faceCount);
-                    YS::PANACEA_ALLOC::Allocate("SHOPFACE_STRUCTS", 0x10 * _faceCount);
-
-                    for (int i = 0; i < _faceCount; i++)
-                    {
-                        auto _objectID = *reinterpret_cast<uint16_t*>(_allocShopface + 0x10 + (0x10 * i));
-                        char _faceName[0x0E];
-
-                        memcpy(_faceName, _allocShopface + 0x02 + 0x10 + (0x10 * i), 0x0E);
-
-                        auto _calculateNameAddr = reinterpret_cast<uint64_t>(YS::PANACEA_ALLOC::Get("SHOPFACE_NAMES") + 0x10 * i);
-
-                        memcpy(YS::PANACEA_ALLOC::Get("SHOPFACE_STRUCTS") + 0x10 * i, &_objectID, 0x02);
-                        memcpy(YS::PANACEA_ALLOC::Get("SHOPFACE_STRUCTS") + (0x10 * i) + 0x08, &_calculateNameAddr, 0x08);
-
-                        memcpy(YS::PANACEA_ALLOC::Get("SHOPFACE_NAMES") + 0x10 * i, _faceName, 0x0E);
-                    }
-
-                    char* _structOffset = reinterpret_cast<char*>(YS::PANACEA_ALLOC::Get("SHOPFACE_STRUCTS"));
-
-                    RedirectLEA(_patchShopfaceFirst + 0x53, _structOffset);
-                    RedirectLEA(_patchShopfaceThird + 0x50, _structOffset);
-                    RedirectLEA(_patchShopfaceSecond + 0x28, _structOffset);
-
-                    RedirectLEA(_patchShopfaceFirst + 0x62, _structOffset + 0x08);
-                    RedirectLEA(_patchShopfaceThird + 0x41, _structOffset + 0x08);
-                    RedirectLEA(_patchShopfaceSecond + 0x83, _structOffset + 0x08);
-                }
+                YS::PANACEA_ALLOC::Allocate("00shopface.bin", YS::FILE::GetSize("00shopface.bin"));
+                YS::FILE::Read("00shopface.bin", YS::PANACEA_ALLOC::Get("00shopface.bin"));
             }
 
             static Tz::HookConfig::Entry _musicConfig{ 0x01, 0x5718, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 } };
