@@ -1910,13 +1910,6 @@ extern "C"
 
         memset(reinterpret_cast<char*>(dk::SOFTRESET::SoftResetThread) + 0x1ED, 0x90, 0x05);
 
-        // I do not remember what this fucking does. But I believe it is important.
-
-        auto _fetchAdjustment = SignatureScan<char*>("\x48\x83\xEC\x28\x0F\x10\x41\x48\x4C\x8B\xC9\x4C\x8B\xD2\xF3\x0F\x10\x25\x00\x00\x00\x00\x0F\x57\xED\x0F\x11\x02\x41\x0F\x10\x00\x49\x8B\x41\x40", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxx");
-
-        memset(_fetchAdjustment + 0xF6,  0x90, 0x06);
-        memset(_fetchAdjustment + 0x101, 0x90, 0x06);
-
         #ifndef BUILD_ARCHIPELAGO_LITE
         Tz::HookIntro::Submit();
         Tz::HookConfig::Submit();
@@ -1987,6 +1980,13 @@ extern "C"
 
         if (!IS_NOASPECT)
         { 
+            // Prevent the game from adjusting the aspect automatically.
+
+            auto _fetchAdjustment = SignatureScan<char*>("\x48\x83\xEC\x28\x0F\x10\x41\x48\x4C\x8B\xC9\x4C\x8B\xD2\xF3\x0F\x10\x25\x00\x00\x00\x00\x0F\x57\xED\x0F\x11\x02\x41\x0F\x10\x00\x49\x8B\x41\x40", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxx");
+
+            memset(_fetchAdjustment + 0xF6, 0x90, 0x06);
+            memset(_fetchAdjustment + 0x101, 0x90, 0x06);
+
             // Kill the enforcer in dk::MISSION_GAUGE::update so I don't want to kill myself.
             
             auto _fetchMissionUpdate = SignatureScan<char*>("\x48\x89\x5C\x24\x18\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8", "xxxxxxxxxxxxxx");
