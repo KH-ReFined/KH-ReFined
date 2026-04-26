@@ -5,6 +5,7 @@
 #include <cstdint>
 #include "memorymgr.h"
 #include "message.h"
+#include "hookintro.h"
 #include "sequence.h"
 #include "panacea_alloc.h"
 #include "sprite.h"
@@ -20,6 +21,7 @@ extern "C"
         {
         public:
             static char* SetupResult();
+            static char* SetupConfig();
 
             static char** m_SeqTbl;
             static int* m_pri;
@@ -52,16 +54,6 @@ extern "C"
                     memcpy(_setupResult_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
 
                     printf("Hooked Title::NewGame::SetupResult [0x%p] to Re:Fined function @ 0x%p\n", _setupResult_orig, SetupResult);
-
-                    auto _fetchInit = SignatureScan<char*>("\x48\x89\x5C\x24\x20\x56\x57\x41\x56\x48\x83\xEC\x30\xE8", "xxxxxxxxxxxxxx");
-
-                    printf("Fetched Title::NewGame::Init @ 0x%p\n", _fetchInit);
-
-                    memset(_fetchInit + 0xE3, 0x04, 0x01);
-                    memcpy(_fetchInit + 0x16B, "\xE0\x1E\x00\x00", 0x04);
-                    memcpy(_fetchInit + 0x264, "\xE0\x0E\x00\x00", 0x04);
-
-                    printf("Edited Title::NewGame::Init [0x%p] to allocate more space for Re:Fined options.\n", _fetchInit);
 
                     printf("\nSuccessfully handled Title::NewGame concerns.\n");
                     printf("======================================================\n\n");

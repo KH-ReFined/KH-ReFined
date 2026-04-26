@@ -1,6 +1,5 @@
 #include "newgame.h"
 
-
 char** Title::NewGame::m_SeqTbl = ResolveRelativeAddress<char**>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", 0x17);
 int* Title::NewGame::m_pri = ResolveRelativeAddress<int*>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", 0x2D);
 char** Title::NewGame::m_Lay = ResolveRelativeAddress<char**>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", 0x20);
@@ -9,6 +8,14 @@ char** Title::NewGame::m_SelPtr = ResolveRelativeAddress<char**>("\x48\x89\x5C\x
 char** Title::NewGame::m_MenuPtr = reinterpret_cast<char**>(ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", 0x17) - 0x28);
 
 Title::NewGame::staticInitializer Title::NewGame::initialize;
+
+char* Title::NewGame::SetupConfig()
+{
+    auto _sqdMain = *m_SeqTbl + 0x440;
+    auto _mInfo = reinterpret_cast<char**>(reinterpret_cast<char*>(m_SeqTbl) - 0x08);
+
+    return *_mInfo;
+}
 
 char* Title::NewGame::SetupResult()
 {
@@ -23,47 +30,69 @@ char* Title::NewGame::SetupResult()
     *reinterpret_cast<float*>(_sqdMain + 0x200) = YI::SEQUENCE::GetParamX(_sqdMain + 0x20);
     *reinterpret_cast<float*>(_sqdMain + 0x204) = YI::SEQUENCE::GetParamY(_sqdMain + 0x20);
 
+    int _procElements = 0x00;
+    vector<Tz::HookIntro::Entry> _procEntries;
+    vector<int> _procSelect;
+
+    for (int i = 0x00; i < Tz::HookIntro::Entries.size(); i++)
+    {
+        auto _selectPtr = YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x200 + (0x04 * i);
+        if (Tz::HookIntro::Entries[i].Flair != UINT16_MAX)
+        {
+            if (!Tz::HookIntro::Entries[i].SubEntry)
+            {
+                _procEntries.push_back(Tz::HookIntro::Entries[i]);
+                _procSelect.push_back(*_selectPtr);
+            }
+
+            else if (find_if(Tz::HookIntro::Entries.begin(), Tz::HookIntro::Entries.end(), [i](const Tz::HookIntro::Entry _fetchEntry) { return _fetchEntry.Title == Tz::HookIntro::Entries[i].SubEntry->Title; }) == Tz::HookIntro::Entries.end())
+            {
+                _procEntries.push_back(Tz::HookIntro::Entries[i]);
+                _procSelect.push_back(*_selectPtr);
+            }
+        }
+    }
+
     // Create and render option selections.
-    for (int i = 0x00; i < 0x04; i++)
+    for (int i = 0x00; i < _procEntries.size(); i++)
     {
         auto _fetchIntro = YS::PANACEA_ALLOC::Get("INTRO_MEMORY");
 
-        auto _rectSqd = *m_SeqTbl + 0x660 + (0x220 * i);
+        auto _rectSqd = *m_SeqTbl + 0x660 + (0x220 * _procElements);
         Tz::MenuUtil::CreateMess(_rectSqd, *m_pri, 0, 0, *m_Lay, 26, UINT32_MAX, UINT32_MAX, 0, 0);
 
         *reinterpret_cast<uint32_t*>(_rectSqd + 0x010) &= ~0x10;
         *reinterpret_cast<uint32_t*>(_rectSqd + 0x010) &= ~0x08;
         *reinterpret_cast<uint32_t*>(_rectSqd + 0x010) &= ~0x08;
 
-        *reinterpret_cast<char**>(_rectSqd + 0x01F8) = YS::MESSAGE::GetData(*reinterpret_cast<uint16_t*>(_fetchIntro + 0x08 + 0x2C * i));
+        *reinterpret_cast<char**>(_rectSqd + 0x01F8) = YS::MESSAGE::GetData(_procEntries[i].Flair);
         Tz::MenuUtil::SetSprtParent(_rectSqd, _sqdMain);
 
-        auto _textSqd = *m_SeqTbl + (0x660 + (0x220 * 0x04) + 0x220 * i);
+        auto _textSqd = *m_SeqTbl + (0x660 + (0x220 * _procEntries.size()) + 0x220 * _procElements);
         Tz::MenuUtil::CreateMess(_textSqd, *m_pri, 0, 0, *m_Lay, 13, UINT32_MAX, UINT32_MAX, 0, 0);
 
-        auto _fetchSelect = YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x200 + (0x04 * i);
-
         *reinterpret_cast<uint32_t*>(_textSqd + 0x010) &= ~0x10;
-        *reinterpret_cast<char**>(_textSqd + 0x1F8) = YS::MESSAGE::GetData(*reinterpret_cast<uint16_t*>(_fetchIntro + 0x0C + (0x04 * *_fetchSelect) + 0x2C * i));
+        *reinterpret_cast<char**>(_textSqd + 0x1F8) = YS::MESSAGE::GetData(_procEntries[i].Buttons[_procSelect[i]]);
 
-        Tz::MenuUtil::SetSprtParent(_textSqd, *m_SeqTbl + 0x660 + 0x220 * i);
+        Tz::MenuUtil::SetSprtParent(_textSqd, *m_SeqTbl + 0x660 + 0x220 * _procElements);
 
         *reinterpret_cast<int*>(_textSqd + 0x1C8) = YI::SEQUENCE::GetParamX(_rectSqd + 0x20);
         *reinterpret_cast<int*>(_textSqd + 0x1CC) = YI::SEQUENCE::GetParamY(_rectSqd + 0x20);
+
+        _procElements++;
     }
 
     // Set offsets of option selections.
-    for (int i = 0x00; i < 0x04; i++)
+    for (int i = 0x00; i < _procElements; i++)
     {
-        auto _fetchBeginParam = YI::SEQUENCE::GetParamCr(*m_SeqTbl + 0x680);
+        auto _spaceParam = _procElements <= 0x04 ? 30 : (_procElements <= 0x06 ? 25 : 21);
 
         auto _offsetSqd = 0x660 + (0x220 * i);
         auto _fetchSeqd = *m_SeqTbl + _offsetSqd;
 
         *reinterpret_cast<int*>(_fetchSeqd + 0x1C8) = 0x00;
-        *reinterpret_cast<int*>(_fetchSeqd + 0x1CC) = (_fetchBeginParam * -2) + _fetchBeginParam * i;
+        *reinterpret_cast<int*>(_fetchSeqd + 0x1CC) = -3 + (_spaceParam * (_procElements * -0.5)) + _spaceParam * i;
     }
-
 
     // Create and render the buttons.
     for (int i = 0x00; i < 0x02; i++)

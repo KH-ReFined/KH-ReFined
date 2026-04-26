@@ -17,34 +17,18 @@ vector<char*> Tz::HookIntro::INTRO_OFFSETS = vector<char*>
 	SignatureScan<char*>("\x48\x83\xEC\x28\xE8\x00\x00\x00\x00\x8B\x15\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00", "xxxxx????xx????xxxx????")
 };
 
-#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-vector<vector<uint32_t>> Tz::HookIntro::Entries = vector<vector<uint32_t>>
+vector<Tz::HookIntro::Entry> Tz::HookIntro::Entries = vector<Tz::HookIntro::Entry>
 {
-	vector<uint32_t> { 0x04, 0xC330, 0xC380, 0xC331, 0xC332, 0xC333, 0xCE33, 0xC334, 0xC335, 0xC336, 0xCE34, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF },
-	vector<uint32_t> { 0x02, 0xC337, 0xC381, 0xC338, 0xC339, 0xC33A, 0xC33B, 0x0001, 0x0000 },
-	vector<uint32_t> { 0x03, 0x5733, 0x5704, 0x5705, 0x5707, 0x5709, 0x5706, 0x5708, 0x570A, 0x0004, 0x0002, 0x0000 },
-	vector<uint32_t> { 0x02, 0x5737, 0x5722, 0x5723, 0x5725, 0x5724, 0x5726, 0x2000, 0x0000  }
+	Tz::HookIntro::Entry { 0x04, 0xC330, 0xC380, vector<uint32_t> { 0xC331, 0xC332, 0xC333, 0xCE33 }, vector<uint32_t> { 0xC334, 0xC335, 0xC336, 0xCE34 }, vector<uint32_t> {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}, 0x0000, nullptr },
+	Tz::HookIntro::Entry { 0x02, 0xC337, 0xC381, vector<uint32_t> { 0xC338, 0xC339 },				  vector<uint32_t> { 0xC33A, 0xC33B },				   vector<uint32_t> {0x0001, 0x0000 },				  0x0000, nullptr },
+	Tz::HookIntro::Entry { 0x03, 0x5733, 0x5704, vector<uint32_t> { 0x5705, 0x5707, 0x5709 },		  vector<uint32_t> { 0x5706, 0x5708, 0x570A },		   vector<uint32_t> {0x0004, 0x0002, 0x0000 },		  0x0000, nullptr },
+	Tz::HookIntro::Entry { 0x02, 0x5737, 0x5722, vector<uint32_t> { 0x5723, 0x5725 },				  vector<uint32_t> { 0x5724, 0x5726 },				   vector<uint32_t> {0x2000, 0x0000 },				  0x0000, nullptr }
 };
-#elif BUILD_ARCHIPELAGO_LITE
-vector<vector<uint32_t>> Tz::HookIntro::Entries = vector<vector<uint32_t>>
-{
-	vector<uint32_t> { 0x04, 0xC330, 0xC380, 0xC331, 0xC332, 0xC333, 0xCE33, 0xC334, 0xC335, 0xC336, 0xCE34, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF },
-	vector<uint32_t> { 0x02, 0xC337, 0xC381, 0xC338, 0xC339, 0xC33A, 0xC33B, 0x0001, 0x0000 }
-};
-#else
-vector<vector<uint32_t>> Tz::HookIntro::Entries = vector<vector<uint32_t>>
-{
-	vector<uint32_t> { 0x04, 0xC330, 0xC380, 0xC331, 0xC332, 0xC333, 0xCE33, 0xC334, 0xC335, 0xC336, 0xCE34, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF },
-	vector<uint32_t> { 0x02, 0xC337, 0xC381, 0xC338, 0xC339, 0xC33A, 0xC33B, 0x0001, 0x0000 },
-	vector<uint32_t> { 0x03, 0x5733, 0x5704, 0x5705, 0x5707, 0x5709, 0x5706, 0x5708, 0x570A, 0x0004, 0x0002, 0x0000 }
-};
-#endif
 
-void Tz::HookIntro::Add(int Index, vector<uint32_t> Input)
+void Tz::HookIntro::Add(int Index, Tz::HookIntro::Entry Input)
 {
 	if (Index == UINT32_MAX)
-		Entries.insert(Entries.end(), Input);
-
+		Entries.push_back(Input);
 	else
 		Entries.insert(Entries.begin() + Index, Input);
 
@@ -71,15 +55,15 @@ void Tz::HookIntro::Submit()
 	{
 		auto _currentEntry = Entries[i];
 
-		memcpy(_introMemory + (0x2C * i), &_currentEntry[0], 0x04);
-		memcpy(_introMemory + (0x2C * i) + 0x04, &_currentEntry[1], 0x04);
-		memcpy(_introMemory + (0x2C * i) + 0x08, &_currentEntry[2], 0x04);
+		memcpy(_introMemory + (0x2C * i), &_currentEntry.Count, 0x04);
+		memcpy(_introMemory + (0x2C * i) + 0x04, &_currentEntry.Title, 0x04);
+		memcpy(_introMemory + (0x2C * i) + 0x08, &_currentEntry.Flair, 0x04);
 
-		for (int z = 0; z < (_currentEntry[0] == 0x01 ? 0x04 : _currentEntry[0]); z++)
-			memcpy(_introMemory + (0x2C * i) + (0x04 * z) + 0x0C, &_currentEntry[0x03 + z], 0x04);
-
-		for (int z = 0; z < (_currentEntry[0] == 0x01 ? 0x04 : _currentEntry[0]); z++)
-			memcpy(_introMemory + (0x2C * i) + (0x04 * z) + 0x1C, &_currentEntry[0x03 + _currentEntry[0] + z], 0x04);
+		for (int z = 0; z < (_currentEntry.Count == 0x01 ? 0x04 : _currentEntry.Count); z++)
+		{
+			memcpy(_introMemory + (0x2C * i) + (0x04 * z) + 0x0C, &_currentEntry.Buttons[z], 0x04);
+			memcpy(_introMemory + (0x2C * i) + (0x04 * z) + 0x1C, &_currentEntry.Descriptions[z], 0x04);
+		}
 	}
 
 	vector<uint8_t> _firstInit(0x10);
@@ -120,6 +104,15 @@ void Tz::HookIntro::Submit()
 	RedirectMOV(INTRO_OFFSETS[0x05] + 0x2BF, _introMemory + 0x200);
 	RedirectMOV(INTRO_OFFSETS[0x06] + 0x009, _introMemory + 0x200);
 	RedirectCMP(INTRO_OFFSETS[0x06] + 0x017, _introMemory + 0x204);
+
+	auto _fetchInit = SignatureScan<char*>("\x48\x89\x5C\x24\x20\x56\x57\x41\x56\x48\x83\xEC\x30\xE8", "xxxxxxxxxxxxxx");
+
+	uint32_t _sizeTotal = 0x660 + (0x440 * Entries.size());
+	uint32_t _sizeHeader = 0x660 + (0x220 * Entries.size());
+
+	memset(_fetchInit + 0xE3, Entries.size(), 0x01);
+	memcpy(_fetchInit + 0x16B, &_sizeTotal, 0x04);
+	memcpy(_fetchInit + 0x264, &_sizeHeader, 0x04);
 }
 
 void Tz::HookIntro::Handle()
@@ -138,12 +131,31 @@ void Tz::HookIntro::Handle()
 
 		ENFORCE_INTRO = *YS::TITLE::IntroSelect == 0x00;
 
+		for (int i = 0; i < Entries.size(); i++)
+		{
+			if (Entries[i].SubEntry)
+			{
+				auto _canFind = find_if(Entries.begin(), Entries.end(),
+					[i](const Tz::HookIntro::Entry _fetchEntry) {
+						return _fetchEntry.Title == Entries[i].SubEntry->Title;
+					});
+
+				auto _fetchBitwise = Entries[i].Toggles[*(_introMemory + 0x200 + (i * 0x04))];
+
+				if (_fetchBitwise == Entries[i].SubToggle && _canFind == Entries.end())
+					Tz::HookIntro::Add(i + 1, *Entries[i].SubEntry);
+
+				else if (_fetchBitwise != Entries[i].SubToggle && _canFind != Entries.end())
+					Tz::HookIntro::Remove(_canFind - Entries.begin());
+			}
+		}
+
 		for (int i = 1; i < Entries.size(); i++)
 		{
-			auto _optionCount = Entries[i][0x00];
+			auto _optionCount = Entries[i].Count;
 			auto _fetchToggle = *(_introMemory + 0x200 + (i * 0x04));
 
-			auto _getBitwise = Entries[i][0x03 + _optionCount * 2 + _fetchToggle];
+			auto _getBitwise = Entries[i].Toggles[_fetchToggle];
 
 			if (_getBitwise == 0xFFFF)
 				continue;
@@ -156,7 +168,7 @@ void Tz::HookIntro::Handle()
 
 			for (int z = 0; z < _optionCount; z++)
 			{
-				_getBitwise = Entries[i][0x03 + _optionCount * 2 + z];
+				_getBitwise = Entries[i].Toggles[z];
 
 				if (_checkBitwise & _getBitwise)
 					break;

@@ -69,16 +69,17 @@
 #include "messagedraw.h"
 #include "select.h"
 #include "spritemessage.h"
+#include "hookintro.h"
+#include "field.h"
+#include "sheet.h"
+#include "fvector.h"
+#include "cmdata.h"
 
 #include "memorymgr.h"
 #include "continue_menu.h"
 
 #include "ini.h"
-#include <hookintro.h>
-#include <field.h>
-#include <sheet.h>
-#include <fvector.h>
-#include <cmdata.h>
+
 
 using namespace std;
 using namespace discord;
@@ -1777,31 +1778,34 @@ void FIX_UP_CONFIG()
         if (!_fetchBinarc || *reinterpret_cast<int*>(_fetchBinarc) == 0x00 || *reinterpret_cast<int*>(_fetchBinarc + 0x08) == 0x00)
             return;
 
-        auto _fetchLaydIntPtr = *reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchBinarc, 0x1C, 0x6C746974, 0) + 0x08);
-
-        if (_fetchLaydIntPtr == 0x00)
-            return;
-
-        auto _fetchLaydTrue = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchLaydIntPtr));
-
-        if (!_fetchLaydTrue)
-            return;
-
-        auto _fetchOffsetSeqd = *reinterpret_cast<uint32_t*>(_fetchLaydTrue + 0x0B8C);
-        auto _coordsSettingsStart = _fetchLaydTrue + _fetchOffsetSeqd + 0x06BC;
-
-        if (*PROMPT_MODE)
+        if (YS::BINARC::get_info_by_tag(_fetchBinarc, 0x1C, 0x6C746974, 0))
         {
-            memcpy(_coordsSettingsStart + 0x04, "\xE8\x00\x00\x00", 0x04);
-            memcpy(_coordsSettingsStart + 0x0C, "\xFE\x00\x00\x00", 0x04);
-        }
+            auto _fetchLaydIntPtr = *reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchBinarc, 0x1C, 0x6C746974, 0) + 0x08);
 
-        else
-        {
-            auto _fetchConfig = IS_STEAM ? *(PC::STEAM::MareConfig + 0x1C) : *(PC::EGS::MareConfig + 0x1C);
+            if (_fetchLaydIntPtr == 0x00)
+                return;
 
-            memcpy(_coordsSettingsStart + 0x04, _fetchConfig == 0x01 ? "\xBC\x00\x00\x00" : "\xD2\x00\x00\x00", 0x04);
-            memcpy(_coordsSettingsStart + 0x0C, _fetchConfig == 0x01 ? "\xD2\x00\x00\x00" : "\xE8\x00\x00\x00", 0x04);
+            auto _fetchLaydTrue = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchLaydIntPtr));
+
+            if (!_fetchLaydTrue)
+                return;
+
+            auto _fetchOffsetSeqd = *reinterpret_cast<uint32_t*>(_fetchLaydTrue + 0x0B8C);
+            auto _coordsSettingsStart = _fetchLaydTrue + _fetchOffsetSeqd + 0x06BC;
+
+            if (*PROMPT_MODE)
+            {
+                memcpy(_coordsSettingsStart + 0x04, "\xE8\x00\x00\x00", 0x04);
+                memcpy(_coordsSettingsStart + 0x0C, "\xFE\x00\x00\x00", 0x04);
+            }
+
+            else
+            {
+                auto _fetchConfig = IS_STEAM ? *(PC::STEAM::MareConfig + 0x1C) : *(PC::EGS::MareConfig + 0x1C);
+
+                memcpy(_coordsSettingsStart + 0x04, _fetchConfig == 0x01 ? "\xBC\x00\x00\x00" : "\xD2\x00\x00\x00", 0x04);
+                memcpy(_coordsSettingsStart + 0x0C, _fetchConfig == 0x01 ? "\xD2\x00\x00\x00" : "\xE8\x00\x00\x00", 0x04);
+            }
         }
     }
 }
@@ -2066,8 +2070,11 @@ extern "C"
                 YS::FILE::Read("00shopface.bin", YS::PANACEA_ALLOC::Get("00shopface.bin"));
             }
 
-            static Tz::HookConfig::Entry _musicConfig{ 0x01, 0x5718, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 } };
-            static Tz::HookConfig::Entry _resourceConfig{ 0x01, 0x571F, vector<uint16_t>{ 0x573A }, vector<uint16_t>{ 0x573B }, vector<uint16_t>{ 0x0000 } };
+            static Tz::HookConfig::Entry _musicConfig{ 0x01, 0x5718, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 }, 0x0000, nullptr };
+            static Tz::HookIntro::Entry _musicIntro{ 0x01, 0x5735, 0x5718, vector<uint32_t>{ }, vector<uint32_t>{ }, vector<uint32_t>{ }, 0x0000, nullptr };
+
+            static Tz::HookConfig::Entry _resourceConfig{ 0x01, 0x571F, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 }, 0x0000, nullptr };
+            static Tz::HookIntro::Entry _resourceIntro{ 0x01, 0x5736, 0x571F, vector<uint32_t>{ }, vector<uint32_t>{ }, vector<uint32_t>{ }, 0x0000, nullptr };
 
             // This code block handles AUDIO packs.
 
@@ -2079,8 +2086,11 @@ extern "C"
                 YS::FILE::GetSize("voice/bg/battle/tt0_sora.win32.scd"),
             };
 
-            static Tz::HookConfig::Entry _subAudioConfig = Tz::HookConfig::Entry { 0x0000, 0x572B, vector<uint16_t>(), vector<uint16_t>(), vector<uint16_t>(), 0x0000, nullptr };
+            static Tz::HookConfig::Entry _subAudioConfig{ 0x0000, 0x572B, vector<uint16_t>(), vector<uint16_t>(), vector<uint16_t>(), 0x0000, nullptr };
+            static Tz::HookIntro::Entry _subAudioIntro{ 0x0000, 0x572B, 0x570B, vector<uint32_t>(), vector<uint32_t>(), vector<uint32_t>(), 0x0000, nullptr };
+
             static Tz::HookConfig::Entry _mainAudioConfig{ 0x01, 0x570B, vector<uint16_t>{ 0x570C }, vector<uint16_t>{ 0x570D }, vector<uint16_t> { 0x0000 } };
+            static Tz::HookIntro::Entry _mainAudioIntro{ 0x01, 0x5734, 0x570B, vector<uint32_t>{ }, vector<uint32_t>{ }, vector<uint32_t> { } };
 
             for (int i = 1; i < 4; i++)
             {
@@ -2135,12 +2145,36 @@ extern "C"
                     _subAudioConfig.Toggles.push_back(_fetchBitwise);
                 }
 
+                _subAudioIntro.Count = _subAudioConfig.Count;
+
+                for (int i = 0; i < _subAudioConfig.Count; i++)
+                {
+                    _subAudioIntro.Buttons.push_back(_subAudioConfig.Buttons[i]);
+                    _subAudioIntro.Descriptions.push_back(_subAudioConfig.Descriptions[i]);
+                    _subAudioIntro.Toggles.push_back(_subAudioConfig.Toggles[i]);
+                }
+
                 _mainAudioConfig.SubToggle = 0x0002;
                 _mainAudioConfig.SubEntry = &_subAudioConfig;
+
+                _mainAudioIntro.SubToggle = 0x0002;
+                _mainAudioIntro.SubEntry = &_subAudioIntro;
             }
 
             if (_mainAudioConfig.Count > 0x01)
+            {
+                _mainAudioIntro.Count = _mainAudioConfig.Count;
+
+                for (int i = 0; i < _mainAudioConfig.Count; i++)
+                {
+                    _mainAudioIntro.Buttons.push_back(_mainAudioConfig.Buttons[i]);
+                    _mainAudioIntro.Descriptions.push_back(_mainAudioConfig.Descriptions[i]);
+                    _mainAudioIntro.Toggles.push_back(_mainAudioConfig.Toggles[i]);
+                }
+
+                Tz::HookIntro::Add(UINT32_MAX, _mainAudioIntro);
                 Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _mainAudioConfig);
+            }
 
             // This code block handles RESOURCE packs.
 
@@ -2167,19 +2201,17 @@ extern "C"
            
             if (_resourceConfig.Count > 1)
             {
-                Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _resourceConfig);
+                _resourceIntro.Count = _resourceConfig.Count;
 
-                /*
-                std::vector<uint32_t> _resourceIntro;
-
-                for (auto _element : _resourceConfig)
-                    _resourceIntro.push_back(_element);
-
-                _resourceIntro.insert(_resourceIntro.begin() + 0x02, 0xFFFF);
-                _resourceIntro[0x01] = 0x5736;
+                for (int i = 0; i < _resourceConfig.Count; i++)
+                {
+                    _resourceIntro.Buttons.push_back(_resourceConfig.Buttons[i]);
+                    _resourceIntro.Descriptions.push_back(_resourceConfig.Descriptions[i]);
+                    _resourceIntro.Toggles.push_back(_resourceConfig.Toggles[i]);
+                }
 
                 Tz::HookIntro::Add(UINT32_MAX, _resourceIntro);
-                */
+                Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _resourceConfig);
             }
 
             // This code block handles MUSIC packs.
@@ -2206,19 +2238,17 @@ extern "C"
 
             if (_musicConfig.Count > 1)
             {
-                Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _musicConfig);
+                _musicIntro.Count = _musicConfig.Count;
 
-                /*
-                std::vector<uint32_t> _musicIntro;
-
-                for (auto _element : _musicConfig)
-                    _musicIntro.push_back(_element);
-
-                _musicIntro.insert(_musicIntro.begin() + 0x02, 0xFFFF);
-                _musicIntro[0x01] = 0x5735;
+                for (int i = 0; i < _musicConfig.Count; i++)
+                {
+                    _musicIntro.Buttons.push_back(_musicConfig.Buttons[i]);
+                    _musicIntro.Descriptions.push_back(_musicConfig.Descriptions[i]);
+                    _musicIntro.Toggles.push_back(_musicConfig.Toggles[i]);
+                }
 
                 Tz::HookIntro::Add(UINT32_MAX, _musicIntro);
-                */
+                Tz::HookConfig::Add(Tz::HookConfig::Entries.size() - 0x03, _musicConfig);
             }
 
             // Re:Fined Module Initialization, brought to you by Topaz' Reality (Patent Pending!)
@@ -2288,21 +2318,30 @@ extern "C"
                                 FUNCTION_ARRAY.erase(_fetchName);
                         }
 
-                        uint32_t* (*checkIntro)() = (uint32_t * (*)())GetProcAddress(_moduleHandle, "RF_CheckIntro");
+                        uint32_t* (*_fetchIntro)() = reinterpret_cast<uint32_t*(*)()>(GetProcAddress(_moduleHandle, "RF_CheckIntro"));
                         uint16_t* (*checkConfig)() = (uint16_t * (*)())GetProcAddress(_moduleHandle, "RF_CheckConfig");
 
-                        vector<uint32_t> _vectorIntro(0);
-                        // vector<uint16_t> _vectorConfig(0);
-
-                        if (checkIntro)
+                        if (_fetchIntro)
                         {
-                            auto _fetchIntro = checkIntro();
-                            auto _sizeVector = 0x0C + 0x04 * (_fetchIntro[0] * 3);
+                            Tz::HookIntro::Entry _constEntry;
+                            auto _introPtr = _fetchIntro();
 
-                            _vectorIntro.resize(_sizeVector / 4);
-                            memcpy(_vectorIntro.data(), _fetchIntro, _sizeVector);
+                            _constEntry.Count = *_introPtr;
 
-                            Tz::HookIntro::Add(UINT32_MAX, _vectorIntro);
+                            _constEntry.Title = *(_introPtr + 0x01);
+                            _constEntry.Flair = *(_introPtr + 0x02);
+
+                            for (int i = 0; i < *_introPtr; i++)
+                            {
+                                _constEntry.Buttons.push_back(*(_introPtr + 0x03 + i));
+                                _constEntry.Descriptions.push_back(*(_introPtr + 0x03 + *_introPtr + i));
+                                _constEntry.Toggles.push_back(*(_introPtr + 0x03 + (*_introPtr * 0x02) + i));
+                            }
+
+                            _constEntry.SubToggle = *(_introPtr + 0x03 + (*_introPtr * 0x03));
+                            _constEntry.SubEntry = *reinterpret_cast<Tz::HookIntro::Entry**>(_introPtr + 0x04 + (*_introPtr * 0x03));
+
+                            Tz::HookIntro::Add(UINT32_MAX, _constEntry);
 
                             uint32_t** introSeek = (uint32_t**)GetProcAddress(_moduleHandle, "INTRO_SEEK");
 
@@ -2311,6 +2350,11 @@ extern "C"
                         }
 
                         /*
+                        
+                        vector<uint16_t> _vectorConfig(0);
+
+
+
                         if (checkConfig)
                         {
                             auto _fetchConfig = checkConfig();
