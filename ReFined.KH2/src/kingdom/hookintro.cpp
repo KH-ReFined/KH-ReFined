@@ -6,6 +6,8 @@ bool ENFORCE_INTRO = false;
 uint16_t FIRST_CONFIG = 0x0408;
 uint16_t SECOND_CONFIG = 0x0000;
 
+map<uint32_t**, Tz::HookIntro::Entry> Tz::HookIntro::IntroSeeks;
+
 vector<char*> Tz::HookIntro::INTRO_OFFSETS = vector<char*>
 {
 	SignatureScan<char*>("\x48\x89\x5C\x24\x18\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxx????"),
@@ -47,7 +49,7 @@ void Tz::HookIntro::Submit()
 
 	if (!_introMemory)
 	{
-		YS::PANACEA_ALLOC::Allocate("INTRO_MEMORY", 0x300);
+		YS::PANACEA_ALLOC::Allocate("INTRO_MEMORY", 0x500);
 		_introMemory = YS::PANACEA_ALLOC::Get("INTRO_MEMORY");
 	}
 
@@ -99,11 +101,11 @@ void Tz::HookIntro::Submit()
 
 	_menuOffset += 0x1E4; memcpy(INTRO_OFFSETS[0x00] + 0x3B5, &_menuOffset, 0x04);
 
-	RedirectLEA(INTRO_OFFSETS[0x01] + 0x0A8, _introMemory + 0x200);
-	RedirectLEA(INTRO_OFFSETS[0x04] + 0x1F2, _introMemory + 0x200);
-	RedirectMOV(INTRO_OFFSETS[0x05] + 0x2BF, _introMemory + 0x200);
-	RedirectMOV(INTRO_OFFSETS[0x06] + 0x009, _introMemory + 0x200);
-	RedirectCMP(INTRO_OFFSETS[0x06] + 0x017, _introMemory + 0x204);
+	RedirectLEA(INTRO_OFFSETS[0x01] + 0x0A8, _introMemory + 0x400);
+	RedirectLEA(INTRO_OFFSETS[0x04] + 0x1F2, _introMemory + 0x400);
+	RedirectMOV(INTRO_OFFSETS[0x05] + 0x2BF, _introMemory + 0x400);
+	RedirectMOV(INTRO_OFFSETS[0x06] + 0x009, _introMemory + 0x400);
+	RedirectCMP(INTRO_OFFSETS[0x06] + 0x017, _introMemory + 0x404);
 
 	auto _fetchInit = SignatureScan<char*>("\x48\x89\x5C\x24\x20\x56\x57\x41\x56\x48\x83\xEC\x30\xE8", "xxxxxxxxxxxxxx");
 
@@ -113,6 +115,14 @@ void Tz::HookIntro::Submit()
 	memset(_fetchInit + 0xE3, Entries.size(), 0x01);
 	memcpy(_fetchInit + 0x16B, &_sizeTotal, 0x04);
 	memcpy(_fetchInit + 0x264, &_sizeHeader, 0x04);
+
+	for (auto &_introSeekPair : IntroSeeks)
+	{
+		auto _fetchEntry = find_if(Entries.begin(), Entries.end(), [_introSeekPair](const Tz::HookIntro::Entry _fetchEntry) { return _fetchEntry.Title == _introSeekPair.second.Title && _fetchEntry.Flair == _introSeekPair.second.Flair; });
+		auto _fetchIndex = distance(Tz::HookIntro::Entries.begin(), _fetchEntry);
+
+		*_introSeekPair.first = reinterpret_cast<uint32_t*>(YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x400 + (_fetchIndex * 0x04));
+	}
 }
 
 void Tz::HookIntro::Handle()
@@ -140,7 +150,7 @@ void Tz::HookIntro::Handle()
 						return _fetchEntry.Title == Entries[i].SubEntry->Title;
 					});
 
-				auto _fetchBitwise = Entries[i].Toggles[*(_introMemory + 0x200 + (i * 0x04))];
+				auto _fetchBitwise = Entries[i].Toggles[*(_introMemory + 0x400 + (i * 0x04))];
 
 				if (_fetchBitwise == Entries[i].SubToggle && _canFind == Entries.end())
 					Tz::HookIntro::Add(i + 1, *Entries[i].SubEntry);
@@ -153,7 +163,7 @@ void Tz::HookIntro::Handle()
 		for (int i = 1; i < Entries.size(); i++)
 		{
 			auto _optionCount = Entries[i].Count;
-			auto _fetchToggle = *(_introMemory + 0x200 + (i * 0x04));
+			auto _fetchToggle = *(_introMemory + 0x400 + (i * 0x04));
 
 			auto _getBitwise = Entries[i].Toggles[_fetchToggle];
 

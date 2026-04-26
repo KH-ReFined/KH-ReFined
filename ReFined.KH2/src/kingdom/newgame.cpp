@@ -36,7 +36,7 @@ char* Title::NewGame::SetupResult()
 
     for (int i = 0x00; i < Tz::HookIntro::Entries.size(); i++)
     {
-        auto _selectPtr = YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x200 + (0x04 * i);
+        auto _selectPtr = YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x400 + (0x04 * i);
         if (Tz::HookIntro::Entries[i].Flair != UINT16_MAX)
         {
             if (!Tz::HookIntro::Entries[i].SubEntry)

@@ -37,6 +37,7 @@ namespace Tz
 			Entry* SubEntry;
 		};
 
+		static map<uint32_t**, Tz::HookIntro::Entry> IntroSeeks;
 		static vector<Entry> Entries;
 		static vector<char*> INTRO_OFFSETS;
 

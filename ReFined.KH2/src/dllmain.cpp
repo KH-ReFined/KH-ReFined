@@ -2346,7 +2346,9 @@ extern "C"
                             uint32_t** introSeek = (uint32_t**)GetProcAddress(_moduleHandle, "INTRO_SEEK");
 
                             assert(introSeek != nullptr);
-                            *introSeek = reinterpret_cast<uint32_t*>(YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x200 + ((Tz::HookIntro::Entries.size() - 1) * 0x04));
+                            *introSeek = reinterpret_cast<uint32_t*>(YS::PANACEA_ALLOC::Get("INTRO_MEMORY") + 0x400 + ((Tz::HookIntro::Entries.size() - 1) * 0x04));
+
+                            Tz::HookIntro::IntroSeeks.insert(pair<uint32_t**, Tz::HookIntro::Entry>(introSeek, _constEntry));
                         }
 
                         /*
