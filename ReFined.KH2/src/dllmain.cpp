@@ -2073,7 +2073,7 @@ extern "C"
             static Tz::HookConfig::Entry _musicConfig{ 0x01, 0x5718, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 }, 0x0000, nullptr };
             static Tz::HookIntro::Entry _musicIntro{ 0x01, 0x5735, 0x5718, vector<uint32_t>{ }, vector<uint32_t>{ }, vector<uint32_t>{ }, 0x0000, nullptr };
 
-            static Tz::HookConfig::Entry _resourceConfig{ 0x01, 0x571F, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 }, 0x0000, nullptr };
+            static Tz::HookConfig::Entry _resourceConfig{ 0x01, 0x571F, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x573B }, vector<uint16_t>{ 0x0000 }, 0x0000, nullptr };
             static Tz::HookIntro::Entry _resourceIntro{ 0x01, 0x5736, 0x571F, vector<uint32_t>{ }, vector<uint32_t>{ }, vector<uint32_t>{ }, 0x0000, nullptr };
 
             // This code block handles AUDIO packs.
@@ -2319,7 +2319,7 @@ extern "C"
                         }
 
                         uint32_t* (*_fetchIntro)() = reinterpret_cast<uint32_t*(*)()>(GetProcAddress(_moduleHandle, "RF_CheckIntro"));
-                        uint16_t* (*checkConfig)() = (uint16_t * (*)())GetProcAddress(_moduleHandle, "RF_CheckConfig");
+                        uint16_t* (*_fetchConfig)() = reinterpret_cast<uint16_t*(*)()>(GetProcAddress(_moduleHandle, "RF_CheckConfig"));
 
                         if (_fetchIntro)
                         {
@@ -2351,23 +2351,27 @@ extern "C"
                             Tz::HookIntro::IntroSeeks.insert(pair<uint32_t**, Tz::HookIntro::Entry>(introSeek, _constEntry));
                         }
 
-                        /*
-                        
-                        vector<uint16_t> _vectorConfig(0);
-
-
-
-                        if (checkConfig)
+                        if (_fetchConfig)
                         {
-                            auto _fetchConfig = checkConfig();
-                            auto _sizeVector = 0x04 + 0x02 * (_fetchConfig[0] * 3);
+                            Tz::HookConfig::Entry _constEntry;
+                            auto _configPtr = _fetchConfig();
 
-                            _vectorConfig.resize(_sizeVector / 2);
-                            memcpy(_vectorConfig.data(), _fetchConfig, _sizeVector);
+                            _constEntry.Count = *_configPtr;
+                            _constEntry.Title = *(_configPtr + 0x01);
+
+                            for (int i = 0; i < *_configPtr; i++)
+                            {
+                                _constEntry.Buttons.push_back(*(_configPtr + 0x02 + i));
+                                _constEntry.Descriptions.push_back(*(_configPtr + 0x02 + *_configPtr + i));
+                                _constEntry.Toggles.push_back(*(_configPtr + 0x02 + (*_configPtr * 0x02) + i));
+                            }
+
+                            _constEntry.SubToggle = *(_configPtr + 0x02 + (*_configPtr * 0x03));
+                            _constEntry.SubEntry = *reinterpret_cast<Tz::HookConfig::Entry**>(_configPtr + 0x03 + (*_configPtr * 0x03));
 
                             auto _seekConfig = Tz::HookConfig::Entries.size() - 1;
 
-                            Tz::HookConfig::Add(UINT32_MAX, _vectorConfig);
+                            Tz::HookConfig::Add(UINT32_MAX, _constEntry);
 
                             uint16_t** configSeek = (uint16_t**)GetProcAddress(_moduleHandle, "CONFIG_SEEK");
 
@@ -2377,11 +2381,11 @@ extern "C"
 
                                 for (int i = 0; i < Tz::HookConfig::Entries.size(); i++)
                                 {
-                                    auto _fetchCount = Tz::HookConfig::Entries[i][0];
+                                    auto _fetchCount = Tz::HookConfig::Entries[i].Count;
 
                                     for (int z = 0; z < _fetchCount; z++)
                                     {
-                                        auto _fetchBitwise = Tz::HookConfig::Entries[i][0x02 + (0x02 * _fetchCount) + z];
+                                        auto _fetchBitwise = Tz::HookConfig::Entries[i].Toggles[z];
 
                                         if (_checkBitwise & _fetchBitwise && i == _seekConfig)
                                         {
@@ -2400,7 +2404,6 @@ extern "C"
                                 }
                             }
                         }
-                        */
 
                     CONFIG_LOOP_END:
 
