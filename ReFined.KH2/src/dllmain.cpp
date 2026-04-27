@@ -664,7 +664,7 @@ void DISCORD_RPC()
 {
     int _resultant = 0xFF;
 
-    if (Discord == nullptr && DISCORD_ENABLED)
+    if (Discord == nullptr)
     {
         discord::Core::Create(833511404274974740, DiscordCreateFlags_NoRequireDiscord, &Discord);
 
@@ -720,62 +720,66 @@ void DISCORD_RPC()
             IS_MIRAGE = true;
     }
 
-    if (*YS::TITLE::IsTitle)
+
+    if (DISCORD_ENABLED)
     {
-        RICH_PRESENCE.GetAssets().SetLargeImage("title");
+        if (*YS::TITLE::IsTitle)
+        {
+            RICH_PRESENCE.GetAssets().SetLargeImage("title");
 
-        RICH_PRESENCE.SetState("");
-        RICH_PRESENCE.SetDetails("");
+            RICH_PRESENCE.SetState("");
+            RICH_PRESENCE.SetDetails("");
 
-        RICH_PRESENCE.GetAssets().SetLargeText("");
-        RICH_PRESENCE.GetAssets().SetSmallText("");
+            RICH_PRESENCE.GetAssets().SetLargeText("");
+            RICH_PRESENCE.GetAssets().SetSmallText("");
 
-        RICH_PRESENCE.GetAssets().SetSmallImage("");
+            RICH_PRESENCE.GetAssets().SetSmallImage("");
+        }
+
+        else if (AREA::Current->World >= 0x02 && AREA::Current->World <= 0x12)
+        {
+            bool _checkUnderdrome = AREA::Current->World == 0x06 && AREA::Current->Room == 0x09 && AREA::Current->Set.Map >= 0xBD && AREA::Current->Set.Map >= 0xC4;
+
+            auto _detailText = _checkUnderdrome ? TEXT_PRESENCE.at(0x02) : TEXT_PRESENCE.at(0x00);
+
+            _detailText.replace(_detailText.find("[0]"), 0x03, to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308)));
+            _detailText.replace(_detailText.find("[1]"), 0x03, *(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180) > 0x00 ? to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180)) : TEXT_PRESENCE.at(0x04));
+
+            if (_checkUnderdrome)
+                _detailText.replace(_detailText.find("[2]"), 0x03, to_string(AREA::Current->Entrance));
+
+            RICH_PRESENCE.SetDetails(_detailText.c_str());
+
+            auto _stateText = TEXT_PRESENCE.at(0x01);
+
+            _stateText.replace(_stateText.find("[0]"), 0x03, to_string(*(AREA::SaveData + 0x24FF)));
+            _stateText.replace(_stateText.find("[1]"), 0x03, *(AREA::SaveData + 0x3524) == 0x00 ? "N/A" : (*COMMAND_TYPE == 0x01 ? "Mickey" : TEXT_FORM.at(*(AREA::SaveData + 0x3524) - 0x01)));
+
+            RICH_PRESENCE.SetState(_stateText.c_str());
+
+            auto _fetchTime = floorf(*reinterpret_cast<const uint32_t*>(AREA::SaveData + 0x2444) / 60.0F);
+
+            auto _playHours = floorf(_fetchTime / 3600.0F);
+            auto _playMinutes = floorf(fmodf(_fetchTime, 3600.0F) / 60.0F);
+
+            ostringstream _timeStream;
+            auto _timeText = TEXT_PRESENCE.at(0x03);
+
+            _timeStream << std::setw(2) << std::setfill('0') << _playHours << ":"
+                << std::setw(2) << std::setfill('0') << _playMinutes;
+
+            _timeText.replace(_timeText.find("[0]"), 0x03, _timeStream.str());
+
+            RICH_PRESENCE.GetAssets().SetLargeText(_timeText.c_str());
+            RICH_PRESENCE.GetAssets().SetSmallText(TEXT_MODE.at(*(AREA::SaveData + 0x2498)).c_str());
+
+            RICH_PRESENCE.GetAssets().SetSmallImage(*AREA::BattleStatus == 0x00 ? "safe" : (*AREA::BattleStatus == 0x01 ? "mob" : "boss"));
+            RICH_PRESENCE.GetAssets().SetLargeImage(IS_MIRAGE && AREA::Current->World == 0x0B ? "ma" : string(WORLD::GetName(AREA::Current->World), 0x02).c_str());
+        }
+
+        Discord->ActivityManager().UpdateActivity(RICH_PRESENCE, [&_resultant](discord::Result v) { _resultant = (int)v; });
+        Discord->RunCallbacks();
     }
-
-    else if (AREA::Current->World >= 0x02 && AREA::Current->World <= 0x12)
-    {
-        bool _checkUnderdrome = AREA::Current->World == 0x06 && AREA::Current->Room == 0x09 && AREA::Current->Set.Map >= 0xBD && AREA::Current->Set.Map >= 0xC4;
-
-        auto _detailText = _checkUnderdrome ? TEXT_PRESENCE.at(0x02) : TEXT_PRESENCE.at(0x00);
-
-        _detailText.replace(_detailText.find("[0]"), 0x03, to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308)));
-        _detailText.replace(_detailText.find("[1]"), 0x03, *(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180) > 0x00 ? to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180)) : TEXT_PRESENCE.at(0x04));
-
-        if (_checkUnderdrome)
-            _detailText.replace(_detailText.find("[2]"), 0x03, to_string(AREA::Current->Entrance));
-
-        RICH_PRESENCE.SetDetails(_detailText.c_str());
-
-        auto _stateText = TEXT_PRESENCE.at(0x01);
-
-        _stateText.replace(_stateText.find("[0]"), 0x03, to_string(*(AREA::SaveData + 0x24FF)));
-        _stateText.replace(_stateText.find("[1]"), 0x03, *(AREA::SaveData + 0x3524) == 0x00 ? "N/A" : (*COMMAND_TYPE == 0x01 ? "Mickey" : TEXT_FORM.at(*(AREA::SaveData + 0x3524) - 0x01)));
-
-        RICH_PRESENCE.SetState(_stateText.c_str());
-
-        auto _fetchTime = floorf(*reinterpret_cast<const uint32_t*>(AREA::SaveData + 0x2444) / 60.0F);
-
-        auto _playHours = floorf(_fetchTime / 3600.0F);
-        auto _playMinutes = floorf(fmodf(_fetchTime, 3600.0F) / 60.0F);
-
-        ostringstream _timeStream;
-        auto _timeText = TEXT_PRESENCE.at(0x03);
-
-        _timeStream << std::setw(2) << std::setfill('0') << _playHours << ":"
-            << std::setw(2) << std::setfill('0') << _playMinutes;
-
-        _timeText.replace(_timeText.find("[0]"), 0x03, _timeStream.str());
-
-        RICH_PRESENCE.GetAssets().SetLargeText(_timeText.c_str());
-        RICH_PRESENCE.GetAssets().SetSmallText(TEXT_MODE.at(*(AREA::SaveData + 0x2498)).c_str());
-
-        RICH_PRESENCE.GetAssets().SetSmallImage(*AREA::BattleStatus == 0x00 ? "safe" : (*AREA::BattleStatus == 0x01 ? "mob" : "boss"));
-        RICH_PRESENCE.GetAssets().SetLargeImage(IS_MIRAGE && AREA::Current->World == 0x0B ? "ma" : string(WORLD::GetName(AREA::Current->World), 0x02).c_str());
-    }
-
-    Discord->ActivityManager().UpdateActivity(RICH_PRESENCE, [&_resultant](discord::Result v) { _resultant = (int)v; });
-    Discord->RunCallbacks();
 }
 
 void HANDLE_SHAKE()
