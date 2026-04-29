@@ -38,6 +38,7 @@
 #include "jumpeffect.h"
 #include "lockon.h"
 #include "magic.h"
+#include "item_param.h"
 #include "member.h"
 #include "member_table.h"
 #include "menu.h"
@@ -249,6 +250,21 @@ char* CURRENT_SUBMENU = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\
 char** MENU_ITEMS = ResolveRelativeAddress<char**>("\x40\x53\x55\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxx????xxx????xxx", 0x26);
 
 char TITLE_FILENAME[0x30];
+
+bool RETRIBUTION_INIT = false;
+
+bool HAS_ABSOLUTION = false;
+bool HAS_RETRIBUTION = false;
+
+uint16_t PARAM_ABSOLUTION = UINT16_MAX;
+uint16_t PARAM_RETRIBUTION = UINT16_MAX;
+
+uint16_t INDEX_ABSOLUTION = 0x0000;
+uint16_t INDEX_RETRIBUTION = 0x0000;
+
+bool DEBOUNCE_RETRIBUTION = false;
+
+vector<uint16_t*> WEAPON_MEMORY;
 
 // Configuration Values.
 
@@ -1682,7 +1698,7 @@ void RETRY_BATTLES()
 
 void PROCESS_FORM_KEYBLADES()
 {
-    if (*YS::MENU::IsMenu && *YS::MENU::SubMenuType == 0x02 && *CURRENT_SUBMENU == 0x00 && *YS::HARDPAD::Input & 0x1000 && !KEYBLADE_DEBOUNCE)
+    if (*YS::MENU::IsMenu && *YS::MENU::SubMenuType == 0x02 && *CURRENT_SUBMENU == 0x00 && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::TRIANGLE && !KEYBLADE_DEBOUNCE)
     {
         auto _fetchSelect = *YS::MENU::SubOptionSel;
 
@@ -1748,7 +1764,7 @@ void PROCESS_FORM_KEYBLADES()
         KEYBLADE_DEBOUNCE = true;
     }
 
-    else if (KEYBLADE_DEBOUNCE && (*YS::HARDPAD::Input & 0x1000) != 0x1000)
+    else if (KEYBLADE_DEBOUNCE && (*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::TRIANGLE) == 0x0000)
         KEYBLADE_DEBOUNCE = false;
 
     if (!*YS::MENU::IsMenu && PENDING_KEYBLADE_UPDATE)
@@ -1814,6 +1830,177 @@ void FIX_UP_CONFIG()
     }
 }
 
+void RETRIBUTION_LOGIC()
+{
+    if (!*YS::TITLE::IsTitle && *AREA::IsInMap)
+    {
+        if (!RETRIBUTION_INIT)
+        {
+            memcpy(*YS::ITEM::WeaponEntry + 0x017C, "\x03\x0A\x00\x00\x07\x0A\x00\x00", 0x08);
+            memcpy(*YS::ITEM::WeaponEntry + 0x030C, "\x04\x0A\x00\x00\x08\x0A\x00\x00", 0x08);
+            memcpy(*YS::ITEM::WeaponEntry + 0x0900, "\x05\x0A\x00\x00\x09\x0A\x00\x00", 0x08);
+            memcpy(*YS::ITEM::WeaponEntry + 0x0A90, "\x06\x0A\x00\x00\x0A\x0A\x00\x00", 0x08);
+
+            RETRIBUTION_INIT = true;
+        }
+
+        if (WEAPON_MEMORY.size() == 0x00)
+        {
+            auto _fetchItem = YS::ITEM_TABLE::Each(nullptr);
+
+            while (_fetchItem)
+            {
+                auto _fetchId = *reinterpret_cast<uint16_t*>(_fetchItem);
+                auto _fetchType = *reinterpret_cast<uint16_t*>(_fetchItem + 0x02);
+
+                if (_fetchType == 0x0002 && _fetchId != 0x0300 && _fetchId != 0x0301)
+                    WEAPON_MEMORY.push_back(reinterpret_cast<uint16_t*>(_fetchItem));
+
+                _fetchItem = YS::ITEM_TABLE::Each(_fetchItem);
+            }
+        }
+
+        if (PARAM_RETRIBUTION == UINT16_MAX)
+        {
+            auto _itemTableAbsolution = YS::ITEM_TABLE::Get(0x0301);
+            auto _itemTableRetribution = YS::ITEM_TABLE::Get(0x0300);
+
+            if (!_itemTableAbsolution || !_itemTableRetribution)
+                return;
+
+            auto _paramAbsolution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE804);
+            auto _paramRetribution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE800);
+
+            if (*_paramAbsolution == 0x0000)
+                *_paramAbsolution = 0x0050;
+
+            if (*_paramRetribution == 0x0000)
+                *_paramRetribution = 0x0050;
+
+            *(_itemTableAbsolution + 0x06) = 0x0050;
+            *(_itemTableRetribution + 0x06) = 0x0050;
+
+            PARAM_ABSOLUTION = 0x0050;
+            PARAM_RETRIBUTION = 0x0050;
+        }
+
+        else
+        {
+            vector<uint16_t> _soraEquip =
+            {
+                *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x24F0),
+                YS::ITEM::GetNumBackyard(0x001A) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x32F4) : UINT16_MAX,
+                YS::ITEM::GetNumBackyard(0x001D) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x33D4) : UINT16_MAX,
+                YS::ITEM::GetNumBackyard(0x001F) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x339C) : UINT16_MAX
+            };
+
+            auto _amountAbsolution = YS::ITEM::GetNumBackyard(0x0301);
+            auto _amountRetribution = YS::ITEM::GetNumBackyard(0x0300);
+
+            if (_amountRetribution != 0x01 && HAS_RETRIBUTION)
+            {
+                auto _findKeyEquip = find_if(_soraEquip.begin(), _soraEquip.end(), [](uint16_t x) { return x == 0x0300; });
+
+                if (_findKeyEquip != _soraEquip.end() && _amountRetribution != 0x00)
+                    YS::ITEM::ReduceBackyard(0x0300, _amountRetribution);
+
+                else if (_findKeyEquip == _soraEquip.end() && _amountRetribution != 0x01)
+                {
+                    YS::ITEM::ReduceBackyard(0x0300, _amountRetribution);
+                    YS::ITEM::GetBackyard(0x0300, 0x01);
+                }
+            }
+
+            if (_amountAbsolution != 0x01 && HAS_ABSOLUTION)
+            {
+                auto _findKeyEquip = find_if(_soraEquip.begin(), _soraEquip.end(), [](uint16_t x) { return x == 0x0301; });
+
+                if (_findKeyEquip != _soraEquip.end() && _amountAbsolution != 0x00)
+                    YS::ITEM::ReduceBackyard(0x0300, _amountAbsolution);
+
+                else if (_findKeyEquip == _soraEquip.end() && _amountAbsolution != 0x01)
+                {
+                    YS::ITEM::ReduceBackyard(0x0301, _amountAbsolution);
+                    YS::ITEM::GetBackyard(0x0301, 0x01);
+                }
+            }
+
+            if (*YS::MENU::IsMenu && (*YS::MENU::SubMenuType == 0x02 || *YS::MENU::SubMenuType == 0x05))
+            {
+                if ((*YS::ITEMPIC::LoadedId == 420 || *YS::ITEMPIC::LoadedId == 421) && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_RETRIBUTION)
+                {
+                    DEBOUNCE_RETRIBUTION = true;
+
+                    auto _seekItem = *YS::ITEMPIC::LoadedId == 420 ? 0x0300 : 0x0301;
+                    auto _seekParamIndex = *YS::ITEMPIC::LoadedId == 420 ? INDEX_RETRIBUTION : INDEX_ABSOLUTION;
+
+                    auto _beginIndex = _seekParamIndex;
+
+                    _seekParamIndex++;
+
+                    while (_beginIndex != _seekParamIndex)
+                    {
+                        if (_seekParamIndex >= WEAPON_MEMORY.size())
+                            _seekParamIndex = 0x0000;
+
+                        if (_beginIndex == _seekParamIndex)
+                            break;
+
+                        auto _fetchItemId = *WEAPON_MEMORY[_seekParamIndex];
+
+                        if (YS::ITEM::GetNum(_fetchItemId, 0x01) == 0x00)
+                        {
+                            _seekParamIndex++;
+                            continue;
+                        }
+
+                        if (_seekItem == 0x0300)
+                        {
+                            PARAM_RETRIBUTION = *(YS::ITEM_TABLE::Get(_fetchItemId) + 0x06);
+
+                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE800) = PARAM_RETRIBUTION;
+                            *(YS::ITEM_TABLE::Get(0x0300) + 0x06) = PARAM_RETRIBUTION;
+
+                            INDEX_RETRIBUTION = _seekParamIndex;
+                        }
+
+                        if (_seekItem == 0x0301)
+                        {
+                            PARAM_ABSOLUTION = *(YS::ITEM_TABLE::Get(_fetchItemId) + 0x06);
+
+                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE804) = PARAM_ABSOLUTION;
+                            *(YS::ITEM_TABLE::Get(0x0301) + 0x06) = PARAM_ABSOLUTION;
+
+                            INDEX_ABSOLUTION = _seekParamIndex;
+                        }
+
+                        SOUND::PlaySFX(0x02);
+
+                        Tz::ItemInfo::SetItemInfo(*MENU_ITEMS, 0x05, 0x00);
+                        Tz::ItemInfo::MakeMsgTbl(*MENU_ITEMS, 0x00, 0x00);
+
+                        ITEM_COMMIT();
+
+                        break;
+                    }
+
+                    if (_beginIndex == _seekParamIndex)
+                        SOUND::PlaySFX(0x05);
+                }
+
+                else if ((*YS::ITEMPIC::LoadedId != 420 && *YS::ITEMPIC::LoadedId != 421) || (*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x0000 && DEBOUNCE_RETRIBUTION)
+                    DEBOUNCE_RETRIBUTION = false;
+            }
+        }
+    }
+
+    else
+    {
+        PARAM_ABSOLUTION = UINT16_MAX;
+        PARAM_RETRIBUTION = UINT16_MAX;
+    }
+}
+
 extern "C"
 {
     __declspec(dllexport) void OnInit(wchar_t* mod_path)
@@ -1840,6 +2027,7 @@ extern "C"
             {"ENFORCE_LOCKON", ENFORCE_LOCKON},
             {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
             {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
+            {"RETRIBUTION_LOGIC", RETRIBUTION_LOGIC}
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
@@ -2067,12 +2255,21 @@ extern "C"
             if (!ITEM_COMMIT)
                 ITEM_COMMIT = SignatureScan<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x40\x45\x32", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
+            if (YS::FILE::GetSize("obj/W_EX010_RF.mdlx"))
+                HAS_RETRIBUTION = true;
+
+            if (YS::FILE::GetSize("obj/W_EX010_RX.mdlx"))
+                HAS_RETRIBUTION = true;
+
             // Allocate space for "00shopface.bin".
             if (!YS::PANACEA_ALLOC::Get("00shopface.bin"))
             {
                 YS::PANACEA_ALLOC::Allocate("00shopface.bin", YS::FILE::GetSize("00shopface.bin"));
                 YS::FILE::Read("00shopface.bin", YS::PANACEA_ALLOC::Get("00shopface.bin"));
             }
+
+            if (!HAS_RETRIBUTION && !HAS_ABSOLUTION)
+                FUNCTION_ARRAY.erase("RETRIBUTION_LOGIC");
 
             static Tz::HookConfig::Entry _musicConfig{ 0x01, 0x5718, vector<uint16_t>{ 0x5719 }, vector<uint16_t>{ 0x571A }, vector<uint16_t>{ 0x0000 }, 0x0000, nullptr };
             static Tz::HookIntro::Entry _musicIntro{ 0x01, 0x5735, 0x5718, vector<uint32_t>{ }, vector<uint32_t>{ }, vector<uint32_t>{ }, 0x0000, nullptr };
@@ -2477,7 +2674,7 @@ extern "C"
             
             if (ALLOW_NOHUD || ALLOW_TIMESTOP)
             {
-                if (*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
+                if (!*YS::MENU::IsMenu && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
                 {
                     auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
                     auto _fetchTimeStop = YS::PANACEA_ALLOC::Get("IS_TIMESTOP");

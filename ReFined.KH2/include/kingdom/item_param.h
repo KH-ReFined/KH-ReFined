@@ -8,13 +8,10 @@ extern "C"
 {
 	namespace YS
 	{
-		class DLL_EXPORT ITEM_TABLE
+		class DLL_EXPORT ITEM_PARAM
 		{
 		public:
-			using Each_t = char* (*)(char* itemTable);
-			static Each_t Each;
-
-			using Get_t = char* (*)(uint64_t itemId);
+			using Get_t = uint16_t* (*)(char* itemTable);
 			static Get_t Get;
 		};
 	}
