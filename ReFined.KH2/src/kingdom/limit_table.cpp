@@ -4,18 +4,16 @@ char* YS::LIMIT_TABLE::LIMIT_FNBUFFER = nullptr; //Resolved at static initialize
 
 char* YS::LIMIT_TABLE::get_filename(char* limitTable)
 {
+    const char* _regionStr = (!YS::REGION::Get() || YS::REGION::Get() == 0x07) ? "fm" : reinterpret_cast<char*>(*YS::REGION::Region);
+
     auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
-    string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
-        (_fetchConfig & 0x0008 ? "es" :
-            (_fetchConfig & 0x0010 ? "de" :
-                (_fetchConfig & 0x0020 ? "bg" : "us")));
+    string _fetchPath = _fetchConfig & 0x0200 ? "limit_2nd" :
+                       (_fetchConfig & 0x0400 ? "limit_3rd" : "limit");
 
     char* _limitName = limitTable + 0x04;
 
-    const char* _regionStr = !YS::REGION::Get() || YS::REGION::Get() == 0x07 ? "fm" : reinterpret_cast<char*>(*YS::REGION::Region);
-
-    sprintf(YS::LIMIT_TABLE::LIMIT_FNBUFFER, "limit/%s/%s", _encodedRegion.c_str(), _limitName);
+    sprintf(YS::LIMIT_TABLE::LIMIT_FNBUFFER, "%s/%s/%s", _fetchPath.c_str(), _regionStr, _limitName);
 
     if (!YS::FILE::GetSize(YS::LIMIT_TABLE::LIMIT_FNBUFFER))
         sprintf(YS::LIMIT_TABLE::LIMIT_FNBUFFER, "limit/%s/%s", _regionStr, _limitName);
