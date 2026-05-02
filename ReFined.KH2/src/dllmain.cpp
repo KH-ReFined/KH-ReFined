@@ -1784,7 +1784,7 @@ void PROCESS_FORM_KEYBLADES()
 void FIX_UP_CONFIG()
 {
     if (*YS::TITLE::IsTitle)
-    {
+    { 
         if (TITLE_FILENAME[0x00] == 0x00)
             Tz::CmData::MakeFname(TITLE_FILENAME, const_cast<char*>(IS_FASTBOOT ? "title_fast.2ld" : "title.2ld"));
 
@@ -1994,7 +1994,7 @@ void RETRIBUTION_LOGIC()
         }
     }
 
-    else
+    else if (*YS::TITLE::IsTitle)
     {
         PARAM_ABSOLUTION = UINT16_MAX;
         PARAM_RETRIBUTION = UINT16_MAX;
