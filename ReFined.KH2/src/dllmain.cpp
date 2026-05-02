@@ -1868,8 +1868,8 @@ void RETRIBUTION_LOGIC()
             if (!_itemTableAbsolution || !_itemTableRetribution)
                 return;
 
-            auto _paramAbsolution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE804);
-            auto _paramRetribution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE800);
+            auto _paramAbsolution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10024);
+            auto _paramRetribution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10020);
 
             if (*_paramAbsolution == 0x0000)
                 *_paramAbsolution = 0x0050;
@@ -1877,11 +1877,11 @@ void RETRIBUTION_LOGIC()
             if (*_paramRetribution == 0x0000)
                 *_paramRetribution = 0x0050;
 
-            *(_itemTableAbsolution + 0x06) = 0x0050;
-            *(_itemTableRetribution + 0x06) = 0x0050;
+            *(_itemTableAbsolution + 0x06) = *_paramAbsolution;
+            *(_itemTableRetribution + 0x06) = *_paramRetribution;
 
-            PARAM_ABSOLUTION = 0x0050;
-            PARAM_RETRIBUTION = 0x0050;
+            PARAM_ABSOLUTION = *_paramAbsolution;
+            PARAM_RETRIBUTION = *_paramRetribution;
         }
 
         else
@@ -1958,7 +1958,7 @@ void RETRIBUTION_LOGIC()
                         {
                             PARAM_RETRIBUTION = *(YS::ITEM_TABLE::Get(_fetchItemId) + 0x06);
 
-                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE800) = PARAM_RETRIBUTION;
+                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10020) = PARAM_RETRIBUTION;
                             *(YS::ITEM_TABLE::Get(0x0300) + 0x06) = PARAM_RETRIBUTION;
 
                             INDEX_RETRIBUTION = _seekParamIndex;
@@ -1968,7 +1968,7 @@ void RETRIBUTION_LOGIC()
                         {
                             PARAM_ABSOLUTION = *(YS::ITEM_TABLE::Get(_fetchItemId) + 0x06);
 
-                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0xE804) = PARAM_ABSOLUTION;
+                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10024) = PARAM_ABSOLUTION;
                             *(YS::ITEM_TABLE::Get(0x0301) + 0x06) = PARAM_ABSOLUTION;
 
                             INDEX_ABSOLUTION = _seekParamIndex;

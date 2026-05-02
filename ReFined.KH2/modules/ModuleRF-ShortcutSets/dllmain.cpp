@@ -183,8 +183,8 @@ extern "C"
 			SHORTCUT_NAMES.clear();
 
 		// If we are on the map and the current shortcut set is not what is recorded in the save, set it as such.
-		if (!*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0xE600))
-			CURRENT_SHORTCUT_SET = *(_saveData + 0xE600);
+		if (!*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0x10000))
+			CURRENT_SHORTCUT_SET = *(_saveData + 0x10000);
 
 		// If we are not on the title, and the character is not Roxas;
 		if (!*_isTitle && !IS_ROXAS)
@@ -197,7 +197,7 @@ extern "C"
 			else if (!IS_SHORTEDIT && SUBMIT_SHORTCUTS)
 			{
 				// Submit all shortcuts to the current shortcut set.
-				memcpy(_saveData + 0xE700 + (0x08 * CURRENT_SHORTCUT_SET), _saveData + 0x36F8, 0x08);
+				memcpy(_saveData + 0x10004 + (0x08 * CURRENT_SHORTCUT_SET), _saveData + 0x36F8, 0x08);
 				SUBMIT_SHORTCUTS = false;
 			}
 
@@ -558,7 +558,7 @@ extern "C"
 			// Overflow and underflow protection region. //
 
 			if (CURRENT_SHORTCUT_SET == 0x80)
-				CURRENT_SHORTCUT_SET = *(_saveData + 0xE600);
+				CURRENT_SHORTCUT_SET = *(_saveData + 0x10000);
 
 			if (CURRENT_SHORTCUT_SET >= 0x81)
 				CURRENT_SHORTCUT_SET = 0x02;
@@ -569,11 +569,11 @@ extern "C"
 			// ========================================= //
 
 			// If we are in the map and the shortcut set is not equal to the denoted one in the save and we have the debounce set;
-			if (*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0xE600) && DEBOUNCE_SHORTCUT)
+			if (*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0x10000) && DEBOUNCE_SHORTCUT)
 			{
 				// Synchronize the save value.
-				memcpy(_saveData + 0x36F8, _saveData + 0xE700 + (0x08 * CURRENT_SHORTCUT_SET), 0x08);
-				*(_saveData + 0xE600) = CURRENT_SHORTCUT_SET;
+				memcpy(_saveData + 0x36F8, _saveData + 0x10004 + (0x08 * CURRENT_SHORTCUT_SET), 0x08);
+				*(_saveData + 0x10000) = CURRENT_SHORTCUT_SET;
 
 				// Update the shortcut list.
 				if (IS_CUSTOMIZE)
