@@ -399,6 +399,9 @@
     <ClInclude Include="include\kingdom\scrollbar.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\kingdom\command_menu.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\discord\activity_manager.cpp">
@@ -765,6 +768,9 @@
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
     <ClCompile Include="src\kingdom\scrollbar.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\command_menu.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
   </ItemGroup>

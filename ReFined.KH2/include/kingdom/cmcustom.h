@@ -71,11 +71,10 @@ extern "C"
             static void UpdateCustomList();
             static void SetupCustom();
             static void ChangeCustomInfo();
-            static void UpdateIndiCustomList();
+            static bool CheckKH1Form();
 
             // These did have their typos in the symbols.
             static void ChageAbility(int pos);
-            static void ChageMpDrive();
             static void ChangeAutoReplenishment();
             static void ChangePartyBehavior(int pos);
 

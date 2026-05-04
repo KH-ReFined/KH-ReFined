@@ -26,6 +26,11 @@ char* Tz::CmCustom::s_FriendType = ResolveRelativeAddress<char*>("\x48\x89\x5C\x
 
 char* Tz::CmCustom::LS_KH1F_Shortcuts = SignatureScan<char*>("\xBA\x02\xBD\x02\xC0\x02\xAB\x02\x00\x00\x7A\x44\x00\x00", "xxxxxxxxxxxxxx");
 
+bool Tz::CmCustom::CheckKH1Form()
+{
+	return YS::ITEM::GetNumBackyard(0x0233) && AREA::Current->World != 0x0A && AREA::Current->World != 0x0B;
+}
+
 void Tz::CmCustom::SetupTop()
 {
 	auto _fetchBuffer = Tz::CmTop::GetListBuffer();
@@ -51,7 +56,7 @@ void Tz::CmCustom::SetupTop()
 			*reinterpret_cast<char**>(_fetchItemPtr + 0x01F8) = Tz::PartyInfo::GetName(*Tz::CmCustom::m_PartyInfo, i);
 			*reinterpret_cast<uint32_t*>(_fetchItemPtr + 0x010) &= ~0x08;
 
-			if (i == 0x00 && YS::ITEM::GetNumBackyard(0x0233))
+			if (i == 0x00 && Tz::CmCustom::CheckKH1Form())
 			{
 				auto _fetchPlate2Zero = Tz::CmTop::GetTopPlateSeqTbl(0) + 0x10;
 				auto _fetchPlate2First = Tz::CmTop::GetTopPlateSeqTbl(1) + 0x10;
@@ -83,24 +88,9 @@ void Tz::CmCustom::SetupTop()
 void Tz::CmCustom::GetListInfo(int num)
 {
 	vector<short> _magicItemNum = { 0x0015, 0x0016, 0x0017, 0x0018, 0x0057, 0x0058 };
-
-	auto _fetchCurrentType = Tz::CmCustom::s_PlayerType;
-	auto _fetchSheetNum = num;
-
-	if (num > 0)
-	{
-		if (num == 0x01 && YS::ITEM::GetNumBackyard(0x0233))
-		{
-			_fetchCurrentType = Tz::CmCustom::s_PlayerType - 0x04;
-			_fetchSheetNum = 0x00;
-		}
-
-		else
-		{
-			_fetchCurrentType = Tz::CmCustom::s_FriendType;
-			_fetchSheetNum = YS::ITEM::GetNumBackyard(0x0233) ? num - 1 : num;
-		}
-	}
+	 
+	auto _fetchSheetNum = num > 0x01 && Tz::CmCustom::CheckKH1Form() ? num - 1 : num;
+	auto _fetchCurrentType = num == 0x00 ? Tz::CmCustom::s_PlayerType : (num == 0x01 && Tz::CmCustom::CheckKH1Form() ? Tz::CmCustom::s_PlayerType - 0x04 : Tz::CmCustom::s_FriendType);
 
 	memset(*Tz::CmCustom::m_ListInfo, 0x00, 0x98);
 
@@ -213,10 +203,12 @@ void Tz::CmCustom::GetListInfo(int num)
 		{
 			for (int i = 0; i < 0x04; i++)
 			{
-				auto _isLimit = num == 0x01 && YS::ITEM::GetNumBackyard(0x0233);
-				auto _fetchShortcut = _isLimit ? *reinterpret_cast<uint16_t*>(Tz::CmCustom::LS_KH1F_Shortcuts + 0x02 * i) : *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x36F8 + 0x02 * i);
+				auto _isKH1Form = num == 0x01 && Tz::CmCustom::CheckKH1Form();
 
-				if (_fetchShortcut)
+				auto _fetchShortcut = *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x36F8 + 0x02 * i);
+				auto _fetchLimitShortcut = *reinterpret_cast<uint16_t*>(Tz::CmCustom::LS_KH1F_Shortcuts + 0x02 * i);
+
+				if (_fetchShortcut && !_isKH1Form)
 				{
 					auto _fetchItem = YS::ITEM_TABLE::Each(nullptr);
 
@@ -226,9 +218,9 @@ void Tz::CmCustom::GetListInfo(int num)
 						auto _fetchId = *reinterpret_cast<uint16_t*>(_fetchItem);
 						auto _fetchCommand = YS::ITEM::GetCommand(_fetchId);
 
-						if (((_fetchType == 0x12 || _fetchType == 0x00) && _fetchCommand == _fetchShortcut) || _isLimit)
+						if (((_fetchType == 0x12 || _fetchType == 0x00) && _fetchCommand == _fetchShortcut))
 						{
-							*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * _processEntry + 0x08) = _isLimit ? _fetchShortcut : _fetchId;
+							*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * _processEntry + 0x08) = _fetchId;
 
 							if (_fetchType == 0x12)
 							{
@@ -243,6 +235,30 @@ void Tz::CmCustom::GetListInfo(int num)
 
 						_fetchItem = YS::ITEM_TABLE::Each(_fetchItem);
 					}
+				}
+
+				else if (_fetchLimitShortcut && _isKH1Form)
+				{
+					auto _fetchItem = YS::ITEM_TABLE::Each(nullptr);
+					auto _fetchCommandPtr = reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * _processEntry + 0x08);
+
+					while (_fetchItem)
+					{
+						auto _fetchType = *(_fetchItem + 0x02);
+						auto _fetchId = *reinterpret_cast<uint16_t*>(_fetchItem);
+						auto _fetchCommand = YS::ITEM::GetCommand(_fetchId);
+
+						if (_fetchType == 0x00 && _fetchCommand == _fetchLimitShortcut)
+						{
+							*_fetchCommandPtr = _fetchId;
+							break;
+						}
+
+						_fetchItem = YS::ITEM_TABLE::Each(_fetchItem);
+					}
+
+					if (*_fetchCommandPtr == 0x00)
+						*_fetchCommandPtr = _fetchLimitShortcut;
 				}
 
 				else
@@ -266,16 +282,8 @@ void Tz::CmCustom::UpdateTopList()
 	Tz::CmCustom::GetListInfo(_fetchCurrent);
 	Tz::CmCustom::MakeListInfo2ItemMess();	
 
-	*Tz::CmCustom::LS_103_type = Tz::CmCustom::s_PlayerType;
-
-	if (_fetchCurrent > 0)
-	{
-		if (_fetchCurrent == 0x01 && YS::ITEM::GetNumBackyard(0x0233))
-			*Tz::CmCustom::LS_103_type = Tz::CmCustom::s_PlayerType - 0x04;
-
-		else
-			*Tz::CmCustom::LS_103_type = Tz::CmCustom::s_FriendType;
-	}
+	auto _fetchSheetNum = _fetchCurrent > 0x01 && Tz::CmCustom::CheckKH1Form() ? _fetchCurrent - 1 : _fetchCurrent;
+	*Tz::CmCustom::LS_103_type = _fetchCurrent == 0x00 ? Tz::CmCustom::s_PlayerType : (_fetchCurrent == 0x01 && Tz::CmCustom::CheckKH1Form() ? Tz::CmCustom::s_PlayerType - 0x04 : Tz::CmCustom::s_FriendType);
 
 	auto _fetchFont = Tz::CmTop::GetFontColorSeqNum(0);
 
@@ -366,16 +374,7 @@ int Tz::CmCustom::GetCustomItemNum(int type)
 
 int Tz::CmCustom::CurPos2CustomType(int pos)
 {
-	*Tz::CmCustom::LS_52_type = Tz::CmCustom::s_PlayerType;
-
-	if (Tz::CmTop::GetCurPos(25))
-	{
-		if (Tz::CmTop::GetCurPos(25) == 0x01 && YS::ITEM::GetNumBackyard(0x0233))
-			*Tz::CmCustom::LS_52_type = Tz::CmCustom::s_PlayerType - 0x04;
-
-		else
-			*Tz::CmCustom::LS_52_type = Tz::CmCustom::s_FriendType;
-	}
+	*Tz::CmCustom::LS_52_type = Tz::CmTop::GetCurPos(25) == 0x00 ? Tz::CmCustom::s_PlayerType : (Tz::CmTop::GetCurPos(25) == 0x01 && Tz::CmCustom::CheckKH1Form() ? Tz::CmCustom::s_PlayerType - 0x04 : Tz::CmCustom::s_FriendType);
 
 	auto _fetchItemCalc = 0x00;
 
@@ -405,18 +404,8 @@ void Tz::CmCustom::MakeListInfo2ItemMess()
 	if (_fetchMenuMode == 25)
 		_getCurPos = Tz::Select::GetSelectPos(*Tz::CmTop::m_MenuPtr);
 
-	auto _isLimit = _getCurPos == 0x01 && YS::ITEM::GetNumBackyard(0x0233);
-
-	*Tz::CmCustom::LS_62_type = Tz::CmCustom::s_PlayerType;
-	
-	if (_getCurPos > 0)
-	{
-		if (_isLimit)
-			*Tz::CmCustom::LS_62_type = Tz::CmCustom::s_PlayerType - 0x04;
-
-		else
-			*Tz::CmCustom::LS_62_type = Tz::CmCustom::s_FriendType;
-	}
+	auto _isKH1Form = _getCurPos == 0x01 && Tz::CmCustom::CheckKH1Form();
+	*Tz::CmCustom::LS_62_type = _getCurPos == 0x00 ? Tz::CmCustom::s_PlayerType : (_getCurPos == 0x01 && Tz::CmCustom::CheckKH1Form() ? Tz::CmCustom::s_PlayerType - 0x04 : Tz::CmCustom::s_FriendType);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -519,7 +508,7 @@ void Tz::CmCustom::MakeListInfo2ItemMess()
 
 						if (_fetchButtonIcon == UINT16_MAX)
 						{
-							Tz::CmComm::FontIcon(0x04, _messageAddr, true);
+							Tz::CmComm::FontIcon(0xCF, _messageAddr, true);
 							_messageAddr += 0x02;
 						}
 					}
@@ -532,7 +521,7 @@ void Tz::CmCustom::MakeListInfo2ItemMess()
 			auto _fetchData = YS::MESSAGE::GetData(_fetchMessage);
 			memcpy(_messageAddr, _fetchData, YS::MESSAGE::GetSize(_fetchData));
 
-			if (!_isLimit && _getCurPos)
+			if (_getCurPos && !_isKH1Form)
 			{
 				if (_fetchCurrType == 0x02 || _fetchCurrType == 0x04)
 				{
@@ -564,7 +553,7 @@ void Tz::CmCustom::UpdateHelpMess()
 	auto _fetchBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
 	auto _fetchSelectPos = Tz::Select::GetSelectPos(*Tz::CmTop::m_MenuPtr);
 
-	auto _isLimit = ((_fetchMenuMode == 25 && _fetchSelectPos == 0x01) || (_fetchMenuMode != 25 && Tz::CmTop::GetCurPos(25) == 0x01)) && YS::ITEM::GetNumBackyard(0x0233);
+	auto _isKH1Form = ((_fetchMenuMode == 25 && _fetchSelectPos == 0x01) || (_fetchMenuMode != 25 && Tz::CmTop::GetCurPos(25) == 0x01)) && Tz::CmCustom::CheckKH1Form();
 
 	uint16_t _messageId = UINT16_MAX;
 	uint16_t _sideMessageId = UINT16_MAX;
@@ -578,7 +567,7 @@ void Tz::CmCustom::UpdateHelpMess()
 
 			else
 			{
-				if (_isLimit)
+				if (_isKH1Form)
 					_messageId = 0x575C;
 
 				else
@@ -599,7 +588,7 @@ void Tz::CmCustom::UpdateHelpMess()
 			{
 				auto _fetchMainPos = Tz::CmTop::GetCurPos(25);
 
-				if (_fetchMainPos && !_isLimit)
+				if (_fetchMainPos && !_isKH1Form)
 					_fetchSelectPos -= 1;
 
 				auto _fetchItemId = *reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x08);
@@ -611,7 +600,7 @@ void Tz::CmCustom::UpdateHelpMess()
 					if (_fetchItemEntry)
 						_messageId = *reinterpret_cast<uint16_t*>(_fetchItemEntry + 0x0A);
 
-					else if (_isLimit)
+					else if (_isKH1Form)
 					{
 						auto _fetchCommandItem = YS::ITEM_TABLE::Get(_limitShortcutMap[_fetchItemId]);
 						_messageId = *reinterpret_cast<uint16_t*>(_fetchCommandItem + 0x0A);
@@ -621,7 +610,7 @@ void Tz::CmCustom::UpdateHelpMess()
 						_messageId = *reinterpret_cast<uint16_t*>(YS::COMMAND_ELEM::Get(_fetchItemId) + 0x08);
 				}
 
-				if (_fetchMenuMode == 27 && !_isLimit)
+				if (_fetchMenuMode == 27 && !_isKH1Form)
 					_sideMessageId = *reinterpret_cast<uint16_t*>(Tz::CmCustom::GetFriendInfo(_fetchCustomType, *(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x0B)) + 0x02);
 			}
 		} break;
@@ -650,7 +639,7 @@ void Tz::CmCustom::UpdateHelpMess()
 
 			_messageId = _itemHelpText[_fetchSelectPos % 0x02];
 
-			if (_fetchMainPos && !_isLimit)
+			if (_fetchMainPos && !_isKH1Form)
 				_sideMessageId = _itemFreqHelpText[_fetchSelectPos / 0x02];
 		} break;
 	}
@@ -677,15 +666,18 @@ void Tz::CmCustom::UpdateCustomList()
 	uint16_t _listSelSeq[] = { 0x0108, 0x0107, 0x0106, 0x00FA, 0x00F8, 0x0000, 0x0000, 0x0000 };
 	uint16_t _listSubSeq[] = { 0x011A, 0x0119, 0x0118, 0x0115, 0x0114, 0x0000 };
 	uint16_t _listSubMsg[] = { 0x847D, 0x8481, 0x8482, 0x8483, 0x8484, 0x0000 };
+
 	uint16_t _listShortcutSubMsg[] = { 0x847D, 0x847E, 0x847F, 0x8480 };
 
 	auto _fetchBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
 	auto _fetchSelectTop = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x12);
 
 	auto _fetchCurPos = Tz::CmTop::GetCurPos(25);
-	auto _isLimit = _fetchCurPos == 0x01 && YS::ITEM::GetNumBackyard(0x0233);
+	auto _isKH1Form = _fetchCurPos == 0x01 && Tz::CmCustom::CheckKH1Form();
 
-	if (_isLimit && *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16) != 0x04)
+	*Tz::CmCustom::LS_45_type = _fetchCurPos == 0x00 ? Tz::CmCustom::s_PlayerType : (_fetchCurPos == 0x01 && Tz::CmCustom::CheckKH1Form() ? Tz::CmCustom::s_PlayerType - 0x04 : Tz::CmCustom::s_FriendType);
+
+	if (_isKH1Form && *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16) != 0x04)
 	{
 		*reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16) = 0x04;
 
@@ -694,20 +686,6 @@ void Tz::CmCustom::UpdateCustomList()
 	}
 
 	Tz::ScrollBar::SetPos(*Tz::CmTop::m_SclBar, _fetchSelectTop);
-
-	*Tz::CmCustom::LS_45_type = Tz::CmCustom::s_PlayerType;
-
-	if (_fetchCurPos)
-	{
-		if (_isLimit)
-		{
-			*Tz::CmCustom::LS_45_type = Tz::CmCustom::s_PlayerType - 0x04;
-			*reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16) = 0x04;
-		}
-
-		else
-			*Tz::CmCustom::LS_45_type = Tz::CmCustom::s_FriendType;
-	}
 
 	auto _fetchItemMax = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x04);
 	auto _fetchFontColorSeq = Tz::CmTop::GetFontColorSeqNum(0);
@@ -743,7 +721,7 @@ void Tz::CmCustom::UpdateCustomList()
 
 	auto _processEntry = 0x00;
 
-	if (_fetchCurPos && !_isLimit)
+	if (_fetchCurPos && !_isKH1Form)
 		_fetchMaxLoop++;
 
 	if (_fetchMaxLoop > 0x09)
@@ -779,7 +757,7 @@ void Tz::CmCustom::UpdateCustomList()
 
 					auto _fetchFontColor = 0x00;
 
-					if (_fetchTypeByte != 0x03 && !_isLimit)
+					if (_fetchTypeByte != 0x03 && !_isKH1Form)
 						_fetchFontColor = Tz::CmTop::GetItemFontColor(*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * i + 0x08), 0x01, _fetchTypeByte == 0x01);
 					
 					_fetchFontColorSeq = Tz::CmTop::GetFontColorSeqNum(_fetchFontColor);
@@ -821,7 +799,7 @@ void Tz::CmCustom::SetupCustom()
 		_currSeqdPtr += 0x04;
 	}
 
-	auto _isLimit = Tz::CmTop::GetSelectPos(25) == 0x01 && YS::ITEM::GetNumBackyard(0x0233);
+	auto _isKH1Form = Tz::CmTop::GetSelectPos(25) == 0x01 && Tz::CmCustom::CheckKH1Form();
 
 	if (_fetchCustomType)
 	{
@@ -851,7 +829,7 @@ void Tz::CmCustom::SetupCustom()
 	{
 		memset(*Tz::CmTop::m_ItemInfo, 0x00, 0x30);
 
-		if (!_isLimit)
+		if (!_isKH1Form)
 			Tz::ItemInfo::SetItemInfo(*Tz::CmTop::m_ItemInfo, 0x00, 0x0A);
 
 		else
@@ -864,7 +842,7 @@ void Tz::CmCustom::SetupCustom()
 			memcpy(*Tz::CmTop::m_ItemInfo + 0x16, "\x3C\x02", 0x02);
 		}
 
-		if (!_isLimit)
+		if (!_isKH1Form)
 			Tz::ItemInfo::AddKnowItemInfo(*Tz::CmTop::m_ItemInfo);
 
 		Tz::ItemInfo::MakeEmptyMsg(*Tz::CmTop::m_ItemInfo, -1);
@@ -873,9 +851,9 @@ void Tz::CmCustom::SetupCustom()
 		_fetchInfoMax = *reinterpret_cast<int*>(*Tz::CmTop::m_ItemInfo);
 		Tz::ItemInfo::MakeCommandMsg(*Tz::CmTop::m_ItemInfo, 0, _fetchInfoMax);
 
-		if (_isLimit)
+		if (_isKH1Form)
 			for (int i = 0; i < 0x04; i++)
-				*reinterpret_cast<uint16_t*>(*Tz::CmTop::m_ItemInfo + 0x0784 + 0x10 + (0x50 * i)) = 0x0409;
+				*reinterpret_cast<uint16_t*>(*Tz::CmTop::m_ItemInfo + 0x0784 + 0x10 + (0x50 * i)) = 0xCF09;
 
 		_fetchInfoMax += 0x01;
 	}
@@ -889,7 +867,7 @@ void Tz::CmCustom::SetupCustom()
 	*reinterpret_cast<uint32_t*>(_fetchBuffer + 0x07F0) &= ~0x10;
 	Tz::MenuUtil::SetSprtParent(_fetchBuffer + 0x07E0, _fetchBuffer);
 
-	auto _fetchFontColor = !_isLimit ? Tz::CmTop::GetItemFontColor(*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x08), 1, _fetchCustomType == 1) : 0x00;
+	auto _fetchFontColor = !_isKH1Form ? Tz::CmTop::GetItemFontColor(*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x08), 1, _fetchCustomType == 1) : 0x00;
 	auto _fetchFontColorSeq = Tz::CmTop::GetFontColorSeqNum(_fetchFontColor);
 
 	Tz::MenuUtil::CreateMess(_fetchBuffer + 0x7660, _fetchPriority + 0x02, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, _fetchFontColorSeq, -1, -1, 0, 0);
@@ -917,7 +895,7 @@ void Tz::CmCustom::SetupCustom()
 
 		*reinterpret_cast<uint32_t*>(_fetchItemPtr + 0x10) &= ~0x10;
 
-		if (_fetchMode == 31 && Tz::CmTop::GetSelectPos(25) && !_isLimit)
+		if (_fetchMode == 31 && Tz::CmTop::GetSelectPos(25) && !_isKH1Form)
 			*reinterpret_cast<char**>(Tz::Select::GetItemPtr(*Tz::CmTop::m_MenuPtr, i) + 0x220) = const_cast<char*>(moduleInfo.startAddr + 0x35AF10);
 
 		Tz::MenuUtil::SetSprtParent(_fetchItemPtr, _fetchBuffer);
@@ -960,7 +938,7 @@ void Tz::CmCustom::ChangeCustomInfo()
 	auto _fetchCustomType = Tz::CmCustom::CurPos2CustomType(_fetchSelectPos);
 	auto _fetchMenuSelectPos = Tz::Select::GetSelectPos(*Tz::CmTop::m_MenuPtr);
 
-	auto _isLimit = Tz::CmTop::GetCurPos(25) == 0x01 && YS::ITEM::GetNumBackyard(0x0233);
+	auto _isKH1Form = Tz::CmTop::GetCurPos(25) == 0x01 && Tz::CmCustom::CheckKH1Form();
 
 	auto _fetchCommand = 0x00;
 
@@ -996,7 +974,7 @@ void Tz::CmCustom::ChangeCustomInfo()
 		}
 		default:
 		{
-			if (_fetchMenuSelectPos && !_isLimit)
+			if (_fetchMenuSelectPos && !_isKH1Form)
 			{
 				auto _fetchInfo = *Tz::CmTop::m_ItemInfo + 0x04;
 				_fetchCommand = YS::ITEM::GetCommand(*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01)));
@@ -1005,10 +983,14 @@ void Tz::CmCustom::ChangeCustomInfo()
 			else if (_fetchMenuSelectPos)
 			{
 				auto _fetchInfo = *Tz::CmTop::m_ItemInfo + 0x04;
-				_fetchCommand = _limitShortcutMap[*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01))];
+
+				_fetchCommand = YS::ITEM::GetCommand(*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01)));
+
+				if (_fetchCommand == 0x0000)
+					_fetchCommand = _limitShortcutMap[*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01))];
 			}
 
-			if (!_isLimit)
+			if (!_isKH1Form)
 				*reinterpret_cast<uint16_t*>(AREA::SaveData + (_fetchSelectPos * 0x02) + 0x36F8) = _fetchCommand;
 
 			else
@@ -1025,7 +1007,7 @@ void Tz::CmCustom::ChageAbility(int pos)
 	auto _fetchMode = Tz::MenuBase::GetMode();
 	auto _fetchFriendInfo = Tz::CmCustom::GetFriendInfo(4, -1);
 	auto _fetchSelectPos = Tz::CmTop::GetSelectPos(25);
-	auto _fetchSheet = *reinterpret_cast<uint32_t*>(Tz::PartyInfo::GetSheet(*Tz::CmCustom::m_PartyInfo, YS::ITEM::GetNumBackyard(0x0233) ? _fetchSelectPos - 1 : _fetchSelectPos) + 0x250);
+	auto _fetchSheet = *reinterpret_cast<uint32_t*>(Tz::PartyInfo::GetSheet(*Tz::CmCustom::m_PartyInfo, Tz::CmCustom::CheckKH1Form() ? _fetchSelectPos - 1 : _fetchSelectPos) + 0x250);
 
 	auto _fetchSelectAbility = Tz::CmTop::GetSelectPos(26);
 
@@ -1062,7 +1044,7 @@ void Tz::CmCustom::ChageAbility(int pos)
 void Tz::CmCustom::ChangePartyBehavior(int pos)
 {
 	auto _fetchSelectPos = Tz::CmTop::GetSelectPos(25);
-	auto _fetchSheet = *reinterpret_cast<uint32_t*>(Tz::PartyInfo::GetSheet(*Tz::CmCustom::m_PartyInfo, YS::ITEM::GetNumBackyard(0x0233) ? _fetchSelectPos - 1 : _fetchSelectPos) + 0x250);
+	auto _fetchSheet = *reinterpret_cast<uint32_t*>(Tz::PartyInfo::GetSheet(*Tz::CmCustom::m_PartyInfo, Tz::CmCustom::CheckKH1Form() ? _fetchSelectPos - 1 : _fetchSelectPos) + 0x250);
 	auto _convertSheet = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchSheet));
 
 	if (pos >= 0)

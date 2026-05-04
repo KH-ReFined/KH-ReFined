@@ -38,6 +38,9 @@ extern "C"
 			using ExecuteCommand_t = void(*)(char* playerObject, char* command);
 			static ExecuteCommand_t ExecuteCommand;
 
+			using get_partram_t = char* (*)(char* party_ptr);
+			static get_partram_t get_partram;
+
 			static char* KeybladePAX;
 
 			static void ChangeWeapon(char* task, int part, bool hand_secondary, int item, bool playPax = true);
