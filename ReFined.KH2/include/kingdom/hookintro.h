@@ -14,6 +14,7 @@
 #include "cmconfig.h"
 #include "softreset.h"
 #include "sequence.h"
+#include "cmcustom.h"
 #include "panacea_alloc.h"
 #include "memorymgr.h"
 

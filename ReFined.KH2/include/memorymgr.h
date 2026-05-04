@@ -197,6 +197,34 @@ T ResolveRelativeAddress(char* addr, size_t callOffset = 0)
     return reinterpret_cast<T>(addr + relOffset + callOffset + 0x04);
 }
 
+template <typename T>
+T ResolveAbsoluteOffset(const char* pattern, const char* mask, size_t callOffset = 0)
+{
+    size_t patLen = std::strlen(mask);
+    size_t currOffset = 0;
+
+    for (const char* addr = moduleInfo.startAddr; addr < moduleInfo.endAddr - patLen; ++addr)
+    {
+        size_t i = 0;
+
+        for (; i < patLen; ++i)
+        {
+            if (mask[i] != '?' && pattern[i] != addr[i])
+                break;
+        }
+
+        if (i == patLen)
+        {
+            int _fetchValue;
+            std::memcpy(&_fetchValue, addr + callOffset, sizeof(int));
+            return reinterpret_cast<T>(const_cast<char*>(moduleInfo.startAddr + _fetchValue));
+        }
+
+        currOffset++;
+    }
+
+    return 0x00;
+}
 
 inline char* CalculatePointer(uint64_t Input, initializer_list<int32_t>Offsets)
 {

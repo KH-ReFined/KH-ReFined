@@ -12,6 +12,9 @@ extern "C"
 		class DLL_EXPORT MenuUtil
 		{
 		public:
+			using CreateSprt_t = char* (*)(char* spriteMessage, int priority, uint32_t s_unit, uint32_t i_unit, char* layout, int fin, uint32_t loop, int group, int offset16x9);
+			static CreateSprt_t CreateSprt;
+
 			using CreateMess_t = char* (*)(char* spriteMessage, int priority, uint32_t s_unit, uint32_t i_unit, char* layout, int fin, uint32_t loop, int messageNo, int group, int offset16x9);
 			static CreateMess_t CreateMess;
 

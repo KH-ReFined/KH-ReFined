@@ -366,6 +366,39 @@
     <ClInclude Include="include\kingdom\item_param.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\kingdom\cmcustom.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\partyinfo.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\cmtop.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\cmcomm.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\menubase.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\selhist.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\friendsaveram.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\cmenuhelp.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\image_freeze.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\layout.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\scrollbar.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\discord\activity_manager.cpp">
@@ -699,6 +732,39 @@
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
     <ClCompile Include="src\kingdom\item_param.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\cmcustom.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\partyinfo.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\cmtop.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\cmcomm.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\menubase.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\selhist.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\friendsaveram.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\cmenuhelp.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\image_freeze.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\layout.cpp">
+      <Filter>Source Files\kingdom_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kingdom\scrollbar.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
   </ItemGroup>

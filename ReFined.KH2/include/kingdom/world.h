@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <Windows.h>
 #include "memorymgr.h"
+#include "cmcustom.h"
 
 extern "C"
 {

@@ -94,8 +94,12 @@
     <ClInclude Include="include\kingdom\binarc.h" />
     <ClInclude Include="include\kingdom\cache_buff.h" />
     <ClInclude Include="include\kingdom\circle_mask.h" />
+    <ClInclude Include="include\kingdom\cmcomm.h" />
     <ClInclude Include="include\kingdom\cmconfig.h" />
+    <ClInclude Include="include\kingdom\cmcustom.h" />
     <ClInclude Include="include\kingdom\cmdata.h" />
+    <ClInclude Include="include\kingdom\cmenuhelp.h" />
+    <ClInclude Include="include\kingdom\cmtop.h" />
     <ClInclude Include="include\kingdom\collision_data.h" />
     <ClInclude Include="include\kingdom\command_draw.h" />
     <ClInclude Include="include\kingdom\command_elem.h" />
@@ -104,6 +108,7 @@
     <ClInclude Include="include\kingdom\enemy.h" />
     <ClInclude Include="include\kingdom\face.h" />
     <ClInclude Include="include\kingdom\field.h" />
+    <ClInclude Include="include\kingdom\friendsaveram.h" />
     <ClInclude Include="include\kingdom\fvector.h" />
     <ClInclude Include="include\kingdom\hookconfig.h" />
     <ClInclude Include="include\kingdom\converter.h" />
@@ -119,6 +124,7 @@
     <ClInclude Include="include\kingdom\hookintro.h" />
     <ClInclude Include="include\kingdom\image.h" />
     <ClInclude Include="include\kingdom\image_cache.h" />
+    <ClInclude Include="include\kingdom\image_freeze.h" />
     <ClInclude Include="include\kingdom\information.h" />
     <ClInclude Include="include\kingdom\information_window.h" />
     <ClInclude Include="include\kingdom\info_base.h" />
@@ -128,6 +134,7 @@
     <ClInclude Include="include\kingdom\itemshop.h" />
     <ClInclude Include="include\kingdom\item_param.h" />
     <ClInclude Include="include\kingdom\jumpeffect.h" />
+    <ClInclude Include="include\kingdom\layout.h" />
     <ClInclude Include="include\kingdom\level_up.h" />
     <ClInclude Include="include\kingdom\libretto.h" />
     <ClInclude Include="include\kingdom\limit.h" />
@@ -137,12 +144,14 @@
     <ClInclude Include="include\kingdom\member.h" />
     <ClInclude Include="include\kingdom\member_table.h" />
     <ClInclude Include="include\kingdom\menu.h" />
+    <ClInclude Include="include\kingdom\menubase.h" />
     <ClInclude Include="include\kingdom\menuutil.h" />
     <ClInclude Include="include\kingdom\message.h" />
     <ClInclude Include="include\kingdom\messagedraw.h" />
     <ClInclude Include="include\kingdom\mission.h" />
     <ClInclude Include="include\kingdom\mission_count.h" />
     <ClInclude Include="include\kingdom\mission_gauge.h" />
+    <ClInclude Include="include\kingdom\partyinfo.h" />
     <ClInclude Include="include\kingdom\pref.h" />
     <ClInclude Include="include\kingdom\progress.h" />
     <ClInclude Include="include\kingdom\newgame.h" />
@@ -157,8 +166,10 @@
     <ClInclude Include="include\kingdom\saveram_battle.h" />
     <ClInclude Include="include\kingdom\save_indicator.h" />
     <ClInclude Include="include\kingdom\scis.h" />
+    <ClInclude Include="include\kingdom\scrollbar.h" />
     <ClInclude Include="include\kingdom\sector_mask.h" />
     <ClInclude Include="include\kingdom\select.h" />
+    <ClInclude Include="include\kingdom\selhist.h" />
     <ClInclude Include="include\kingdom\sequence.h" />
     <ClInclude Include="include\kingdom\shake.h" />
     <ClInclude Include="include\kingdom\sheet.h" />
@@ -208,8 +219,12 @@
     <ClCompile Include="src\kingdom\binarc.cpp" />
     <ClCompile Include="src\kingdom\cache_buff.cpp" />
     <ClCompile Include="src\kingdom\circle_mask.cpp" />
+    <ClCompile Include="src\kingdom\cmcomm.cpp" />
     <ClCompile Include="src\kingdom\cmconfig.cpp" />
+    <ClCompile Include="src\kingdom\cmcustom.cpp" />
     <ClCompile Include="src\kingdom\cmdata.cpp" />
+    <ClCompile Include="src\kingdom\cmenuhelp.cpp" />
+    <ClCompile Include="src\kingdom\cmtop.cpp" />
     <ClCompile Include="src\kingdom\collision_data.cpp" />
     <ClCompile Include="src\kingdom\command_draw.cpp" />
     <ClCompile Include="src\kingdom\command_elem.cpp" />
@@ -218,6 +233,7 @@
     <ClCompile Include="src\kingdom\enemy.cpp" />
     <ClCompile Include="src\kingdom\face.cpp" />
     <ClCompile Include="src\kingdom\field.cpp" />
+    <ClCompile Include="src\kingdom\friendsaveram.cpp" />
     <ClCompile Include="src\kingdom\fvector.cpp" />
     <ClCompile Include="src\kingdom\hookconfig.cpp" />
     <ClCompile Include="src\kingdom\converter.cpp" />
@@ -233,6 +249,7 @@
     <ClCompile Include="src\kingdom\hookintro.cpp" />
     <ClCompile Include="src\kingdom\image.cpp" />
     <ClCompile Include="src\kingdom\image_cache.cpp" />
+    <ClCompile Include="src\kingdom\image_freeze.cpp" />
     <ClCompile Include="src\kingdom\information.cpp" />
     <ClCompile Include="src\kingdom\information_window.cpp" />
     <ClCompile Include="src\kingdom\info_base.cpp" />
@@ -243,6 +260,7 @@
     <ClCompile Include="src\kingdom\item_param.cpp" />
     <ClCompile Include="src\kingdom\item_table.cpp" />
     <ClCompile Include="src\kingdom\jumpeffect.cpp" />
+    <ClCompile Include="src\kingdom\layout.cpp" />
     <ClCompile Include="src\kingdom\level_up.cpp" />
     <ClCompile Include="src\kingdom\libretto.cpp" />
     <ClCompile Include="src\kingdom\limit.cpp" />
@@ -252,6 +270,7 @@
     <ClCompile Include="src\kingdom\member.cpp" />
     <ClCompile Include="src\kingdom\member_table.cpp" />
     <ClCompile Include="src\kingdom\menu.cpp" />
+    <ClCompile Include="src\kingdom\menubase.cpp" />
     <ClCompile Include="src\kingdom\menuutil.cpp" />
     <ClCompile Include="src\kingdom\message.cpp" />
     <ClCompile Include="src\kingdom\messagedraw.cpp" />
@@ -264,6 +283,7 @@
     <ClCompile Include="src\kingdom\objentry.cpp" />
     <ClCompile Include="src\kingdom\panacea_alloc.cpp" />
     <ClCompile Include="src\kingdom\party.cpp" />
+    <ClCompile Include="src\kingdom\partyinfo.cpp" />
     <ClCompile Include="src\kingdom\pax.cpp" />
     <ClCompile Include="src\kingdom\pref.cpp" />
     <ClCompile Include="src\kingdom\progress.cpp" />
@@ -272,8 +292,10 @@
     <ClCompile Include="src\kingdom\saveram_battle.cpp" />
     <ClCompile Include="src\kingdom\save_indicator.cpp" />
     <ClCompile Include="src\kingdom\scis.cpp" />
+    <ClCompile Include="src\kingdom\scrollbar.cpp" />
     <ClCompile Include="src\kingdom\sector_mask.cpp" />
     <ClCompile Include="src\kingdom\select.cpp" />
+    <ClCompile Include="src\kingdom\selhist.cpp" />
     <ClCompile Include="src\kingdom\sequence.cpp" />
     <ClCompile Include="src\kingdom\shake.cpp" />
     <ClCompile Include="src\kingdom\sheet.cpp" />

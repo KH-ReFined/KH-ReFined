@@ -24,6 +24,9 @@ extern "C"
 			using ReduceBackyard_t = void(*)(uint64_t item, int num);
 			static ReduceBackyard_t ReduceBackyard;
 
+			using GetCommand_t = int(*)(uint64_t item);
+			static GetCommand_t GetCommand;
+
 			static char* ImageBuff;
 		};
 	}

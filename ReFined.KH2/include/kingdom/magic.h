@@ -36,6 +36,9 @@ extern "C"
 			using GetTable_t = MAGIC_TABLE * (*)(uint32_t Index);
 			static GetTable_t GetTable;
 
+			using GetMpDriveStatus_t = bool(*)(int index);
+			static GetMpDriveStatus_t GetMpDriveStatus;
+
 			static char* MagicInfo;
 			static  char* MagicCommands;
 		};
