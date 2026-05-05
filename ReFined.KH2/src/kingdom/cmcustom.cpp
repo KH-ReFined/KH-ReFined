@@ -98,6 +98,8 @@ void Tz::CmCustom::GetListInfo(int num)
 	auto _fetchSheetNum = num > 0x01 && Tz::CmCustom::CheckKH1Form() ? num - 1 : num;
 	auto _fetchCurrentType = num == 0x00 ? Tz::CmCustom::s_PlayerType : (num == 0x01 && Tz::CmCustom::CheckKH1Form() ? Tz::CmCustom::s_PlayerType - 0x04 : Tz::CmCustom::s_FriendType);
 
+	auto _isKH1Form = num == 0x01 && Tz::CmCustom::CheckKH1Form();
+
 	memset(*Tz::CmCustom::m_ListInfo, 0x00, 0x98);
 
 	auto _fetchPartySheet = Tz::PartyInfo::GetSheet(*Tz::CmCustom::m_PartyInfo, _fetchSheetNum);
@@ -131,7 +133,7 @@ void Tz::CmCustom::GetListInfo(int num)
 				break;
 			case 2:
 			{
-				set<uint32_t> _itemSet;
+				unordered_set<uint32_t> _itemSet;
 				auto _itemCount = *reinterpret_cast<char*>(_fetchPartyInventory + 0x12);
 
 				for (int i = 0; i < _itemCount; i++)
@@ -209,10 +211,8 @@ void Tz::CmCustom::GetListInfo(int num)
 		{
 			for (int i = 0; i < 0x04; i++)
 			{
-				auto _isKH1Form = num == 0x01 && Tz::CmCustom::CheckKH1Form();
-
 				auto _fetchShortcut = *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x36F8 + 0x02 * i);
-				auto _fetchLimitShortcut = *reinterpret_cast<uint16_t*>(Tz::CmCustom::LS_KH1F_Shortcuts + 0x02 * i);
+				auto _fetchLimitShortcut = *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10030 + 0x02 * i);
 
 				if (_fetchShortcut && !_isKH1Form)
 				{
@@ -224,7 +224,7 @@ void Tz::CmCustom::GetListInfo(int num)
 						auto _fetchId = *reinterpret_cast<uint16_t*>(_fetchItem);
 						auto _fetchCommand = YS::ITEM::GetCommand(_fetchId);
 
-						if (((_fetchType == 0x12 || _fetchType == 0x00) && _fetchCommand == _fetchShortcut))
+						if (((_fetchType == 0x12 || _fetchType == 0x15 || _fetchType == 0x00) && _fetchCommand == _fetchShortcut))
 						{
 							*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * _processEntry + 0x08) = _fetchId;
 
@@ -273,6 +273,9 @@ void Tz::CmCustom::GetListInfo(int num)
 				_processEntry++;
 			}
 		}
+
+		if (_isKH1Form)
+			break;
 	}
 
 	*(*Tz::CmCustom::m_ListInfo + 0x04) = _processEntry;
@@ -280,7 +283,7 @@ void Tz::CmCustom::GetListInfo(int num)
 
 void Tz::CmCustom::UpdateTopList()
 {
-	int _itemNumArray[0x06];
+	int _itemNumArray[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 	auto _fetchBuffer = Tz::CmTop::GetListBuffer();
 	auto _fetchCurrent = **Tz::CmTop::m_MenuPtr;
@@ -338,7 +341,7 @@ void Tz::CmCustom::UpdateTopList()
 				auto _fetchFontColor = 0x00;
 
 				if (_itemIndex != 0x03 && *Tz::CmCustom::LS_103_type != Tz::CmCustom::s_PlayerType - 0x04)
-					_fetchFontColor = Tz::CmTop::GetItemFontColor(*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * z + 0x08), 0x01, _itemIndex == 0x01);
+					_fetchFontColor = Tz::CmTop::GetItemFontColor(*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * (_calcItemOffset + z) + 0x08), 0x01, _itemIndex == 0x01);
 
 				auto _fetchFontColorSqd = Tz::CmTop::GetFontColorSeqNum(_fetchFontColor);
 				auto _calcFontSeq = reinterpret_cast<char*>(_fetchBuffer) + 0x220 * (_calcItemOffset + z) + 0x7660;
@@ -400,7 +403,7 @@ int Tz::CmCustom::CurPos2CustomType(int pos)
 
 void Tz::CmCustom::MakeListInfo2ItemMess()
 {
-	int _itemNumArray[0x06];
+	int _itemNumArray[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 	auto _fetchMenuMode = Tz::MenuBase::GetMode();
 	auto _fetchBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
@@ -673,7 +676,7 @@ void Tz::CmCustom::UpdateHelpMess()
 
 void Tz::CmCustom::UpdateCustomList()
 {
-	int _itemNumArray[0x06];
+	int _itemNumArray[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 	uint16_t _listSelSeq[] = { 0x0108, 0x0107, 0x0106, 0x00FA, 0x00F8, 0x0000, 0x0000, 0x0000 };
 	uint16_t _listSubSeq[] = { 0x011A, 0x0119, 0x0118, 0x0115, 0x0114, 0x0000 };
@@ -719,13 +722,13 @@ void Tz::CmCustom::UpdateCustomList()
 
 		dk::Sprite::setNum(_fetchBuffer + 0xA960 + 0x01F8 * i, *Tz::CmTop::m_DummySeq);
 	}
-
+	 
 	for (int i = 0; i < 3; i++)
 	{
 		auto _fetchTypeByte = *(*Tz::CmCustom::LS_45_type + i);
 		_itemNumArray[i] = Tz::CmCustom::GetCustomItemNum(_fetchTypeByte);
 
-		if (*Tz::CmCustom::LS_45_type == Tz::CmCustom::s_PlayerType - 0x04)
+		if (_isKH1Form)
 			break;
 	}
 
@@ -757,7 +760,7 @@ void Tz::CmCustom::UpdateCustomList()
 				if (_processEntry >= _fetchMaxLoop)
 					break;
 
-				if (z + _processEntry >= _fetchSelectTop)
+				if (z + _itemNumberCalc >= _fetchSelectTop)
 				{
 					if (z == 0x00 || _fetchTypeByte == 0x00)
 					{
@@ -771,7 +774,7 @@ void Tz::CmCustom::UpdateCustomList()
 					auto _fetchFontColor = 0x00;
 
 					if (_fetchTypeByte != 0x03 && !_isKH1Form)
-						_fetchFontColor = Tz::CmTop::GetItemFontColor(*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * i + 0x08), 0x01, _fetchTypeByte == 0x01);
+						_fetchFontColor = Tz::CmTop::GetItemFontColor(*reinterpret_cast<uint16_t*>(*Tz::CmCustom::m_ListInfo + 0x08 * (_itemNumberCalc + z) + 0x08), 0x01, _fetchTypeByte == 0x01);
 					
 					_fetchFontColorSeq = Tz::CmTop::GetFontColorSeqNum(_fetchFontColor);
 					dk::Sprite::setNum(_fetchBuffer + 0x220 * _processEntry + 0x7660, _fetchFontColorSeq);
@@ -783,6 +786,9 @@ void Tz::CmCustom::UpdateCustomList()
 			}
 		}
 		
+		if (_isKH1Form)
+			break;
+
 		_itemNumberCalc += _itemNumArray[i];
 	}
 }
@@ -1002,14 +1008,11 @@ void Tz::CmCustom::ChangeCustomInfo()
 					_fetchCommand = _limitShortcutMap[*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01))];
 			}
 
-			if (!_isKH1Form)
-				*reinterpret_cast<uint16_t*>(AREA::SaveData + (_fetchSelectPos * 0x02) + 0x36F8) = _fetchCommand;
-
-			else
-				*reinterpret_cast<uint16_t*>(Tz::CmCustom::LS_KH1F_Shortcuts + (_fetchSelectPos * 0x02)) = _fetchCommand;
-
+			*reinterpret_cast<uint16_t*>(AREA::SaveData + (_fetchSelectPos * 0x02) + (_isKH1Form ? 0x10030 : 0x36F8)) = _fetchCommand;
 		} break;
 	}
+
+	memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, AREA::SaveData + 0x10030, 0x08);
 
 	Tz::CmCustom::GetListInfo(Tz::CmTop::GetSelectPos(25));
 }

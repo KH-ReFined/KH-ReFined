@@ -3,7 +3,7 @@
 #define DLL_EXPORT __declspec(dllexport)
 
 #include <cstdint>
-#include <set>
+#include <unordered_set>
 #include "memorymgr.h"
 #include "partyinfo.h"
 #include "selhist.h"
