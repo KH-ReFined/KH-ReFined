@@ -19,7 +19,9 @@ int YS::ANTI_FORM::CheckForm(char* player, int form)
     }
 
     auto _fetchAntiPoints = *reinterpret_cast<int*>(_antiFormRam + 0x04);
-    auto _calcAntiChance = (_fetchAntiPoints <= 0x04 ? 0 : (_fetchAntiPoints <= 0x09 ? 10 : 25)) * YS::MISSION::GetAntiRate();
+    auto _fetchAntiRate = _fetchAntiPoints * YS::MISSION::GetAntiRate();
+
+    auto _calcAntiChance = (_fetchAntiRate <= 0x04 ? 0 : (_fetchAntiRate <= 0x09 ? 10 : 25));
 
     if (YS::MISSION::GetAntiRate() != 0x00 && *reinterpret_cast<uint16_t*>(*reinterpret_cast<char**>(player + 0x5C0) + 0x1E4) & 0x8000)
         _calcAntiChance = 100;
