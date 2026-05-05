@@ -24,6 +24,9 @@ extern "C"
 			using GetSelectPos_t = int (*)(char* select);
 			static GetSelectPos_t GetSelectPos;
 
+			using SetSelectTop_t = int (*)(char* select, int pos);
+			static SetSelectTop_t SetSelectTop;
+
 			using SetExOffset_t = void (*)(char* select, int pos, int x, int y);
 			static SetExOffset_t SetExOffset;
 

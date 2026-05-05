@@ -2,6 +2,7 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
+#include <cstdint>
 #include "memorymgr.h"
 
 extern "C"
@@ -11,11 +12,8 @@ extern "C"
 		class DLL_EXPORT ITEM_TABLE
 		{
 		public:
-			using Each_t = char* (*)(char* itemTable);
-			static Each_t Each;
-
-			using Get_t = char* (*)(uint64_t itemId);
-			static Get_t Get;
+			static char* (*Each)(char* itemTable);
+			static char* (*Get)(uint64_t itemId);
 		};
 	}
 }

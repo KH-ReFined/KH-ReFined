@@ -18,6 +18,9 @@ extern "C"
 
 			using SetPos_t = void (*)(char* scrollBar, int pos);
 			static SetPos_t SetPos;
+
+			using SetMax_t = void (*)(char* scrollBar, int max);
+			static SetMax_t SetMax;
 		};
 	}
 }

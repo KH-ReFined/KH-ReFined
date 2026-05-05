@@ -36,6 +36,12 @@ extern "C"
         {
         public:
             static void(*CreateTopList)();
+            static void(*ChageMpDrive)();
+
+            static void(*SetIndiCustomDefaultPos)();
+            static void(*UpdateIndiCustomList)();
+
+            static char* DrawItemAILv;
 
             static char* (*GetFriendInfo)(int type, int num);
 
@@ -74,6 +80,7 @@ extern "C"
             static bool CheckKH1Form();
 
             // These did have their typos in the symbols.
+            static bool isTakeOff();
             static void ChageAbility(int pos);
             static void ChangeAutoReplenishment();
             static void ChangePartyBehavior(int pos);
@@ -90,6 +97,30 @@ extern "C"
                         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                     };
+
+                    uint64_t _isTakeOffFunction = reinterpret_cast<uint64_t>(isTakeOff);
+                    auto _isTakeOffOriginal = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x8B\xF8\x8D\x48\xE6\x83\xF9\x01\x76\x0C", "xxxxxxxxxxx????xxxxxxxxxx");
+
+                    printf("Fetched Tz::CmCustom::isTakeOff @ 0x%p\n", _isTakeOffOriginal);
+
+                    fill(_isTakeOffOriginal, _isTakeOffOriginal + 0xF8, 0x90);
+
+                    memcpy(_absoluteInstructionJMP.data() + 0x06, &_isTakeOffFunction, 0x08);
+                    memcpy(_isTakeOffOriginal, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+
+                    printf("Hooked Tz::CmCustom::isTakeOff [0x%p] to Re:Fined function @ 0x%p\n", _isTakeOffOriginal, isTakeOff);
+
+                    uint64_t _changeAutoReplenishFunction = reinterpret_cast<uint64_t>(ChangeAutoReplenishment);
+                    auto _changeAutoReplenishOriginal = SignatureScan<char*>("\x40\x53\x57\x48\x83\xEC\x48\x48\x89\x6C\x24\x60\x4C\x89\x64\x24\x70\x4C\x89\x6C\x24\x40\x4C\x89", "xxxxxxxxxxxxxxxxxxxxxxxx");
+
+                    printf("Fetched Tz::CmCustom::ChangeAutoReplenishment @ 0x%p\n", _changeAutoReplenishOriginal);
+
+                    fill(_changeAutoReplenishOriginal, _changeAutoReplenishOriginal + 0x28A, 0x90);
+
+                    memcpy(_absoluteInstructionJMP.data() + 0x06, &_changeAutoReplenishFunction, 0x08);
+                    memcpy(_changeAutoReplenishOriginal, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+
+                    printf("Hooked Tz::CmCustom::ChangeAutoReplenishment [0x%p] to Re:Fined function @ 0x%p\n", _changeAutoReplenishOriginal, ChangeAutoReplenishment);
 
                     uint64_t _changePartyAiFunction = reinterpret_cast<uint64_t>(ChangePartyBehavior);
                     auto _changePartyAiOriginal = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x8B\xD9\xB9\x19\x00\x00\x00\xE8", "xxxxxxxxxxxxxx");
