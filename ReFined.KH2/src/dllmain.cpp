@@ -266,6 +266,8 @@ bool DEBOUNCE_RETRIBUTION = false;
 
 vector<uint16_t*> WEAPON_MEMORY;
 
+bool SYNC_LIMIT;
+
 // Configuration Values.
 
 bool DISCORD_ENABLED = true;
@@ -1795,9 +1797,18 @@ void FIX_UP_CONFIG()
 
         auto _fetchBinarc = *reinterpret_cast<char**>(_fetchCacheBuff + 0x58);
 
-        if (!_fetchBinarc || *reinterpret_cast<int*>(_fetchBinarc) == 0x00 || *reinterpret_cast<int*>(_fetchBinarc + 0x08) == 0x00)
+        if (!_fetchBinarc)
             return;
 
+        auto _fetchMagic = *reinterpret_cast<int*>(_fetchBinarc);
+        auto _fetchPrimary = *reinterpret_cast<int*>(_fetchBinarc + 0x08);
+        auto _fetchLocation = *reinterpret_cast<int*>(_fetchBinarc + 0x0C);
+
+        auto _isValid = _fetchMagic == 0x01524142 && _fetchPrimary != 0x00 && _fetchLocation != 0x00;
+
+        if (!_isValid)
+            return;
+        
         if (YS::BINARC::get_info_by_tag(_fetchBinarc, 0x1C, 0x6C746974, 0))
         {
             auto _fetchLaydIntPtr = *reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchBinarc, 0x1C, 0x6C746974, 0) + 0x08);
@@ -2001,6 +2012,35 @@ void RETRIBUTION_LOGIC()
     }
 }
 
+void HANDLE_SYNC_LIMIT()
+{
+    uint16_t _defaultLimits[] = { 0x02BA, 0x02BD, 0x02C0, 0x02AB };
+
+    if (*YS::TITLE::IsTitle && SYNC_LIMIT)
+    {
+        memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, _defaultLimits, 0x08);
+        SYNC_LIMIT = false;
+    }
+
+    else if (*AREA::IsInMap && !SYNC_LIMIT)
+    {
+        for (int i = 0; i < 0x04; i++)
+        {
+            auto _fetchCommand = *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10030 + 0x02 * i);
+
+            if (_fetchCommand != 0x0000)
+            {
+                memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, AREA::SaveData + 0x10030, 0x08);
+                SYNC_LIMIT = true;
+                return;
+            }
+        }
+
+        memcpy(AREA::SaveData + 0x10030, _defaultLimits, 0x08);
+        SYNC_LIMIT = true;
+    }
+}
+
 extern "C"
 {
     __declspec(dllexport) void OnInit(wchar_t* mod_path)
@@ -2027,7 +2067,8 @@ extern "C"
             {"ENFORCE_LOCKON", ENFORCE_LOCKON},
             {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
             {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
-            {"RETRIBUTION_LOGIC", RETRIBUTION_LOGIC}
+            {"RETRIBUTION_LOGIC", RETRIBUTION_LOGIC}, 
+            {"HANDLE_SYNC_LIMIT", HANDLE_SYNC_LIMIT}
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
