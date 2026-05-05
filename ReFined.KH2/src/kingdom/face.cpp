@@ -163,6 +163,9 @@ void dk::FACE::draw(char* face)
 
 		uint8_t _calculateCrown = _crownItemsArray[0] + _crownItemsArray[1] + _crownItemsArray[2];
 
+		if (_calculateCrown > 3)
+			_calculateCrown = 3;
+
 		if (_fetchCrown && _calculateCrown > 0 && _fetchIsDrawCrown)
 		{
 			auto _fetchFaceNum = *reinterpret_cast<uint32_t*>(face + 0x1D4) + 0x04 * (_calculateCrown -1);
