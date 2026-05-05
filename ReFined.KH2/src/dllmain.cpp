@@ -1960,7 +1960,7 @@ void RETRIBUTION_LOGIC()
                         auto _fetchItemId = *WEAPON_MEMORY[_seekParamIndex];
                         auto _findKeyEquip = find_if(_soraEquip.begin(), _soraEquip.end(), [_fetchItemId](uint16_t x) { return x == _fetchItemId; });
 
-                        if (_findKeyEquip != _soraEquip.end() || YS::ITEM::GetNum(_fetchItemId, 0x01) == 0x00)
+                        if (_findKeyEquip == _soraEquip.end() && YS::ITEM::GetNum(_fetchItemId, 0x01) == 0x00)
                         {
                             _seekParamIndex++;
                             continue;
