@@ -1843,18 +1843,18 @@ void FIX_UP_CONFIG()
 
 void RETRIBUTION_LOGIC()
 {
+    if (!RETRIBUTION_INIT)
+    {
+        memcpy(*YS::ITEM::WeaponEntry + 0x017C, "\x03\x0A\x00\x00\x07\x0A\x00\x00", 0x08);
+        memcpy(*YS::ITEM::WeaponEntry + 0x030C, "\x04\x0A\x00\x00\x08\x0A\x00\x00", 0x08);
+        memcpy(*YS::ITEM::WeaponEntry + 0x0900, "\x05\x0A\x00\x00\x09\x0A\x00\x00", 0x08);
+        memcpy(*YS::ITEM::WeaponEntry + 0x0A90, "\x06\x0A\x00\x00\x0A\x0A\x00\x00", 0x08);
+
+        RETRIBUTION_INIT = true;
+    }
+
     if (!*YS::TITLE::IsTitle && *AREA::IsInMap)
     {
-        if (!RETRIBUTION_INIT)
-        {
-            memcpy(*YS::ITEM::WeaponEntry + 0x017C, "\x03\x0A\x00\x00\x07\x0A\x00\x00", 0x08);
-            memcpy(*YS::ITEM::WeaponEntry + 0x030C, "\x04\x0A\x00\x00\x08\x0A\x00\x00", 0x08);
-            memcpy(*YS::ITEM::WeaponEntry + 0x0900, "\x05\x0A\x00\x00\x09\x0A\x00\x00", 0x08);
-            memcpy(*YS::ITEM::WeaponEntry + 0x0A90, "\x06\x0A\x00\x00\x0A\x0A\x00\x00", 0x08);
-
-            RETRIBUTION_INIT = true;
-        }
-
         if (WEAPON_MEMORY.size() == 0x00)
         {
             auto _fetchItem = YS::ITEM_TABLE::Each(nullptr);
@@ -1927,7 +1927,7 @@ void RETRIBUTION_LOGIC()
                 auto _findKeyEquip = find_if(_soraEquip.begin(), _soraEquip.end(), [](uint16_t x) { return x == 0x0301; });
 
                 if (_findKeyEquip != _soraEquip.end() && _amountAbsolution != 0x00)
-                    YS::ITEM::ReduceBackyard(0x0300, _amountAbsolution);
+                    YS::ITEM::ReduceBackyard(0x0301, _amountAbsolution);
 
                 else if (_findKeyEquip == _soraEquip.end() && _amountAbsolution != 0x01)
                 {
@@ -2300,7 +2300,7 @@ extern "C"
                 HAS_RETRIBUTION = true;
 
             if (YS::FILE::GetSize("obj/W_EX010_RX.mdlx"))
-                HAS_RETRIBUTION = true;
+                HAS_ABSOLUTION = true;
 
             // Allocate space for "00shopface.bin".
             if (!YS::PANACEA_ALLOC::Get("00shopface.bin"))
