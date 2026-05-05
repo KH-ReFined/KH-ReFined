@@ -95,7 +95,7 @@ void Tz::CmCustom::GetListInfo(int num)
 {
 	vector<short> _magicItemNum = { 0x0015, 0x0016, 0x0017, 0x0018, 0x0057, 0x0058 };
 	 
-	auto _fetchSheetNum = num > 0x01 && Tz::CmCustom::CheckKH1Form() ? num - 1 : num;
+	auto _fetchSheetNum = num >= 0x01 && Tz::CmCustom::CheckKH1Form() ? num - 1 : num;
 	auto _fetchCurrentType = num == 0x00 ? Tz::CmCustom::s_PlayerType : (num == 0x01 && Tz::CmCustom::CheckKH1Form() ? Tz::CmCustom::s_PlayerType - 0x04 : Tz::CmCustom::s_FriendType);
 
 	auto _isKH1Form = num == 0x01 && Tz::CmCustom::CheckKH1Form();

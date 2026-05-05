@@ -1855,6 +1855,14 @@ void RETRIBUTION_LOGIC()
 
     if (!*YS::TITLE::IsTitle && *AREA::IsInMap)
     {
+        vector<uint16_t> _soraEquip =
+        {
+            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x24F0),
+            YS::ITEM::GetNumBackyard(0x001A) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x32F4) : UINT16_MAX,
+            YS::ITEM::GetNumBackyard(0x001D) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x33D4) : UINT16_MAX,
+            YS::ITEM::GetNumBackyard(0x001F) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x339C) : UINT16_MAX
+        };
+
         if (WEAPON_MEMORY.size() == 0x00)
         {
             auto _fetchItem = YS::ITEM_TABLE::Each(nullptr);
@@ -1897,14 +1905,6 @@ void RETRIBUTION_LOGIC()
 
         else
         {
-            vector<uint16_t> _soraEquip =
-            {
-                *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x24F0),
-                YS::ITEM::GetNumBackyard(0x001A) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x32F4) : UINT16_MAX,
-                YS::ITEM::GetNumBackyard(0x001D) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x33D4) : UINT16_MAX,
-                YS::ITEM::GetNumBackyard(0x001F) ? *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x339C) : UINT16_MAX
-            };
-
             auto _amountAbsolution = YS::ITEM::GetNumBackyard(0x0301);
             auto _amountRetribution = YS::ITEM::GetNumBackyard(0x0300);
 
@@ -1958,8 +1958,9 @@ void RETRIBUTION_LOGIC()
                             break;
 
                         auto _fetchItemId = *WEAPON_MEMORY[_seekParamIndex];
+                        auto _findKeyEquip = find_if(_soraEquip.begin(), _soraEquip.end(), [_fetchItemId](uint16_t x) { return x == _fetchItemId; });
 
-                        if (YS::ITEM::GetNum(_fetchItemId, 0x01) == 0x00)
+                        if (_findKeyEquip != _soraEquip.end() || YS::ITEM::GetNum(_fetchItemId, 0x01) == 0x00)
                         {
                             _seekParamIndex++;
                             continue;
