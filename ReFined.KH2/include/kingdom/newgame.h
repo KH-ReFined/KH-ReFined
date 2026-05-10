@@ -34,6 +34,10 @@ extern "C"
             {
                 staticInitializer()
                 {
+                    #ifdef BUILD_ARCHIPELAGO_LITE
+                        return;
+                    #endif
+
                     printf("======================================================\n");
                     printf("Handling hooks and redirections concerning Title::NewGame...\n\n");
 

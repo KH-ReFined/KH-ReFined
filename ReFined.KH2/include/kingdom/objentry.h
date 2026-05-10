@@ -43,6 +43,10 @@ extern "C"
 			{
                 staticInitializer()
                 {
+                    #if defined(BUILD_ARCHIPELAGO) || defined(BUILD_ARCHIPELAGO_LITE)
+                        return;
+                    #endif
+
                     printf("Handling hooks and redirections concerning YS::OBJENTRY...\n\n");
 
                     MDLX_WRITE_BUFFER = ResolveRelativeAddress<char*>("\x4D\x8D\x47\x08\x48\x8D\x15\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x85\xC0\x74\x36\xE8\x00\x00\x00\x00", "xxxxxxx????xxx????x????x????xxxxx????", 0x0E);

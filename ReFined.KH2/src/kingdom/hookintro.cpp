@@ -23,8 +23,10 @@ vector<Tz::HookIntro::Entry> Tz::HookIntro::Entries = vector<Tz::HookIntro::Entr
 {
 	Tz::HookIntro::Entry { 0x04, 0xC330, 0xC380, vector<uint32_t> { 0xC331, 0xC332, 0xC333, 0xCE33 }, vector<uint32_t> { 0xC334, 0xC335, 0xC336, 0xCE34 }, vector<uint32_t> {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}, 0x0000, nullptr },
 	Tz::HookIntro::Entry { 0x02, 0xC337, 0xC381, vector<uint32_t> { 0xC338, 0xC339 },				  vector<uint32_t> { 0xC33A, 0xC33B },				   vector<uint32_t> {0x0001, 0x0000 },				  0x0000, nullptr },
+	#ifndef BUILD_ARCHIPELAGO_LITE
 	Tz::HookIntro::Entry { 0x03, 0x5733, 0x5704, vector<uint32_t> { 0x5705, 0x5707, 0x5709 },		  vector<uint32_t> { 0x5706, 0x5708, 0x570A },		   vector<uint32_t> {0x0004, 0x0002, 0x0000 },		  0x0000, nullptr },
 	Tz::HookIntro::Entry { 0x02, 0x5737, 0x5722, vector<uint32_t> { 0x5723, 0x5725 },				  vector<uint32_t> { 0x5724, 0x5726 },				   vector<uint32_t> {0x2000, 0x0000 },				  0x0000, nullptr }
+	#endif
 };
 
 void Tz::HookIntro::Add(int Index, Tz::HookIntro::Entry Input)

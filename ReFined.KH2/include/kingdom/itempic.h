@@ -38,6 +38,10 @@ extern "C"
             {
                 staticInitializer()
                 {
+                    #if defined(BUILD_ARCHIPELAGO) || defined(BUILD_ARCHIPELAGO_LITE)
+                        return;
+                    #endif
+
                     printf("======================================================\n");
                     printf("Handling hooks and redirections concerning YS::ITEMPIC...\n\n");
 

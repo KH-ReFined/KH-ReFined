@@ -51,7 +51,6 @@
 #include "region.h"
 #include "sequence.h"
 #include "shake.h"
-#include "save_indicator.h"
 #include "softreset.h"
 #include "sora.h"
 #include "sound.h"
@@ -279,6 +278,12 @@ uint8_t ROOM_AMOUNT = 3;
 uint8_t SAVE_SLOT_OFFSET = 99;
 
 uint16_t RESET_COMBO = YS::HARDPAD::BUTTONS::NONE;
+
+#ifdef BUILD_ARCHIPELAGO
+const wchar_t* CONFIG_NAME = L"\\dll\\enablersAP.cfg";
+#else
+const wchar_t* CONFIG_NAME = L"\\dll\\reFined.cfg";
+#endif
 
 // Function Block. Everything is here now :D
 
@@ -2048,28 +2053,34 @@ extern "C"
     {
         FUNCTION_ARRAY =
         {
-            {"SOFT_RESET", SOFT_RESET},
-            {"AUTOSAVE", AUTOSAVE},
-            {"ENFORCE_FRAMERATE", ENFORCE_FRAMERATE},
-            {"FIX_UP_CONFIG", FIX_UP_CONFIG},
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             {"HANDLE_MUSIC", HANDLE_MUSIC},
             {"HANDLE_RESOURCE", HANDLE_RESOURCE},
             {"HANDLE_AUDIO", HANDLE_AUDIO},
             {"RETRY_BATTLES", RETRY_BATTLES},
             {"HANDLE_SHAKE", HANDLE_SHAKE},
             {"ENFORCE_PROMPTS", ENFORCE_PROMPTS},
-            {"FIX_SAVE_POINT", FIX_SAVE_POINT},
             {"DISCORD_RPC", DISCORD_RPC},
             {"HANDLE_ASPECT", HANDLE_ASPECT},
+            {"ENFORCE_LOCKON", ENFORCE_LOCKON},
+            {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
+            {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
+            {"RETRIBUTION_LOGIC", RETRIBUTION_LOGIC},
+            {"HANDLE_SYNC_LIMIT", HANDLE_SYNC_LIMIT},
+            {"ENFORCE_FRAMERATE", ENFORCE_FRAMERATE},
+            {"FIX_SAVE_POINT", FIX_SAVE_POINT},
+            #endif
+
+            #ifndef BUILD_ARCHIPELAGO_LITE
+            {"SOFT_RESET", SOFT_RESET},
+            {"AUTOSAVE", AUTOSAVE},
+            #endif
+
+            {"FIX_UP_CONFIG", FIX_UP_CONFIG},
             {"REGISTER_MAGIC", REGISTER_MAGIC},
             {"REGISTER_ABILITY", REGISTER_ABILITY},
             {"SHOW_INFORMATION", SHOW_INFORMATION},
             {"PROCESS_DEATH", PROCESS_DEATH},
-            {"ENFORCE_LOCKON", ENFORCE_LOCKON},
-            {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
-            {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
-            {"RETRIBUTION_LOGIC", RETRIBUTION_LOGIC}, 
-            {"HANDLE_SYNC_LIMIT", HANDLE_SYNC_LIMIT}
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
@@ -2221,49 +2232,53 @@ extern "C"
         }
         #endif
 
-        #ifndef BUILD_NMC
-            // Prevent MAGIC clearing since we handle that now, and because it causes a crash.
+        // Prevent MAGIC clearing since we handle that now, and because it causes a crash.
 
-            auto _funcMagicClear = SignatureScan<char*>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x57\x48\x83\xEC\x40\x48\x8B\x05\x00\x00\x00\x00\x48\x89\x74\x24\x50\x48\x8B\xD8\x4C\x89\x74\x24\x58\x48\x85\xC0\x0F\x84\x00\x00\x00\x00\x0F\x29\x74\x24\x30\xF3\x0F\x10\x35\x00\x00\x00\x00\x0F\x29\x7C\x24\x20\x0F\x57\xFF\x48\x85\xDB\x75\x08", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxxxxxxxxxxx");
-            memset(_funcMagicClear + 0x18A, 0x90, 0x05);
+        auto _funcMagicClear = SignatureScan<char*>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x57\x48\x83\xEC\x40\x48\x8B\x05\x00\x00\x00\x00\x48\x89\x74\x24\x50\x48\x8B\xD8\x4C\x89\x74\x24\x58\x48\x85\xC0\x0F\x84\x00\x00\x00\x00\x0F\x29\x74\x24\x30\xF3\x0F\x10\x35\x00\x00\x00\x00\x0F\x29\x7C\x24\x20\x0F\x57\xFF\x48\x85\xDB\x75\x08", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxxxxxxxxxxx");
+        memset(_funcMagicClear + 0x18A, 0x90, 0x05);
 
         #ifndef BUILD_ARCHIPELAGO_LITE
-            // Handle reFined.cfg file.
+        wchar_t _configPath[MAX_PATH];
 
-            wchar_t _configPath[MAX_PATH];
+        wcscpy(_configPath, mod_path);
+        wcscat(_configPath, CONFIG_NAME);
 
-            wcscpy(_configPath, mod_path);
-            wcscat(_configPath, L"\\dll\\reFined.cfg");
+        auto _wideStr = wstring(_configPath);
 
-            auto _wideStr = wstring(_configPath);
+        mINI::INIFile _configFile(string(_wideStr.begin(), _wideStr.end()));
+        mINI::INIStructure _configStruct;
 
-            mINI::INIFile _configFile(string(_wideStr.begin(), _wideStr.end()));
-            mINI::INIStructure _configStruct;
+        _configFile.read(_configStruct);
 
-            _configFile.read(_configStruct);
+        auto _fetchButtons = _configStruct["General"]["resetCombo"];
 
-            auto _fetchButtons = _configStruct["General"]["resetCombo"];
+        if (_fetchButtons.find("NONE") == string::npos)
+        {
+            size_t _buttonPos = 0;
+            string _buttonToken;
+            string _tempStr = _fetchButtons;
 
-            if (_fetchButtons.find("NONE") == string::npos)
+            while ((_buttonPos = _tempStr.find(" + ")) != string::npos)
             {
-                size_t _buttonPos = 0;
-                string _buttonToken;
-                string _tempStr = _fetchButtons;
+                _buttonToken = _tempStr.substr(0, _buttonPos);
+                _tempStr.erase(0, _buttonPos + 3);
 
-                while ((_buttonPos = _tempStr.find(" + ")) != string::npos)
-                {
-                    _buttonToken = _tempStr.substr(0, _buttonPos);
-                    _tempStr.erase(0, _buttonPos + 3);
+                transform(_buttonToken.begin(), _buttonToken.end(), _buttonToken.begin(), ::toupper);
 
-                    transform(_buttonToken.begin(), _buttonToken.end(), _buttonToken.begin(), ::toupper);
+                RESET_COMBO |= YS::HARDPAD::BUTTONS_MAP[_buttonToken];
 
-                    RESET_COMBO |= YS::HARDPAD::BUTTONS_MAP[_buttonToken];
-
-                    if (_tempStr.find(" + ") == string::npos)
-                        RESET_COMBO |= YS::HARDPAD::BUTTONS_MAP[_tempStr];
-                }
+                if (_tempStr.find(" + ") == string::npos)
+                    RESET_COMBO |= YS::HARDPAD::BUTTONS_MAP[_tempStr];
             }
+        }
 
+        ROOM_AMOUNT = atoi(_configStruct["General"]["saveRoomAmount"].c_str());
+        SAVE_SLOT_OFFSET = atoi(_configStruct["General"]["saveSlot"].c_str());
+
+        if (ROOM_AMOUNT == 0x00)
+            ROOM_AMOUNT = 1;
+
+            #ifndef BUILD_ARCHIPELAGO
             DISCORD_ENABLED = _configStruct["General"]["discordRPC"] == "true" ? true : false;
 
             ALLOW_NOHUD = _configStruct["General"]["allowNoHud"] == "true" ? true : false;
@@ -2271,13 +2286,7 @@ extern "C"
 
             if (!DISCORD_ENABLED)
                 FUNCTION_ARRAY.erase("DISCORD_RPC");
-
-            ROOM_AMOUNT = atoi(_configStruct["General"]["saveRoomAmount"].c_str());
-            SAVE_SLOT_OFFSET = atoi(_configStruct["General"]["saveSlot"].c_str());
-
-            if (ROOM_AMOUNT == 0x00)
-                ROOM_AMOUNT = 1;
-        #endif
+            #endif
         #endif
     }
 
@@ -2286,13 +2295,13 @@ extern "C"
         // If Re:Fined's post-initialization-initialization is not done:
         if (!INITIALIZED)
         {
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             // Abort function if the game is not loaded fully yet.
             auto _fetchFake = YS::MESSAGE::GetData(0x8ADC);
 
             if (!_fetchFake)
                 return;
 
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             // Trying to initialize this in OnInit causes moduleInfo to get corrupt. I have no fucking idea why.
             if (!ITEM_COMMIT)
                 ITEM_COMMIT = SignatureScan<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x40\x45\x32", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
@@ -2712,8 +2721,7 @@ extern "C"
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             for (auto _execPair : _execModule)
                 _execPair.second();
-            #endif
-            
+
             if (ALLOW_NOHUD || ALLOW_TIMESTOP)
             {
                 if (!*YS::MENU::IsMenu && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
@@ -2730,7 +2738,7 @@ extern "C"
                         {
                             memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
 
-                            _isHudDraw = !_isHudDraw; 
+                            _isHudDraw = !_isHudDraw;
                             memcpy(_fetchHudDraw, &_isHudDraw, 0x01);
                         }
 
@@ -2753,6 +2761,7 @@ extern "C"
                 else if ((*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x00 && DEBOUNCE_HUDSTOP)
                     DEBOUNCE_HUDSTOP = false;
             }
+            #endif
         }
     }
 }

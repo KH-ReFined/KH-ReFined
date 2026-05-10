@@ -638,9 +638,6 @@
     <ClCompile Include="src\kingdom\image_cache.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\save_indicator.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
     <ClCompile Include="src\kingdom\enemy.cpp">
       <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
