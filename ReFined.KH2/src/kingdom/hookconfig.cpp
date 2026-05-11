@@ -40,9 +40,9 @@ vector<Tz::HookConfig::Entry> Tz::HookConfig::Entries = vector<Tz::HookConfig::E
 	Tz::HookConfig::Entry { 0x02, 0xB719, vector<uint16_t> { 0xB726, 0xB727 },		   vector<uint16_t> { 0xB728, 0xB729 },			vector<uint16_t> { 0x0008, 0x0000 },		 0x0000, nullptr },
 	#ifndef BUILD_ARCHIPELAGO_LITE
 	Tz::HookConfig::Entry { 0x03, 0x5704, vector<uint16_t> { 0x5705, 0x5707, 0x5709 }, vector<uint16_t> { 0x5706, 0x5708, 0x570A }, vector<uint16_t> { 0x0004, 0x0002, 0x0000 }, 0x0000, nullptr },
-	Tz::HookConfig::Entry { 0x02, 0x5722, vector<uint16_t> { 0x5723, 0x5725 },		   vector<uint16_t> { 0x5724, 0x5726 },			vector<uint16_t> { 0x2000, 0x0000 },		 0x0000, nullptr },
 	#endif
 	#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+	Tz::HookConfig::Entry { 0x02, 0x5722, vector<uint16_t> { 0x5723, 0x5725 },		   vector<uint16_t> { 0x5724, 0x5726 },			vector<uint16_t> { 0x2000, 0x0000 },		 0x0000, nullptr },
 	Tz::HookConfig::Entry { 0x03, 0x5754, vector<uint16_t> { 0x5755, 0x5756, 0x5757 }, vector<uint16_t> { 0x5758, 0x5759, 0x575A }, vector<uint16_t> { 0x4000, 0x8000, 0x0000 }, 0x0000, nullptr },
 	Tz::HookConfig::Entry { 0x02, 0xB71A, vector<uint16_t> { 0xB72A, 0xB752 },		   vector<uint16_t> { 0xB72C, 0xB72D },			vector<uint16_t> { 0x0001, 0x0000 },	     0x0000, nullptr },
 	Tz::HookConfig::Entry { 0x03, 0xB71C, vector<uint16_t> { 0xB734, 0x572C, 0xB735 }, vector<uint16_t> { 0xB736, 0x572D, 0xB737 }, vector<uint16_t> { 0x0000, 0x0800, 0x0040 }, 0x0000, nullptr },

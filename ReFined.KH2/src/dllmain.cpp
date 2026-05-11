@@ -9,7 +9,6 @@
 #include <chrono>
 #include <iomanip>
 #include <algorithm>
-#include <discord.h>
 
 #include "axa.h"
 #include "area.h"
@@ -80,9 +79,7 @@
 
 #include "ini.h"
 
-
 using namespace std;
-using namespace discord;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -147,18 +144,6 @@ char* LOCKON_CHANGE = ResolveFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x
 uint32_t* LOCKON_TARGET = ResolveRelativeAddress<uint32_t*>(LOCKON_CHANGE, 0x0B);
 
 vector<char> LIMITER_FUNCTION;
-
-Core* Discord;
-
-Activity RICH_PRESENCE;
-Timestamp BEGIN_TIMESTAMP;
-
-vector<string> TEXT_PRESENCE;
-vector<string> TEXT_MODE;
-vector<string> TEXT_FORM;
-
-bool IS_MIRAGE;
-bool IS_IN_FORM = false;
 
 char* ADJUST_GLOW_FUNCTION = SignatureScan<char*>("\x4C\x8B\xDC\x49\x89\x5B\x20\x55\x56\x57\x41\x54\x41\x56\x49\x8D\xAB\x18\xF2\xFF\xFF\x48\x81\xEC\xC0\x0E\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
 char* INIT_VIEWPORT_FUNCTION = SignatureScan<char*>("\x48\x83\xEC\x38\xE8\x00\x00\x00\x00\x48\xC7\x44\x24\x20\x00\x00\x00\x00\x0F\x10\x54\x24\x20\xF3\x0F\x10\x48\x10\xF3\x0F\x10\x40\x14\x0F\xC6\xD2\xD2\xF3\x0F\x10\xD1\x0F\xC6\xD2\x27\xF3\x0F\x10\xD0\x0F\xC6\xD2\x39\x0F\x11\x90\x5C\x01\x00\x00\x48\x83\xC4\x38\xC3", "xxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
@@ -269,8 +254,6 @@ bool SYNC_LIMIT;
 
 // Configuration Values.
 
-bool DISCORD_ENABLED = true;
-
 bool ALLOW_NOHUD = false;
 bool ALLOW_TIMESTOP = false;
 
@@ -283,6 +266,148 @@ uint16_t RESET_COMBO = YS::HARDPAD::BUTTONS::NONE;
 const wchar_t* CONFIG_NAME = L"\\dll\\enablersAP.cfg";
 #else
 const wchar_t* CONFIG_NAME = L"\\dll\\reFined.cfg";
+#endif
+
+#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+    #include <discord.h>
+
+    using namespace discord;
+
+    Core* Discord;
+
+    Activity RICH_PRESENCE;
+    Timestamp BEGIN_TIMESTAMP;
+
+    vector<string> TEXT_PRESENCE;
+    vector<string> TEXT_MODE;
+    vector<string> TEXT_FORM;
+
+    bool IS_MIRAGE;
+    bool IS_IN_FORM = false;
+
+    bool DISCORD_ENABLED = true;
+
+    void DISCORD_RPC()
+    {
+        int _resultant = 0xFF;
+
+        if (Discord == nullptr)
+        {
+            discord::Core::Create(833511404274974740, DiscordCreateFlags_NoRequireDiscord, &Discord);
+
+            if (Discord == nullptr)
+            {
+                DISCORD_ENABLED = false;
+                return;
+            }
+
+            const auto _currTime = chrono::system_clock::now();
+            auto _unixTime = static_cast<time_t>(chrono::duration_cast<chrono::seconds>(_currTime.time_since_epoch()).count());
+
+            BEGIN_TIMESTAMP = _unixTime;
+
+            RICH_PRESENCE.SetApplicationId(833511404274974740);
+            RICH_PRESENCE.GetTimestamps().SetStart(BEGIN_TIMESTAMP);
+
+            for (uint16_t i = 0x5740; i < 0x5745; i++)
+            {
+                auto _msgData = YS::MESSAGE::GetData(i);
+                auto _msgConvert = YS::MESSAGE::DecodeKHSCII(_msgData);
+
+                TEXT_PRESENCE.push_back(_msgConvert);
+            }
+
+            for (auto i = 0x00; i < 0x04; i++)
+            {
+                uint16_t _stringID = 0x3738 + i;
+
+                if (i == 0x03)
+                    _stringID = 0x4E30;
+
+                auto _msgData = YS::MESSAGE::GetData(_stringID);
+                auto _msgConvert = YS::MESSAGE::DecodeKHSCII(_msgData);
+
+                TEXT_MODE.push_back(_msgConvert);
+            }
+
+            for (auto i = 0x00; i < 0x06; i++)
+            {
+                uint16_t _stringID = 0x01E5 + (i >= 0x02 ? i - 1 : i);
+
+                if (i == 0x02)
+                    _stringID = 0x4E7F;
+
+                auto _msgData = YS::MESSAGE::GetData(_stringID);
+                auto _msgConvert = YS::MESSAGE::DecodeKHSCII(_msgData);
+
+                TEXT_FORM.push_back(_msgConvert);
+            }
+
+            if (YS::FILE::GetSize("mirageArena.bin") != 0x00)
+                IS_MIRAGE = true;
+        }
+
+
+        if (DISCORD_ENABLED)
+        {
+            if (*YS::TITLE::IsTitle)
+            {
+                RICH_PRESENCE.GetAssets().SetLargeImage("title");
+
+                RICH_PRESENCE.SetState("");
+                RICH_PRESENCE.SetDetails("");
+
+                RICH_PRESENCE.GetAssets().SetLargeText("");
+                RICH_PRESENCE.GetAssets().SetSmallText("");
+
+                RICH_PRESENCE.GetAssets().SetSmallImage("");
+            }
+
+            else if (AREA::Current->World >= 0x02 && AREA::Current->World <= 0x12)
+            {
+                bool _checkUnderdrome = AREA::Current->World == 0x06 && AREA::Current->Room == 0x09 && AREA::Current->Set.Map >= 0xBD && AREA::Current->Set.Map >= 0xC4;
+
+                auto _detailText = _checkUnderdrome ? TEXT_PRESENCE.at(0x02) : TEXT_PRESENCE.at(0x00);
+
+                _detailText.replace(_detailText.find("[0]"), 0x03, to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308)));
+                _detailText.replace(_detailText.find("[1]"), 0x03, *(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180) > 0x00 ? to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180)) : TEXT_PRESENCE.at(0x04));
+
+                if (_checkUnderdrome)
+                    _detailText.replace(_detailText.find("[2]"), 0x03, to_string(AREA::Current->Entrance));
+
+                RICH_PRESENCE.SetDetails(_detailText.c_str());
+
+                auto _stateText = TEXT_PRESENCE.at(0x01);
+
+                _stateText.replace(_stateText.find("[0]"), 0x03, to_string(*(AREA::SaveData + 0x24FF)));
+                _stateText.replace(_stateText.find("[1]"), 0x03, *(AREA::SaveData + 0x3524) == 0x00 ? "N/A" : (*COMMAND_TYPE == 0x01 ? "Mickey" : TEXT_FORM.at(*(AREA::SaveData + 0x3524) - 0x01)));
+
+                RICH_PRESENCE.SetState(_stateText.c_str());
+
+                auto _fetchTime = floorf(*reinterpret_cast<const uint32_t*>(AREA::SaveData + 0x2444) / 60.0F);
+
+                auto _playHours = floorf(_fetchTime / 3600.0F);
+                auto _playMinutes = floorf(fmodf(_fetchTime, 3600.0F) / 60.0F);
+
+                ostringstream _timeStream;
+                auto _timeText = TEXT_PRESENCE.at(0x03);
+
+                _timeStream << std::setw(2) << std::setfill('0') << _playHours << ":"
+                    << std::setw(2) << std::setfill('0') << _playMinutes;
+
+                _timeText.replace(_timeText.find("[0]"), 0x03, _timeStream.str());
+
+                RICH_PRESENCE.GetAssets().SetLargeText(_timeText.c_str());
+                RICH_PRESENCE.GetAssets().SetSmallText(TEXT_MODE.at(*(AREA::SaveData + 0x2498)).c_str());
+
+                RICH_PRESENCE.GetAssets().SetSmallImage(*AREA::BattleStatus == 0x00 ? "safe" : (*AREA::BattleStatus == 0x01 ? "mob" : "boss"));
+                RICH_PRESENCE.GetAssets().SetLargeImage(IS_MIRAGE && AREA::Current->World == 0x0B ? "ma" : string(WORLD::GetName(AREA::Current->World), 0x02).c_str());
+            }
+
+            Discord->ActivityManager().UpdateActivity(RICH_PRESENCE, [&_resultant](discord::Result v) { _resultant = (int)v; });
+            Discord->RunCallbacks();
+        }
+    }
 #endif
 
 // Function Block. Everything is here now :D
@@ -680,128 +805,6 @@ void ENFORCE_FRAMERATE()
 
         memcpy(_limiterOffset, _nopArray, 0x06);
         *(dk::Vsync::IsFrameLimited) = 0x00;
-    }
-}
-
-void DISCORD_RPC()
-{
-    int _resultant = 0xFF;
-
-    if (Discord == nullptr)
-    {
-        discord::Core::Create(833511404274974740, DiscordCreateFlags_NoRequireDiscord, &Discord);
-
-        if (Discord == nullptr)
-        {
-            DISCORD_ENABLED = false;
-            return;
-        }
-
-        const auto _currTime = chrono::system_clock::now();
-        auto _unixTime = static_cast<time_t>(chrono::duration_cast<chrono::seconds>(_currTime.time_since_epoch()).count());
-
-        BEGIN_TIMESTAMP = _unixTime;
-
-        RICH_PRESENCE.SetApplicationId(833511404274974740);
-        RICH_PRESENCE.GetTimestamps().SetStart(BEGIN_TIMESTAMP);
-
-        for (uint16_t i = 0x5740; i < 0x5745; i++)
-        {
-            auto _msgData = YS::MESSAGE::GetData(i);
-            auto _msgConvert = YS::MESSAGE::DecodeKHSCII(_msgData);
-
-            TEXT_PRESENCE.push_back(_msgConvert);
-        }
-
-        for (auto i = 0x00; i < 0x04; i++)
-        {
-            uint16_t _stringID = 0x3738 + i;
-
-            if (i == 0x03)
-                _stringID = 0x4E30;
-
-            auto _msgData = YS::MESSAGE::GetData(_stringID);
-            auto _msgConvert = YS::MESSAGE::DecodeKHSCII(_msgData);
-
-            TEXT_MODE.push_back(_msgConvert);
-        }
-
-        for (auto i = 0x00; i < 0x06; i++)
-        {
-            uint16_t _stringID = 0x01E5 + (i >= 0x02 ? i - 1 : i);
-
-            if (i == 0x02)
-                _stringID = 0x4E7F;
-
-            auto _msgData = YS::MESSAGE::GetData(_stringID);
-            auto _msgConvert = YS::MESSAGE::DecodeKHSCII(_msgData);
-
-            TEXT_FORM.push_back(_msgConvert);
-        }
-
-        if (YS::FILE::GetSize("mirageArena.bin") != 0x00)
-            IS_MIRAGE = true;
-    }
-
-
-    if (DISCORD_ENABLED)
-    {
-        if (*YS::TITLE::IsTitle)
-        {
-            RICH_PRESENCE.GetAssets().SetLargeImage("title");
-
-            RICH_PRESENCE.SetState("");
-            RICH_PRESENCE.SetDetails("");
-
-            RICH_PRESENCE.GetAssets().SetLargeText("");
-            RICH_PRESENCE.GetAssets().SetSmallText("");
-
-            RICH_PRESENCE.GetAssets().SetSmallImage("");
-        }
-
-        else if (AREA::Current->World >= 0x02 && AREA::Current->World <= 0x12)
-        {
-            bool _checkUnderdrome = AREA::Current->World == 0x06 && AREA::Current->Room == 0x09 && AREA::Current->Set.Map >= 0xBD && AREA::Current->Set.Map >= 0xC4;
-
-            auto _detailText = _checkUnderdrome ? TEXT_PRESENCE.at(0x02) : TEXT_PRESENCE.at(0x00);
-
-            _detailText.replace(_detailText.find("[0]"), 0x03, to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308)));
-            _detailText.replace(_detailText.find("[1]"), 0x03, *(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180) > 0x00 ? to_string(*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308 + 0x180)) : TEXT_PRESENCE.at(0x04));
-
-            if (_checkUnderdrome)
-                _detailText.replace(_detailText.find("[2]"), 0x03, to_string(AREA::Current->Entrance));
-
-            RICH_PRESENCE.SetDetails(_detailText.c_str());
-
-            auto _stateText = TEXT_PRESENCE.at(0x01);
-
-            _stateText.replace(_stateText.find("[0]"), 0x03, to_string(*(AREA::SaveData + 0x24FF)));
-            _stateText.replace(_stateText.find("[1]"), 0x03, *(AREA::SaveData + 0x3524) == 0x00 ? "N/A" : (*COMMAND_TYPE == 0x01 ? "Mickey" : TEXT_FORM.at(*(AREA::SaveData + 0x3524) - 0x01)));
-
-            RICH_PRESENCE.SetState(_stateText.c_str());
-
-            auto _fetchTime = floorf(*reinterpret_cast<const uint32_t*>(AREA::SaveData + 0x2444) / 60.0F);
-
-            auto _playHours = floorf(_fetchTime / 3600.0F);
-            auto _playMinutes = floorf(fmodf(_fetchTime, 3600.0F) / 60.0F);
-
-            ostringstream _timeStream;
-            auto _timeText = TEXT_PRESENCE.at(0x03);
-
-            _timeStream << std::setw(2) << std::setfill('0') << _playHours << ":"
-                << std::setw(2) << std::setfill('0') << _playMinutes;
-
-            _timeText.replace(_timeText.find("[0]"), 0x03, _timeStream.str());
-
-            RICH_PRESENCE.GetAssets().SetLargeText(_timeText.c_str());
-            RICH_PRESENCE.GetAssets().SetSmallText(TEXT_MODE.at(*(AREA::SaveData + 0x2498)).c_str());
-
-            RICH_PRESENCE.GetAssets().SetSmallImage(*AREA::BattleStatus == 0x00 ? "safe" : (*AREA::BattleStatus == 0x01 ? "mob" : "boss"));
-            RICH_PRESENCE.GetAssets().SetLargeImage(IS_MIRAGE && AREA::Current->World == 0x0B ? "ma" : string(WORLD::GetName(AREA::Current->World), 0x02).c_str());
-        }
-
-        Discord->ActivityManager().UpdateActivity(RICH_PRESENCE, [&_resultant](discord::Result v) { _resultant = (int)v; });
-        Discord->RunCallbacks();
     }
 }
 
@@ -1792,10 +1795,14 @@ void FIX_UP_CONFIG()
 {
     if (*YS::TITLE::IsTitle)
     { 
-        if (TITLE_FILENAME[0x00] == 0x00)
-            Tz::CmData::MakeFname(TITLE_FILENAME, const_cast<char*>(IS_FASTBOOT ? "title_fast.2ld" : "title.2ld"));
+        #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            if (TITLE_FILENAME[0x00] == 0x00)
+                Tz::CmData::MakeFname(TITLE_FILENAME, const_cast<char*>(IS_FASTBOOT ? "title_fast.2ld" : "title.2ld"));
 
-        auto _fetchCacheBuff = YS::CACHE_BUFF::SearchByName(TITLE_FILENAME, -1);
+            auto _fetchCacheBuff = YS::CACHE_BUFF::SearchByName(TITLE_FILENAME, -1);
+        #else
+            auto _fetchCacheBuff = YS::CACHE_BUFF::SearchByName("menu/us/title.2ld", -1); // Jared has no intention to support any other language.
+        #endif
 
         if (!_fetchCacheBuff)
             return;
@@ -2116,6 +2123,9 @@ extern "C"
 
         memset(reinterpret_cast<char*>(dk::SOFTRESET::SoftResetThread) + 0x1ED, 0x90, 0x05);
 
+        // Fetch the prompt mode byte according to the game version.
+        PROMPT_MODE = ResolveRelativeAddress<bool*>("\x40\x57\x48\x83\xEC\x20\x4C\x8B\x0D\x00\x00\x00\x00\x33\xD2\x4D\x85\xC9\x49\x8D\x81\xA0\x12\x00\x00\x48\x0F\x45\xD0\x4D\x8D\x81\x3C\x02\x00\x00\x48\x85\xD2\x0F\x84\x2B\x01\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16\x48\x63\x82\x00\x02\x00\x00\x48\xC1\xE0\x08\x80\x7C\x10\x3B\x00\x0F\x85\x00\x00\x00\x00\x48\x85\xD2\x0F\x84\xFE\x00\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16", "xxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxx", IS_STEAM ? 0x969 : 0x959);
+
         #ifndef BUILD_ARCHIPELAGO_LITE
         Tz::HookIntro::Submit();
         Tz::HookConfig::Submit();
@@ -2123,9 +2133,6 @@ extern "C"
 
         #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
         MOD_PATH = mod_path;
-
-        // Fetch the prompt mode byte according to the game version.
-        PROMPT_MODE = ResolveRelativeAddress<bool*>("\x40\x57\x48\x83\xEC\x20\x4C\x8B\x0D\x00\x00\x00\x00\x33\xD2\x4D\x85\xC9\x49\x8D\x81\xA0\x12\x00\x00\x48\x0F\x45\xD0\x4D\x8D\x81\x3C\x02\x00\x00\x48\x85\xD2\x0F\x84\x2B\x01\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16\x48\x63\x82\x00\x02\x00\x00\x48\xC1\xE0\x08\x80\x7C\x10\x3B\x00\x0F\x85\x00\x00\x00\x00\x48\x85\xD2\x0F\x84\xFE\x00\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16", "xxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxx", IS_STEAM ? 0x969 : 0x959);
 
         // Fetch the launch parameters and parse them.
 
