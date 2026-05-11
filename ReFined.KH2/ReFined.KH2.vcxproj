@@ -619,7 +619,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)EnablersAP-LITE.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">
@@ -643,7 +643,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)EnablersAP-FULL.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
