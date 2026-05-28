@@ -16,17 +16,6 @@ extern "C"
     {
         class DLL_EXPORT TIMER
         {
-		private:
-			static bool _init()
-			{
-				RedirectFunction("\x40\x55\x53\x56\x57\x41\x56\x48\x8B\xEC\x48\x83\xEC\x60\x48\x8B\xD9\xE8", "xxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(update), 0x44B);
-				return true;
-			}
-
-			#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-			static inline bool _doInit = _init();
-			#endif
-
         public:
             static inline uint32_t(*getTime)() = FetchFunctionFromCall<uint32_t(*)()>("\x40\x55\x53\x56\x57\x41\x56\x48\x8B\xEC\x48\x83\xEC\x60\x48\x8B\xD9\xE8", "xxxxxxxxxxxxxxxxxx", 0x10A);
             static inline bool(*isDown)() = FetchFunctionFromCall<bool(*)()>("\x40\x55\x53\x56\x57\x41\x56\x48\x8B\xEC\x48\x83\xEC\x60\x48\x8B\xD9\xE8", "xxxxxxxxxxxxxxxxxx", 0x27F);
@@ -187,6 +176,17 @@ extern "C"
 					return;
 				}
 			}
+
+			private:
+				static bool _init()
+				{
+					RedirectFunction("\x40\x55\x53\x56\x57\x41\x56\x48\x8B\xEC\x48\x83\xEC\x60\x48\x8B\xD9\xE8", "xxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(update), 0x44B);
+					return true;
+				}
+
+			#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+				static inline bool _doInit = _init();
+			#endif
         };
     }
 }

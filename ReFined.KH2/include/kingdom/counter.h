@@ -1,7 +1,6 @@
 #pragma once
 
 #define DLL_EXPORT __declspec(dllexport)
-#define _CRT_SECURE_NO_WARNINGS
 
 #include "obj2d.h"
 #include "limit.h"
@@ -9,6 +8,7 @@
 #include "sequence.h"
 #include "memorymgr.h"
 #include "info_base.h"
+#include "cache_buff.h"
 #include "information.h"
 #include "mission_count.h"
 
@@ -18,23 +18,6 @@ extern "C"
 	{
 		class DLL_EXPORT COUNTER
 		{
-		private:
-			static bool _init()
-			{
-				YS::LIMIT::destroy = FindSignature<void(*)(char*)>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xF9\x8B\x09\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8", "xxxxxxxxxxxxxxxx????xxxx");
-
-				YS::MISSION_COUNT::destroy = FetchRelativePointer<void(*)(char*)>(reinterpret_cast<char*>(YS::LIMIT::destroy), 0xF9);
-				dk::INFORMATION::forceLeaveCounter = FetchRelativePointer<void(*)(char*)>(reinterpret_cast<char*>(YS::MISSION_COUNT::destroy), 0x13);
-				dk::COUNTER::forceLeave = FetchRelativePointer<void(*)(char*)>(reinterpret_cast<char*>(dk::INFORMATION::forceLeaveCounter), 0x1B);
-
-				RedirectFunction("\x48\x89\x5C\x24\x18\x48\x89\x74\x24\x20\x55\x57\x41\x56\x48\x8B\xEC\x48\x83\xEC\x50\x48\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(update), 0x38E);
-				return true;
-			}
-
-			#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-			static inline bool _doInit = _init();
-			#endif
-
 		public:
 			static void(*forceLeave)(char* counter);
 
@@ -98,7 +81,7 @@ extern "C"
 						char _numSeqDictionary[0x0A] = { 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15 };
 						char _arraySequenceNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-						sprintf(_arraySequenceNum, "%d", _comboCurrent);
+						sprintf_s(_arraySequenceNum, 0x06, "%d", _comboCurrent);
 
 						vector<char> _arrayFinalSequence;
 
@@ -152,7 +135,7 @@ extern "C"
 						char _subNumSeqDictionary[0x0A] = { 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21 };
 						char _arraySequenceSubNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-						sprintf(_arraySequenceSubNum, "%d", _maxComboCurrent);
+						sprintf_s(_arraySequenceSubNum, 0x06, "%d", _maxComboCurrent);
 
 						vector<char> _arrayFinalSequence;
 
@@ -195,6 +178,23 @@ extern "C"
 					*reinterpret_cast<int*>(counter + 0x1CB4) = *reinterpret_cast<int*>(counter + 0x1CB0);
 				}
 			}
+		
+			private:
+				static bool _init()
+				{
+					YS::LIMIT::destroy = FindSignature<void(*)(char*)>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xF9\x8B\x09\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8", "xxxxxxxxxxxxxxxx????xxxx");
+
+					YS::MISSION_COUNT::destroy = FetchRelativePointer<void(*)(char*)>(reinterpret_cast<char*>(YS::LIMIT::destroy), 0xF9);
+					dk::INFORMATION::forceLeaveCounter = FetchRelativePointer<void(*)(char*)>(reinterpret_cast<char*>(YS::MISSION_COUNT::destroy), 0x13);
+					dk::COUNTER::forceLeave = FetchRelativePointer<void(*)(char*)>(reinterpret_cast<char*>(dk::INFORMATION::forceLeaveCounter), 0x1B);
+
+					RedirectFunction("\x48\x89\x5C\x24\x18\x48\x89\x74\x24\x20\x55\x57\x41\x56\x48\x8B\xEC\x48\x83\xEC\x50\x48\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(update), 0x38E);
+					return true;
+				}
+
+				#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+				static inline bool _doInit = _init();
+				#endif
 		};
 	}
 }

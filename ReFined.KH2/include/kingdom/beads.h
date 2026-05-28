@@ -13,20 +13,6 @@ extern "C"
     {
         class DLL_EXPORT VM
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x48\x89\x7C\x24\x18\x41\x56\x48\x83\xEC\x30\x8B\x59\x18\x4C\x8B\xF1\x8B\x79\x10\x8B\x71\x08\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(trap_obj_effect_start_bind), 0x72);
-                RedirectFunction("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x89\x03\xC7\x43\x04\x40\x49\x4E\x54\x48\x83\xC4\x20\x5B\xC3\xCC\x48", "xxxxxxxxxxxx????xxxx????xxxx????xxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(trap_obj_get_entry_id), 0x2F);
-                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x30\x8B\x79\x10\x48\x8B\xF1\x0F\x29\x74\x24\x20\xF3\x0F\x10\x71\x18\x8B\x49\x08\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x8B\x0E\x48\x8B\xD8\xE8\x00\x00\x00\x00\x0F\x28\xDE\x44\x8B\xC7\x48\x8B\xD3\x48\x8B\xC8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxx????xxxxxxxxxxxx", reinterpret_cast<uint64_t>(trap_limit_motion_start), 0x21);
-                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x30\x4C\x8B\xF1\x8B\x49\x10\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x41\x8B\x0E\x48\x8B\xD8\x41\x8B\x7E\x20\x41\x8B\x76\x18\x41\x8B\x6E\x08\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(trap_obj_effect_start_bind_other), 0x8E);
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
             public:
                 static uint32_t trap_obj_get_entry_id(uint32_t* bdvalue)
                 {
@@ -166,12 +152,12 @@ extern "C"
                     if (_motionPtr == 0x00 || _motionPtr == UINT32_MAX)
                         return 0x00;
 
-                    auto _targetLimitPtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetLimit));
+                    auto _targetLimitPtr = PC::CONVERTER::INTPTR_TO_POINTER(_targetLimit);
 
                     if (!_targetLimitPtr || _targetLimitPtr > moduleInfo.moduleEnd)
                         return 0x00;
 
-                    auto _targetObjectPtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetObj));
+                    auto _targetObjectPtr = PC::CONVERTER::INTPTR_TO_POINTER(_targetObj);
 
                     if (!_targetObjectPtr || _targetObjectPtr > moduleInfo.moduleEnd)
                         return 0x00;
@@ -181,7 +167,7 @@ extern "C"
                     if (_motionQueuePtr == 0x00 || _motionQueuePtr == UINT32_MAX)
                         return 0x00;
 
-                    auto _targetMotionQueuePtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_motionQueuePtr));
+                    auto _targetMotionQueuePtr = PC::CONVERTER::INTPTR_TO_POINTER(_motionQueuePtr);
 
                     if (!_targetMotionQueuePtr || _targetMotionQueuePtr > moduleInfo.moduleEnd)
                         return 0x00;
@@ -193,6 +179,20 @@ extern "C"
 
                     return _dwordReturn;
                 };
+            
+            private:
+                static bool _init()
+                {
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x48\x89\x7C\x24\x18\x41\x56\x48\x83\xEC\x30\x8B\x59\x18\x4C\x8B\xF1\x8B\x79\x10\x8B\x71\x08\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(trap_obj_effect_start_bind), 0x72);
+                    RedirectFunction("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x89\x03\xC7\x43\x04\x40\x49\x4E\x54\x48\x83\xC4\x20\x5B\xC3\xCC\x48", "xxxxxxxxxxxx????xxxx????xxxx????xxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(trap_obj_get_entry_id), 0x2F);
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x30\x8B\x79\x10\x48\x8B\xF1\x0F\x29\x74\x24\x20\xF3\x0F\x10\x71\x18\x8B\x49\x08\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x8B\x0E\x48\x8B\xD8\xE8\x00\x00\x00\x00\x0F\x28\xDE\x44\x8B\xC7\x48\x8B\xD3\x48\x8B\xC8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxx????xxxxxxxxxxxx", reinterpret_cast<uint64_t>(trap_limit_motion_start), 0x21);
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x30\x4C\x8B\xF1\x8B\x49\x10\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x41\x8B\x0E\x48\x8B\xD8\x41\x8B\x7E\x20\x41\x8B\x76\x18\x41\x8B\x6E\x08\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(trap_obj_effect_start_bind_other), 0x8E);
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
         };
     }
 }

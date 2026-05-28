@@ -18,21 +18,6 @@ extern "C"
     {
         class DLL_EXPORT FACE
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x40\x8B\xF2\x44\x89\x81\x00\x03\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(create), 0xBF);
-                RedirectFunction("\x80\xB9\x04\x03\x00\x00\x00\x0F\x85", "xxxxxxxxx", reinterpret_cast<uint64_t>(update), 0x0E);
-                RedirectFunction("\x40\x53\x48\x83\xEC\x20\x80\xB9\x04\x03\x00\x00\x00\x48\x8B\xD9\x74\x19\x48\x81\xC1", "xxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(draw), 0x35);
-                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x41\x8B\xD8\x33\xFF\x4C\x8B\xC2\x48", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(reload), 0x35);
-
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static inline bool (*getFaceSed)(char* face, char** sqd, char* object) = FindSignature<bool(*)(char*, char**, char*)>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8D\xB9\x90\x00\x00\x00", "xxxxxxxxxxxxxxxxx");
 
@@ -214,6 +199,21 @@ extern "C"
             }
 
             static void emptyDraw(char* sprite);
+
+        private:
+            static bool _init()
+            {
+                RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x40\x8B\xF2\x44\x89\x81\x00\x03\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(create), 0xBF);
+                RedirectFunction("\x80\xB9\x04\x03\x00\x00\x00\x0F\x85", "xxxxxxxxx", reinterpret_cast<uint64_t>(update), 0x0E);
+                RedirectFunction("\x40\x53\x48\x83\xEC\x20\x80\xB9\x04\x03\x00\x00\x00\x48\x8B\xD9\x74\x19\x48\x81\xC1", "xxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(draw), 0x35);
+                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x41\x8B\xD8\x33\xFF\x4C\x8B\xC2\x48", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(reload), 0x35);
+
+                return true;
+            }
+
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            static inline bool _doInit = _init();
+            #endif
         };
     }
 }

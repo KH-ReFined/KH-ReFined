@@ -15,17 +15,6 @@ extern "C"
 
 		class DLL_EXPORT Scis 
 		{
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x66\x89\x54\x24\x08\x66\xFF\xCA\x66\x44\x89\x44\x24\x0C\x66\x41", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(setScis), 0x21);
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
 			public:
 				static void setScis(char* scissor, short x, short y, short width, short height)
                 {
@@ -46,6 +35,17 @@ extern "C"
 
                     *reinterpret_cast<long long*>(scissor + 0x10) = _calcScis;
                 }
+
+            private:
+                static bool _init()
+                {
+                    RedirectFunction("\x66\x89\x54\x24\x08\x66\xFF\xCA\x66\x44\x89\x44\x24\x0C\x66\x41", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(setScis), 0x21);
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
 		};
 	}
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#define _CRT_SECURE_NO_WARNINGS
 #define DLL_EXPORT __declspec(dllexport)
 
 #include "sprite.h"
@@ -17,24 +16,6 @@ extern "C"
     {
         class DLL_EXPORT LEVEL_UP
         {
-        private:
-            static bool _init()
-            {
-                auto _fetchVtable = FetchRelativePointer<char*>("\x40\x53\x57\x48\x83\xEC\x28\x48\x8B\x05", "xxxxxxxxxx", 0x56);
-
-                auto _drawFunc = (uint64_t)draw;
-
-                RedirectFunction(*reinterpret_cast<char**>(_fetchVtable + 0x10), reinterpret_cast<uint64_t>(draw), 0xBA);
-                RedirectFunction(*reinterpret_cast<char**>(_fetchVtable + 0x40), reinterpret_cast<uint64_t>(draw), 0xBA);
-                RedirectFunction(*reinterpret_cast<char**>(_fetchVtable + 0x70), reinterpret_cast<uint64_t>(draw), 0xBA);
-
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static void draw(char* levelUp)
             {
@@ -86,6 +67,24 @@ extern "C"
                     YS::MESSAGEDRAW::draw(_messageMemory + 0x0200, _activeX + _paramX + (_activeX > 255 ? _offsetValue : _offsetValue * -1), _activeY + _paramY + 17, _activeRGBA);
                 }
             }
+
+            private:
+                static bool _init()
+                {
+                    auto _fetchVtable = FetchRelativePointer<char*>("\x40\x53\x57\x48\x83\xEC\x28\x48\x8B\x05", "xxxxxxxxxx", 0x56);
+
+                    auto _drawFunc = (uint64_t)draw;
+
+                    RedirectFunction(*reinterpret_cast<char**>(_fetchVtable + 0x10), reinterpret_cast<uint64_t>(draw), 0xBA);
+                    RedirectFunction(*reinterpret_cast<char**>(_fetchVtable + 0x40), reinterpret_cast<uint64_t>(draw), 0xBA);
+                    RedirectFunction(*reinterpret_cast<char**>(_fetchVtable + 0x70), reinterpret_cast<uint64_t>(draw), 0xBA);
+
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
         };
     }
 }

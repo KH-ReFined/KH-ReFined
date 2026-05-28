@@ -27,18 +27,6 @@ extern "C"
     {
         class DLL_EXPORT ENEMY
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x40\x57\x48\x83\xEC\x20\x48\x8B\xF9\x8B\x89\x38\x0D\x00\x00\xE8", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(_OVR__dead), 0x98);
-
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static inline char* LastAttacker = FetchRelativePointer<char*>("\x40\x57\x48\x83\xEC\x20\x48\x8B\xF9\x8B\x89\x38\x0D\x00\x00\xE8", "xxxxxxxxxxxxxxxx", 0x34);
 
@@ -62,6 +50,18 @@ extern "C"
                 YS::SAVERAM_BATTLE::inc_kill_count(AREA::SaveData + 0x24F0, _enemyPartNum);
                 return YS::ENEMYBASE::_OVR__dead(enemy);
             }
+
+            private:
+                static bool _init()
+                {
+                    RedirectFunction("\x40\x57\x48\x83\xEC\x20\x48\x8B\xF9\x8B\x89\x38\x0D\x00\x00\xE8", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(_OVR__dead), 0x98);
+
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
         };
     }
 }

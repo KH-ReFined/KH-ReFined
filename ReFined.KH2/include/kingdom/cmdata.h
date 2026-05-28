@@ -22,42 +22,6 @@ extern "C"
     {
         class DLL_EXPORT CmData
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(MakeFname), 0x191);
-                
-                auto _backReadImage = FindSignature<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x");
-
-                vector<uint8_t> _patchBackReadImage =
-                {
-                    0x48, 0x8B, 0xCC, // mov rcx, rsp
-                    0xFF, 0x15, 0x02, 0x00, 0x00, 0x00, 0xEB, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // call [someFunction] 
-                };
-
-                memset(_backReadImage + 0x7D, 0x90, 0x14);
-
-                auto _constFunction = (uint64_t)MakeFnameItempic;
-
-                memcpy(_patchBackReadImage.data() + 0x0B, &_constFunction, 0x08);
-                memcpy(_backReadImage + 0x7D, _patchBackReadImage.data(), _patchBackReadImage.size());
-
-                memset(_backReadImage + 0x231, 0x90, 0x14);
-
-                _constFunction = (uint64_t)MakeFnameFace;
-
-                _patchBackReadImage[2] = 0xCD;
-
-                memcpy(_patchBackReadImage.data() + 0x0B, &_constFunction, 0x08);
-                memcpy(_backReadImage + 0x231, _patchBackReadImage.data(), _patchBackReadImage.size());
-
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static inline char* MENU_FNAME_BUFFER = FetchRelativePointer<char*>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x0D);
             static inline char* FAC_WRITE_BUFFER = FetchRelativePointer<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x", 0x1F9);
@@ -174,6 +138,42 @@ extern "C"
 
                 printf("[Tz::CmData::MakeFnameItempic] | Fulfilling ITEMPIC request for: \"%s\"\n", buff);
             }
+
+            private:
+                static bool _init()
+                {
+                    RedirectFunction("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\xF2\x48\x2B\xD0\x48\x8B\xF9\x66\x0F\x1F\x44\x00\x00\x44\x0F\xB6\x00\x0F\xB6\x0C\x10\x44\x2B\xC1", "xxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(MakeFname), 0x191);
+
+                    auto _backReadImage = FindSignature<char*>("\x48\x83\xEC\x68\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x50\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\x00\x00\x00\x00\x38\x05\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x66\x83\x3D\x00\x00\x00\x00\x00", "xxxxxxx????xxxxxxxxx????xxxx????xx????xx????xxx????x");
+
+                    vector<uint8_t> _patchBackReadImage =
+                    {
+                        0x48, 0x8B, 0xCC, // mov rcx, rsp
+                        0xFF, 0x15, 0x02, 0x00, 0x00, 0x00, 0xEB, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // call [someFunction] 
+                    };
+
+                    memset(_backReadImage + 0x7D, 0x90, 0x14);
+
+                    auto _constFunction = (uint64_t)MakeFnameItempic;
+
+                    memcpy(_patchBackReadImage.data() + 0x0B, &_constFunction, 0x08);
+                    memcpy(_backReadImage + 0x7D, _patchBackReadImage.data(), _patchBackReadImage.size());
+
+                    memset(_backReadImage + 0x231, 0x90, 0x14);
+
+                    _constFunction = (uint64_t)MakeFnameFace;
+
+                    _patchBackReadImage[2] = 0xCD;
+
+                    memcpy(_patchBackReadImage.data() + 0x0B, &_constFunction, 0x08);
+                    memcpy(_backReadImage + 0x231, _patchBackReadImage.data(), _patchBackReadImage.size());
+
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
         };
     }
 }

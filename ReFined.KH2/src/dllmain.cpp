@@ -61,6 +61,7 @@
 #include "treasure_info.h"
 #include "vsync.h"
 #include "weapon.h"
+#include "newgame.h"
 #include "weapon_mset.h"
 #include "weapon_entry.h"
 #include "world.h"

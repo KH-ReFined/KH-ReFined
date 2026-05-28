@@ -18,17 +18,6 @@ extern "C"
     {
         class DLL_EXPORT NewGame
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(SetupResult), 0x41E);
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static char* SetupResult()
             {
@@ -166,6 +155,17 @@ extern "C"
             static inline char** m_SelPtr  = FetchRelativePointer<char**>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", 0x273);
             static inline char** m_MenuPtr = reinterpret_cast<char**>(FetchRelativePointer<char*>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", 0x17) - 0x28);
             static inline char* s_Plate2Seq = FetchRelativePointer<char*>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", 0x25D);
+
+            private:
+                static bool _init()
+                {
+                    RedirectFunction("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\x4C\x8B\x3D", "xxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(SetupResult), 0x41E);
+                    return true;
+                }
+
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            static inline bool _doInit = _init();
+            #endif
         };
     }
 }

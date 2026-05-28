@@ -1,13 +1,10 @@
 #pragma once
 
 #define DLL_EXPORT __declspec(dllexport)
-#define _CRT_SECURE_NO_WARNINGS
 
-#include <cstdint>
-#include <Windows.h>
+#include "sound.h"
 #include "region.h"
 #include "memorymgr.h"
-#include "sound.h"
 
 extern "C"
 {
@@ -15,41 +12,41 @@ extern "C"
     {
         class DLL_EXPORT LIMIT_TABLE
         {
-        private:
-            static bool _init()
-            {
-                auto _fetchFilenameOriginal = FetchFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x40\x48\x8B\xF9\x0F\x29\x74\x24\x30\x8B\x09\x0F\x28\xF1\xE8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x24);
+            public:
+                static char* LIMIT_FNBUFFER;
 
-                LIMIT_FNBUFFER = FetchRelativePointer<char*>(_fetchFilenameOriginal, 0x4D);
-                RedirectFunction(_fetchFilenameOriginal, reinterpret_cast<uint64_t>(get_filename), 0x69);
-                return true;
-            }
+                static char* get_filename(char* limitTable)
+                {
+                    const char* _regionStr = (!YS::REGION::Get() || YS::REGION::Get() == 0x07) ? "fm" : reinterpret_cast<char*>(*YS::REGION::Region);
 
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
+                    auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
-        public:
-            static char* LIMIT_FNBUFFER;
+                    string _fetchPath = _fetchConfig & 0x0200 ? "limit_2nd" :
+                        (_fetchConfig & 0x0400 ? "limit_3rd" : "limit");
 
-            static char* get_filename(char* limitTable)
-            {
-                const char* _regionStr = (!YS::REGION::Get() || YS::REGION::Get() == 0x07) ? "fm" : reinterpret_cast<char*>(*YS::REGION::Region);
+                    char* _limitName = limitTable + 0x04;
 
-                auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
+                    sprintf_s(YS::LIMIT_TABLE::LIMIT_FNBUFFER, 0x28, "%s/%s/%s", _fetchPath.c_str(), _regionStr, _limitName);
 
-                string _fetchPath = _fetchConfig & 0x0200 ? "limit_2nd" :
-                    (_fetchConfig & 0x0400 ? "limit_3rd" : "limit");
+                    if (!YS::FILE::GetSize(YS::LIMIT_TABLE::LIMIT_FNBUFFER))
+                        sprintf_s(YS::LIMIT_TABLE::LIMIT_FNBUFFER, 0x28, "limit/%s/%s", _regionStr, _limitName);
 
-                char* _limitName = limitTable + 0x04;
+                    return YS::LIMIT_TABLE::LIMIT_FNBUFFER;
+                }
 
-                sprintf(YS::LIMIT_TABLE::LIMIT_FNBUFFER, "%s/%s/%s", _fetchPath.c_str(), _regionStr, _limitName);
+            private:
+                static bool _init()
+                {
+                    auto _fetchFilenameOriginal = FetchFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x40\x48\x8B\xF9\x0F\x29\x74\x24\x30\x8B\x09\x0F\x28\xF1\xE8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x24);
 
-                if (!YS::FILE::GetSize(YS::LIMIT_TABLE::LIMIT_FNBUFFER))
-                    sprintf(YS::LIMIT_TABLE::LIMIT_FNBUFFER, "limit/%s/%s", _regionStr, _limitName);
+                    LIMIT_FNBUFFER = FetchRelativePointer<char*>(_fetchFilenameOriginal, 0x4D);
+                    RedirectFunction(_fetchFilenameOriginal, reinterpret_cast<uint64_t>(get_filename), 0x69);
+                    return true;
+                }
 
-                return YS::LIMIT_TABLE::LIMIT_FNBUFFER;
-            }
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
         };
     }
 }

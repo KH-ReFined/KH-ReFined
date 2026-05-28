@@ -23,19 +23,6 @@ extern "C"
 	{
 		class DLL_EXPORT EVENT
 		{
-		private:
-			static bool _init()
-			{
-				RedirectFunction("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", reinterpret_cast<uint64_t>(motion_read_set), 0x28F);
-				RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(audio_read_set), 0x12B);
-
-				return true;
-			}
-
-			#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-			static inline bool _doInit = _init();
-			#endif
-
 		public:
 			static inline char* (*get_read_wk_motion)() = FetchFunctionFromCall<char* (*)()>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", 0x25);
 			static inline char* (*getSkeletonName)(int entryId) = FetchFunctionFromCall<char* (*)(int)>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", 0x4D);
@@ -146,6 +133,19 @@ extern "C"
 
 				return YS::FILE::ReadBarBack(sa::EVENT::MotionFilename, _buffAlloc, sa::EVENT::ReadMotionCallback, reinterpret_cast<uint32_t*>(_wk));
 			}
+		
+			private:
+				static bool _init()
+				{
+					RedirectFunction("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", reinterpret_cast<uint64_t>(motion_read_set), 0x28F);
+					RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(audio_read_set), 0x12B);
+
+					return true;
+				}
+
+				#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+				static inline bool _doInit = _init();
+				#endif
 		};
 	}
 }

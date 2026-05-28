@@ -16,17 +16,6 @@ extern "C"
 	{
 		class DLL_EXPORT BINARC
 		{
-		private:
-			static bool _init()
-			{
-				RedirectFunction("\x41\x56\x48\x81\xEC\x00\x01\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\xD0\x00\x00", "xxxxxxxxxxxx????xxxxxxxxxx", reinterpret_cast<uint64_t>(preSetup), 0x34A);
-				return true;
-			}
-
-			#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-			static inline bool _doInit = _init();
-			#endif
-
 		public:
 			static inline void (*modelInitVB)(char* readAddr, bool doProcess) = FindSignature<void(*)(char*, bool)>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8D\xB9\x90\x00\x00\x00", "xxxxxxxxxxxxxxxxx");
             static inline void (*modelCreateVB)(char* readAddr, int kind, char* param) = FindSignature<void(*)(char*, int, char*)>("\x83\xFA\xFF\x0F\x84\xA5\x00\x00\x00\x48\x89\x6C\x24\x18", "xxxxxxxxxxxxxx");
@@ -175,6 +164,17 @@ extern "C"
 					}
 				}
 			}
+
+			private:
+				static bool _init()
+				{
+					RedirectFunction("\x41\x56\x48\x81\xEC\x00\x01\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\xD0\x00\x00", "xxxxxxxxxxxx????xxxxxxxxxx", reinterpret_cast<uint64_t>(preSetup), 0x34A);
+					return true;
+				}
+
+				#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+				static inline bool _doInit = _init();
+				#endif
 		};
 	}
 }

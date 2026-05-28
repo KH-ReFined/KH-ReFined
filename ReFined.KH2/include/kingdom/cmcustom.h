@@ -33,31 +33,6 @@ extern "C"
     {
         class DLL_EXPORT CmCustom
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x8B\xF8\x8D\x48\xE6\x83\xF9\x01\x76\x0C", "xxxxxxxxxxx????xxxxxxxxxx", reinterpret_cast<uint64_t>(isTakeOff), 0xF8);
-                RedirectFunction("\x40\x53\x57\x48\x83\xEC\x48\x48\x89\x6C\x24\x60\x4C\x89\x64\x24\x70\x4C\x89\x6C\x24\x40\x4C\x89", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ChangeAutoReplenishment), 0x028A);
-                RedirectFunction("\x40\x53\x48\x83\xEC\x20\x8B\xD9\xB9\x19\x00\x00\x00\xE8", "xxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ChangePartyBehavior), 0x75);
-                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x8B\xF9\xE8\x00\x00\x00\x00\xB9\x19\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????xxxxx", reinterpret_cast<uint64_t>(ChageAbility), 0xFA);
-                RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\xB9\x1A\x00\x00\x00\xE8", "xxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ChangeCustomInfo), 0x160);
-                RedirectFunction("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x8B\xF9\xB9\x19\x00\x00\x00\xE8", "xxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(CurPos2CustomType), 0xBA);
-                RedirectFunction("\x40\x53\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x68\xE8\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(SetupCustom), 0x555);
-                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x60\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x58", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxx", reinterpret_cast<uint64_t>(UpdateCustomList), 0x415);
-                RedirectFunction("\x40\x53\x41\x54\x41\x55\x41\x57\x48\x83\xEC\x28\x48\x89\x7C\x24\x60\x4C\x89\x74\x24\x20\xE8", "xxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(UpdateHelpMess), 0x317);
-                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x80\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x70\xE8\x00\x00\x00\x00\x48\x63\xD8\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x8B\xF0\x83\xFB\x19\x75\x0E", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxx????xxxxxxxxxxxxx", reinterpret_cast<uint64_t>(MakeListInfo2ItemMess), 0x3EA);
-                RedirectFunction("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(SetupTop), 0x235);
-                RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x48\x89\x74\x24\x20\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x90\x01\x00\x00\x48", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(GetListInfo), 0x65C);
-
-                RedirectRelativeFunction("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", 0x022F, reinterpret_cast<uint64_t>(UpdateTopList), 0x2B6);
-
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static inline void(*CreateTopList)() = FetchFunctionFromCall<void(*)()>("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", 0x0204);
             static inline void(*ChageMpDrive)() = FindSignature<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x83\xF8\x1A\x75\x0E\x48\x8B\x0D", "xxxxxxxxxxxxxxxxxxxxx????xxxxxxxx");
@@ -591,54 +566,54 @@ extern "C"
 
                 switch (_fetchCustomType)
                 {
-                case 4:
-                    Tz::CmCustom::ChageAbility(_fetchMenuSelectPos);
-                    break;
-                case 3:
-                    Tz::CmCustom::ChangePartyBehavior(_fetchMenuSelectPos);
-                    break;
-                case 2:
-                {
-                    if (Tz::CmTop::GetSelectPos(25))
-                        _fetchSelectPos--;
-
-                    auto _fetchReplenishFlag = *(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x0A) != 0x00;
-                    auto _fetchBehaviorFlag = *(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x0B) == 0x02;
-                    auto _fetchOffset = _fetchReplenishFlag;
-
-                    if (_fetchBehaviorFlag && Tz::CmTop::GetSelectPos(25))
-                        _fetchOffset += 2;
-
-                    if (_fetchOffset != _fetchMenuSelectPos);
-                    Tz::CmCustom::ChangeAutoReplenishment();
-                } break;
-                case 1:
-                {
-                    auto _fetchMpFlag = Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x0A != 0x00;
-
-                    if (_fetchMpFlag != _fetchMenuSelectPos);
-                    Tz::CmCustom::ChageMpDrive();
-                }
-                default:
-                {
-                    if (_fetchMenuSelectPos && !_isKH1Form)
+                    case 4:
+                        Tz::CmCustom::ChageAbility(_fetchMenuSelectPos);
+                        break;
+                    case 3:
+                        Tz::CmCustom::ChangePartyBehavior(_fetchMenuSelectPos);
+                        break;
+                    case 2:
                     {
-                        auto _fetchInfo = *Tz::CmTop::m_ItemInfo + 0x04;
-                        _fetchCommand = YS::ITEM::GetCommand(*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01)));
-                    }
+                        if (Tz::CmTop::GetSelectPos(25))
+                            _fetchSelectPos--;
 
-                    else if (_fetchMenuSelectPos)
+                        auto _fetchReplenishFlag = *(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x0A) != 0x00;
+                        auto _fetchBehaviorFlag = *(*Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x0B) == 0x02;
+                        auto _fetchOffset = _fetchReplenishFlag;
+
+                        if (_fetchBehaviorFlag && Tz::CmTop::GetSelectPos(25))
+                            _fetchOffset += 2;
+
+                        if (_fetchOffset != _fetchMenuSelectPos);
+                        Tz::CmCustom::ChangeAutoReplenishment();
+                    } break;
+                    case 1:
                     {
-                        auto _fetchInfo = *Tz::CmTop::m_ItemInfo + 0x04;
+                        auto _fetchMpFlag = Tz::CmCustom::m_ListInfo + 0x08 * _fetchSelectPos + 0x0A != 0x00;
 
-                        _fetchCommand = YS::ITEM::GetCommand(*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01)));
+                        if (_fetchMpFlag != _fetchMenuSelectPos);
+                        Tz::CmCustom::ChageMpDrive();
+                    } break;
+                    default:
+                    {
+                        if (_fetchMenuSelectPos && !_isKH1Form)
+                        {
+                            auto _fetchInfo = *Tz::CmTop::m_ItemInfo + 0x04;
+                            _fetchCommand = YS::ITEM::GetCommand(*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01)));
+                        }
 
-                        if (_fetchCommand == 0x0000)
-                            _fetchCommand = _limitShortcutMap[*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01))];
-                    }
+                        else if (_fetchMenuSelectPos)
+                        {
+                            auto _fetchInfo = *Tz::CmTop::m_ItemInfo + 0x04;
 
-                    *reinterpret_cast<uint16_t*>(AREA::SaveData + (_fetchSelectPos * 0x02) + (_isKH1Form ? 0x10030 : 0x36F8)) = _fetchCommand;
-                } break;
+                            _fetchCommand = YS::ITEM::GetCommand(*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01)));
+
+                            if (_fetchCommand == 0x0000)
+                                _fetchCommand = _limitShortcutMap[*reinterpret_cast<uint16_t*>(_fetchInfo + 0x06 * (_fetchMenuSelectPos - 0x01))];
+                        }
+
+                        *reinterpret_cast<uint16_t*>(AREA::SaveData + (_fetchSelectPos * 0x02) + (_isKH1Form ? 0x10030 : 0x36F8)) = _fetchCommand;
+                    } break;
                 }
 
                 memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, AREA::SaveData + 0x10030, 0x08);
@@ -662,6 +637,9 @@ extern "C"
 
                 auto _processMagic = 0x00;
                 auto _processEntry = 0x00;
+
+                if (_fetchPartyInventory < moduleInfo.moduleStart || _fetchPartyInventory > moduleInfo.moduleEnd)
+                    return;
 
                 for (int i = 0; i < 0x03; i++)
                 {
@@ -1006,21 +984,24 @@ extern "C"
                         *reinterpret_cast<char**>(_fetchItemPtr + 0x01F8) = Tz::PartyInfo::GetName(*Tz::CmCustom::m_PartyInfo, i);
                         *reinterpret_cast<uint32_t*>(_fetchItemPtr + 0x010) &= ~0x08;
 
-                        if (i == 0x00 && Tz::CmCustom::CheckKH1Form())
+                        if (i == 0x00)
                         {
-                            auto _fetchPlate2Zero = Tz::CmTop::GetTopPlateSeqTbl(0) + 0x10;
-                            auto _fetchPlate2First = Tz::CmTop::GetTopPlateSeqTbl(1) + 0x10;
+                            if (Tz::CmCustom::CheckKH1Form())
+                            {
+                                auto _fetchPlate2Zero = Tz::CmTop::GetTopPlateSeqTbl(0) + 0x10;
+                                auto _fetchPlate2First = Tz::CmTop::GetTopPlateSeqTbl(1) + 0x10;
 
-                            Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, _processIdx + 1, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(_fetchPlate2Zero), _fetchPlate2First);
-                            Tz::Select::SetExOffset(*Tz::CmTop::m_MenuPtr, _processIdx + 1, 0, -1);
+                                Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, _processIdx + 1, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(_fetchPlate2Zero), _fetchPlate2First);
+                                Tz::Select::SetExOffset(*Tz::CmTop::m_MenuPtr, _processIdx + 1, 0, -1);
 
-                            auto _fetchItemPtr = Tz::Select::GetItemPtr(*Tz::CmTop::m_MenuPtr, _processIdx + 1);
+                                auto _fetchItemPtr = Tz::Select::GetItemPtr(*Tz::CmTop::m_MenuPtr, _processIdx + 1);
 
-                            *reinterpret_cast<uint32_t*>(_fetchItemPtr + 0x010) &= ~0x10;
-                            *reinterpret_cast<char**>(_fetchItemPtr + 0x01F8) = YS::MESSAGE::GetData(0x4E80);
-                            *reinterpret_cast<uint32_t*>(_fetchItemPtr + 0x010) &= ~0x08;
+                                *reinterpret_cast<uint32_t*>(_fetchItemPtr + 0x010) &= ~0x10;
+                                *reinterpret_cast<char**>(_fetchItemPtr + 0x01F8) = YS::MESSAGE::GetData(0x4E80);
+                                *reinterpret_cast<uint32_t*>(_fetchItemPtr + 0x010) &= ~0x08;
 
-                            _processIdx++;
+                                _processIdx++;
+                            }
                         }
 
                         _processIdx++;
@@ -1291,6 +1272,31 @@ extern "C"
             {
                 return YS::ITEM::GetNumBackyard(0x0233) && AREA::Current->World != 0x0A && AREA::Current->World != 0x0B;
             }
+
+            private:
+                static bool _init()
+                {
+                    RedirectRelativeFunction("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", 0x022F, reinterpret_cast<uint64_t>(UpdateTopList), 0x2B6);
+
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x8B\xF8\x8D\x48\xE6\x83\xF9\x01\x76\x0C", "xxxxxxxxxxx????xxxxxxxxxx", reinterpret_cast<uint64_t>(isTakeOff), 0xF8);
+                    RedirectFunction("\x40\x53\x57\x48\x83\xEC\x48\x48\x89\x6C\x24\x60\x4C\x89\x64\x24\x70\x4C\x89\x6C\x24\x40\x4C\x89", "xxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ChangeAutoReplenishment), 0x028A);
+                    RedirectFunction("\x40\x53\x48\x83\xEC\x20\x8B\xD9\xB9\x19\x00\x00\x00\xE8", "xxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ChangePartyBehavior), 0x75);
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x8B\xF9\xE8\x00\x00\x00\x00\xB9\x19\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????xxxxx", reinterpret_cast<uint64_t>(ChageAbility), 0xFA);
+                    RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\xB9\x1A\x00\x00\x00\xE8", "xxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ChangeCustomInfo), 0x160);
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x8B\xF9\xB9\x19\x00\x00\x00\xE8", "xxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(CurPos2CustomType), 0xBA);
+                    RedirectFunction("\x40\x53\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x68\xE8\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(SetupCustom), 0x555);
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x60\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x58", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxx", reinterpret_cast<uint64_t>(UpdateCustomList), 0x415);
+                    RedirectFunction("\x40\x53\x41\x54\x41\x55\x41\x57\x48\x83\xEC\x28\x48\x89\x7C\x24\x60\x4C\x89\x74\x24\x20\xE8", "xxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(UpdateHelpMess), 0x317);
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x80\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x70\xE8\x00\x00\x00\x00\x48\x63\xD8\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x8B\xF0\x83\xFB\x19\x75\x0E", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxx????xxxxxxxxxxxxx", reinterpret_cast<uint64_t>(MakeListInfo2ItemMess), 0x3EA);
+                    RedirectFunction("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(SetupTop), 0x235);
+                    RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x48\x89\x74\x24\x20\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x90\x01\x00\x00\x48", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(GetListInfo), 0x65C);
+
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
         };
     }
 }

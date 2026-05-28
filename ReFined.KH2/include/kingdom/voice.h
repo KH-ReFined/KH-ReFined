@@ -17,17 +17,6 @@ extern "C"
 	{
 		class DLL_EXPORT VOICE
 		{
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x85\xC9\x0F\x84\x93\x01\x00\x00\x41\x56\x48\x83\xEC\x70\x48\x8B", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ReadEntryId), 0x9C);
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
 		public:
 			static inline char* Cache = FetchRelativePointer<char*>("\x85\xC9\x0F\x84\x93\x01\x00\x00\x41\x56\x48\x83\xEC\x70\x48\x8B", "xxxxxxxxxxxxxxxx", 0x05C);
 			static inline char** CurrentTask = FetchRelativePointer<char**>("\x85\xC9\x0F\x84\x93\x01\x00\x00\x41\x56\x48\x83\xEC\x70\x48\x8B", "xxxxxxxxxxxxxxxx", 0x14C);
@@ -119,6 +108,17 @@ extern "C"
                     }
                 }
             }
+
+            private:
+                static bool _init()
+                {
+                    RedirectFunction("\x85\xC9\x0F\x84\x93\x01\x00\x00\x41\x56\x48\x83\xEC\x70\x48\x8B", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(ReadEntryId), 0x9C);
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
 		};
 	}
 }

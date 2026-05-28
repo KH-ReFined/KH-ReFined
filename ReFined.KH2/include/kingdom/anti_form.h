@@ -18,17 +18,6 @@ extern "C"
 	{
 		class DLL_EXPORT ANTI_FORM
 		{
-            private:
-                static bool _init()
-                {
-                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xF2\x48\x8B\xE9\xE8\x00\x00\x00\x00\x85\xC0", "xxxxxxxxxxxxxxxxxxxxxxxxxx????xx", reinterpret_cast<uint64_t>(CheckForm), 0x228);
-                    return true;
-                }
-
-                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-                static inline bool _doInit = _init();
-                #endif
-
 		    public:
 			    static int CheckForm(char* player, int form)
                 {
@@ -92,6 +81,16 @@ extern "C"
 
                     return 6;
                 }
+        private:
+                static bool _init()
+                {
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xF2\x48\x8B\xE9\xE8\x00\x00\x00\x00\x85\xC0", "xxxxxxxxxxxxxxxxxxxxxxxxxx????xx", reinterpret_cast<uint64_t>(CheckForm), 0x228);
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
 		};
 	}
 }

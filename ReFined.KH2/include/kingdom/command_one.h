@@ -1,7 +1,7 @@
 #pragma once
 
 #define DLL_EXPORT __declspec(dllexport)
-#include <cstdint>
+
 #include "memorymgr.h"
 #include "obj2d.h"
 #include "sprite.h"
@@ -16,17 +16,6 @@ extern "C"
     {
         class DLL_EXPORT COMMAND_ONE
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x40\x57\x48\x83\xEC\x20\x33\xC0\x48\x8B\xF9\x89\x44\x24\x30\x89", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(draw), 0xA5);
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static void draw(char* Command)
             {
@@ -58,6 +47,17 @@ extern "C"
                     YI::SEQUENCE::Draw(Command + 0x0220);
                 }
             }
+
+        private:
+            static bool _init()
+            {
+                RedirectFunction("\x40\x57\x48\x83\xEC\x20\x33\xC0\x48\x8B\xF9\x89\x44\x24\x30\x89", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(draw), 0xA5);
+                return true;
+            }
+
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            static inline bool _doInit = _init();
+            #endif
         };
     }
 }

@@ -14,17 +14,6 @@ extern "C"
     {
         class DLL_EXPORT CIRCLE_MASK
         {
-        private:
-            static bool _init()
-            {
-                RedirectFunction("\x40\x57\x48\x83\xEC\x50\x48\x8B\xF9\x48\x8B\x89\x40\x02", "xxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(draw), 0xF5);
-                return true;
-            }
-
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            static inline bool _doInit = _init();
-            #endif
-
         public:
             static void draw(char* MASK)
             {
@@ -71,6 +60,16 @@ extern "C"
                         reinterpret_cast<void(*)(char*)>(*reinterpret_cast<char**>(_instanceSub + 0x08))(MASK + 0x0140);
                 }
             }
+            private:
+                static bool _init()
+                {
+                    RedirectFunction("\x40\x57\x48\x83\xEC\x50\x48\x8B\xF9\x48\x8B\x89\x40\x02", "xxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(draw), 0xF5);
+                    return true;
+                }
+
+                #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+                static inline bool _doInit = _init();
+                #endif
         };
     }
 }
