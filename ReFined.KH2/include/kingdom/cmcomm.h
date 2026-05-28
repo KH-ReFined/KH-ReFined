@@ -1,20 +1,8 @@
 #pragma once
 
-#define _CRT_SECURE_NO_WARNINGS
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
-#include <iomanip>
-#include <iostream>
-
 #include "memorymgr.h"
-#include "file.h"
-#include "area.h"
-#include "region.h"
-#include "cache_buff.h"
-#include "itempic.h"
-
-using namespace std;
 
 extern "C"
 {
@@ -23,8 +11,8 @@ extern "C"
         class DLL_EXPORT CmComm
         {
             public:
-                static void (*FontIcon)(char icon, char* buff, bool terminate);
-                static void (*ItemIcon)(int type, char* buff, bool isSpecial, bool terminate);
+                static inline void (*FontIcon)(char icon, char* buff, bool terminate) = FetchFunctionFromCall<void(*)(char, char*, bool)>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x80\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x70\xE8\x00\x00\x00\x00\x48\x63\xD8\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x8B\xF0\x83\xFB\x19\x75\x0E", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxx????xxxxxxxxxxxxx", 0x021F);
+                static inline void (*ItemIcon)(int type, char* buff, bool isSpecial, bool terminate) = FetchFunctionFromCall<void(*)(int, char*, bool, bool)>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x80\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x70\xE8\x00\x00\x00\x00\x48\x63\xD8\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x8B\xF0\x83\xFB\x19\x75\x0E", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxx????xxxxxxxxxxxxx", 0x020F);
         };
     }
 }

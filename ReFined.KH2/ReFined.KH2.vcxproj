@@ -74,6 +74,7 @@
     <ClInclude Include="include\kingdom\command_one.h" />
     <ClInclude Include="include\kingdom\counter.h" />
     <ClInclude Include="include\kingdom\enemy.h" />
+    <ClInclude Include="include\kingdom\enemybase.h" />
     <ClInclude Include="include\kingdom\face.h" />
     <ClInclude Include="include\kingdom\field.h" />
     <ClInclude Include="include\kingdom\friendsaveram.h" />
@@ -119,6 +120,7 @@
     <ClInclude Include="include\kingdom\mission.h" />
     <ClInclude Include="include\kingdom\mission_count.h" />
     <ClInclude Include="include\kingdom\mission_gauge.h" />
+    <ClInclude Include="include\kingdom\next_exp.h" />
     <ClInclude Include="include\kingdom\partyinfo.h" />
     <ClInclude Include="include\kingdom\pref.h" />
     <ClInclude Include="include\kingdom\progress.h" />
@@ -132,7 +134,6 @@
     <ClInclude Include="include\kingdom\region.h" />
     <ClInclude Include="include\kingdom\sacrifice.h" />
     <ClInclude Include="include\kingdom\saveram_battle.h" />
-    <ClInclude Include="include\kingdom\save_indicator.h" />
     <ClInclude Include="include\kingdom\scis.h" />
     <ClInclude Include="include\kingdom\scrollbar.h" />
     <ClInclude Include="include\kingdom\sector_mask.h" />
@@ -163,112 +164,91 @@
     <ClCompile Include="include\kingdom\weapon_mset.h">
       <FileType>CppHeader</FileType>
     </ClCompile>
-    <ClCompile Include="src\continue_menu.cpp" />
+    <ClCompile Include="src\discord\achievement_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\activity_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\application_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\core.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\image_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\lobby_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\network_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\overlay_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\relationship_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\storage_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\store_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\types.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\user_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\discord\voice_manager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\dllmain.cpp" />
-    <ClCompile Include="src\kingdom\anti_form.cpp" />
-    <ClCompile Include="src\kingdom\area.cpp" />
-    <ClCompile Include="src\kingdom\areainfo.cpp" />
-    <ClCompile Include="src\kingdom\axa.cpp" />
-    <ClCompile Include="src\kingdom\beads.cpp" />
-    <ClCompile Include="src\kingdom\binarc.cpp" />
-    <ClCompile Include="src\kingdom\cache_buff.cpp" />
-    <ClCompile Include="src\kingdom\circle_mask.cpp" />
-    <ClCompile Include="src\kingdom\cmcomm.cpp" />
-    <ClCompile Include="src\kingdom\cmconfig.cpp" />
-    <ClCompile Include="src\kingdom\cmcustom.cpp" />
-    <ClCompile Include="src\kingdom\cmdata.cpp" />
-    <ClCompile Include="src\kingdom\cmenuhelp.cpp" />
-    <ClCompile Include="src\kingdom\cmtop.cpp" />
-    <ClCompile Include="src\kingdom\collision_data.cpp" />
-    <ClCompile Include="src\kingdom\command_draw.cpp" />
-    <ClCompile Include="src\kingdom\command_elem.cpp" />
-    <ClCompile Include="src\kingdom\command_menu.cpp" />
-    <ClCompile Include="src\kingdom\command_one.cpp" />
-    <ClCompile Include="src\kingdom\counter.cpp" />
-    <ClCompile Include="src\kingdom\enemy.cpp" />
-    <ClCompile Include="src\kingdom\face.cpp" />
-    <ClCompile Include="src\kingdom\field.cpp" />
-    <ClCompile Include="src\kingdom\friendsaveram.cpp" />
-    <ClCompile Include="src\kingdom\fvector.cpp" />
-    <ClCompile Include="src\kingdom\hookconfig.cpp" />
-    <ClCompile Include="src\kingdom\converter.cpp" />
-    <ClCompile Include="src\kingdom\egs.cpp" />
-    <ClCompile Include="src\kingdom\event.cpp" />
-    <ClCompile Include="src\kingdom\exp.cpp" />
-    <ClCompile Include="src\kingdom\field2dd.cpp" />
-    <ClCompile Include="src\kingdom\file.cpp" />
-    <ClCompile Include="src\kingdom\form_level.cpp" />
-    <ClCompile Include="src\kingdom\friend.cpp" />
-    <ClCompile Include="src\kingdom\gauge.cpp" />
-    <ClCompile Include="src\kingdom\hardpad.cpp" />
-    <ClCompile Include="src\kingdom\hookintro.cpp" />
-    <ClCompile Include="src\kingdom\image.cpp" />
-    <ClCompile Include="src\kingdom\image_cache.cpp" />
-    <ClCompile Include="src\kingdom\image_freeze.cpp" />
-    <ClCompile Include="src\kingdom\information.cpp" />
-    <ClCompile Include="src\kingdom\information_window.cpp" />
-    <ClCompile Include="src\kingdom\info_base.cpp" />
-    <ClCompile Include="src\kingdom\item.cpp" />
-    <ClCompile Include="src\kingdom\iteminfo.cpp" />
-    <ClCompile Include="src\kingdom\itempic.cpp" />
-    <ClCompile Include="src\kingdom\itemshop.cpp" />
-    <ClCompile Include="src\kingdom\item_param.cpp" />
-    <ClCompile Include="src\kingdom\item_table.cpp" />
-    <ClCompile Include="src\kingdom\jumpeffect.cpp" />
-    <ClCompile Include="src\kingdom\layout.cpp" />
-    <ClCompile Include="src\kingdom\level_up.cpp" />
-    <ClCompile Include="src\kingdom\libretto.cpp" />
-    <ClCompile Include="src\kingdom\limit.cpp" />
-    <ClCompile Include="src\kingdom\limit_table.cpp" />
-    <ClCompile Include="src\kingdom\lockon.cpp" />
-    <ClCompile Include="src\kingdom\magic.cpp" />
-    <ClCompile Include="src\kingdom\member.cpp" />
-    <ClCompile Include="src\kingdom\member_table.cpp" />
-    <ClCompile Include="src\kingdom\menu.cpp" />
-    <ClCompile Include="src\kingdom\menubase.cpp" />
-    <ClCompile Include="src\kingdom\menuutil.cpp" />
-    <ClCompile Include="src\kingdom\message.cpp" />
-    <ClCompile Include="src\kingdom\messagedraw.cpp" />
-    <ClCompile Include="src\kingdom\mission.cpp" />
-    <ClCompile Include="src\kingdom\mission_count.cpp" />
-    <ClCompile Include="src\kingdom\mission_gauge.cpp" />
-    <ClCompile Include="src\kingdom\newgame.cpp" />
-    <ClCompile Include="src\kingdom\obj.cpp" />
-    <ClCompile Include="src\kingdom\obj2d.cpp" />
-    <ClCompile Include="src\kingdom\objentry.cpp" />
-    <ClCompile Include="src\kingdom\panacea_alloc.cpp" />
-    <ClCompile Include="src\kingdom\party.cpp" />
-    <ClCompile Include="src\kingdom\partyinfo.cpp" />
-    <ClCompile Include="src\kingdom\pax.cpp" />
-    <ClCompile Include="src\kingdom\pref.cpp" />
-    <ClCompile Include="src\kingdom\progress.cpp" />
-    <ClCompile Include="src\kingdom\region.cpp" />
-    <ClCompile Include="src\kingdom\sacrifice.cpp" />
-    <ClCompile Include="src\kingdom\saveram_battle.cpp" />
-    <ClCompile Include="src\kingdom\scis.cpp" />
-    <ClCompile Include="src\kingdom\scrollbar.cpp" />
-    <ClCompile Include="src\kingdom\sector_mask.cpp" />
-    <ClCompile Include="src\kingdom\select.cpp" />
-    <ClCompile Include="src\kingdom\selhist.cpp" />
-    <ClCompile Include="src\kingdom\sequence.cpp" />
-    <ClCompile Include="src\kingdom\shake.cpp" />
-    <ClCompile Include="src\kingdom\sheet.cpp" />
-    <ClCompile Include="src\kingdom\softreset.cpp" />
-    <ClCompile Include="src\kingdom\sora.cpp" />
-    <ClCompile Include="src\kingdom\sound.cpp" />
-    <ClCompile Include="src\kingdom\sprite.cpp" />
-    <ClCompile Include="src\kingdom\spritemessage.cpp" />
-    <ClCompile Include="src\kingdom\steam.cpp" />
-    <ClCompile Include="src\kingdom\task.cpp" />
-    <ClCompile Include="src\kingdom\timer.cpp" />
-    <ClCompile Include="src\kingdom\title.cpp" />
-    <ClCompile Include="src\kingdom\treasure_info.cpp" />
-    <ClCompile Include="src\kingdom\voice.cpp" />
-    <ClCompile Include="src\kingdom\vsync.cpp" />
-    <ClCompile Include="src\kingdom\weapon.cpp" />
-    <ClCompile Include="src\kingdom\weapon_entry.cpp" />
-    <ClCompile Include="src\kingdom\weapon_mset.cpp" />
-    <ClCompile Include="src\kingdom\world.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -520,7 +500,8 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\;$(ProjectDir)\include\classic;$(ProjectDir)\include\kingdom;$(ProjectDir)\include\discord;$(ProjectDir)\include\days</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -541,7 +522,8 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\;$(ProjectDir)\include\kingdom</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -562,7 +544,8 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\;$(ProjectDir)\include\kingdom</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -584,9 +567,10 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include\;$(ProjectDir)\include\classic;$(ProjectDir)\include\kingdom;$(ProjectDir)\include\discord;$(ProjectDir)\include\days</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include\;$(ProjectDir)\src\discord;$(ProjectDir)\include\kingdom;$(ProjectDir)\include\discord;$(ProjectDir)\include\days</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -609,8 +593,9 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\;$(ProjectDir)\include\kingdom</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -633,8 +618,9 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\;$(ProjectDir)\include\kingdom</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

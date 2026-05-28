@@ -1,8 +1,7 @@
 #pragma once
 
 #define DLL_EXPORT __declspec(dllexport)
-
-#include <cstdint>
+ 
 #include "memorymgr.h"
 
 extern "C"
@@ -14,9 +13,9 @@ extern "C"
 			class DLL_EXPORT TITLE
 			{
 			public:
-				static bool* IsTitle;
-				static char* Title2LD;
-				static uint8_t* IntroSelect;
+				static inline bool* IsTitle = FetchRelativePointer<bool*>("\x40\x53\x48\x83\xEC\x20\x8B\x15\x00\x00\x00\x00\x48\x8B\xD9\x48\xC7\x05\x00\x00\x00\x00\x00\x00\x00\x00\x8D\x42\xFF\xA9\xFA\xFF\xFF\xFF\x75\x12\x83\xFA\x02\x74\x0D\x83\x3D\x00\x00\x00\x00\x02", "xxxxxxxx????xxxxxx????xxxxxxxxxxxxxxxxxxxxx????x", 0x3D) + 0x01;
+				static inline char* Title2LD = FindSignature<char*>("\x74\x69\x74\x6C\x65\x2E\x32\x6C\x64\x00\x00\x00\x00\x00\x00\x00", "xxxxxxxxxxxxxxxx");
+				static inline uint8_t* IntroSelect = FetchRelativePointer<uint8_t*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xF1\x33\xC9\xE8\x00\x00\x00\x00\x33\xC9\x48\x8B\xF8\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxx????xxxxxx????", 0x212);
 			};
 		}
 	}

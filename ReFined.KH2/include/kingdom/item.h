@@ -10,24 +10,15 @@ extern "C"
 		class DLL_EXPORT ITEM
 		{
 		public:
-			static char** WeaponEntry;
+			static inline char** WeaponEntry = FetchRelativePointer<char**>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x48\x89\x74\x24\x20\x57\x48\x83\xEC\x20\x8B\xC2\x48\x89\x0D", "xxxxxxxxxxxxxxxxxxxxxxxxx", 0x19);
 
-			using GetNum_t = uint64_t(*)(uint64_t item, uint64_t part);
-			static GetNum_t GetNum;
+			static inline uint64_t(*GetNum)(uint64_t item, uint64_t part) = FindSignature<uint64_t(*)(uint64_t, uint64_t)>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x20\x33\xDB\x8B\xF9\x83\xFA\x64\x75\x0F\x48\x8B\x5C\x24\x38", "xxxxxxxxxxxxxxxxxxxxxxxx");
+			static inline uint64_t(*GetNumBackyard)(uint64_t item) = FindSignature<uint64_t(*)(uint64_t)>("\x48\x83\xEC\x28\xE8\x00\x00\x00\x00\xF6\x40\x03\x01\x74\x2A\x0F\xB7\x48\x12\x8B\xC1\x8B\xD1\x48\xC1\xE8\x05\x48\x8D\x0D\x00\x00\x00\x00\x83\xE2\x1F\x8B\x8C\x81\xC0\x36\x00\x00\x33\xC0", "xxxxx????xxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx");
+			static inline void(*GetBackyard)(int item, int num) = FindSignature<void(*)(int, int)>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x56\x57\x41\x56\x48\x83\xEC\x20\x4C\x89\x7C\x24\x40\x8B\xD9\x44\x8B\xFA", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+			static inline void(*ReduceBackyard)(uint64_t item, int num) = FindSignature<void(*)(uint64_t, int)>("\x40\x53\x48\x83\xEC\x20\x8B\xDA\xE8\x00\x00\x00\x00\x48\x8D\x15\x00\x00\x00\x00\xF6\x40\x03\x01\x0F\xB7\x48\x12\x0F\xB7\xC9", "xxxxxxxxx????xxx????xxxxxxxx???");
+			static inline int(*GetCommand)(uint64_t item) = FindSignature<int(*)(uint64_t)>("\x48\x83\xEC\x28\xE8\x00\x00\x00\x00\x0F\xB6\x48\x02\x84\xC9\x74\x19", "xxxxx????xxxxxxxx");
 
-			using GetNumBackyard_t = uint64_t(*)(uint64_t item);
-			static GetNumBackyard_t GetNumBackyard;
-
-			using GetBackyard_t = void(*)(int item, int num);
-			static GetBackyard_t GetBackyard;
-
-			using ReduceBackyard_t = void(*)(uint64_t item, int num);
-			static ReduceBackyard_t ReduceBackyard;
-
-			using GetCommand_t = int(*)(uint64_t item);
-			static GetCommand_t GetCommand;
-
-			static char* ImageBuff;
+			static inline char* ImageBuff;
 		};
 	}
 }

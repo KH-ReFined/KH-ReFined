@@ -4,10 +4,6 @@
 
 #include "memorymgr.h"
 
-#include <thread>
-#include <cassert>
-#include <member_table.h>
-
 extern "C"
 {
 	namespace Tz
@@ -15,11 +11,8 @@ extern "C"
 		class DLL_EXPORT PartyInfo
 		{
 		public:
-			using GetSheet_t = char*(*)(char* partyInfo, int num);
-			static GetSheet_t GetSheet;
-
-			using GetName_t = char*(*)(char* partyInfo, int num);
-			static GetName_t GetName;
+			static inline char*(*GetSheet)(char* partyInfo, int num) = FindSignature<char*(*)(char*, int)>("\x48\x63\xC2\x48\xC1\xE0\x05\x48\x8B\x44\x08\x10\xC3", "xxxxxxxxxxxxx");
+			static inline char*(*GetName)(char* partyInfo, int num) = FindSignature<char*(*)(char*, int) >("\x48\x63\xC2\x48\xFF\xC0\x48\xC1\xE0\x05\x48\x8B\x04\x08\xC3", "xxxxxxxxxxxxxxx");
 		};
 	}
 }

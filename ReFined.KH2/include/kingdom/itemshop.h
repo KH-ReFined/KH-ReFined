@@ -3,9 +3,9 @@
 #define DLL_EXPORT __declspec(dllexport)
 #define _CRT_SECURE_NO_WARNINGS
 
+#include "member.h"
 #include "memorymgr.h"
 #include "panacea_alloc.h"
-#include "member.h"
 
 extern "C"
 {
@@ -13,44 +13,39 @@ extern "C"
 	{
 		class DLL_EXPORT ItemShop
 		{
-		public:
-			static void GetFaceFileNmae(int part, char* buffer);
-
-            struct staticInitializer
+        private:
+            static bool _init()
             {
-                staticInitializer()
+                RedirectFunction("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xDA\x8B\xF9\x48\x8B\xCB\x48\x8D\x15\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxx????x????", reinterpret_cast<uint64_t>(GetFaceFileNmae), 0xFA);
+                return true;
+            }
+
+            static inline bool _doInit = _init();
+
+		public:
+			static void GetFaceFileNmae(int part, char* buff)
+            {
+                auto _fetchShopface = YS::PANACEA_ALLOC::Get("00shopface.bin");
+
+                if (_fetchShopface)
                 {
-                    #if defined(BUILD_ARCHIPELAGO) || defined(BUILD_ARCHIPELAGO_LITE)
-                        return;
-                    #endif
+                    auto _fetchPartId = YS::MEMBER::PartToEntryID(part);
+                    auto _fetchCount = *reinterpret_cast<uint32_t*>(_fetchShopface);
 
-                    printf("======================================================\n");
-                    printf("Handling hooks and redirections concerning OvlShop::ItemShop...\n\n");
-
-                    vector<uint8_t> _absoluteInstructionJMP =
+                    for (int i = 0; i < _fetchCount; i++)
                     {
-                        0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                    };
+                        auto _fetchEntryId = *reinterpret_cast<uint16_t*>(_fetchShopface + 0x10 + 0x10 * i);
 
-                    auto _getFileNameFunc = (uint64_t)GetFaceFileNmae;
-                    auto _getFileNameOriginal = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xDA\x8B\xF9\x48\x8B\xCB\x48\x8D\x15\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxx????x????");
-
-                    printf("Fetched OvlShop::ItemShop::GetFaceFileNmae @ 0x%p\n", _getFileNameOriginal);
-
-                    memset(_getFileNameOriginal, 0x90, 0xFA);
-
-                    memcpy(_absoluteInstructionJMP.data() + 0x06, &_getFileNameFunc, 0x08);
-                    memcpy(_getFileNameOriginal, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-                    printf("Hooked OvlShop::ItemShop::GetFaceFileNmae [0x%p] to Re:Fined function @ 0x%p\n", _getFileNameOriginal, GetFaceFileNmae);
-
-                    printf("\nSuccessfully handled OvlShop::ItemShop concerns.\n");
-                    printf("======================================================\n\n");
+                        if (_fetchEntryId == _fetchPartId)
+                        {
+                            sprintf(buff, "menu/shopface/%s.bin", _fetchShopface + 0x12 + 0x10 * i);
+                            return;
+                        }
+                    }
                 }
-            };
 
-            static staticInitializer initialize;
+                sprintf(buff, "menu/shopface/p_ex020.bin");
+            }
 		};
 	}
 }

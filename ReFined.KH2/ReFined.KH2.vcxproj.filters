@@ -22,8 +22,8 @@
     <Filter Include="Header Files\refined_classes">
       <UniqueIdentifier>{ce854dc9-f3e2-4ac1-a858-3ddde9af991a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\refined_classes">
-      <UniqueIdentifier>{e1d1ed42-0c7c-4f24-ad14-f66582573f71}</UniqueIdentifier>
+    <Filter Include="Source Files\discord_src">
+      <UniqueIdentifier>{1c960b0b-6b37-4b11-af2d-3d91a4b6d020}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -213,9 +213,6 @@
     <ClInclude Include="include\kingdom\image_cache.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
-    <ClInclude Include="include\kingdom\save_indicator.h">
-      <Filter>Header Files\kingdom_internal</Filter>
-    </ClInclude>
     <ClInclude Include="include\kingdom\enemy.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
@@ -345,331 +342,64 @@
     <ClInclude Include="include\kingdom\command_menu.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\kingdom\enemybase.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kingdom\next_exp.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\kingdom\cmconfig.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\converter.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\egs.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\event.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\file.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\gauge.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\hardpad.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\information.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\itempic.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\jumpeffect.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\magic.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\member_table.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\menu.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\message.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\pax.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\softreset.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\sora.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\sound.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\steam.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\title.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\treasure_info.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\vsync.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\area.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\cache_buff.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\continue_menu.cpp">
-      <Filter>Source Files\refined_classes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\world.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\command_draw.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\command_elem.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\shake.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\party.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\friend.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\member.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\objentry.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\weapon_entry.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\weapon.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\weapon_mset.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
     <ClCompile Include="include\kingdom\weapon_mset.h">
       <Filter>Header Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\item.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\form_level.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\sequence.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\obj2d.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\lockon.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\field2dd.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\sprite.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\info_base.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\exp.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\hookconfig.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\panacea_alloc.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\region.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
     </ClCompile>
     <ClCompile Include="src\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\hookintro.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\field.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\sheet.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\fvector.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
     <ClCompile Include="include\kingdom\item_table.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\item_table.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\achievement_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\iteminfo.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\activity_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\areainfo.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\application_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\voice.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\core.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\task.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\image_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\binarc.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\lobby_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\cmdata.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\network_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\image.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\overlay_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\image_cache.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\relationship_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\enemy.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\storage_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\obj.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\store_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\saveram_battle.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\types.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\limit.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\user_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
-    <ClCompile Include="src\kingdom\collision_data.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\beads.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\newgame.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\menuutil.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\select.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\anti_form.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\sacrifice.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\progress.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\mission.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\pref.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\libretto.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\spritemessage.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\messagedraw.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\circle_mask.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\information_window.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\scis.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\sector_mask.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\mission_gauge.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\command_one.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\level_up.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\mission_count.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\counter.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\timer.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\face.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\limit_table.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\axa.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\itemshop.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\item_param.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\cmcustom.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\partyinfo.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\cmtop.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\cmcomm.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\menubase.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\selhist.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\friendsaveram.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\cmenuhelp.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\image_freeze.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\layout.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\scrollbar.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
-    </ClCompile>
-    <ClCompile Include="src\kingdom\command_menu.cpp">
-      <Filter>Source Files\kingdom_internal</Filter>
+    <ClCompile Include="src\discord\voice_manager.cpp">
+      <Filter>Source Files\discord_src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

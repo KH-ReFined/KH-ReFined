@@ -3,10 +3,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <stdint.h>
-#include "region.h"
 #include "file.h"
 #include "area.h"
+#include "region.h"
 #include "memorymgr.h"
 
 extern "C"
@@ -15,8 +14,8 @@ extern "C"
 	{
 		class DLL_EXPORT EVENT
 		{
-		public:
-			static char** Event;
+			public:
+				static inline char** Event = FetchRelativePointer<char**>("\x40\x57\x48\x83\xEC\x20\x48\x8B\xF9\x48\x8B\x0D\x00\x00\x00\x00\x48\x85\xC9\x0F\x84\xAF\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x0F\x85\xAF\x00\x00\x00\x48\x89\x5C\x24\x30\x48\x8B\x1D\x00\x00\x00\x00\x48\x89\x74\x24\x38", "xxxxxxxxxxxx????xxxxxxxxxx????xxxxx???xxxxxxxx????xxxxx", 0x0C);
 		};
 	}
 
@@ -24,75 +23,129 @@ extern "C"
 	{
 		class DLL_EXPORT EVENT
 		{
-		public:
-			using get_read_wk_motion_t = char* (*)();
-			static get_read_wk_motion_t get_read_wk_motion;
-
-			using get_read_wk_audio_t = char* (*)(char* name, int type);
-			static get_read_wk_audio_t get_read_wk_audio;
-
-			using getSkeletonName_t = char* (*)(int entryId);
-			static getSkeletonName_t getSkeletonName;
-
-			using readBuffAlloc_t = char* (*)(char* name, char* wk, int allocType);
-			static readBuffAlloc_t readBuffAlloc;
-
-			static YS::FILE::ReadCallback ReadMotionCallback;
-			static YS::FILE::ReadCallback ReadAudioCallback;
-
-			static char* MotionFilename;
-			static char* AudioFilename;
-
-			static char* motion_read_set(char* name, int allocType, uint32_t entryId, int put_id, uint8_t deleteFlag);
-			static char* audio_read_set(char* name, int allocType);
-
-			struct staticInitializer
+		private:
+			static bool _init()
 			{
-				staticInitializer()
+				RedirectFunction("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", reinterpret_cast<uint64_t>(motion_read_set), 0x28F);
+				RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(audio_read_set), 0x12B);
+
+				return true;
+			}
+
+			#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+			static inline bool _doInit = _init();
+			#endif
+
+		public:
+			static inline char* (*get_read_wk_motion)() = FetchFunctionFromCall<char* (*)()>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", 0x25);
+			static inline char* (*getSkeletonName)(int entryId) = FetchFunctionFromCall<char* (*)(int)>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", 0x4D);
+			static inline char* (*get_read_wk_audio)(char* name, int type) = FetchFunctionFromCall<char* (*)(char*, int)>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x1E);
+			static inline char* (*readBuffAlloc)(char* name, char* wk, int allocType) = FetchFunctionFromCall<char* (*)(char*, char*, int)>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", 0x259);
+
+			static inline YS::FILE::ReadCallback ReadMotionCallback = FetchRelativePointer<YS::FILE::ReadCallback>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", 0x268);
+			static inline YS::FILE::ReadCallback ReadAudioCallback = FetchRelativePointer<YS::FILE::ReadCallback>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x107);
+
+			static inline char* MotionFilename = FetchRelativePointer<char*>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx", 0x9F);
+			static inline char* AudioFilename = FetchRelativePointer<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x65);
+
+			static char* audio_read_set(char* name, int allocType)
+			{
+				auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
+
+				string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
+					(_fetchConfig & 0x0008 ? "es" :
+						(_fetchConfig & 0x0010 ? "de" :
+							(_fetchConfig & 0x0020 ? "bg" : "us")));
+
+				string _constructPath = "voice/%s/event/%s.win32.scd";
+
+				auto _wk = sa::EVENT::get_read_wk_audio(name, 0x03);
+
+				if (!YS::REGION::Get() || YS::REGION::Get() == 0x07)
 				{
-					#if defined(BUILD_ARCHIPELAGO) || defined(BUILD_ARCHIPELAGO_LITE)
-						return;
-					#endif
+					_constructPath = "voice/fm/event/%s.win32.scd";
 
-					printf("Handling hooks and redirections concerning sa::EVENT...\n\n");
+					sprintf(sa::EVENT::AudioFilename, _constructPath.c_str(), name);
+				}
 
-					vector<uint8_t> _absoluteInstructionJMP =
-					{
-						0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-						0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-					};
+				else
+					sprintf(sa::EVENT::AudioFilename, _constructPath.c_str(), _encodedRegion.c_str(), name);
 
-					auto _anbLoadFunc = (uint64_t)motion_read_set;
-					auto _anbLoad_orig = SignatureScan<char*>("\x40\x53\x55\x56\x57\x41\x56\x48\x83\xEC\x70\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x60\x41", "xxxxxxxxxxxxxx????xxxxxxxxx");
+				if (!YS::FILE::GetSize(sa::EVENT::AudioFilename))
+					sprintf(sa::EVENT::AudioFilename, _constructPath.c_str(), "us", name);
 
-					printf("Fetched sa::EVENT::motion_read_set @ 0x%p\n", _anbLoad_orig);
+				strcpy(_wk + 0x3C, sa::EVENT::AudioFilename);
 
-					fill(_anbLoad_orig, _anbLoad_orig + 0x28F, 0x90);
+				char* _buffAlloc = sa::EVENT::readBuffAlloc(sa::EVENT::AudioFilename, _wk, allocType);
+				*reinterpret_cast<uint64_t*>(_wk + 0x18) = reinterpret_cast<uint64_t>(_buffAlloc);
 
-					memcpy(_absoluteInstructionJMP.data() + 0x06, &_anbLoadFunc, 0x08);
-					memcpy(_anbLoad_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+				return YS::FILE::ReadBarBack(sa::EVENT::AudioFilename, _buffAlloc, sa::EVENT::ReadAudioCallback, reinterpret_cast<uint32_t*>(_wk));
+			}
 
-					printf("Hooked sa::EVENT::motion_read_set [0x%p] to Re:Fined function @ 0x%p\n", _anbLoad_orig, motion_read_set);
+			static char* motion_read_set(char* name, int allocType, uint32_t entryId, int put_id, uint8_t deleteFlag)
+			{
+				auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
+				string _encodedRegion = _fetchConfig & 0x0004 ? "jp" :
+					(_fetchConfig & 0x0008 ? "es" :
+						(_fetchConfig & 0x0010 ? "de" :
+							(_fetchConfig & 0x0020 ? "bg" : "us")));
 
-					auto _eventVoiceLoadFunc = (uint64_t)audio_read_set;
-					auto _eventVoiceLoad_orig = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x8B\xEA\x48\x8B\xF9\xBA\x03\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+				string _pathPrefix = _fetchConfig & 0x0200 ? "anm_2nd" : (_fetchConfig & 0x0400 ? "anm_3rd" : "anm");
 
-					printf("Fetched sa::EVENT::audio_read_set @ 0x%p\n", _eventVoiceLoad_orig);
+				string _nameString = string(name);
+				string _constructPath = "%s/%s/%s/%s/%s.anb";
 
-					fill(_eventVoiceLoad_orig, _eventVoiceLoad_orig + 0x12B, 0x90);
+				auto _wk = sa::EVENT::get_read_wk_motion();
 
-					memcpy(_absoluteInstructionJMP.data() + 0x06, &_eventVoiceLoadFunc, 0x08);
-					memcpy(_eventVoiceLoad_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+				*reinterpret_cast<uint32_t*>(_wk) = 0x01;
+				*reinterpret_cast<uint32_t*>(_wk + 0x04) = 0x01;
 
-					printf("Hooked sa::EVENT::audio_read_set [0x%p] to Re:Fined function @ 0x%p\n", _eventVoiceLoad_orig, audio_read_set);
+				*reinterpret_cast<uint32_t*>(_wk + 0x0C) = put_id;
+				*reinterpret_cast<uint32_t*>(_wk + 0x10) = entryId;
 
-					printf("\nSuccessfully handled sa::EVENT concerns.\n\n");
+				*reinterpret_cast<uint8_t*>(_wk + 0x08) = deleteFlag;
+
+				auto _skeletonName = sa::EVENT::getSkeletonName(entryId);
+
+				strcpy(_wk + 0x2C, _skeletonName);
+				strcpy(_wk + 0x3C, name);
+
+				fill(sa::EVENT::MotionFilename, sa::EVENT::MotionFilename + 0x30, 0x00);
+
+				auto _sizeWorld = _nameString.find('/') - 0x04;
+				auto _sizeAnimation = _nameString.size() - _nameString.find('/');
+
+				auto _fetchWorld = _nameString.substr(0x04, _sizeWorld);
+				auto _fetchAnimation = _nameString.substr(_nameString.find('/') + 1, _sizeAnimation);
+
+				if (!YS::REGION::Get() || YS::REGION::Get() == 0x07)
+				{
+					_constructPath = "%s/fm/%s/%s/%s.anb";
+					sprintf(sa::EVENT::MotionFilename, _constructPath.c_str(), _pathPrefix.c_str(), _fetchWorld.c_str(), _skeletonName, _fetchAnimation.c_str());
+
+					if (!YS::FILE::GetSize(sa::EVENT::MotionFilename))
+						sprintf(sa::EVENT::MotionFilename, _constructPath.c_str(), "anm", _fetchWorld.c_str(), _skeletonName, _fetchAnimation.c_str());
 
 				}
-			};
-		
-			static staticInitializer initialize;
+
+				else
+					sprintf(sa::EVENT::MotionFilename, _constructPath.c_str(), _pathPrefix.c_str(), _encodedRegion.c_str(), _fetchWorld.c_str(), _skeletonName, _fetchAnimation.c_str());
+
+				if (!YS::FILE::GetSize(sa::EVENT::MotionFilename))
+					sprintf(sa::EVENT::MotionFilename, _constructPath.c_str(), _pathPrefix.c_str(), "us", _fetchWorld.c_str(), _skeletonName, _fetchAnimation.c_str());
+
+				if (!YS::FILE::GetSize(sa::EVENT::MotionFilename))
+					sprintf(sa::EVENT::MotionFilename, _constructPath.c_str(), "anm", _encodedRegion.c_str(), _fetchWorld.c_str(), _skeletonName, _fetchAnimation.c_str());
+
+				if (!YS::FILE::GetSize(sa::EVENT::MotionFilename))
+					sprintf(sa::EVENT::MotionFilename, _constructPath.c_str(), "anm", "us", _fetchWorld.c_str(), _skeletonName, _fetchAnimation.c_str());
+
+				char* _buffAlloc = sa::EVENT::readBuffAlloc(sa::EVENT::MotionFilename, _wk, allocType);
+				*reinterpret_cast<uint64_t*>(_wk + 0x18) = reinterpret_cast<uint64_t>(_buffAlloc);
+
+				return YS::FILE::ReadBarBack(sa::EVENT::MotionFilename, _buffAlloc, sa::EVENT::ReadMotionCallback, reinterpret_cast<uint32_t*>(_wk));
+			}
 		};
 	}
 }

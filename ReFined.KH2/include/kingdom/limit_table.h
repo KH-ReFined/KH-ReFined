@@ -15,50 +15,41 @@ extern "C"
     {
         class DLL_EXPORT LIMIT_TABLE
         {
+        private:
+            static bool _init()
+            {
+                auto _fetchFilenameOriginal = FetchFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x40\x48\x8B\xF9\x0F\x29\x74\x24\x30\x8B\x09\x0F\x28\xF1\xE8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x24);
+
+                LIMIT_FNBUFFER = FetchRelativePointer<char*>(_fetchFilenameOriginal, 0x4D);
+                RedirectFunction(_fetchFilenameOriginal, reinterpret_cast<uint64_t>(get_filename), 0x69);
+                return true;
+            }
+
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            static inline bool _doInit = _init();
+            #endif
+
         public:
             static char* LIMIT_FNBUFFER;
 
-            static char* get_filename(char* limitTable);
-
-            struct staticInitializer
+            static char* get_filename(char* limitTable)
             {
-                staticInitializer()
-                {
-                    #if defined(BUILD_ARCHIPELAGO) || defined(BUILD_ARCHIPELAGO_LITE)
-                        return;
-                    #endif
+                const char* _regionStr = (!YS::REGION::Get() || YS::REGION::Get() == 0x07) ? "fm" : reinterpret_cast<char*>(*YS::REGION::Region);
 
-                    printf("======================================================\n");
-                    printf("Handling hooks and redirections concerning YS::LIMIT_TABLE...\n\n");
+                auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
-                    vector<uint8_t> _absoluteInstructionJMP =
-                    {
-                        0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                    };
+                string _fetchPath = _fetchConfig & 0x0200 ? "limit_2nd" :
+                    (_fetchConfig & 0x0400 ? "limit_3rd" : "limit");
 
-                    auto _fileNameFunc = (uint64_t)get_filename;
-                    auto _fileName_orig = ResolveFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x40\x48\x8B\xF9\x0F\x29\x74\x24\x30\x8B\x09\x0F\x28\xF1\xE8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x24);
+                char* _limitName = limitTable + 0x04;
 
-                    printf("Fetched YS::LIMIT_TABLE::get_filename @ 0x%p\n", _fileName_orig);
+                sprintf(YS::LIMIT_TABLE::LIMIT_FNBUFFER, "%s/%s/%s", _fetchPath.c_str(), _regionStr, _limitName);
 
-                    YS::LIMIT_TABLE::LIMIT_FNBUFFER = ResolveRelativeAddress<char*>(_fileName_orig, 0x4D);
+                if (!YS::FILE::GetSize(YS::LIMIT_TABLE::LIMIT_FNBUFFER))
+                    sprintf(YS::LIMIT_TABLE::LIMIT_FNBUFFER, "limit/%s/%s", _regionStr, _limitName);
 
-                    printf("Resolved YS::LIMIT_TABLE::LIMIT_FNBUFFER [0x%p] from YS::LIMIT_TABLE::get_filename [0x%p]\n", YS::LIMIT_TABLE::LIMIT_FNBUFFER, _fileName_orig);
-
-                    memset(_fileName_orig, 0x90, 0x69);
-
-                    memcpy(_absoluteInstructionJMP.data() + 0x06, &_fileNameFunc, 0x08);
-                    memcpy(_fileName_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-                    printf("Hooked YS::LIMIT_TABLE::get_filename [0x%p] to Re:Fined function @ 0x%p\n", _fileName_orig, get_filename);
-
-                    printf("\nSuccessfully handled YS::LIMIT_TABLE concerns.\n");
-                    printf("======================================================\n\n");
-                }
-            };
-
-            static staticInitializer initialize;
+                return YS::LIMIT_TABLE::LIMIT_FNBUFFER;
+            }
         };
     }
 }

@@ -2,13 +2,10 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
-#include <Windows.h>
-#include "memorymgr.h"
-
 #include "pax.h"
-#include "converter.h"
 #include "limit.h"
+#include "converter.h"
+#include "memorymgr.h"
 
 extern "C"
 {
@@ -16,83 +13,186 @@ extern "C"
     {
         class DLL_EXPORT VM
         {
+        private:
+            static bool _init()
+            {
+                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x48\x89\x7C\x24\x18\x41\x56\x48\x83\xEC\x30\x8B\x59\x18\x4C\x8B\xF1\x8B\x79\x10\x8B\x71\x08\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(trap_obj_effect_start_bind), 0x72);
+                RedirectFunction("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x89\x03\xC7\x43\x04\x40\x49\x4E\x54\x48\x83\xC4\x20\x5B\xC3\xCC\x48", "xxxxxxxxxxxx????xxxx????xxxx????xxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(trap_obj_get_entry_id), 0x2F);
+                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x30\x8B\x79\x10\x48\x8B\xF1\x0F\x29\x74\x24\x20\xF3\x0F\x10\x71\x18\x8B\x49\x08\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x8B\x0E\x48\x8B\xD8\xE8\x00\x00\x00\x00\x0F\x28\xDE\x44\x8B\xC7\x48\x8B\xD3\x48\x8B\xC8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxx????xxxxxxxxxxxx", reinterpret_cast<uint64_t>(trap_limit_motion_start), 0x21);
+                RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x30\x4C\x8B\xF1\x8B\x49\x10\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x41\x8B\x0E\x48\x8B\xD8\x41\x8B\x7E\x20\x41\x8B\x76\x18\x41\x8B\x6E\x08\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxxxxxxxxxxxxxxx????xxx", reinterpret_cast<uint64_t>(trap_obj_effect_start_bind_other), 0x8E);
+                return true;
+            }
+
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            static inline bool _doInit = _init();
+            #endif
+
             public:
-                static uint32_t trap_obj_get_entry_id(uint32_t* bdvalue);
-                static uint32_t trap_obj_effect_start_bind(uint32_t* bdvalue);
-                static uint32_t trap_obj_effect_start_bind_other(uint32_t* bdvalue);
-                static uint32_t trap_limit_motion_start(uint32_t* bdvalue);
-
-                struct staticInitializer
+                static uint32_t trap_obj_get_entry_id(uint32_t* bdvalue)
                 {
-                    staticInitializer()
-                    {
-                        #if defined(BUILD_ARCHIPELAGO) || defined(BUILD_ARCHIPELAGO_LITE)
-                            return;
-                        #endif
+                    if (!bdvalue || (char*)bdvalue > moduleInfo.moduleEnd || *bdvalue == 0x00 || *bdvalue == UINT32_MAX)
+                        return 0x00;
 
-                        printf("======================================================\n");
-                        printf("Handling hooks and redirections concerning YS::VM...\n\n");
+                    auto _fetchObjectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(*bdvalue);
 
-                        vector<uint8_t> _absoluteInstructionJMP =
-                        {
-                            0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                        };
+                    if (!_fetchObjectPtr || (char*)_fetchObjectPtr > moduleInfo.moduleEnd)
+                        return 0x00;
 
-                        auto _constEffectStartBind = (uint64_t)trap_obj_effect_start_bind;
-                        auto _effectStartBind_orig = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x48\x89\x7C\x24\x18\x41\x56\x48\x83\xEC\x30\x8B\x59\x18\x4C\x8B\xF1\x8B\x79\x10\x8B\x71\x08\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx");
+                    auto _fetchObjectActual = *reinterpret_cast<uint32_t*>(_fetchObjectPtr + 0x04);
 
-                        printf("Fetched YS::trap_obj_effect_start_bind @ 0x%p\n", _effectStartBind_orig);
+                    if (_fetchObjectActual == 0x00 || _fetchObjectActual == UINT32_MAX)
+                        return 0x00;
 
-                        fill(_effectStartBind_orig, _effectStartBind_orig + 0x72, 0x90);
+                    auto _acutalObjectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchObjectActual);
 
-                        memcpy(_absoluteInstructionJMP.data() + 0x06, &_constEffectStartBind, 0x08);
-                        memcpy(_effectStartBind_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
+                    if (!_acutalObjectPtr || (char*)_acutalObjectPtr > moduleInfo.moduleEnd)
+                        return 0x00;
 
-                        printf("Hooked YS::trap_obj_effect_start_bind [0x%p] to Re:Fined function @ 0x%p\n", _effectStartBind_orig, trap_obj_effect_start_bind);
+                    auto _fetchEntryPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(_acutalObjectPtr + 0x08));
+                    auto _fetchEntryId = *reinterpret_cast<uint32_t*>(_fetchEntryPtr);
 
-                        auto _constEffectStartBindOther = (uint64_t)trap_obj_effect_start_bind_other;
-                        auto _effectStartBindOther_orig = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x30\x4C\x8B\xF1\x8B\x49\x10\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x41\x8B\x0E\x48\x8B\xD8\x41\x8B\x7E\x20\x41\x8B\x76\x18\x41\x8B\x6E\x08\xE8\x00\x00\x00\x00\x8B\x48\x04", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxxxxxxxxxxxxxxx????xxx");
+                    *bdvalue = _fetchEntryId;
+                    bdvalue[1] = 1414416704;
 
-                        printf("Fetched YS::trap_obj_effect_start_bind_other @ 0x%p\n", _effectStartBindOther_orig);
-
-                        fill(_effectStartBindOther_orig, _effectStartBindOther_orig + 0x8E, 0x90);
-
-                        memcpy(_absoluteInstructionJMP.data() + 0x06, &_constEffectStartBindOther, 0x08);
-                        memcpy(_effectStartBindOther_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-                        printf("Hooked YS::trap_obj_effect_start_bind_other [0x%p] to Re:Fined function @ 0x%p\n", _effectStartBindOther_orig, trap_obj_effect_start_bind_other);
-
-                        auto _constObjGetEntryId = (uint64_t)trap_obj_get_entry_id;
-                        auto _objGetEntryId_orig = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\x8B\x09\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x89\x03\xC7\x43\x04\x40\x49\x4E\x54\x48\x83\xC4\x20\x5B\xC3\xCC\x48", "xxxxxxxxxxxx????xxxx????xxxx????xxxxxxxxxxxxxxxxx");
-
-                        printf("Fetched YS::trap_obj_get_entry_id @ 0x%p\n", _objGetEntryId_orig);
-
-                        fill(_objGetEntryId_orig, _objGetEntryId_orig + 0x2F, 0x90);
-
-                        memcpy(_absoluteInstructionJMP.data() + 0x06, &_constObjGetEntryId, 0x08);
-                        memcpy(_objGetEntryId_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-                        printf("Hooked YS::trap_obj_get_entry_id [0x%p] to Re:Fined function @ 0x%p\n", _objGetEntryId_orig, trap_obj_get_entry_id);
-
-                        auto _constLimitMotionStart = (uint64_t)trap_limit_motion_start;
-                        auto _limitMotionStart_orig = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x30\x8B\x79\x10\x48\x8B\xF1\x0F\x29\x74\x24\x20\xF3\x0F\x10\x71\x18\x8B\x49\x08\xE8\x00\x00\x00\x00\x8B\x48\x04\xE8\x00\x00\x00\x00\x8B\x0E\x48\x8B\xD8\xE8\x00\x00\x00\x00\x0F\x28\xDE\x44\x8B\xC7\x48\x8B\xD3\x48\x8B\xC8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx????xxxxxx????xxxxxxxxxxxx");
-
-                        printf("Fetched YS::trap_limit_motion_start @ 0x%p\n", _limitMotionStart_orig);
-
-                        fill(_limitMotionStart_orig, _limitMotionStart_orig + 0x21, 0x90);
-
-                        memcpy(_absoluteInstructionJMP.data() + 0x06, &_constLimitMotionStart, 0x08);
-                        memcpy(_limitMotionStart_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-                        printf("Hooked YS::trap_limit_motion_start [0x%p] to Re:Fined function @ 0x%p\n", _limitMotionStart_orig, trap_limit_motion_start);
-
-                        printf("\nSuccessfully handled YS::VM concerns.\n");
-                        printf("======================================================\n\n");
-                    }
+                    return _fetchEntryId;
                 };
 
-                static staticInitializer initialize;
+                static uint32_t trap_obj_effect_start_bind(uint32_t* bdvalue)
+                {
+                    auto _id = bdvalue[2];
+                    auto _flag = bdvalue[4];
+                    auto _priority = bdvalue[6];
+
+                    auto _fetchArg1 = *bdvalue;
+
+                    if (_fetchArg1 == 0x00 || _fetchArg1 == UINT32_MAX)
+                        return 0x00;
+
+                    auto _objectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchArg1);
+
+                    if (!_objectPtr || (char*)_objectPtr > moduleInfo.moduleEnd)
+                        return 0x00;
+
+                    auto _fetchArg2 = *reinterpret_cast<uint32_t*>(_objectPtr + 0x04);
+
+                    if (_fetchArg2 == 0x00 || _fetchArg2 == UINT32_MAX)
+                        return 0x00;
+
+                    auto _objectActual = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchArg2));
+
+                    if (!_objectActual || _objectActual > moduleInfo.moduleEnd)
+                        return 0x00;
+
+                    auto _fetchPAX = reinterpret_cast<char*>(_objectActual + 0x80);
+
+                    if (!_fetchPAX)
+                        return 0x00;
+
+                    if (*reinterpret_cast<uint64_t*>(_fetchPAX) == 0x00)
+                        return 0x00;
+
+                    auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _objectActual);
+                    auto _dwordReturn = PC::CONVERTER::LONG_TO_INT_ADDRESS(reinterpret_cast<uint64_t>(_paxReturn));
+
+                    *bdvalue = _dwordReturn;
+                    bdvalue[1] = 1380204864;
+
+                    return _dwordReturn;
+                };
+
+                static uint32_t trap_obj_effect_start_bind_other(uint32_t* bdvalue)
+                {
+                    auto _id = bdvalue[2];
+                    auto _targetObj = bdvalue[4];
+                    auto _flag = bdvalue[6];
+                    auto _priority = bdvalue[8];
+
+                    if (*bdvalue == 0x00 || *bdvalue == UINT32_MAX)
+                        return 0x00;
+
+                    if (_targetObj == 0x00 || _targetObj == UINT32_MAX)
+                        return 0x00;
+
+                    auto _objectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(*bdvalue);
+                    auto _targetObjectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetObj);
+
+                    if (!_objectPtr || (char*)_objectPtr > moduleInfo.moduleEnd || !_targetObjectPtr || (char*)_targetObjectPtr > moduleInfo.moduleEnd)
+                        return 0x00;
+
+                    auto _fetchActual = *reinterpret_cast<uint32_t*>(_objectPtr + 0x04);
+                    auto _fetchTargetActual = *reinterpret_cast<uint32_t*>(_targetObjectPtr + 0x04);
+
+                    if (_fetchActual == 0x00 || _fetchActual == UINT32_MAX || _fetchTargetActual == 0x00 || _fetchTargetActual == UINT32_MAX)
+                        return 0x00;
+
+                    auto _objectActual = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchActual));
+                    auto _targetObjectActual = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchTargetActual));
+
+                    if (!_objectActual || _objectActual > moduleInfo.moduleEnd || !_targetObjectActual || _targetObjectActual > moduleInfo.moduleEnd)
+                        return 0x00;
+
+                    auto _fetchPAX = reinterpret_cast<char*>(_objectActual + 0x80);
+
+                    if (!_fetchPAX)
+                        return 0x00;
+
+                    if (*reinterpret_cast<uint64_t*>(_fetchPAX) == 0x00)
+                        return 0x00;
+
+                    auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _targetObjectActual);
+                    auto _dwordReturn = PC::CONVERTER::LONG_TO_INT_ADDRESS(reinterpret_cast<uint64_t>(_paxReturn));
+
+                    *bdvalue = _dwordReturn;
+                    bdvalue[1] = 1380204864;
+
+                    return _dwordReturn;
+                };
+
+                static uint32_t trap_limit_motion_start(uint32_t* bdvalue)
+                {
+                    auto _motionPtr = bdvalue[4];
+                    auto _targetObj = bdvalue[2];
+                    auto _targetLimit = bdvalue[0];
+
+                    if (*bdvalue == 0x00 || *bdvalue == UINT32_MAX)
+                        return 0x00;
+
+                    if (_targetLimit == 0x00 || _targetLimit == UINT32_MAX)
+                        return 0x00;
+
+                    if (_targetObj == 0x00 || _targetObj == UINT32_MAX)
+                        return 0x00;
+
+                    if (_motionPtr == 0x00 || _motionPtr == UINT32_MAX)
+                        return 0x00;
+
+                    auto _targetLimitPtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetLimit));
+
+                    if (!_targetLimitPtr || _targetLimitPtr > moduleInfo.moduleEnd)
+                        return 0x00;
+
+                    auto _targetObjectPtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetObj));
+
+                    if (!_targetObjectPtr || _targetObjectPtr > moduleInfo.moduleEnd)
+                        return 0x00;
+
+                    auto _motionQueuePtr = *reinterpret_cast<uint32_t*>(_targetObjectPtr + 0x04);
+
+                    if (_motionQueuePtr == 0x00 || _motionQueuePtr == UINT32_MAX)
+                        return 0x00;
+
+                    auto _targetMotionQueuePtr = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_motionQueuePtr));
+
+                    if (!_targetMotionQueuePtr || _targetMotionQueuePtr > moduleInfo.moduleEnd)
+                        return 0x00;
+
+                    auto _dwordReturn = YS::LIMIT::motion_start(_targetLimitPtr, _targetMotionQueuePtr, _motionPtr, 0x00);
+
+                    *bdvalue = _dwordReturn;
+                    bdvalue[1] = 1414416704;
+
+                    return _dwordReturn;
+                };
         };
     }
 }

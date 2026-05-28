@@ -2,7 +2,6 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <stdint.h>
 #include "memorymgr.h"
 
 extern "C"
@@ -12,19 +11,11 @@ extern "C"
 		class DLL_EXPORT SORA
 		{
 		public:
-			using AddHP_t = void(*)(char* playerObject, int value, int parts, bool is_voice);
-			static AddHP_t AddHP;
+			static inline void(*AddHP)(char* playerObject, int value, int parts, bool is_voice) = FindSignature<void(*)(char*, int, int, bool)>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x56\x48\x83\xEC\x20\x48\x8B\xD9\x49\x63\xF0\x48\x8B\x89\xC0\x05\x00\x00\x8B\xEA\x48\x85\xC9\x0F\x84\xDF\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+			static inline uint16_t(*GetEntryID)(uint32_t form) = FetchFunctionFromCall<uint16_t(*)(uint32_t)>("\x44\x89\x4C\x24\x20\x48\x89\x4C\x24\x08\x53\x56\x57\x41\x54\x41\x55\x41\x57\x48\x83\xEC\x38", "xxxxxxxxxxxxxxxxxxxxxxx", 0xFD);
+			static inline bool(*IsChanging)(char* playerObject) = FetchFunctionFromCall<bool(*)(char*)>("\x44\x89\x4C\x24\x20\x48\x89\x4C\x24\x08\x53\x56\x57\x41\x54\x41\x55\x41\x57\x48\x83\xEC\x38", "xxxxxxxxxxxxxxxxxxxxxxx", 0x192);
 
-			using RefreshAbilities_t = void(*)(char* playerStats);
-			static RefreshAbilities_t RefreshAbilities;
-
-			using GetEntryID_t = uint16_t(*)(uint32_t form);
-			static GetEntryID_t GetEntryID;
-
-			using IsChanging_t = bool(*)(char* playerObject);
-			static IsChanging_t IsChanging;
-
-			static char** Sora;
+			static inline char** Sora = FetchRelativePointer<char**>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x30\xF3\x0F\x10\x44\x24\x68\x41\x8B\xD8\x48\x8B\x44\x24\x60\x48\x8B\xF9\xF3\x0F\x11\x44\x24\x28\x48\x89\x44\x24\x20\xE8\x00\x00\x00\x00\x33\xc0\x48\x8D\x0D\x00\x00\x00\x00\x48\x89\x87\x08\x0E\x00\x00\x48\x89\x87\x10\x0E\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxx????xxxxxxxxxxxxxxx????", 0x56);
 		};
 	}
 }

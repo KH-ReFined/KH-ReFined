@@ -2,8 +2,6 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
-#include <Windows.h>
 #include "memorymgr.h"
 
 extern "C"
@@ -13,8 +11,7 @@ extern "C"
 		class DLL_EXPORT IMAGE_FREEZE
 		{
 		public:
-			using GetImage_t = char* (*)(char* imageFreeze, int no);
-			static GetImage_t GetImage;
+			static inline char*(*GetImage)(char* imageFreeze, int no) = FindSignature<char* (*)(char*, int)>("\x48\x63\xC2\x48\xC1\xE0\x08\x48\x03\x41\x28\xC3", "xxxxxxxxxxxx");
 		};
 	}
 }

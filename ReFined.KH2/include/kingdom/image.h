@@ -2,8 +2,6 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
-#include <Windows.h>
 #include "memorymgr.h"
 
 extern "C"
@@ -13,26 +11,15 @@ extern "C"
 		class DLL_EXPORT IMAGE
 		{
 		public:
-			using IMAGE_t = void(*)(char* imageBuff);
-			static IMAGE_t _IMAGE;
-
-			using MakePacket_t = void(*)(char* imageBuff);
-			static MakePacket_t MakePacket;
-
-			using Init_t = void(*)(char* imageBuff, char* imd);
-			static Init_t Init;
-
-			using InitLoadImage_t = void(*)(char* imageBuff);
-			static InitLoadImage_t InitLoadImage;
-
-			using LoadTexture_t = void(*)(char* imageBuff);
-			static LoadTexture_t LoadTexture;
-
-			using ReleaseImage_t = char*(*)(char* imd);
-			static ReleaseImage_t ReleaseImage;
-
-			using CreateImage_t = char*(*)(char* imd);
-			static CreateImage_t CreateImage;
+			static inline void(*_IMAGE)(char* imageBuff) = FetchFunctionFromCall<void(*)(char*)>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x20\x33\xED\x48\x8D\x05\x00\x00\x00\x00\x89\x69\x10\x48\x8B\xF1", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxx", 0x3E);
+				    
+			static inline void(*MakePacket)(char* imageBuff) = FindSignature<void(*)(char*)>("\x44\x8B\x41\x10\x4C\x8B\xD1\x8B\x51\x2C\x48\x8B\x05", "xxxxxxxxxxxxx");
+			static inline void(*Init)(char* imageBuff, char* imd) = FindSignature<void(*)(char*, char*)>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x8B\x42\x18\x48\x8B\xDA", "xxxxxxxxxxxxxxxx");
+				    
+			static inline void(*InitLoadImage)(char* imageBuff) = FindSignature<void(*)(char*)>("\x40\x53\x48\x83\xEC\x20\x8B\x41\x40\x48\x8B\xD9\xA8\x01\x75\x08", "xxxxxxxxxxxxxxxx");
+			static inline void(*LoadTexture)(char* imageBuff) = FindSignature<void(*)(char*)>("\x48\x83\xEC\x38\x48\x83\x79\x50\xFF\x75\x40\x48\x89\x5C\x24\x40", "xxxxxxxxxxxxxxxx");
+			static inline char*(*ReleaseImage)(char* imd) = FetchFunctionFromCall<char* (*)(char*)>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0x48);
+			static inline char*(*CreateImage)(char* imd) = FetchFunctionFromCall<char* (*)(char*)>("\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x83\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x13", "xxxxxxxxxxxxx????xxxxxxxxxx????xxxxxx", 0xDA);
 		};
 	}
 }

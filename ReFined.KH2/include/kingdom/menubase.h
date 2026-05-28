@@ -2,7 +2,6 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
 #include "memorymgr.h"
 
 extern "C"
@@ -12,8 +11,8 @@ extern "C"
 		class DLL_EXPORT MenuBase
 		{
 		public:
-			static int (*GetMode)();
-			static void (*SetSMode)(int mode);
+			static inline int (*GetMode)() = FetchFunctionFromCall<int(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x80\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x70\xE8\x00\x00\x00\x00\x48\x63\xD8\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x8B\xF0\x83\xFB\x19\x75\x0E", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxx????xxxxxxxxxxxxx", 0x002E);
+			static inline void (*SetSMode)(int mode) = FetchFunctionFromCall<void(*)(int)>("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", 0x01F8);
 		};
 	}
 }

@@ -2,7 +2,6 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
 #include "memorymgr.h"
 
 extern "C"
@@ -12,8 +11,8 @@ extern "C"
 		class DLL_EXPORT MEMBER_TABLE
 		{
 		public:
-			static char* MemberTable;
-			static char* MemberStatsAnchor;
+			static inline char* MemberTable = FetchRelativePointer<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x56\x41\x57\x48\x83\xEC\x20\x0F\xB6\x35\x00\x00\x00\x00\x48\x8D\x3D\x00\x00\x00\x00\x45\x33\xF6\xB9\x12\x00\x00\x00\x41\x0F\xB7\xC6\x41\x8B\xDE\x66\xF3\xAB", "xxxxxxxxxxxxxxxxxxxxxx????xxx????xxxxxxxxxxxxxxxxxx", 0x1D);
+			static inline char* MemberStatsAnchor = FetchRelativePointer<char*>("\x40\x57\x48\x83\xEC\x20\x8D\x41\xFF\x8B\xF9\x83\xF8\x0E\x0F\x87\x24\x01\x00\x00\x44\x8B\x0D\x00\x00\x00\x00\x4C\x8D\x1D\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxx????xxx????", 0x1E);
 		};
 	}
 }

@@ -10,9 +10,8 @@ extern "C"
 	{
 		class DLL_EXPORT ResourceEntry
 		{
-		public:
-			using ReadDataLocal_t = char*(*)(char* resourceEntry, char* base, const char* folder, const char* file);
-			static ReadDataLocal_t ReadDataLocal;
+			public:
+				static inline char*(*ReadDataLocal)(char* resourceEntry, char* base, const char* folder, const char* file) = FindSignature<char* (*)(char*, char*, const char*, const char*)>("\x4C\x8B\x91\x70\x06\x00\x00\x4D\x8B\xD9\x4D\x85\xD2", "xxxxxxxxxxxxx");
 		};
 	}
 }

@@ -2,7 +2,6 @@
 
 #define DLL_EXPORT __declspec(dllexport)
 
-#include <cstdint>
 #include "memorymgr.h"
 
 extern "C"
@@ -11,12 +10,9 @@ extern "C"
 	{
 		class DLL_EXPORT CmConfig
 		{
-		public:
-			using UpdateList_t = void (*)();
-			static UpdateList_t UpdateList;
-
-			using UpdateActive_t = void (*)();
-			static UpdateActive_t UpdateActive;
+			public:
+				static inline void (*UpdateList)() = FindSignature<void(*)()>("\x40\x53\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x58\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????xxx????xxxx????");
+				static inline void (*UpdateActive)() = FindSignature<void(*)()>("\x48\x83\xEC\x28\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x48\x63\xD0\x48\x8B\x05\x00\x00\x00\x00\x48\x0F\xBE\x0C\x02", "xxxxxxx????x????xxxxxx????xxxxx");
 		};
 	}
 }

@@ -16,44 +16,48 @@ extern "C"
     {
         class DLL_EXPORT COMMAND_ONE
         {
-        public:
-            static void draw(char* Command);
-
-            struct staticInitializer
+        private:
+            static bool _init()
             {
-                staticInitializer()
+                RedirectFunction("\x40\x57\x48\x83\xEC\x20\x33\xC0\x48\x8B\xF9\x89\x44\x24\x30\x89", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(draw), 0xA5);
+                return true;
+            }
+
+            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+            static inline bool _doInit = _init();
+            #endif
+
+        public:
+            static void draw(char* Command)
+            {
+                auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+                auto _isHudDraw = true;
+
+                if (_fetchHudDraw)
+                    memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+                if (!_isHudDraw && !*YS::MENU::IsMenu)
+                    return;
+
+                dk::Sprite::draw(Command);
+                dk::SpriteMessage::drawMessage(Command);
+
+                if (*reinterpret_cast<int*>(Command + 0x03C0) > 1)
                 {
-                    #if defined(BUILD_ARCHIPELAGO) || defined(BUILD_ARCHIPELAGO_LITE)
-                        return;
-                    #endif
+                    auto _fetchMemory = YS::PANACEA_ALLOC::Get("ASPECT_INFORMATION");
+                    auto _offsetValue = 85;
 
-                    printf("======================================================\n");
-                    printf("Handling hooks and redirections concerning dk::COMMAND_ONE...\n\n");
+                    if (_fetchMemory)
+                        memcpy(&_offsetValue, _fetchMemory, 0x04);
 
-                    vector<uint8_t> _absoluteInstructionJMP =
-                    {
-                        0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                    };
+                    auto _applyAspect = (_offsetValue * -1);
 
-                    auto _constDraw = (uint64_t)draw;
-                    auto _draw_orig = SignatureScan<char*>("\x40\x57\x48\x83\xEC\x20\x33\xC0\x48\x8B\xF9\x89\x44\x24\x30\x89", "xxxxxxxxxxxxxxxx");
+                    *reinterpret_cast<int*>(Command + 0x018C + 0x0220) = YI::SEQUENCE::GetActiveX(Command + 0x0020) + *reinterpret_cast<int*>(Command + 0x01C0) + YI::SEQUENCE::GetParamX(Command + 0x0020) + _applyAspect;
+                    *reinterpret_cast<int*>(Command + 0x0190 + 0x0220) = YI::SEQUENCE::GetActiveY(Command + 0x0020) + *reinterpret_cast<int*>(Command + 0x01C4) + YI::SEQUENCE::GetParamY(Command + 0x0020);
 
-                    printf("Fetched dk::COMMAND_ONE::draw @ 0x%p\n", _draw_orig);
-
-                    memset(_draw_orig, 0x90, 0xA5);
-
-                    memcpy(_absoluteInstructionJMP.data() + 0x06, &_constDraw, 0x08);
-                    memcpy(_draw_orig, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
-
-                    printf("Hooked dk::COMMAND_ONE::draw [0x%p] to Re:Fined function @ 0x%p\n", _draw_orig, draw);
-
-                    printf("\nSuccessfully handled dk::COMMAND_ONE concerns.\n");
-                    printf("======================================================\n\n");
+                    YI::SEQUENCE::Draw(Command + 0x0220);
                 }
-            };
-
-            static staticInitializer initialize;
+            }
         };
     }
 }

@@ -41,6 +41,7 @@
 #include "member.h"
 #include "member_table.h"
 #include "menu.h"
+#include "progress.h"
 #include "message.h"
 #include "obj2d.h"
 #include "objentry.h"
@@ -69,14 +70,10 @@
 #include "select.h"
 #include "spritemessage.h"
 #include "hookintro.h"
-#include "field.h"
 #include "sheet.h"
 #include "fvector.h"
 #include "cmdata.h"
-
-#include "memorymgr.h"
 #include "continue_menu.h"
-
 #include "ini.h"
 
 using namespace std;
@@ -137,17 +134,17 @@ bool LOCKON_PLAY = false;
 vector<uint8_t> LOCKON_VANILLA;
 vector<uint8_t> LOCKON_EDITED;
 
-char* LOCKON_FUNCTION = SignatureScan<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x55\x57\x41\x56\x48\x8B", "xxxxxxxxxxxxxxxx");
-char* LOCKON_FLOATS = SignatureScan<char*>("\x00\x00\x80\xBF\xF3\x04\xB5\xBF\x00\x00\x00\x00\x00\x00\xE0\xBF", "xxxxxxxxxxxxxxxx");
+char* LOCKON_FUNCTION = FindSignature<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x55\x57\x41\x56\x48\x8B", "xxxxxxxxxxxxxxxx");
+char* LOCKON_FLOATS = FindSignature<char*>("\x00\x00\x80\xBF\xF3\x04\xB5\xBF\x00\x00\x00\x00\x00\x00\xE0\xBF", "xxxxxxxxxxxxxxxx");
 
-char* LOCKON_CHANGE = ResolveFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x55\x57\x41\x56\x48\x8B", "xxxxxxxxxxxxxxxx", 0x16A);
-uint32_t* LOCKON_TARGET = ResolveRelativeAddress<uint32_t*>(LOCKON_CHANGE, 0x0B);
+char* LOCKON_CHANGE = FetchFunctionFromCall<char*>("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x55\x57\x41\x56\x48\x8B", "xxxxxxxxxxxxxxxx", 0x16A);
+uint32_t* LOCKON_TARGET = FetchRelativePointer<uint32_t*>(LOCKON_CHANGE, 0x0B);
 
 vector<char> LIMITER_FUNCTION;
 
-char* ADJUST_GLOW_FUNCTION = SignatureScan<char*>("\x4C\x8B\xDC\x49\x89\x5B\x20\x55\x56\x57\x41\x54\x41\x56\x49\x8D\xAB\x18\xF2\xFF\xFF\x48\x81\xEC\xC0\x0E\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
-char* INIT_VIEWPORT_FUNCTION = SignatureScan<char*>("\x48\x83\xEC\x38\xE8\x00\x00\x00\x00\x48\xC7\x44\x24\x20\x00\x00\x00\x00\x0F\x10\x54\x24\x20\xF3\x0F\x10\x48\x10\xF3\x0F\x10\x40\x14\x0F\xC6\xD2\xD2\xF3\x0F\x10\xD1\x0F\xC6\xD2\x27\xF3\x0F\x10\xD0\x0F\xC6\xD2\x39\x0F\x11\x90\x5C\x01\x00\x00\x48\x83\xC4\x38\xC3", "xxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-char* ADJUST_VIEWPORT_FUNCTION = SignatureScan<char*>("\x48\x83\xEC\x78\x0F\x29\x74\x24\x60\x0F\x28\xF1\x0F\x29\x7C\x24\x50\x0F\x28\xFA\x44\x0F\x29\x44\x24\x40\x44\x0F\x28\xC3\x44\x0F\x29\x4C\x24\x30\x44\x0F\x28\xC8\xE8\x00\x00\x00\x00\x45\x0F\xC6\xC9\xE1\xF3\x44\x0F\x10\xCE\x0F\x28\x74\x24\x60\x45\x0F\xC6\xC9\xC6\xF3\x44\x0F\x10\xCF\x0F\x28\x7C\x24\x50\x45\x0F\xC6\xC9\x27\xF3\x45\x0F\x10\xC8\x44\x0F\x28\x44\x24\x40\x45\x0F\xC6\xC9\x39\x44\x0F\x11\x88\x5C\x01\x00\x00\x44\x0F\x28\x4C\x24\x30\x48\x83\xC4\x78\xC3", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+char* ADJUST_GLOW_FUNCTION = FindSignature<char*>("\x4C\x8B\xDC\x49\x89\x5B\x20\x55\x56\x57\x41\x54\x41\x56\x49\x8D\xAB\x18\xF2\xFF\xFF\x48\x81\xEC\xC0\x0E\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
+char* INIT_VIEWPORT_FUNCTION = FindSignature<char*>("\x48\x83\xEC\x38\xE8\x00\x00\x00\x00\x48\xC7\x44\x24\x20\x00\x00\x00\x00\x0F\x10\x54\x24\x20\xF3\x0F\x10\x48\x10\xF3\x0F\x10\x40\x14\x0F\xC6\xD2\xD2\xF3\x0F\x10\xD1\x0F\xC6\xD2\x27\xF3\x0F\x10\xD0\x0F\xC6\xD2\x39\x0F\x11\x90\x5C\x01\x00\x00\x48\x83\xC4\x38\xC3", "xxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+char* ADJUST_VIEWPORT_FUNCTION = FindSignature<char*>("\x48\x83\xEC\x78\x0F\x29\x74\x24\x60\x0F\x28\xF1\x0F\x29\x7C\x24\x50\x0F\x28\xFA\x44\x0F\x29\x44\x24\x40\x44\x0F\x28\xC3\x44\x0F\x29\x4C\x24\x30\x44\x0F\x28\xC8\xE8\x00\x00\x00\x00\x45\x0F\xC6\xC9\xE1\xF3\x44\x0F\x10\xCE\x0F\x28\x74\x24\x60\x45\x0F\xC6\xC9\xC6\xF3\x44\x0F\x10\xCF\x0F\x28\x7C\x24\x50\x45\x0F\xC6\xC9\x27\xF3\x45\x0F\x10\xC8\x44\x0F\x28\x44\x24\x40\x45\x0F\xC6\xC9\x39\x44\x0F\x11\x88\x5C\x01\x00\x00\x44\x0F\x28\x4C\x24\x30\x48\x83\xC4\x78\xC3", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
 bool SHAKE_WRITTEN;
 
@@ -155,10 +152,10 @@ vector<char> ADJUST_GLOW_ARRAY;
 vector<char> INIT_VIEWPORT_ARRAY;
 vector<char> ADJUST_VIEWPORT_ARRAY;
 
-char* VIEWPORT3D_ADDR = ResolveRelativeAddress<char*>("\x48\x8B\xC4\x57\x41\x56\x41\x57\x48\x81\xEC\x50\x01\x00\x00\x48\xC7\x44\x24\x20\xFE\xFF\xFF\xFF\x48\x89\x58\x10\x48\x89\x68\x18\x48\x89\x70\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x40\x01\x00\x00\x48\x8B\xE9\x33\xD2\x41\xB8\x00\x01\x00\x00\x48\x8D\x4C\x24\x30\xE8\x00\x00\x00\x00\x45\x33\xFF", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", 0x311);
+char* VIEWPORT3D_ADDR = FetchRelativePointer<char*>("\x48\x8B\xC4\x57\x41\x56\x41\x57\x48\x81\xEC\x50\x01\x00\x00\x48\xC7\x44\x24\x20\xFE\xFF\xFF\xFF\x48\x89\x58\x10\x48\x89\x68\x18\x48\x89\x70\x20\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x40\x01\x00\x00\x48\x8B\xE9\x33\xD2\x41\xB8\x00\x01\x00\x00\x48\x8D\x4C\x24\x30\xE8\x00\x00\x00\x00\x45\x33\xFF", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxx", 0x311);
 
 bool* PROMPT_MODE;
-char* PROMPT_INSTRUCTION = SignatureScan<char*>("\xC7\x05\x00\x00\x00\x00\x01\x00\x00\x00\xE8\x00\x00\x00\x00\x8B\x0D\x00\x00\x00\x00", "xx????xxxxx????xx????");
+char* PROMPT_INSTRUCTION = FindSignature<char*>("\xC7\x05\x00\x00\x00\x00\x01\x00\x00\x00\xE8\x00\x00\x00\x00\x8B\x0D\x00\x00\x00\x00", "xx????xxxxx????xx????");
 
 vector<uint32_t> CHECKSUM_TABLE;
 
@@ -174,7 +171,7 @@ AREA::INFO SAVE_AREA;
 uint8_t SAVE_REACTION = 0xEB;
 int SAVE_REACTION_FRAME = 0;
 
-char* SAVE_REACTION_FUNCTION = SignatureScan<char*>("\x40\x55\x53\x48\x8D\x6C\x24\xB1\x48\x81\xEC\xC8\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x45\x3F\x48\x8B\xD9\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxx????");
+char* SAVE_REACTION_FUNCTION = FindSignature<char*>("\x40\x55\x53\x48\x8D\x6C\x24\xB1\x48\x81\xEC\xC8\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x45\x3F\x48\x8B\xD9\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxx????");
 
 uint32_t MAGIC_FIRST;
 uint16_t MAGIC_SECOND;
@@ -185,7 +182,7 @@ vector<uint16_t> ABILITY_ARRAY;
 
 bool IS_PICTURE_EDITED = false;
 
-char* PICTURE_APPEAR_FUNC = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x30\x48\x63\x41\x34\x48\x8B\xD9\x3B\x41\x30\x0F\x84\x00\x00\x00\x00\x48\x69\xD0\x60\x05\x00\x00\x48\x89\x7C\x24\x48", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx");
+char* PICTURE_APPEAR_FUNC = FindSignature<char*>("\x40\x53\x48\x83\xEC\x30\x48\x63\x41\x34\x48\x8B\xD9\x3B\x41\x30\x0F\x84\x00\x00\x00\x00\x48\x69\xD0\x60\x05\x00\x00\x48\x89\x7C\x24\x48", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx");
 
 bool IS_DEAD = false;
 
@@ -194,8 +191,8 @@ uint32_t NEGATIVE_ASPECT_OFFSET = 0xFFFFFFAB;
 
 vector<char> INSTRUCTION_LIMIT_ASPECT;
 
-char* VIEWPORT_LIMIT = SignatureScan<char*>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\xE8\x00\x00\x00\x00\xF3\x0F\x10\x15\x00\x00\x00\x00\x48\x8B\xC8\xF3\x0F\x10\x25\x00\x00\x00\x00\xF3\x0F\x5D\x50\x28", "xxxxxxxxxx????xxxx????xxxxxxx????xxxxx");
-char** RADAR_STRUCT = ResolveRelativeAddress<char**>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x56\x57\x41\x54\x48\x83", "xxxxxxxxxxxxxxxx", 0xD4);
+char* VIEWPORT_LIMIT = FindSignature<char*>("\x40\x53\x48\x83\xEC\x20\x48\x8B\xD9\xE8\x00\x00\x00\x00\xF3\x0F\x10\x15\x00\x00\x00\x00\x48\x8B\xC8\xF3\x0F\x10\x25\x00\x00\x00\x00\xF3\x0F\x5D\x50\x28", "xxxxxxxxxx????xxxx????xxxxxxx????xxxxx");
+char** RADAR_STRUCT = FetchRelativePointer<char**>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x56\x57\x41\x54\x48\x83", "xxxxxxxxxxxxxxxx", 0xD4);
 
 vector<uint8_t> INST_CAMPINIT;
 vector<uint8_t> INST_CAMPBITWISE;
@@ -203,8 +200,8 @@ vector<uint8_t> INST_CAMPBITWISE;
 vector<uint8_t> INST_MAPJUMPTASK;
 vector<uint8_t> INST_CONTINUELOAD;
 
-char* CMENU_OFFSET = SignatureScan<char*>("\x48\x8B\xC4\x48\x81\xEC\x88\x00\x00\x00\x48\x89\x58\x18\xBA\x02\x00\x00\x00\x48\x89\x68\xF8\x48\x89\x70\xF0", "xxxxxxxxxxxxxxxxxxxxxxxxxxx");
-char* CMENUINIT_OFFSET = SignatureScan<char*>("\x66\x44\x89\x35\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x44\x88\x35\x00\x00\x00\x00\x0F\x95\x05\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x4C\x8D\x05\x00\x00\x00\x00\xC7\x44\x24\x30\x8C\x00\x00\x00", "xxxx????x????xxxxx????xxx????x????xxx????xxxxxxxx");
+char* CMENU_OFFSET = FindSignature<char*>("\x48\x8B\xC4\x48\x81\xEC\x88\x00\x00\x00\x48\x89\x58\x18\xBA\x02\x00\x00\x00\x48\x89\x68\xF8\x48\x89\x70\xF0", "xxxxxxxxxxxxxxxxxxxxxxxxxxx");
+char* CMENUINIT_OFFSET = FindSignature<char*>("\x66\x44\x89\x35\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x84\xC0\x44\x88\x35\x00\x00\x00\x00\x0F\x95\x05\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x4C\x8D\x05\x00\x00\x00\x00\xC7\x44\x24\x30\x8C\x00\x00\x00", "xxxx????x????xxxxx????xxx????x????xxx????xxxxxxxx");
 
 uint8_t RETRY_MODE;
 bool RETRY_BLACKLIST;
@@ -219,7 +216,7 @@ uint8_t HADES_ITERATOR = 0xFF;
 ReFined::Continue::Entry RETRY_ENTRY(0x0002, 0x8AB1);
 ReFined::Continue::Entry PREPARE_ENTRY(0x0002, 0x5727);
 
-uint8_t* COMMAND_TYPE = ResolveRelativeAddress<uint8_t*>("\x48\x83\xEC\x28\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\x48\x83\xC4\x28\xE9\x00\x00\x00\x00\xCC\xCC\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\xC3", "xxxxxxx????x????xxx????xxx????xxx????xxxxx????xxxxx????xxx????x", 0x1A);
+uint8_t* COMMAND_TYPE = FetchRelativePointer<uint8_t*>("\x48\x83\xEC\x28\x48\x8D\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x8D\x0D\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\x48\x83\xC4\x28\xE9\x00\x00\x00\x00\xCC\xCC\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x05\x00\x00\x00\x00\xC3", "xxxxxxx????x????xxx????xxx????xxx????xxxxx????xxxxx????xxx????x", 0x1A);
 
 void(*ITEM_COMMIT)() = nullptr;
 
@@ -230,8 +227,8 @@ bool CAN_PROCESS_FORM_KEYBLADES = false;
 uint16_t TARGET_KEYBLADE = 0x0000;
 uint16_t TARGET_CURRENT_FORM_KEYBLADE = 0x0000;
 
-char* CURRENT_SUBMENU = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????x????", 0xF0);
-char** MENU_ITEMS = ResolveRelativeAddress<char**>("\x40\x53\x55\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxx????xxx????xxx", 0x26);
+char* CURRENT_SUBMENU = FetchRelativePointer<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????x????", 0xF0);
+char** MENU_ITEMS = FetchRelativePointer<char**>("\x40\x53\x55\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxx????xxx????xxx", 0x26);
 
 char TITLE_FILENAME[0x30];
 
@@ -261,6 +258,33 @@ uint8_t ROOM_AMOUNT = 3;
 uint8_t SAVE_SLOT_OFFSET = 99;
 
 uint16_t RESET_COMBO = YS::HARDPAD::BUTTONS::NONE;
+
+map<pair<uint16_t, int>, pair<int, int>> WORLD_PROGRESS =
+{
+   { { 0x0048, 0x1C1C }, { 0x1C1A, 0x1C1D } }, // Scimitar
+   { { 0x0037, 0x200B }, { 0x200A, 0x200D } }, // Sword of the Ancestor
+   { { 0x003B, 0x140F }, { 0x140C, 0x1410 } }, // Beast's Claw
+   { { 0x003C, 0x3834 }, { 0x3838, 0x3835 } }, // Bone Fist
+   { { 0x003E, 0x404D }, { 0x404B, 0x404E } }, // Skill and Crossbones
+   { { 0x0171, 0x105E }, { 0x105C, 0x105F } }, // Membership Card
+   { { 0x0049, 0x481B }, { 0x4801, 0x4802 } }, // Way to the Dawn
+   { { 0x01CC, 0x300A }, { 0x300B, 0x3014 } }, // Royal Summons
+   { { 0x0036, 0x1829 }, { 0x1800, 0x1809 } }, // Battlefields of War
+   { { 0x004A, 0x4430 }, { 0x4400, 0x4414 } }, // Identity Disk
+   { { 0x003D, 0x282D }, { 0x2800, 0x2818 } }, // Proud Fang
+   { { 0x0170, 0xFFFF }, { 0x0815, 0xFFFF } }, // Namine's Sketches
+   { { 0x0177, 0x08AD }, { 0x0894, 0x08AF } }, // Ice Cream
+   { { 0x0177, 0x08B9 }, { 0xFFFF, 0x08BB } }, // Ice Cream
+};
+
+vector<pair<int, int>> POOH_PROGRESS =
+{
+    { 0x2408, 0x103B },
+    { 0x2410, 0x2434 },
+    { 0x2418, 0x2435 },
+    { 0x2420, 0x2436 },
+    { 0x2427, 0x2437 },
+};
 
 #ifdef BUILD_ARCHIPELAGO
 const wchar_t* CONFIG_NAME = L"\\dll\\enablersAP.cfg";
@@ -414,7 +438,7 @@ const wchar_t* CONFIG_NAME = L"\\dll\\reFined.cfg";
 
 void SOFT_RESET()
 {
-    bool _canReset = *YS::COMMAND_DRAW::CommandDraw != 0x00 && *AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
+    bool _canReset = *dk::COMMAND_DRAW::CommandDraw != 0x00 && *AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
 
     // If the buttons are pushed, a reset can happen and it isn't happening:
     if (RESET_COMBO != YS::HARDPAD::BUTTONS::NONE && *YS::HARDPAD::Input == RESET_COMBO && _canReset && !IS_RESETING)
@@ -474,11 +498,11 @@ void HANDLE_MUSIC()
 
             auto _fetchMode = *AREA::BattleStatus == 0x00 ? 0x00 : 0x01;
 
-            auto _fetchVolumeStart = *reinterpret_cast<uint32_t*>(SOUND::CurrentMusic + 0x04);
-            auto _fetchVolumeFinish = *reinterpret_cast<uint32_t*>(SOUND::CurrentMusic + 0x08);
+            auto _fetchVolumeStart = *reinterpret_cast<uint32_t*>(SOUND::CURRENT_MUSIC + 0x04);
+            auto _fetchVolumeFinish = *reinterpret_cast<uint32_t*>(SOUND::CURRENT_MUSIC + 0x08);
 
-            auto _fetchCurrentField = *reinterpret_cast<uint16_t*>(SOUND::CurrentMusic);
-            auto _fetchCurrentBattle = *reinterpret_cast<uint16_t*>(SOUND::CurrentMusic + 0x10);
+            auto _fetchCurrentField = *reinterpret_cast<uint16_t*>(SOUND::CURRENT_MUSIC);
+            auto _fetchCurrentBattle = *reinterpret_cast<uint16_t*>(SOUND::CURRENT_MUSIC + 0x10);
 
             char _fieldMusicPath[0x28];
             char _battleMusicPath[0x28];
@@ -517,7 +541,7 @@ void HANDLE_MUSIC()
 
         FIELD_AFTERMATH:
 
-            if (*SOUND::IsTransferActive != 0x00)
+            if (*SOUND::IS_TRANSFER_ACTIVE != 0x00)
                 return;
 
             free(FIELD_ALLOC);
@@ -541,7 +565,7 @@ void HANDLE_MUSIC()
 
         BATTLE_AFTERMATH:
 
-            if (*SOUND::IsTransferActive != 0x00)
+            if (*SOUND::IS_TRANSFER_ACTIVE != 0x00)
                 return;
 
             free(BATTLE_ALLOC);
@@ -657,7 +681,7 @@ void HANDLE_AUDIO()
 
             else if (CURRENT_VSB != 0x0000 && CURRENT_VSB <= 0x0238)
             {
-                if (*SOUND::IsTransferActive != 0x00)
+                if (*SOUND::IS_TRANSFER_ACTIVE != 0x00)
                     return;
 
                 else
@@ -885,7 +909,7 @@ void AUTOSAVE()
         }
     }
 
-    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
+    auto _commandPointer = *dk::COMMAND_DRAW::CommandDraw;
     auto _gaugeTypePointer = *dk::GAUGE::PlayerGauge ? *reinterpret_cast<char**>(*dk::GAUGE::PlayerGauge + 0x88) : nullptr;
     auto _mainPointer = *YS::EVENT::Event;
 
@@ -1247,14 +1271,14 @@ void REGISTER_MAGIC()
                     uint64_t _bdxAddress = _barAddress + *reinterpret_cast<const uint32_t*>(_loadBAR + 0x28) - _barFileOffset;
 
                     // As well as the address of which PAX actually starts in.
-                    uint64_t _paxStartAddress = _barAddress + *reinterpret_cast<const uint32_t*>(_loadBAR + 0x18) + 0x10 - _barFileOffset;
+                    uint64_t _paxmoduleStartess = _barAddress + *reinterpret_cast<const uint32_t*>(_loadBAR + 0x18) + 0x10 - _barFileOffset;
 
                     // Write all of the info needed for the Magic to be parsed, processed, and executed.
                     memcpy(YS::MAGIC::MagicInfo + 0x50 * i, &_barAddress, 0x08);
                     memcpy(YS::MAGIC::MagicInfo + 0x08 + 0x50 * i, &_bdxAddress, 0x08);
                     memcpy(YS::MAGIC::MagicInfo + 0x10 + 0x50 * i, &_bdxAddress, 0x08);
                     memcpy(YS::MAGIC::MagicInfo + 0x18 + 0x50 * i, &_paxAddress, 0x08);
-                    memcpy(YS::MAGIC::MagicInfo + 0x20 + 0x50 * i, &_paxStartAddress, 0x08);
+                    memcpy(YS::MAGIC::MagicInfo + 0x20 + 0x50 * i, &_paxmoduleStartess, 0x08);
 
                     // Overwrite the pointer to the current Magic table.
                     memcpy(YS::MAGIC::MagicInfo + 0x48 + 0x50 * i, &_currentTablePtr, 0x08);
@@ -1296,7 +1320,7 @@ void REGISTER_ABILITY()
     bool _isCutscene = *YS::EVENT::Event && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xCAFEEFAC
                                          && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xEFACCAFE;
 
-    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
+    auto _commandPointer = *dk::COMMAND_DRAW::CommandDraw;
 
     // If the game is loaded:
     if (*AREA::IsInMap && _commandPointer != 0x00 && _soraGauge != 0x00 && !_isCutscene)
@@ -1346,7 +1370,7 @@ void SHOW_INFORMATION()
     // Fetch the presence of Sora's Gauge [Edge Case for 100 Acre Woods minigames.]
     auto _soraGauge = *dk::GAUGE::PlayerGauge ? *reinterpret_cast<char**>(*dk::GAUGE::PlayerGauge + 0x88) : nullptr;
 
-    auto _commandPointer = *YS::COMMAND_DRAW::CommandDraw;
+    auto _commandPointer = *dk::COMMAND_DRAW::CommandDraw;
     auto _reactionCommand = *reinterpret_cast<const uint16_t*>(YS::COMMAND_ELEM::ReactionID);
 
     // See if there is specifically a Cutscene playing.
@@ -1358,27 +1382,27 @@ void SHOW_INFORMATION()
     {
         // Fetch the fade status and the enable line.
         auto _fetchFade = *(dk::JUMPEFFECT::FadeStatus + 0x108);
-        auto _fetchEnable = moduleInfo.startAddr[0x800000];
+        auto _fetchEnable = moduleInfo.moduleStart[0x800000];
 
         // If there is no fade, and the enable line is set:
         if (_fetchFade == 0x00 && _fetchEnable != 0x00)
         {
             // Reset the enable line.
-            *const_cast<char*>(moduleInfo.startAddr + 0x800000) = 0x00;
+            *const_cast<char*>(moduleInfo.moduleStart + 0x800000) = 0x00;
 
             // If the enable line is 0x01, summon INFORMATION. If it's 0x02, summon PRIZE.
             switch (_fetchEnable)
             {
                 case 0x01:
-                    dk::INFORMATION::openInformationWindow(moduleInfo.startAddr + 0x800004);
+                    dk::INFORMATION::openInformationWindow(moduleInfo.moduleStart + 0x800004);
                     break;
 
                 case 0x02:
-                    dk::TREASURE_INFO::openPrizeWindow(moduleInfo.startAddr + 0x800104);
+                    dk::TREASURE_INFO::openPrizeWindow(moduleInfo.moduleStart + 0x800104);
                     break;
 
                 case 0x03:
-                    dk::TREASURE_INFO::openBoxWindow(moduleInfo.startAddr + 0x800154, *reinterpret_cast<const uint16_t*>(moduleInfo.startAddr + 0x800150));
+                    dk::TREASURE_INFO::openBoxWindow(moduleInfo.moduleStart + 0x800154, *reinterpret_cast<const uint16_t*>(moduleInfo.moduleStart + 0x800150));
             }
         }
     }
@@ -1828,7 +1852,7 @@ void FIX_UP_CONFIG()
             if (_fetchLaydIntPtr == 0x00)
                 return;
 
-            auto _fetchLaydTrue = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchLaydIntPtr));
+            auto _fetchLaydTrue = reinterpret_cast<char*>(PC::CONVERTER::INTPTR_TO_POINTER(_fetchLaydIntPtr));
 
             if (!_fetchLaydTrue)
                 return;
@@ -2054,6 +2078,40 @@ void HANDLE_SYNC_LIMIT()
     }
 }
 
+void SYNC_FLAG_PROGRESS()
+{
+    for (auto _fetchElement : WORLD_PROGRESS)
+    {
+        auto _firstPair = _fetchElement.first;
+        auto _secondPair = _fetchElement.second;
+
+        auto _flagFirstClear = _firstPair.second;
+        auto _flagSecondUnlock = _secondPair.second;
+        auto _flagFirstUnlock = _secondPair.first;
+
+        auto _fetchItemCount = YS::ITEM::GetNumBackyard(_firstPair.first);
+
+        if (_fetchItemCount >= 0x02 && _flagFirstClear != 0xFFFF)
+        {
+            if (YS::PROGRESS::CheckFlag(_flagFirstClear) && !YS::PROGRESS::CheckFlag(_flagSecondUnlock))
+               YS::PROGRESS::SetFlag(_flagSecondUnlock);
+        }
+
+        else if (_fetchItemCount == 0x01 && _flagFirstUnlock != 0xFFFF)
+            if (!YS::PROGRESS::CheckFlag(_flagFirstUnlock))
+                YS::PROGRESS::SetFlag(_flagFirstUnlock);
+    }
+
+    auto _fetchPageCount = YS::ITEM::GetNumBackyard(0x0020);
+
+    if (_fetchPageCount)
+    {
+        for (int i = 0; i < 5; i++)
+            if (YS::PROGRESS::CheckFlag(POOH_PROGRESS[i].second) && !YS::PROGRESS::CheckFlag(POOH_PROGRESS[i].first))
+                YS::PROGRESS::SetFlag(POOH_PROGRESS[i].first);
+    }
+}
+
 extern "C"
 {
     __declspec(dllexport) void OnInit(wchar_t* mod_path)
@@ -2088,22 +2146,23 @@ extern "C"
             {"REGISTER_ABILITY", REGISTER_ABILITY},
             {"SHOW_INFORMATION", SHOW_INFORMATION},
             {"PROCESS_DEATH", PROCESS_DEATH},
+            {"SYNC_FLAG_PROGRESS", SYNC_FLAG_PROGRESS}
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
-        IS_STEAM = FindModule("steam_api64.dll");
+        IS_STEAM = IsLibraryLinked(L"steam_api64.dll");
 
         // Nullify the camp.2ld adjustment functions.
         if (IS_STEAM)
         {
-            auto _campSwitcherFunction = SignatureScan<char*>("\x40\x53\x55\x56\x57\x41\x57\x48\x83\xEC\x40\xE8\x00\x00\x00\x00\x48\x8B\x3D", "xxxxxxxxxxxx????xxx");
-            auto _campCopierFunction = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x40\x4C\x8D\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+            auto _campSwitcherFunction = FindSignature<char*>("\x40\x53\x55\x56\x57\x41\x57\x48\x83\xEC\x40\xE8\x00\x00\x00\x00\x48\x8B\x3D", "xxxxxxxxxxxx????xxx");
+            auto _campCopierFunction = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x40\x4C\x8D\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
             memset(_campSwitcherFunction + 0xAF, 0xEB, 0x01);
             memset(_campCopierFunction + 0x1A, 0x90, 0x4E);
 
-            auto _titleCopierFunction = SignatureScan<char*>("\x48\x89\x5C\x24\x10\x57\x48\x81\xEC\xB0\x00\x00\x00\x48\x8B\x05", "xxxxxxxxxxxxxxxx");
-            auto _titleSwitcherFunction = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x3D", "xxxxxxxxxxxxxxxx????xxx");
+            auto _titleCopierFunction = FindSignature<char*>("\x48\x89\x5C\x24\x10\x57\x48\x81\xEC\xB0\x00\x00\x00\x48\x8B\x05", "xxxxxxxxxxxxxxxx");
+            auto _titleSwitcherFunction = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\x3D", "xxxxxxxxxxxxxxxx????xxx");
 
             memset(_titleSwitcherFunction + 0xAE, 0xEB, 0x01);
             memset(_titleCopierFunction + 0x2C, 0x90, 0x4E);
@@ -2111,8 +2170,8 @@ extern "C"
 
         // Nullify all SaveID checks according to the platform in use.
 
-        auto _saveCheckFunction = IS_STEAM ? SignatureScan<char*>("\x40\x55\x56\x57\x48\x81\xEC\xA0\x00\x00\x00\x48\xC7\x44\x24\x38\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\xD0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x90\x00\x00\x00\x8B\xF1\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xED\x8D\x5D\x01\x48\x39\x2D\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x85\xC0\x74\x1D", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxx????xx????xxxxxxxx????xx????xxxxxx????xxxxxxxxxx")
-                                           : SignatureScan<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
+        auto _saveCheckFunction = IS_STEAM ? FindSignature<char*>("\x40\x55\x56\x57\x48\x81\xEC\xA0\x00\x00\x00\x48\xC7\x44\x24\x38\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\xD0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x90\x00\x00\x00\x8B\xF1\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xED\x8D\x5D\x01\x48\x39\x2D\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x85\xC0\x74\x1D", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxx????xx????xxxxxxxx????xx????xxxxxx????xxxxxxxxxx")
+                                           : FindSignature<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
 
         memset(_saveCheckFunction + (IS_STEAM ? 0x189 : 0x138), 0x90, 0x05);
         memset(_saveCheckFunction + (IS_STEAM ? 0x196 : 0x145), 0x90, 0x02);
@@ -2124,7 +2183,7 @@ extern "C"
         memset(reinterpret_cast<char*>(dk::SOFTRESET::SoftResetThread) + 0x1ED, 0x90, 0x05);
 
         // Fetch the prompt mode byte according to the game version.
-        PROMPT_MODE = ResolveRelativeAddress<bool*>("\x40\x57\x48\x83\xEC\x20\x4C\x8B\x0D\x00\x00\x00\x00\x33\xD2\x4D\x85\xC9\x49\x8D\x81\xA0\x12\x00\x00\x48\x0F\x45\xD0\x4D\x8D\x81\x3C\x02\x00\x00\x48\x85\xD2\x0F\x84\x2B\x01\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16\x48\x63\x82\x00\x02\x00\x00\x48\xC1\xE0\x08\x80\x7C\x10\x3B\x00\x0F\x85\x00\x00\x00\x00\x48\x85\xD2\x0F\x84\xFE\x00\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16", "xxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxx", IS_STEAM ? 0x969 : 0x959);
+        PROMPT_MODE = FetchRelativePointer<bool*>("\x40\x57\x48\x83\xEC\x20\x4C\x8B\x0D\x00\x00\x00\x00\x33\xD2\x4D\x85\xC9\x49\x8D\x81\xA0\x12\x00\x00\x48\x0F\x45\xD0\x4D\x8D\x81\x3C\x02\x00\x00\x48\x85\xD2\x0F\x84\x2B\x01\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16\x48\x63\x82\x00\x02\x00\x00\x48\xC1\xE0\x08\x80\x7C\x10\x3B\x00\x0F\x85\x00\x00\x00\x00\x48\x85\xD2\x0F\x84\xFE\x00\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16", "xxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxx", IS_STEAM ? 0x969 : 0x959);
 
         #ifndef BUILD_ARCHIPELAGO_LITE
         Tz::HookIntro::Submit();
@@ -2156,20 +2215,20 @@ extern "C"
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
 
-        auto _hotpatchNullTask = SignatureScan<char*>("\x49\x8B\x40\x18\xC7\x40\x04\x40\x3F\x3F\x3F\x49\x8B\x48\x18\x48\x8D\x41\x08\x49\x89\x40\x18\x8B\x02\x89\x01\xC3", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+        auto _hotpatchNullTask = FindSignature<char*>("\x49\x8B\x40\x18\xC7\x40\x04\x40\x3F\x3F\x3F\x49\x8B\x48\x18\x48\x8D\x41\x08\x49\x89\x40\x18\x8B\x02\x89\x01\xC3", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
         memcpy(_hotpatchNullTask + 0x17, "\xEB\x22\x89\x01\xC3", 0x05);
         memcpy(_hotpatchNullTask + 0x3B, "\x83\xFA\x04\x74\xDB\x8B\x02\xEB\xD5", 0x09);
 
         // Patch the voice line thingie.
-        auto _voiceLinePatch = SignatureScan<char*>("\x40\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x8D\x6C\x24\xE0\x48\x81\xEC\x20\x01\x00\x00\x48\xC7\x44\x24\x60\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\x60\x01\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
+        auto _voiceLinePatch = FindSignature<char*>("\x40\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x8D\x6C\x24\xE0\x48\x81\xEC\x20\x01\x00\x00\x48\xC7\x44\x24\x60\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\x60\x01\x00\x00\x48\x8B\x05\x00\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????");
         memcpy(_voiceLinePatch + 0x162, "\x31\xC0\x90\x90\x90", 0x05);
 
         // Decouple the camera from delta time.
 
         uint32_t _fetchAddress = 0x00;
-        auto _fpsCameraUpdate = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x60\x8B\x81\xE0\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx");
-        auto _addressCameraFloat = ResolveRelativeAddress<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x60\x8B\x81\xE0\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x4B);
+        auto _fpsCameraUpdate = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x60\x8B\x81\xE0\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx");
+        auto _addressCameraFloat = FetchRelativePointer<char*>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x60\x8B\x81\xE0\x00\x00\x00", "xxxxxxxxxxxxxxxxxxxxxxxxxx", 0x4B);
 
         *reinterpret_cast<float*>(_addressCameraFloat - 0x04) = 1.0;
 
@@ -2197,19 +2256,19 @@ extern "C"
         { 
             // Prevent the game from adjusting the aspect automatically.
 
-            auto _fetchAdjustment = SignatureScan<char*>("\x48\x83\xEC\x28\x0F\x10\x41\x48\x4C\x8B\xC9\x4C\x8B\xD2\xF3\x0F\x10\x25\x00\x00\x00\x00\x0F\x57\xED\x0F\x11\x02\x41\x0F\x10\x00\x49\x8B\x41\x40", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxx");
+            auto _fetchAdjustment = FindSignature<char*>("\x48\x83\xEC\x28\x0F\x10\x41\x48\x4C\x8B\xC9\x4C\x8B\xD2\xF3\x0F\x10\x25\x00\x00\x00\x00\x0F\x57\xED\x0F\x11\x02\x41\x0F\x10\x00\x49\x8B\x41\x40", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxx");
 
             memset(_fetchAdjustment + 0xF6, 0x90, 0x06);
             memset(_fetchAdjustment + 0x101, 0x90, 0x06);
 
             // Kill the enforcer in dk::MISSION_GAUGE::update so I don't want to kill myself.
             
-            auto _fetchMissionUpdate = SignatureScan<char*>("\x48\x89\x5C\x24\x18\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8", "xxxxxxxxxxxxxx");
+            auto _fetchMissionUpdate = FindSignature<char*>("\x48\x89\x5C\x24\x18\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8", "xxxxxxxxxxxxxx");
             memset(_fetchMissionUpdate + 0x119, 0xEB, 0x01);
 
             // Fetch all functions that handle fade-in and fade-outs in any way within the 2dFade rectangle.
 
-            auto _fetchAllFade = MultiSignatureScan("\x41\xB8\xFF\xFF\xFF\xFF\x48\x8D\x0D\x00\x00\x00\x00\x0F\xB7\xD3\x66\xF7\xD2\xE8\x00\x00\x00\x00\xB8\x01\x01\x00\x00", "xxxxxxxxx????xxxxxxx????xxxxx");
+            auto _fetchAllFade = FindAllSignature<char*>("\x41\xB8\xFF\xFF\xFF\xFF\x48\x8D\x0D\x00\x00\x00\x00\x0F\xB7\xD3\x66\xF7\xD2\xE8\x00\x00\x00\x00\xB8\x01\x01\x00\x00", "xxxxxxxxx????xxxxxxx????xxxxx");
 
             for (auto _function : _fetchAllFade)
             {
@@ -2224,7 +2283,7 @@ extern "C"
 
             // Disables culling. Causes some side effects that I don't believe anyone will notice.
 
-            auto _fetchCulling3D = SignatureScan<char*>("\x48\x8B\xC4\x48\x89\x58\x18\x48\x89\x70\x20\x55\x57\x41\x54\x41", "xxxxxxxxxxxxxxxx");
+            auto _fetchCulling3D = FindSignature<char*>("\x48\x8B\xC4\x48\x89\x58\x18\x48\x89\x70\x20\x55\x57\x41\x54\x41", "xxxxxxxxxxxxxxxx");
 
             memset(_fetchCulling3D + 0x11D, 0xEB, 0x01);
             memset(_fetchCulling3D + 0x12B, 0xEB, 0x01);
@@ -2233,7 +2292,7 @@ extern "C"
             memset(_fetchCulling3D + 0x149, 0xEB, 0x01);
             memset(_fetchCulling3D + 0x152, 0xEB, 0x01);
 
-            auto _fetchCulling2D = SignatureScan<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
+            auto _fetchCulling2D = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
 
             memset(_fetchCulling2D + 0x06C, 0x00, 0x01);
         }
@@ -2241,7 +2300,7 @@ extern "C"
 
         // Prevent MAGIC clearing since we handle that now, and because it causes a crash.
 
-        auto _funcMagicClear = SignatureScan<char*>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x57\x48\x83\xEC\x40\x48\x8B\x05\x00\x00\x00\x00\x48\x89\x74\x24\x50\x48\x8B\xD8\x4C\x89\x74\x24\x58\x48\x85\xC0\x0F\x84\x00\x00\x00\x00\x0F\x29\x74\x24\x30\xF3\x0F\x10\x35\x00\x00\x00\x00\x0F\x29\x7C\x24\x20\x0F\x57\xFF\x48\x85\xDB\x75\x08", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxxxxxxxxxxx");
+        auto _funcMagicClear = FindSignature<char*>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x57\x48\x83\xEC\x40\x48\x8B\x05\x00\x00\x00\x00\x48\x89\x74\x24\x50\x48\x8B\xD8\x4C\x89\x74\x24\x58\x48\x85\xC0\x0F\x84\x00\x00\x00\x00\x0F\x29\x74\x24\x30\xF3\x0F\x10\x35\x00\x00\x00\x00\x0F\x29\x7C\x24\x20\x0F\x57\xFF\x48\x85\xDB\x75\x08", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxxxxxxxxxxx");
         memset(_funcMagicClear + 0x18A, 0x90, 0x05);
 
         #ifndef BUILD_ARCHIPELAGO_LITE
@@ -2308,10 +2367,13 @@ extern "C"
             if (!_fetchFake)
                 return;
 
+            if (!YS::FILE::GetSize("scripts/F266B00B GoA ROM.lua"))
+                FUNCTION_ARRAY.erase("SYNC_FLAG_PROGRESS");
+
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             // Trying to initialize this in OnInit causes moduleInfo to get corrupt. I have no fucking idea why.
             if (!ITEM_COMMIT)
-                ITEM_COMMIT = SignatureScan<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x40\x45\x32", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                ITEM_COMMIT = FindSignature<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x40\x45\x32", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
             if (YS::FILE::GetSize("obj/W_EX010_RF.mdlx"))
                 HAS_RETRIBUTION = true;
@@ -2768,7 +2830,7 @@ extern "C"
                 else if ((*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x00 && DEBOUNCE_HUDSTOP)
                     DEBOUNCE_HUDSTOP = false;
             }
-            #endif
+#endif
         }
     }
 }
