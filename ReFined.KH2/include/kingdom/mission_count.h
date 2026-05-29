@@ -11,7 +11,7 @@ extern "C"
 		class DLL_EXPORT MISSION_COUNT
 		{
 			public:
-				static void(*destroy)(char* missionCount);
+				static inline void(*destroy)(char* missionCount);
 		};
 	}
 }

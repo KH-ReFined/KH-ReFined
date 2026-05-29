@@ -19,7 +19,7 @@ extern "C"
         class DLL_EXPORT FACE
         {
         public:
-            static inline bool (*getFaceSed)(char* face, char** sqd, char* object) = FindSignature<bool(*)(char*, char**, char*)>("\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8D\xB9\x90\x00\x00\x00", "xxxxxxxxxxxxxxxxx");
+            static inline bool (*getFaceSed)(char* face, char** sqd, char* object) = FindSignature<bool(*)(char*, char**, char*)>("\x40\x55\x48\x83\xEC\x20\xC6\x81\x04\x03\x00\x00\x00\x49\x8B\xC0", "xxxxxxxxxxxxxxxx");
 
             static void create(char* face, int priority, int type, char* object, int status, int group, int offset16x9)
             {
@@ -198,7 +198,7 @@ extern "C"
                 }
             }
 
-            static void emptyDraw(char* sprite);
+            static void emptyDraw(char* sprite) { };
 
         private:
             static bool _init()

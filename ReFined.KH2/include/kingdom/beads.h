@@ -19,7 +19,7 @@ extern "C"
                     if (!bdvalue || (char*)bdvalue > moduleInfo.moduleEnd || *bdvalue == 0x00 || *bdvalue == UINT32_MAX)
                         return 0x00;
 
-                    auto _fetchObjectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(*bdvalue);
+                    auto _fetchObjectPtr = PC::CONVERTER::INTPTR_TO_POINTER(*bdvalue);
 
                     if (!_fetchObjectPtr || (char*)_fetchObjectPtr > moduleInfo.moduleEnd)
                         return 0x00;
@@ -29,12 +29,12 @@ extern "C"
                     if (_fetchObjectActual == 0x00 || _fetchObjectActual == UINT32_MAX)
                         return 0x00;
 
-                    auto _acutalObjectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchObjectActual);
+                    auto _acutalObjectPtr = PC::CONVERTER::INTPTR_TO_POINTER(_fetchObjectActual);
 
                     if (!_acutalObjectPtr || (char*)_acutalObjectPtr > moduleInfo.moduleEnd)
                         return 0x00;
 
-                    auto _fetchEntryPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(*reinterpret_cast<uint32_t*>(_acutalObjectPtr + 0x08));
+                    auto _fetchEntryPtr = PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(_acutalObjectPtr + 0x08));
                     auto _fetchEntryId = *reinterpret_cast<uint32_t*>(_fetchEntryPtr);
 
                     *bdvalue = _fetchEntryId;
@@ -54,7 +54,7 @@ extern "C"
                     if (_fetchArg1 == 0x00 || _fetchArg1 == UINT32_MAX)
                         return 0x00;
 
-                    auto _objectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchArg1);
+                    auto _objectPtr = PC::CONVERTER::INTPTR_TO_POINTER(_fetchArg1);
 
                     if (!_objectPtr || (char*)_objectPtr > moduleInfo.moduleEnd)
                         return 0x00;
@@ -64,7 +64,7 @@ extern "C"
                     if (_fetchArg2 == 0x00 || _fetchArg2 == UINT32_MAX)
                         return 0x00;
 
-                    auto _objectActual = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchArg2));
+                    auto _objectActual = PC::CONVERTER::INTPTR_TO_POINTER(_fetchArg2);
 
                     if (!_objectActual || _objectActual > moduleInfo.moduleEnd)
                         return 0x00;
@@ -78,7 +78,7 @@ extern "C"
                         return 0x00;
 
                     auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _objectActual);
-                    auto _dwordReturn = PC::CONVERTER::LONG_TO_INT_ADDRESS(reinterpret_cast<uint64_t>(_paxReturn));
+                    auto _dwordReturn = PC::CONVERTER::POINTER_TO_INTPTR(_paxReturn);
 
                     *bdvalue = _dwordReturn;
                     bdvalue[1] = 1380204864;
@@ -99,8 +99,8 @@ extern "C"
                     if (_targetObj == 0x00 || _targetObj == UINT32_MAX)
                         return 0x00;
 
-                    auto _objectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(*bdvalue);
-                    auto _targetObjectPtr = PC::CONVERTER::INT_TO_LONG_ADDRESS(_targetObj);
+                    auto _objectPtr = PC::CONVERTER::INTPTR_TO_POINTER(*bdvalue);
+                    auto _targetObjectPtr = PC::CONVERTER::INTPTR_TO_POINTER(_targetObj);
 
                     if (!_objectPtr || (char*)_objectPtr > moduleInfo.moduleEnd || !_targetObjectPtr || (char*)_targetObjectPtr > moduleInfo.moduleEnd)
                         return 0x00;
@@ -111,8 +111,8 @@ extern "C"
                     if (_fetchActual == 0x00 || _fetchActual == UINT32_MAX || _fetchTargetActual == 0x00 || _fetchTargetActual == UINT32_MAX)
                         return 0x00;
 
-                    auto _objectActual = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchActual));
-                    auto _targetObjectActual = reinterpret_cast<char*>(PC::CONVERTER::INT_TO_LONG_ADDRESS(_fetchTargetActual));
+                    auto _objectActual = PC::CONVERTER::INTPTR_TO_POINTER(_fetchActual);
+                    auto _targetObjectActual = PC::CONVERTER::INTPTR_TO_POINTER(_fetchTargetActual);
 
                     if (!_objectActual || _objectActual > moduleInfo.moduleEnd || !_targetObjectActual || _targetObjectActual > moduleInfo.moduleEnd)
                         return 0x00;
@@ -126,7 +126,7 @@ extern "C"
                         return 0x00;
 
                     auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _targetObjectActual);
-                    auto _dwordReturn = PC::CONVERTER::LONG_TO_INT_ADDRESS(reinterpret_cast<uint64_t>(_paxReturn));
+                    auto _dwordReturn = PC::CONVERTER::POINTER_TO_INTPTR(_paxReturn);
 
                     *bdvalue = _dwordReturn;
                     bdvalue[1] = 1380204864;

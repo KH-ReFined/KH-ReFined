@@ -19,7 +19,7 @@ extern "C"
 		class DLL_EXPORT COUNTER
 		{
 		public:
-			static void(*forceLeave)(char* counter);
+			static inline void(*forceLeave)(char* counter);
 
 			static void update(char* counter)
 			{

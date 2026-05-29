@@ -13,7 +13,7 @@ extern "C"
         class DLL_EXPORT LIMIT_TABLE
         {
             public:
-                static char* LIMIT_FNBUFFER;
+                static inline char* LIMIT_FNBUFFER;
 
                 static char* get_filename(char* limitTable)
                 {
