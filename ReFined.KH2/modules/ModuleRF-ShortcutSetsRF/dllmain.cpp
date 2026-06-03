@@ -115,7 +115,7 @@ extern "C"
 		uint16_t* _hardpadInput = *(uint16_t**)GetProcAddress(MAIN_HANDLE, "?Input@HARDPAD@YS@@2PEAGEA");
 
 		char** _jiminyMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?Jiminy@MENU@YS@@2PEAPEADEA");
-		char** _commandMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?CommandMenu@COMMAND_DRAW@YS@@2PEAPEADEA");
+		char** _commandMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?CommandMenu@COMMAND_DRAW@dk@@2PEAPEADEA");
 		char** _subOptionSelectPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?SubOptionSel@MENU@YS@@2PEAPEADEA");
 		
 		using PlaySFX_t = void(*)(uint32_t);
@@ -183,8 +183,8 @@ extern "C"
 			SHORTCUT_NAMES.clear();
 
 		// If we are on the map and the current shortcut set is not what is recorded in the save, set it as such.
-		if (!*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0x10000))
-			CURRENT_SHORTCUT_SET = *(_saveData + 0x10000);
+		if (!*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0x10104))
+			CURRENT_SHORTCUT_SET = *(_saveData + 0x10104);
 
 		// If we are not on the title, and the character is not Roxas;
 		if (!*_isTitle && !IS_ROXAS)
@@ -197,7 +197,7 @@ extern "C"
 			else if (!IS_SHORTEDIT && SUBMIT_SHORTCUTS)
 			{
 				// Submit all shortcuts to the current shortcut set.
-				memcpy(_saveData + 0x10004 + (0x08 * CURRENT_SHORTCUT_SET), _saveData + 0x36F8, 0x08);
+				memcpy(_saveData + 0x10108 + (0x08 * CURRENT_SHORTCUT_SET), _saveData + 0x36F8, 0x08);
 				SUBMIT_SHORTCUTS = false;
 			}
 
@@ -293,250 +293,9 @@ extern "C"
 					// If we are on the customize menu specifically, and we have a selection;
 					else if (IS_CUSTOMIZE && _subOptionSelect != nullptr)
 					{
-						// If we *are* editing the shortcut name;
-						if (EDITING_SHORTCUT_NAME)
-						{
-							// I would like to apologize for the cringe, but I have tried EVERYTHING to get this working.
-							// This is legit the only thing that happened to work.
-
-							// If RETURN is pressed;
-							if (GetAsyncKeyState(VK_RETURN) & 0x8000)
-							{
-								// Play the done SFX.
-								_playSFX(0x02);
-
-								// Get the encoded text from the current edited string.
-								auto _fetchEncode = _encodeKHSCII(EDIT_NAME);
-
-								// Calculate the text width according to the length and append it to the encoded text (WIP)
-								_fetchEncode.insert(_fetchEncode.begin(), (char)(EDIT_NAME.size() <= 13 ? 0x64 : 90 - (4 * (EDIT_NAME.size() - 13))));
-								_fetchEncode.insert(_fetchEncode.begin(), 0x0B);
-
-								// Resize the end result to 32 characters just in case.
-								_fetchEncode.resize(0x20);
-
-								// Edit the list with this new name and write the name to the save file.
-								SHORTCUT_NAMES[CURRENT_SHORTCUT_SET] = _fetchEncode;
-								memcpy(_saveData + 0x20 + (0x20 * CURRENT_SHORTCUT_SET), _fetchEncode.data(), _fetchEncode.size());
-
-								// Replace the current text with the final name.
-								memcpy(const_cast<char*>(_currentTextPtr), _fetchEncode.data(), _fetchEncode.size());
-
-								// Reset the timeout and denote we are not editing the shortcut name anymore.
-								KEY_ENTER_TIMEOUT = 0;
-								EDITING_SHORTCUT_NAME = false;
-
-								// Restore the input registry data.
-								memcpy(OFFSET_INPUT_REG + 0x109, INPUT_REG.data(), 0x04);
-							}
-
-							// If BACKSPACE is pressed;
-							else if (GetAsyncKeyState(VK_BACK) & 0x8000)
-							{
-								// If the size of the edit name isn't 0 and the key debounce is not set;
-								if (EDIT_NAME.size() != 0x00 && KEY_DEBOUNCE.at(VK_BACK) == 0x00)
-								{
-									// Play the erase SFX.
-									_playSFX(0x04);
-
-									// Erase the last character of the edit name.
-									EDIT_NAME = EDIT_NAME.erase(EDIT_NAME.size() - 1);
-
-									// Encode the edit name.
-									auto _fetchEncode = _encodeKHSCII(EDIT_NAME);
-									
-									// Calculate the width according to the name length and append it.
-									char* _textWidth = new char[0x02] { 0x0B, (char)(EDIT_NAME.size() <= 13 ? 0x64 : 90 - (4 * (EDIT_NAME.size() - 13))) };
-									memcpy(const_cast<char*>(_currentTextPtr + 0x02), _textWidth, 0x02);
-
-									// Append text data to the current text.
-									memcpy(const_cast<char*>(_currentTextPtr + 0x04), _fetchEncode.data(), _fetchEncode.size());
-
-									// Set the debounce and reset all timeouts.
-									KEY_DEBOUNCE.at(VK_BACK) = 0x01;
-									KEY_DEBOUNCE_TIMEOUT = 0;
-									KEY_ENTER_TIMEOUT = 0;
-								}
-							}
-
-							// If SPACE is pressed, and the current string size is less than the maximum;
-							else if (GetAsyncKeyState(VK_SPACE) & 0x8000 && EDIT_NAME.size() < 32)
-							{
-								// If the debounce for SPACE is not set;
-								if (KEY_DEBOUNCE.at(VK_SPACE) == 0x00)
-								{
-									// Play the Input SFX.
-									_playSFX(0x01);
-									
-									// Append a SPACE to the edit name.
-									EDIT_NAME.push_back(' ');
-
-									// Encode the edit name.
-									auto _fetchEncode = _encodeKHSCII(EDIT_NAME);
-
-									// Calculate the width according to the name length and append it.
-									char* _textWidth = new char[0x02] { 0x0B, (char)(EDIT_NAME.size() <= 13 ? 0x64 : 90 - (4 * (EDIT_NAME.size() - 13))) };
-									memcpy(const_cast<char*>(_currentTextPtr + 0x02), _textWidth, 0x02);
-
-									// Append text data to the current text.
-									memcpy(const_cast<char*>(_currentTextPtr + 0x04), _fetchEncode.data(), _fetchEncode.size());
-
-									// Set the debounce and reset all timeouts.
-									KEY_DEBOUNCE.at(VK_SPACE) = 0x01;
-									KEY_DEBOUNCE_TIMEOUT = 0;
-									KEY_ENTER_TIMEOUT = 0;
-								}
-							}
-
-							// If ESCAPE is pressed, or the activity timeout hits.
-							else if (GetAsyncKeyState(VK_ESCAPE) & 0x8000 || KEY_ENTER_TIMEOUT >= 300)
-							{
-								// Play the Back SFX.
-								_playSFX(0x04);
-
-								// Restore the input registration.
-								memcpy(OFFSET_INPUT_REG + 0x109, INPUT_REG.data(), 0x04);
-
-								// Revert the current text to the last valid shortcut name.
-								memcpy(const_cast<char*>(_currentTextPtr), SHORTCUT_NAMES[CURRENT_SHORTCUT_SET].data(), SHORTCUT_NAMES[CURRENT_SHORTCUT_SET].size());
-
-								// Denote we are not editing the name anymore.
-								EDITING_SHORTCUT_NAME = false;
-
-								// Set all the debounces and reset all timeouts.
-								KEY_DEBOUNCE.at(VK_SPACE) = 0; KEY_DEBOUNCE.at(VK_BACK) = 0;
-								KEY_DEBOUNCE_TIMEOUT = 0;
-								KEY_ENTER_TIMEOUT = 0;
-							}
-
-							// If no special keys are pressed;
-							else
-							{
-								// If the debounce is set for the special keys, reset them.
-								if (KEY_DEBOUNCE.at(VK_SPACE) != 0x00 || KEY_DEBOUNCE.at(VK_BACK) != 0x00)
-									KEY_DEBOUNCE.at(VK_SPACE) = 0; KEY_DEBOUNCE.at(VK_BACK) = 0; KEY_DEBOUNCE_TIMEOUT = 0x00;
-
-								// For every key that concerns us for now;								
-								for (int k = 0x30; k <= 0x69; k++)
-								{
-									// Jump from the NUMERIC keys to the ALPHA keys.
-									if (k >= 0x3A && k <= 0x40)
-										k = 0x41;
-
-									// Jump from the ALPHA keys to the NUMPAD keys.
-									if (k >= 0x5B && k <= 0x5F)
-										k = 0x60;
-
-									// If the current key is pressed;
-									if (GetAsyncKeyState(k) & 0x8000)
-									{
-										// If the debounce is not set for the current key;
-										if (KEY_DEBOUNCE.at(k) == 0x00)
-										{
-											// If the size of the edit name is not maxed;
-											if (EDIT_NAME.size() < 32)
-											{
-												// Play the Input SFX.
-												_playSFX(0x01);
-
-												// If the keys are ALPHA keys; Calculate according to CAPSLOCK or SHIFT.
-												if (k >= 0x41 && k < 0x5B)
-													EDIT_NAME.push_back(k + (((GetKeyState(VK_CAPITAL) & 0x01) == 0x01 || (GetKeyState(VK_SHIFT) & 0x8000)) ? 0x00 : 0x20));
-
-												// If the keys are NUMPAD keys, convert to NUMERIC keys.
-												else if (k >= 0x60)
-													EDIT_NAME.push_back(k - 0x30);
-
-												// Else, push them as-is to the edit name.
-												else
-													EDIT_NAME.push_back(k);
-
-												// Encode the edit name.
-												auto _fetchEncode = _encodeKHSCII(EDIT_NAME);
-
-												// Calculate the width according to the name length and append it.
-												char* _textWidth = new char[0x02] { 0x0B, (char)(EDIT_NAME.size() <= 13 ? 0x64 : 90 - (4 * (EDIT_NAME.size() - 13))) };
-												memcpy(const_cast<char*>(_currentTextPtr + 0x02), _textWidth, 0x02);
-
-												// Append text data to the current text.
-												memcpy(const_cast<char*>(_currentTextPtr + 0x04), _fetchEncode.data(), _fetchEncode.size());
-
-												// Set the debounce and reset all timeouts.
-												KEY_DEBOUNCE.at(k) = 0x01;
-												KEY_DEBOUNCE_TIMEOUT = 0;
-												KEY_ENTER_TIMEOUT = 0;
-
-												break;
-											}
-
-											// If it IS the max size;
-											else
-											{
-												// Play the error sound and reset all timeouts.
-												_playSFX(0x05);
-												KEY_DEBOUNCE_TIMEOUT = 0;
-												KEY_ENTER_TIMEOUT = 0;
-												break;
-											}
-										}
-									}
-
-									// If the key is not pressed and debounce is set, reset it.
-									else if (KEY_DEBOUNCE.at(k) != 0x00)
-										KEY_DEBOUNCE.at(k) = 0x00;
-								}
-							}
-
-							// Increment the timeouts.
-
-							KEY_DEBOUNCE_TIMEOUT++;
-							KEY_ENTER_TIMEOUT++;
-
-							// If the key press timeout elapses, reset all special character debounces.
-							if (KEY_DEBOUNCE_TIMEOUT >= 10)
-							{
-								KEY_DEBOUNCE.at(VK_SPACE) = 0; KEY_DEBOUNCE.at(VK_BACK) = 0;
-								KEY_DEBOUNCE_TIMEOUT = 0x00;
-							}
-						}
-
 						// If we have the first option selected;
 						if (*_subOptionSelect == 0x00)
 						{
-							/*
-							// If TRIANGLE input received:
-							if ((*_hardpadInput & 0x1000) == 0x1000)
-							{
-								// Play the Input SFX.
-								_playSFX(0x02);
-
-								// Denote that we are editing the name.
-								EDITING_SHORTCUT_NAME = true;
-
-								// Kill the input registry function.
-								char* _nopArray = new char[0x04];
-								fill(_nopArray, _nopArray + 0x04, 0x90);
-
-								memcpy(OFFSET_INPUT_REG + 0x109, _nopArray, 0x04);
-
-								// Make the current text RED.
-								char* _textColor = new char[0x02] { 0x04, 0x01 };
-								memcpy(const_cast<char*>(_currentTextPtr), _textColor, 0x02);
-								memcpy(const_cast<char*>(_currentTextPtr + 0x02), SHORTCUT_NAMES[CURRENT_SHORTCUT_SET].data(), SHORTCUT_NAMES[CURRENT_SHORTCUT_SET].size());
-
-								// Make the current name the edit name.
-								EDIT_NAME = _decodeKHSCII(SHORTCUT_NAMES[CURRENT_SHORTCUT_SET].data() + 0x02);
-
-								// Reset the input.
-								*_hardpadInput = 0x00;
-							}
-							*/
-
-							// If the input isn't TRIANGLE;
-							// else
-							// {
-							// }
-
 							// Fetch the flow direction.
 							auto _flowDirection = (*_hardpadInput & 0x0400) == 0x0400 ? -1 : ((*_hardpadInput & 0x0800) == 0x0800 ? 1 : 0);
 
@@ -558,7 +317,7 @@ extern "C"
 			// Overflow and underflow protection region. //
 
 			if (CURRENT_SHORTCUT_SET == 0x80)
-				CURRENT_SHORTCUT_SET = *(_saveData + 0x10000);
+				CURRENT_SHORTCUT_SET = *(_saveData + 0x10104);
 
 			if (CURRENT_SHORTCUT_SET >= 0x81)
 				CURRENT_SHORTCUT_SET = 0x02;
@@ -569,11 +328,11 @@ extern "C"
 			// ========================================= //
 
 			// If we are in the map and the shortcut set is not equal to the denoted one in the save and we have the debounce set;
-			if (*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0x10000) && DEBOUNCE_SHORTCUT)
+			if (*_isInMap && CURRENT_SHORTCUT_SET != *(_saveData + 0x10104) && DEBOUNCE_SHORTCUT)
 			{
 				// Synchronize the save value.
-				memcpy(_saveData + 0x36F8, _saveData + 0x10004 + (0x08 * CURRENT_SHORTCUT_SET), 0x08);
-				*(_saveData + 0x10000) = CURRENT_SHORTCUT_SET;
+				memcpy(_saveData + 0x36F8, _saveData + 0x10108 + (0x08 * CURRENT_SHORTCUT_SET), 0x08);
+				*(_saveData + 0x10104) = CURRENT_SHORTCUT_SET;
 
 				// Update the shortcut list.
 				if (IS_CUSTOMIZE)
