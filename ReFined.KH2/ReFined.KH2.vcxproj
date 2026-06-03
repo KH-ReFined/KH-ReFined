@@ -300,39 +300,39 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -510,7 +510,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">
@@ -532,7 +532,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-LITE.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)EnablersAP-LITE.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">
@@ -554,7 +554,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-FULL.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)EnablersAP-FULL.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -579,7 +579,7 @@
       <AdditionalDependencies>lib\discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)ReFined.KH2.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">
@@ -604,7 +604,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-LITE.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)EnablersAP-LITE.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">
@@ -629,7 +629,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-FULL.dll" "C:\Users\Topaz\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)EnablersAP-FULL.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

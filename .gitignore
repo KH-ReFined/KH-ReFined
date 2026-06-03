@@ -16,3 +16,6 @@ _PATCHES\*
 /ReFined.KH2/modules/ModuleRF-Autoattack/x64
 /ModuleRF-MenuingOfMelody
 /ReFined.KH1
+/ReFined.KH2/modules/ModuleRF-ShortcutSetsRF/x64
+/ReFined.KH2/modules/ModuleRF-ShortcutSetsKH3/x64
+*.filters
