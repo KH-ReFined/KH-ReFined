@@ -200,6 +200,23 @@ static void RedirectFunction(char* functionPtr, uint64_t function, size_t funcLe
     memcpy(functionPtr, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
 }
 
+static void RedirectLocalFunction(HMODULE inputHandle, const char* functionSymbol, uint64_t function)
+{
+    auto _fetchFunction = reinterpret_cast<char*>(GetProcAddress(inputHandle, functionSymbol));
+    auto _doFunctionMath = static_cast<uint32_t>(function - reinterpret_cast<uint64_t>(_fetchFunction) - 0x05);
+
+    DWORD oldProtect;
+    VirtualProtect(_fetchFunction, 0x05, PAGE_EXECUTE_READWRITE, &oldProtect);
+
+    vector<uint8_t> _relativeInstructionJMP =
+    {
+        0xE9, 0x00, 0x00, 0x00, 0x00
+    };
+
+    memcpy(_relativeInstructionJMP.data() + 0x01, &_doFunctionMath, 0x04);
+    memcpy(_fetchFunction, _relativeInstructionJMP.data(), _relativeInstructionJMP.size());
+}
+
 static void RedirectRelativeFunction(const char* pattern, const char* mask, uint64_t relOffset, uint64_t function, size_t funcLength)
 {
     vector<uint8_t> _absoluteInstructionJMP =

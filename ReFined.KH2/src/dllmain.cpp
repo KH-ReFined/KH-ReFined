@@ -10,70 +10,114 @@
 #include <iomanip>
 #include <algorithm>
 
-#include "axa.h"
+#include "anti_form.h"
 #include "area.h"
 #include "areainfo.h"
-#include "cache_buff.h"
+#include "axa.h"
+#include "beads.h"
 #include "binarc.h"
+#include "cache_buff.h"
+#include "circle_mask.h"
+#include "cmcomm.h"
 #include "cmconfig.h"
+#include "cmcustom.h"
+#include "cmdata.h"
+#include "cmenuhelp.h"
+#include "cmtop.h"
+#include "collision_data.h"
 #include "command_draw.h"
 #include "command_elem.h"
-#include "hookconfig.h"
+#include "command_menu.h"
+#include "command_one.h"
 #include "converter.h"
+#include "counter.h"
 #include "egs.h"
-#include "exp.h"
+#include "enemy.h"
+#include "enemybase.h"
 #include "event.h"
-#include "field2dd.h"
+#include "exp.h"
+#include "face.h"
 #include "field.h"
+#include "field2dd.h"
 #include "file.h"
 #include "form_level.h"
+#include "framework.h"
 #include "friend.h"
+#include "friendsaveram.h"
+#include "fvector.h"
 #include "gauge.h"
 #include "hardpad.h"
-#include "info_base.h"
+#include "hookconfig.h"
+#include "hookintro.h"
+#include "image.h"
+#include "image_cache.h"
+#include "image_freeze.h"
 #include "information.h"
+#include "information_window.h"
+#include "info_base.h"
 #include "item.h"
+#include "iteminfo.h"
 #include "itempic.h"
+#include "itemshop.h"
+#include "item_param.h"
+#include "item_table.h"
 #include "jumpeffect.h"
+#include "layout.h"
+#include "level_up.h"
+#include "libretto.h"
+#include "limit.h"
+#include "limit_table.h"
 #include "lockon.h"
 #include "magic.h"
-#include "item_param.h"
 #include "member.h"
 #include "member_table.h"
 #include "menu.h"
-#include "progress.h"
+#include "menubase.h"
+#include "menuutil.h"
 #include "message.h"
+#include "messagedraw.h"
+#include "mission.h"
+#include "mission_count.h"
+#include "mission_gauge.h"
+#include "newgame.h"
+#include "next_exp.h"
+#include "obj.h"
 #include "obj2d.h"
 #include "objentry.h"
 #include "panacea_alloc.h"
 #include "party.h"
+#include "partyinfo.h"
 #include "pax.h"
+#include "pref.h"
+#include "progress.h"
 #include "region.h"
+#include "sacrifice.h"
+#include "saveram_battle.h"
+#include "scis.h"
+#include "scrollbar.h"
+#include "sector_mask.h"
+#include "select.h"
+#include "selhist.h"
 #include "sequence.h"
 #include "shake.h"
+#include "sheet.h"
 #include "softreset.h"
 #include "sora.h"
 #include "sound.h"
-#include "iteminfo.h"
 #include "sprite.h"
+#include "spritemessage.h"
 #include "steam.h"
+#include "task.h"
+#include "timer.h"
 #include "title.h"
 #include "treasure_info.h"
+#include "voice.h"
 #include "vsync.h"
 #include "weapon.h"
-#include "newgame.h"
-#include "weapon_mset.h"
 #include "weapon_entry.h"
+#include "weapon_mset.h"
 #include "world.h"
-#include "item_table.h"
-#include "voice.h"
-#include "messagedraw.h"
-#include "select.h"
-#include "spritemessage.h"
-#include "hookintro.h"
-#include "sheet.h"
-#include "fvector.h"
-#include "cmdata.h"
+
 #include "continue_menu.h"
 #include "ini.h"
 
@@ -248,7 +292,8 @@ bool DEBOUNCE_RETRIBUTION = false;
 
 vector<uint16_t*> WEAPON_MEMORY;
 
-bool SYNC_LIMIT;
+bool SYNC_SHORTCUTS;
+bool DEBOUNCE_SHORTCUT;
 
 // Configuration Values.
 
@@ -1924,8 +1969,8 @@ void RETRIBUTION_LOGIC()
             if (!_itemTableAbsolution || !_itemTableRetribution)
                 return;
 
-            auto _paramAbsolution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10024);
-            auto _paramRetribution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10020);
+            auto _paramAbsolution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x36D8);
+            auto _paramRetribution = reinterpret_cast<uint16_t*>(AREA::SaveData + 0x36DC);
 
             if (*_paramAbsolution == 0x0000)
                 *_paramAbsolution = 0x0050;
@@ -2007,7 +2052,7 @@ void RETRIBUTION_LOGIC()
                         {
                             PARAM_RETRIBUTION = *(YS::ITEM_TABLE::Get(_fetchItemId) + 0x06);
 
-                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10020) = PARAM_RETRIBUTION;
+                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x36D8) = PARAM_RETRIBUTION;
                             *(YS::ITEM_TABLE::Get(0x0300) + 0x06) = PARAM_RETRIBUTION;
 
                             INDEX_RETRIBUTION = _seekParamIndex;
@@ -2017,7 +2062,7 @@ void RETRIBUTION_LOGIC()
                         {
                             PARAM_ABSOLUTION = *(YS::ITEM_TABLE::Get(_fetchItemId) + 0x06);
 
-                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10024) = PARAM_ABSOLUTION;
+                            *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x36DC) = PARAM_ABSOLUTION;
                             *(YS::ITEM_TABLE::Get(0x0301) + 0x06) = PARAM_ABSOLUTION;
 
                             INDEX_ABSOLUTION = _seekParamIndex;
@@ -2050,32 +2095,36 @@ void RETRIBUTION_LOGIC()
     }
 }
 
-void HANDLE_SYNC_LIMIT()
+void HANDLE_SYNC_SHORTCUTS()
 {
     uint16_t _defaultLimits[] = { 0x02BA, 0x02BD, 0x02C0, 0x02AB };
 
-    if (*YS::TITLE::IsTitle && SYNC_LIMIT)
+    if (Tz::CmCustom::CAN_ALTER_KH1F)
     {
-        memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, _defaultLimits, 0x08);
-        SYNC_LIMIT = false;
-    }
-
-    else if (*AREA::IsInMap && !SYNC_LIMIT)
-    {
-        for (int i = 0; i < 0x04; i++)
+        if (*YS::TITLE::IsTitle && SYNC_SHORTCUTS)
         {
-            auto _fetchCommand = *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x10030 + 0x02 * i);
-
-            if (_fetchCommand != 0x0000)
-            {
-                memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, AREA::SaveData + 0x10030, 0x08);
-                SYNC_LIMIT = true;
-                return;
-            }
+            memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, _defaultLimits, 0x08);
+            SYNC_SHORTCUTS = false;
         }
 
-        memcpy(AREA::SaveData + 0x10030, _defaultLimits, 0x08);
-        SYNC_LIMIT = true;
+        else if (*AREA::IsInMap && !SYNC_SHORTCUTS)
+        {
+            for (int i = 0; i < 0x04; i++)
+            {
+                auto _fetchCommand = *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x371C + 0x02 * i);
+
+                if (_fetchCommand != 0x0000)
+                {
+                    memcpy(Tz::CmCustom::LS_KH1F_Shortcuts, AREA::SaveData + 0x371C, 0x08);
+
+                    SYNC_SHORTCUTS = true;
+                    return;
+                }
+            }
+
+            memcpy(AREA::SaveData + 0x371C, _defaultLimits, 0x08);
+            SYNC_SHORTCUTS = true;
+        }
     }
 }
 
@@ -2113,6 +2162,49 @@ void SYNC_FLAG_PROGRESS()
     }
 }
 
+void HANDLE_NOHUD_TIMESTOP()
+{
+    if (ALLOW_NOHUD || ALLOW_TIMESTOP)
+    {
+        if (!*YS::MENU::IsMenu && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
+        {
+            auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+            auto _fetchTimeStop = YS::PANACEA_ALLOC::Get("IS_TIMESTOP");
+
+            auto _isHudDraw = true;
+            auto _isTimeStop = false;
+
+            if (_fetchHudDraw)
+            {
+                if (ALLOW_NOHUD)
+                {
+                    memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+                    _isHudDraw = !_isHudDraw;
+                    memcpy(_fetchHudDraw, &_isHudDraw, 0x01);
+                }
+
+                if (ALLOW_TIMESTOP)
+                {
+                    memcpy(&_isTimeStop, _fetchTimeStop, 0x01);
+
+                    _isTimeStop = !_isTimeStop;
+                    memcpy(_fetchTimeStop, &_isTimeStop, 0x01);
+
+                    *dk::Vsync::GameSpeed = _isTimeStop ? 0.0 : 1.0;
+                }
+
+                SOUND::PlaySFX(0x06);
+            }
+
+            DEBOUNCE_HUDSTOP = true;
+        }
+
+        else if ((*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x00 && DEBOUNCE_HUDSTOP)
+            DEBOUNCE_HUDSTOP = false;
+    }
+}
+
 extern "C"
 {
     __declspec(dllexport) void OnInit(wchar_t* mod_path)
@@ -2132,9 +2224,10 @@ extern "C"
             {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
             {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
             {"RETRIBUTION_LOGIC", RETRIBUTION_LOGIC},
-            {"HANDLE_SYNC_LIMIT", HANDLE_SYNC_LIMIT},
+            {"HANDLE_SYNC_SHORTCUTS", HANDLE_SYNC_SHORTCUTS},
             {"ENFORCE_FRAMERATE", ENFORCE_FRAMERATE},
             {"FIX_SAVE_POINT", FIX_SAVE_POINT},
+            {"HANDLE_NOHUD_TIMESTOP", HANDLE_NOHUD_TIMESTOP},
             #endif
 
             #ifndef BUILD_ARCHIPELAGO_LITE
@@ -2350,6 +2443,8 @@ extern "C"
 
             ALLOW_NOHUD = _configStruct["General"]["allowNoHud"] == "true" ? true : false;
             ALLOW_TIMESTOP = _configStruct["General"]["allowTimeStop"] == "true" ? true : false;
+
+            Tz::CmCustom::CAN_ALTER_KH1F = _configStruct["General"]["canModifyLimitShortcuts"] == "true" ? true : false;
 
             if (!DISCORD_ENABLED)
                 FUNCTION_ARRAY.erase("DISCORD_RPC");
@@ -2791,47 +2886,7 @@ extern "C"
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             for (auto _execPair : _execModule)
                 _execPair.second();
-
-            if (ALLOW_NOHUD || ALLOW_TIMESTOP)
-            {
-                if (!*YS::MENU::IsMenu && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
-                {
-                    auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
-                    auto _fetchTimeStop = YS::PANACEA_ALLOC::Get("IS_TIMESTOP");
-
-                    auto _isHudDraw = true;
-                    auto _isTimeStop = false;
-
-                    if (_fetchHudDraw)
-                    {
-                        if (ALLOW_NOHUD)
-                        {
-                            memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
-
-                            _isHudDraw = !_isHudDraw;
-                            memcpy(_fetchHudDraw, &_isHudDraw, 0x01);
-                        }
-
-                        if (ALLOW_TIMESTOP)
-                        {
-                            memcpy(&_isTimeStop, _fetchTimeStop, 0x01);
-
-                            _isTimeStop = !_isTimeStop;
-                            memcpy(_fetchTimeStop, &_isTimeStop, 0x01);
-
-                            *dk::Vsync::GameSpeed = _isTimeStop ? 0.0 : 1.0;
-                        }
-
-                        SOUND::PlaySFX(0x06);
-                    }
-
-                    DEBOUNCE_HUDSTOP = true;
-                }
-
-                else if ((*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3) == 0x00 && DEBOUNCE_HUDSTOP)
-                    DEBOUNCE_HUDSTOP = false;
-            }
-#endif
+            #endif
         }
     }
 }
