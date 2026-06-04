@@ -28,21 +28,23 @@ struct MODULE_INFO
 
 const MODULE_INFO moduleInfo;
 
-void RedirectLocalFunction(const char* functionSymbol, uint64_t function)
+void RedirectFunctionSLIM(const char* functionSymbol, uint64_t function)
 {
+    DWORD _oldProtect;
     auto _fetchFunction = reinterpret_cast<char*>(GetProcAddress(MAIN_HANDLE, functionSymbol));
-    auto _doFunctionMath = static_cast<uint32_t>(function - reinterpret_cast<uint64_t>(_fetchFunction) - 0x05);
 
-    DWORD oldProtect;
-    VirtualProtect(_fetchFunction, 0x05, PAGE_EXECUTE_READWRITE, &oldProtect);
-
-    vector<uint8_t> _relativeInstructionJMP =
+    vector<uint8_t> _absoluteInstructionJMP =
     {
-        0xE9, 0x00, 0x00, 0x00, 0x00
+        0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
 
-    memcpy(_relativeInstructionJMP.data() + 0x01, &_doFunctionMath, 0x04);
-    memcpy(_fetchFunction, _relativeInstructionJMP.data(), _relativeInstructionJMP.size());
+    VirtualProtect(_fetchFunction, 4096, PAGE_EXECUTE_READWRITE, &_oldProtect);
+
+    memset(_fetchFunction, 0x90, _absoluteInstructionJMP.size());
+
+    memcpy(_absoluteInstructionJMP.data() + 0x06, &function, 0x08);
+    memcpy(_fetchFunction, _absoluteInstructionJMP.data(), _absoluteInstructionJMP.size());
 }
 
 bool SYNC_SHORTCUTS;
@@ -315,8 +317,6 @@ namespace YS
         static inline bool* IsTitle;
     };
 }
-
-
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -1447,7 +1447,7 @@ extern "C"
         case 25:
         {
             if (_fetchSelectPos == 0x00)
-                _messageId = 0x3B89;
+                _messageId = 0x5765;
 
             else
                 _messageId = _isShortcutSet ? 0x5760 : (_isKH1Form ? 0x575C : 0x3B8A);
@@ -1779,21 +1779,21 @@ extern "C"
 
             GetFriendInfo = reinterpret_cast<char* (*)(int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetFriendInfo@CmCustom@Tz@@2P6APEADHH@ZEA"));
 
-            RedirectLocalFunction("?CurPos2CustomType@CmCustom@Tz@@SAHH@Z", reinterpret_cast<uint64_t>(CurPos2CustomType));
-            RedirectLocalFunction("?GetCustomItemNum@CmCustom@Tz@@SAHH@Z", reinterpret_cast<uint64_t>(GetCustomItemNum));
-            RedirectLocalFunction("?ChageAbility@CmCustom@Tz@@SAXH@Z", reinterpret_cast<uint64_t>(ChageAbility));
-            RedirectLocalFunction("?ChangeAutoReplenishment@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(ChangeAutoReplenishment));
-            RedirectLocalFunction("?ChangePartyBehavior@CmCustom@Tz@@SAXH@Z", reinterpret_cast<uint64_t>(ChangePartyBehavior));
-            RedirectLocalFunction("?SetupCustom@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(SetupCustom));
-            RedirectLocalFunction("?UpdateCustomList@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(UpdateCustomList));
-            RedirectLocalFunction("?ChangeCustomInfo@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(ChangeCustomInfo));
-            RedirectLocalFunction("?GetListInfo@CmCustom@Tz@@SAXH@Z", reinterpret_cast<uint64_t>(GetListInfo));
-            RedirectLocalFunction("?MakeListInfo2ItemMess@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(MakeListInfo2ItemMess));
-            RedirectLocalFunction("?SetupTop@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(SetupTop));
-            RedirectLocalFunction("?UpdateTopList@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(UpdateTopList));
-            RedirectLocalFunction("?UpdateHelpMess@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(UpdateHelpMess));
-            RedirectLocalFunction("?isTakeOff@CmCustom@Tz@@SA_NXZ", reinterpret_cast<uint64_t>(isTakeOff));
-            RedirectLocalFunction("?CheckKH1Form@CmCustom@Tz@@SA_NXZ", reinterpret_cast<uint64_t>(CheckKH1Form));
+            RedirectFunctionSLIM("?CurPos2CustomType@CmCustom@Tz@@SAHH@Z", reinterpret_cast<uint64_t>(CurPos2CustomType));
+            RedirectFunctionSLIM("?GetCustomItemNum@CmCustom@Tz@@SAHH@Z", reinterpret_cast<uint64_t>(GetCustomItemNum));
+            RedirectFunctionSLIM("?ChageAbility@CmCustom@Tz@@SAXH@Z", reinterpret_cast<uint64_t>(ChageAbility));
+            RedirectFunctionSLIM("?ChangeAutoReplenishment@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(ChangeAutoReplenishment));
+            RedirectFunctionSLIM("?ChangePartyBehavior@CmCustom@Tz@@SAXH@Z", reinterpret_cast<uint64_t>(ChangePartyBehavior));
+            RedirectFunctionSLIM("?SetupCustom@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(SetupCustom));
+            RedirectFunctionSLIM("?UpdateCustomList@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(UpdateCustomList));
+            RedirectFunctionSLIM("?ChangeCustomInfo@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(ChangeCustomInfo));
+            RedirectFunctionSLIM("?GetListInfo@CmCustom@Tz@@SAXH@Z", reinterpret_cast<uint64_t>(GetListInfo));
+            RedirectFunctionSLIM("?MakeListInfo2ItemMess@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(MakeListInfo2ItemMess));
+            RedirectFunctionSLIM("?SetupTop@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(SetupTop));
+            RedirectFunctionSLIM("?UpdateTopList@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(UpdateTopList));
+            RedirectFunctionSLIM("?UpdateHelpMess@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(UpdateHelpMess));
+            RedirectFunctionSLIM("?isTakeOff@CmCustom@Tz@@SA_NXZ", reinterpret_cast<uint64_t>(isTakeOff));
+            RedirectFunctionSLIM("?CheckKH1Form@CmCustom@Tz@@SA_NXZ", reinterpret_cast<uint64_t>(CheckKH1Form));
 
             // ====================================================================================================================== //
         }
