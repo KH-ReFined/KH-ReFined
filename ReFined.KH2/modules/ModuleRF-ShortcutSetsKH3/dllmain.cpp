@@ -39,6 +39,12 @@ void RedirectFunctionSLIM(const char* functionSymbol, uint64_t function)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
 
+    if (*_fetchFunction == (char)0xE9 || *_fetchFunction == (char)0xE8)
+    {
+        auto _fetchOffset = *reinterpret_cast<uint32_t*>(_fetchFunction + 0x01);
+        _fetchFunction += _fetchOffset + 0x05;
+    }
+
     VirtualProtect(_fetchFunction, 4096, PAGE_EXECUTE_READWRITE, &_oldProtect);
 
     memset(_fetchFunction, 0x90, _absoluteInstructionJMP.size());
@@ -1587,6 +1593,11 @@ extern "C"
         }
 
         return false;
+    }
+
+    __declspec(dllexport) const char* RF_ExclusivityTags()
+    {
+        return "_kh2ShortcutSets";
     }
     
     __declspec(dllexport) void RF_ModuleInit(const wchar_t* mod_path)

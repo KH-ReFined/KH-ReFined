@@ -154,6 +154,8 @@ bool DEBOUNCE_HUDSTOP = false;
 
 bool IS_RESETING = false;
 
+char** SHOP_POINTER = nullptr;
+
 uint16_t CURRENT_MUSIC = 0xFFFF;
 
 bool TRANSFER_FIELD = false;
@@ -2205,6 +2207,31 @@ void HANDLE_NOHUD_TIMESTOP()
     }
 }
 
+void ENSURE_MOOGLE_SHOP()
+{
+    if (SHOP_POINTER)
+    {
+        auto _shopFileFetch = *SHOP_POINTER;
+        auto _fetchShopCount = *(_shopFileFetch + 0x06);
+
+        for (int i = 0; i < _fetchShopCount; i++)
+        {
+            auto _fetchShopArgument = *reinterpret_cast<uint16_t*>(_shopFileFetch + 0x10 + 0x18 * i);
+
+            if (_fetchShopArgument == 0x008A)
+            {
+                if (AREA::Current->World == 0x04) 
+                    *reinterpret_cast<uint16_t*>(_shopFileFetch + 0x14 + 0x18 * i) = 0x5728;
+
+                else
+                    *reinterpret_cast<uint16_t*>(_shopFileFetch + 0x14 + 0x18 * i) = 0x0ACB;
+
+                *reinterpret_cast<uint16_t*>(_shopFileFetch + 0x16 + 0x18 * i) = 0x0A26;
+            }
+        }
+    }
+}
+ 
 extern "C"
 {
     __declspec(dllexport) void OnInit(wchar_t* mod_path)
@@ -2228,6 +2255,7 @@ extern "C"
             {"ENFORCE_FRAMERATE", ENFORCE_FRAMERATE},
             {"FIX_SAVE_POINT", FIX_SAVE_POINT},
             {"HANDLE_NOHUD_TIMESTOP", HANDLE_NOHUD_TIMESTOP},
+            {"ENSURE_MOOGLE_SHOP", ENSURE_MOOGLE_SHOP},
             #endif
 
             #ifndef BUILD_ARCHIPELAGO_LITE
@@ -2302,6 +2330,12 @@ extern "C"
         // If NOASPECT is active, remove the Aspect Handler.
         if (IS_NOASPECT)
             FUNCTION_ARRAY.erase("HANDLE_ASPECT");
+
+        if (!SHOP_POINTER)
+        {
+            auto _fetchShopAssign = FetchFunctionFromCall<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x33\xDB\x48\x89\x05\x00\x00\x00\x00\x44\x8B\xC3\x4C\x8D\x0D", "xxxxxxxxxxxxxxxxxx????x????xxxxx????xxxxxx", 0x41D);
+            SHOP_POINTER = FetchRelativePointer<char**>(_fetchShopAssign, 0x03);
+        }
 
         vector<uint8_t> _absoluteInstructionJMP =
         {
@@ -2397,6 +2431,10 @@ extern "C"
         auto _funcMagicClear = FindSignature<char*>("\x48\x89\x5C\x24\x18\x48\x89\x6C\x24\x20\x57\x48\x83\xEC\x40\x48\x8B\x05\x00\x00\x00\x00\x48\x89\x74\x24\x50\x48\x8B\xD8\x4C\x89\x74\x24\x58\x48\x85\xC0\x0F\x84\x00\x00\x00\x00\x0F\x29\x74\x24\x30\xF3\x0F\x10\x35\x00\x00\x00\x00\x0F\x29\x7C\x24\x20\x0F\x57\xFF\x48\x85\xDB\x75\x08", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxxxxxxxxxxx");
         memset(_funcMagicClear + 0x18A, 0x90, 0x05);
 
+        // Allow voice channels to mute if set to 1.
+        auto _fetchVolumeFloats = FindSignature<float*>("\xCD\xCC\xCC\x3D\xCD\xCC\x4C\x3E", "xxxxxxxx");
+        *_fetchVolumeFloats = 0.00F;
+
         #ifndef BUILD_ARCHIPELAGO_LITE
         wchar_t _configPath[MAX_PATH];
 
@@ -2446,6 +2484,14 @@ extern "C"
 
             Tz::CmCustom::CAN_ALTER_KH1F = _configStruct["General"]["canModifyLimitShortcuts"] == "true" ? true : false;
 
+            auto ALLOW_REVERB = _configStruct["General"]["enableReverb"] == "true" ? true : false;
+
+            if (ALLOW_REVERB)
+            {
+                auto _fetchBusContainerInit = FindSignature<char*>("\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x48\xC7\x45\xC7\xFE\xFF\xFF\xFF\x48\x89", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                memset(_fetchBusContainerInit + 0x23D, 0x90, 0x0E);
+            }
+
             if (!DISCORD_ENABLED)
                 FUNCTION_ARRAY.erase("DISCORD_RPC");
             #endif
@@ -2463,8 +2509,8 @@ extern "C"
             if (!_fetchFake)
                 return;
 
-            if (!YS::FILE::GetSize("scripts/F266B00B GoA ROM.lua"))
-                FUNCTION_ARRAY.erase("SYNC_FLAG_PROGRESS");
+            //if (!YS::FILE::GetSize("scripts/F266B00B GoA ROM.lua"))
+                FUNCTION_ARRAY.erase("SYNC_FLAG_PROGRESS"); // Temporarily disabled as it breaks stuff.
 
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             // Trying to initialize this in OnInit causes moduleInfo to get corrupt. I have no fucking idea why.
@@ -2678,6 +2724,8 @@ extern "C"
 
             auto _foundFileHandle = FindFirstFileW(_modulePath, &_foundFile);
 
+            vector<string> _processExclusivity(0);
+
             if (_foundFileHandle != INVALID_HANDLE_VALUE)
             {
                 do
@@ -2706,7 +2754,41 @@ extern "C"
                             auto _checkEnsure = _moduleEnsure(MOD_PATH);
 
                             if (!_checkEnsure)
+                            {
+                                FreeLibrary(_moduleHandle);
                                 continue;
+                            }
+                        }
+
+                        char* (*_exclusivityTags)() = (char* (*)())GetProcAddress(_moduleHandle, "RF_ExclusivityTags");
+
+                        if (_exclusivityTags)
+                        {
+                            bool _canProcess = true;
+
+                            auto _fetchTags = string(_exclusivityTags());
+                            size_t _currPos = 0;
+
+                            while ((_currPos = _fetchTags.find('|')) != std::string::npos) {
+                                auto _currTag = _fetchTags.substr(0, _currPos);
+
+                                if (find(_processExclusivity.begin(), _processExclusivity.end(), _currTag) != _processExclusivity.end())
+                                {
+                                    _canProcess = false;
+                                    break;
+                                }
+
+                                _processExclusivity.push_back(_currTag);
+                                _fetchTags.erase(0, _currPos + 1);
+                            }
+
+                            if (find(_processExclusivity.begin(), _processExclusivity.end(), _fetchTags) != _processExclusivity.end() || !_canProcess)
+                            {
+                                FreeLibrary(_moduleHandle);
+                                continue;
+                            }
+
+                            _processExclusivity.push_back(_fetchTags);
                         }
 
                         if (_moduleImportance)
@@ -2719,12 +2801,10 @@ extern "C"
                             auto _fetchFunctions = string(_excludeFunctions());
 
                             vector<string> _funcNames;
-
                             size_t _currPos = 0;
-                            string _currFunc;
 
                             while ((_currPos = _fetchFunctions.find('|')) != std::string::npos) {
-                                _currFunc = _fetchFunctions.substr(0, _currPos);
+                                auto _currFunc = _fetchFunctions.substr(0, _currPos);
                                 _funcNames.push_back(_currFunc);
                                 _fetchFunctions.erase(0, _currPos + 1);
                             }
@@ -2875,6 +2955,8 @@ extern "C"
     
         else
         {
+             
+
             #ifndef BUILD_ARCHIPELAGO_LITE
             Tz::HookIntro::Handle();
             Tz::HookConfig::Handle();

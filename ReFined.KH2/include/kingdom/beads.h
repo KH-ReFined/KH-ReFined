@@ -77,7 +77,7 @@ extern "C"
                     if (*reinterpret_cast<uint64_t*>(_fetchPAX) == 0x00)
                         return 0x00;
 
-                    auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _objectActual);
+                    auto _paxReturn = ryj::PAX::Start(_fetchPAX, _id, _flag, 0x01, _priority, _objectActual);
                     auto _dwordReturn = PC::CONVERTER::POINTER_TO_INTPTR(_paxReturn);
 
                     *bdvalue = _dwordReturn;
@@ -125,7 +125,7 @@ extern "C"
                     if (*reinterpret_cast<uint64_t*>(_fetchPAX) == 0x00)
                         return 0x00;
 
-                    auto _paxReturn = ryj::PAX::StartBind(_fetchPAX, _id, _flag, 0x01, _priority, _targetObjectActual);
+                    auto _paxReturn = ryj::PAX::Start(_fetchPAX, _id, _flag, 0x01, _priority, _targetObjectActual);
                     auto _dwordReturn = PC::CONVERTER::POINTER_TO_INTPTR(_paxReturn);
 
                     *bdvalue = _dwordReturn;
