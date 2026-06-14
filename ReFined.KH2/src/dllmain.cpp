@@ -193,6 +193,9 @@ char* ADJUST_GLOW_FUNCTION = FindSignature<char*>("\x4C\x8B\xDC\x49\x89\x5B\x20\
 char* INIT_VIEWPORT_FUNCTION = FindSignature<char*>("\x48\x83\xEC\x38\xE8\x00\x00\x00\x00\x48\xC7\x44\x24\x20\x00\x00\x00\x00\x0F\x10\x54\x24\x20\xF3\x0F\x10\x48\x10\xF3\x0F\x10\x40\x14\x0F\xC6\xD2\xD2\xF3\x0F\x10\xD1\x0F\xC6\xD2\x27\xF3\x0F\x10\xD0\x0F\xC6\xD2\x39\x0F\x11\x90\x5C\x01\x00\x00\x48\x83\xC4\x38\xC3", "xxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 char* ADJUST_VIEWPORT_FUNCTION = FindSignature<char*>("\x48\x83\xEC\x78\x0F\x29\x74\x24\x60\x0F\x28\xF1\x0F\x29\x7C\x24\x50\x0F\x28\xFA\x44\x0F\x29\x44\x24\x40\x44\x0F\x28\xC3\x44\x0F\x29\x4C\x24\x30\x44\x0F\x28\xC8\xE8\x00\x00\x00\x00\x45\x0F\xC6\xC9\xE1\xF3\x44\x0F\x10\xCE\x0F\x28\x74\x24\x60\x45\x0F\xC6\xC9\xC6\xF3\x44\x0F\x10\xCF\x0F\x28\x7C\x24\x50\x45\x0F\xC6\xC9\x27\xF3\x45\x0F\x10\xC8\x44\x0F\x28\x44\x24\x40\x45\x0F\xC6\xC9\x39\x44\x0F\x11\x88\x5C\x01\x00\x00\x44\x0F\x28\x4C\x24\x30\x48\x83\xC4\x78\xC3", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
+char* CULLING_POINTER_3D;
+char* CULLING_POINTER_2D;
+
 bool SHAKE_WRITTEN;
 
 vector<char> ADJUST_GLOW_ARRAY;
@@ -1522,6 +1525,28 @@ void HANDLE_ASPECT()
                 _tempHeight = fmodf(_tempHeight, _tempWidth);
         }
 
+        if (*AREA::IsInMap && AREA::Current->World == 0x12 && AREA::Current->Room == 0x17)
+        {
+            memset(CULLING_POINTER_3D + 0x11D, 0x76, 0x01);
+            memset(CULLING_POINTER_3D + 0x12B, 0x76, 0x01);
+            memset(CULLING_POINTER_3D + 0x133, 0x76, 0x01);
+            memset(CULLING_POINTER_3D + 0x141, 0x76, 0x01);
+            memset(CULLING_POINTER_3D + 0x149, 0x76, 0x01);
+            memset(CULLING_POINTER_3D + 0x152, 0x75, 0x01);
+            memset(CULLING_POINTER_2D + 0x06C, 0x01, 0x01);
+        }
+
+        else if (*AREA::IsInMap)
+        {
+            memset(CULLING_POINTER_3D + 0x11D, 0xEB, 0x01);
+            memset(CULLING_POINTER_3D + 0x12B, 0xEB, 0x01);
+            memset(CULLING_POINTER_3D + 0x133, 0xEB, 0x01);
+            memset(CULLING_POINTER_3D + 0x141, 0xEB, 0x01);
+            memset(CULLING_POINTER_3D + 0x149, 0xEB, 0x01);
+            memset(CULLING_POINTER_3D + 0x152, 0xEB, 0x01);
+            memset(CULLING_POINTER_2D + 0x06C, 0x00, 0x01);
+        }
+
         _commonDiv = _tempWidth == 0 ? _tempHeight : _tempWidth;
 
         auto _ratioNum = _resolutionHorizontal / _commonDiv;
@@ -2264,11 +2289,9 @@ extern "C"
             #endif
 
             {"FIX_UP_CONFIG", FIX_UP_CONFIG},
-            {"REGISTER_MAGIC", REGISTER_MAGIC},
             {"REGISTER_ABILITY", REGISTER_ABILITY},
             {"SHOW_INFORMATION", SHOW_INFORMATION},
             {"PROCESS_DEATH", PROCESS_DEATH},
-            {"SYNC_FLAG_PROGRESS", SYNC_FLAG_PROGRESS}
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
@@ -2397,7 +2420,7 @@ extern "C"
             // Fetch all functions that handle fade-in and fade-outs in any way within the 2dFade rectangle.
 
             auto _fetchAllFade = FindAllSignature<char*>("\x41\xB8\xFF\xFF\xFF\xFF\x48\x8D\x0D\x00\x00\x00\x00\x0F\xB7\xD3\x66\xF7\xD2\xE8\x00\x00\x00\x00\xB8\x01\x01\x00\x00", "xxxxxxxxx????xxxxxxx????xxxxx");
-
+             
             for (auto _function : _fetchAllFade)
             {
                 uint32_t _fadeValue = 0x800;
@@ -2411,18 +2434,9 @@ extern "C"
 
             // Disables culling. Causes some side effects that I don't believe anyone will notice.
 
-            auto _fetchCulling3D = FindSignature<char*>("\x48\x8B\xC4\x48\x89\x58\x18\x48\x89\x70\x20\x55\x57\x41\x54\x41", "xxxxxxxxxxxxxxxx");
 
-            memset(_fetchCulling3D + 0x11D, 0xEB, 0x01);
-            memset(_fetchCulling3D + 0x12B, 0xEB, 0x01);
-            memset(_fetchCulling3D + 0x133, 0xEB, 0x01);
-            memset(_fetchCulling3D + 0x141, 0xEB, 0x01);
-            memset(_fetchCulling3D + 0x149, 0xEB, 0x01);
-            memset(_fetchCulling3D + 0x152, 0xEB, 0x01);
-
-            auto _fetchCulling2D = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
-
-            memset(_fetchCulling2D + 0x06C, 0x00, 0x01);
+            CULLING_POINTER_3D = FindSignature<char*>("\x48\x8B\xC4\x48\x89\x58\x18\x48\x89\x70\x20\x55\x57\x41\x54\x41", "xxxxxxxxxxxxxxxx");
+            CULLING_POINTER_2D = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
         }
         #endif
 
@@ -2955,8 +2969,6 @@ extern "C"
     
         else
         {
-             
-
             #ifndef BUILD_ARCHIPELAGO_LITE
             Tz::HookIntro::Handle();
             Tz::HookConfig::Handle();
