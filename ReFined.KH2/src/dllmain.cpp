@@ -1314,28 +1314,23 @@ void REGISTER_MAGIC()
                     MAGIC_FILES[i] = _loadBAR;
 
                     // Get the address of the BAR as a uint64_t for calculations, and get the 32-bit offset of the BAR.
-                    uint64_t _barAddress = reinterpret_cast<uint64_t>(_loadBAR);
-                    uint32_t _barFileOffset = *reinterpret_cast<const uint32_t*>(_loadBAR + 0x08);
+                    uint32_t _fetchMagicTag = *reinterpret_cast<uint32_t*>(_loadBAR + 0x14);
 
                     // Calculate the absolute addresses of PAX and BDX files.
-                    uint64_t _paxAddress = _barAddress + *reinterpret_cast<const uint32_t*>(_loadBAR + 0x18) - _barFileOffset;
-                    uint64_t _bdxAddress = _barAddress + *reinterpret_cast<const uint32_t*>(_loadBAR + 0x28) - _barFileOffset;
+                    auto _paxBarInfo = YS::BINARC::get_info_by_tag(_loadBAR, 0x12, _fetchMagicTag, 0x00);
+                    auto _bdxBarInfo = YS::BINARC::get_info_by_tag(_loadBAR, 0x03, _fetchMagicTag, 0x00);
 
-                    // As well as the address of which PAX actually starts in.
-                    uint64_t _paxmoduleStartess = _barAddress + *reinterpret_cast<const uint32_t*>(_loadBAR + 0x18) + 0x10 - _barFileOffset;
-
-                    // Write all of the info needed for the Magic to be parsed, processed, and executed.
-                    memcpy(YS::MAGIC::MagicInfo + 0x50 * i, &_barAddress, 0x08);
-                    memcpy(YS::MAGIC::MagicInfo + 0x08 + 0x50 * i, &_bdxAddress, 0x08);
-                    memcpy(YS::MAGIC::MagicInfo + 0x10 + 0x50 * i, &_bdxAddress, 0x08);
-                    memcpy(YS::MAGIC::MagicInfo + 0x18 + 0x50 * i, &_paxAddress, 0x08);
-                    memcpy(YS::MAGIC::MagicInfo + 0x20 + 0x50 * i, &_paxmoduleStartess, 0x08);
+                    *reinterpret_cast<char**>(YS::MAGIC::MagicInfo + 0x50 * i) = _loadBAR;
+                    *reinterpret_cast<char**>(YS::MAGIC::MagicInfo + 0x08 + 0x50 * i) = PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(_bdxBarInfo + 0x08));
+                    *reinterpret_cast<char**>(YS::MAGIC::MagicInfo + 0x10 + 0x50 * i) = PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(_bdxBarInfo + 0x08));
+                    *reinterpret_cast<char**>(YS::MAGIC::MagicInfo + 0x18 + 0x50 * i) = PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(_paxBarInfo + 0x08));
+                    *reinterpret_cast<char**>(YS::MAGIC::MagicInfo + 0x20 + 0x50 * i) = PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(_paxBarInfo + 0x08)) + 0x10;
 
                     // Overwrite the pointer to the current Magic table.
                     memcpy(YS::MAGIC::MagicInfo + 0x48 + 0x50 * i, &_currentTablePtr, 0x08);
 
                     // Initialize the current Magic PAX.
-                    ryj::PAX::Init(YS::MAGIC::MagicInfo + 0x18 + 0x50 * i, reinterpret_cast<char*>(_paxAddress));
+                    ryj::PAX::Init(YS::MAGIC::MagicInfo + 0x18 + 0x50 * i, PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(_paxBarInfo + 0x08)));
 
                     // Denote the command of the current Magic to the array.
                     _commandArray.push_back(_currentTable->Command);
@@ -2289,6 +2284,7 @@ extern "C"
             #endif
 
             {"FIX_UP_CONFIG", FIX_UP_CONFIG},
+            {"REGISTER_MAGIC", REGISTER_MAGIC},
             {"REGISTER_ABILITY", REGISTER_ABILITY},
             {"SHOW_INFORMATION", SHOW_INFORMATION},
             {"PROCESS_DEATH", PROCESS_DEATH},

@@ -16,23 +16,16 @@ extern "C"
 
 			static void Init(char* PAX, char* Data)
 			{
-				uint64_t _paxAddress = reinterpret_cast<uint64_t>(PAX);
-				uint64_t _dataAddress = reinterpret_cast<uint64_t>(Data);
+				*reinterpret_cast<char**>(PAX + 0x10) = Data + *reinterpret_cast<const uint32_t*>(Data + 0x0C);
 
-				uint64_t _readInit = *reinterpret_cast<const uint64_t*>(PAX + 0x28);
-				uint64_t _fetchPaxStart = _dataAddress + *reinterpret_cast<const uint32_t*>(Data + 0x0C);
-
-				memcpy(PAX + 0x10, &_fetchPaxStart, 0x08);
-
-				if (_readInit == 0x00)
+				if (!*reinterpret_cast<char**>(PAX + 0x28))
 				{
-					uint32_t _convertPAX = PC::CONVERTER::POINTER_TO_INTPTR(ryj::PAX::PaxList);
-					uint32_t _literalZero = 0x00;
+					char* _fetchPaxList = *reinterpret_cast<char**>(ryj::PAX::PaxList);
 
-					memcpy(ryj::PAX::PaxList + 0x28, &_convertPAX, 0x04);
-					memcpy(PAX + 0x28, &_literalZero, 0x04);
+					*reinterpret_cast<uint32_t*>(PAX + 0x28) = 0x00;
+					*reinterpret_cast<uint32_t*>(_fetchPaxList + 0x28) = PC::CONVERTER::POINTER_TO_INTPTR(PAX);
 
-					memcpy(ryj::PAX::PaxList, &_paxAddress, 0x08);
+					*reinterpret_cast<char**>(ryj::PAX::PaxList) = PAX;
 				}
 			}
 
