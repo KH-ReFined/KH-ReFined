@@ -691,7 +691,7 @@ extern "C"
 
                                 if (_fetchCurrentType == Tz::CmCustom::s_FriendType)
                                 {
-                                    auto _fetchPriority = reinterpret_cast<char*>(_fetchPartyInventory + kn::FriendSaveRam::item2index(*_fetchElement) + 0x0F5);
+                                    auto _fetchPriority = reinterpret_cast<char*>(_fetchPartyInventory + kn::FriendSaveRam::item2index((*_fetchElement & 0x0FFFFFFF)) + 0x0F5);
                                     *(*Tz::CmCustom::m_ListInfo + 0x08 * _processEntry + 0x0B) = *_fetchPriority;
                                 }
 

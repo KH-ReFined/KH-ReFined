@@ -453,7 +453,7 @@ extern "C"
 
                         if (_fetchCurrentType == s_FriendType)
                         {
-                            auto _fetchPriority = reinterpret_cast<char*>(_fetchPartyInventory + kn::FriendSaveRam::item2index(*_fetchElement) + 0x0F5);
+                            auto _fetchPriority = reinterpret_cast<char*>(_fetchPartyInventory + kn::FriendSaveRam::item2index((*_fetchElement & 0x0FFFFFFF)) + 0x0F5);
                             *(*m_ListInfo + 0x08 * _processEntry + 0x0B) = *_fetchPriority;
                         }
 
