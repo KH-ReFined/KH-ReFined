@@ -1314,11 +1314,15 @@ void REGISTER_MAGIC()
                     MAGIC_FILES[i] = _loadBAR;
 
                     // Get the address of the BAR as a uint64_t for calculations, and get the 32-bit offset of the BAR.
+                    uint32_t _fetchAITag = *reinterpret_cast<uint32_t*>(_loadBAR + 0x24);
                     uint32_t _fetchMagicTag = *reinterpret_cast<uint32_t*>(_loadBAR + 0x14);
 
                     // Calculate the absolute addresses of PAX and BDX files.
                     auto _paxBarInfo = YS::BINARC::get_info_by_tag(_loadBAR, 0x12, _fetchMagicTag, 0x00);
-                    auto _bdxBarInfo = YS::BINARC::get_info_by_tag(_loadBAR, 0x03, _fetchMagicTag, 0x00);
+                    auto _bdxBarInfo = YS::BINARC::get_info_by_tag(_loadBAR, 0x03, _fetchAITag, 0x00);
+
+                    if (!_bdxBarInfo || !_paxBarInfo)
+                        continue;
 
                     *reinterpret_cast<char**>(YS::MAGIC::MagicInfo + 0x50 * i) = _loadBAR;
                     *reinterpret_cast<char**>(YS::MAGIC::MagicInfo + 0x08 + 0x50 * i) = PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(_bdxBarInfo + 0x08));
@@ -2433,6 +2437,32 @@ extern "C"
 
             CULLING_POINTER_3D = FindSignature<char*>("\x48\x8B\xC4\x48\x89\x58\x18\x48\x89\x70\x20\x55\x57\x41\x54\x41", "xxxxxxxxxxxxxxxx");
             CULLING_POINTER_2D = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
+        }
+        
+        else
+        {
+            auto _fetchMemory = YS::PANACEA_ALLOC::Get("ASPECT_INFORMATION");
+
+            if (_fetchMemory)
+            {
+                *reinterpret_cast<int*>(_fetchMemory) = 85;
+                *reinterpret_cast<int*>(_fetchMemory + 0x04) = -85;
+            }
+
+            if (*RADAR_STRUCT)
+            {
+                auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
+                auto _isHudDraw = true;
+
+                if (_fetchHudDraw)
+                    memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
+
+                *reinterpret_cast<int*>(*RADAR_STRUCT + 0xBBC) = 85;
+                *reinterpret_cast<int*>(*RADAR_STRUCT + 0xBE0) = 85;
+
+                *reinterpret_cast<char*>(*RADAR_STRUCT + 0xBE5) = _isHudDraw ? 0x60 : 0x00;
+                *reinterpret_cast<float*>(*RADAR_STRUCT + 0xBC0) = _isHudDraw ? 1.0 : 0.0;
+            }
         }
         #endif
 
