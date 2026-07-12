@@ -54,13 +54,13 @@ jobs:
         Copy-Item -Path "src/x64/Release/ReFined.KH2.dll" -Destination "dest/engine/"
         Copy-Item -Path "src/x64/Release/ModuleRF-*.dll" -Destination "dest/engine/modules"
 
-    - name: Push Changes to KH2-MAIN
-      uses: cpina/github-action-push-to-another-repository@main
-      env:
-        API_TOKEN_GITHUB: ${{ secrets.KH2_PUSHKEY }}
-      with:
-        source-directory: 'dest'
-        destination-github-username: 'KH-ReFined'
-        destination-repository-name: 'KH2-MAIN'
-        user-email: topaz.whitelock@proton.me
-        target-branch: main
+    - name: Push to KH2-MAIN
+      run: |
+        cd dest
+        
+        git config user.name "TopazTK [BOT]"
+        git config user.email "topaztk-bot@users.noreply.github.com"
+        
+        git add .
+        git commit -m "Synchronize from KH-ReFined [BOT]"
+        git push origin main
