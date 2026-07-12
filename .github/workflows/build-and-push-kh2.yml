@@ -1,0 +1,54 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: MSBuild
+
+on:
+  push:
+    branches: [ "mother" ]
+  pull_request:
+    branches: [ "mother" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  WORKING_DIR: ./ReFined.KH2/
+  SOLUTION_FILE_PATH: ./ReFined.KH2/ReFined.KH2.vcxproj
+  CONFIG_BUILD: Release
+  PLATFORM_BUILD: x64
+
+permissions:
+  contents: read
+
+jobs:
+  build-kh2:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Build
+      working-directory: ${{env.WORKING_DIR}}
+      run: msbuild /m /p:Configuration=${{env.CONFIG_BUILD}} /p:Platform=${{env.PLATFORM_BUILD}} ${{env.SOLUTION_FILE_PATH}}
+      
+  push-to-main:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Fetch Repo - KH-ReFined
+          uses: actions/checkout@v4
+          with:
+            path: 'src'
+            ref: 'mother'
+            persist-credentials: false
+  
+        - name: Fetch Repo - KH2-MAIN
+          uses: actions/checkout@v4
+          with:
+            path: 'dest'
+            ref: 'main'
+            repository: 'KH-ReFined/KH2-MAIN'
+            token: ${{ secrets.KH2_PUSHKEY }}
+            fetch-depth: 0
+            persist-credentials: false
