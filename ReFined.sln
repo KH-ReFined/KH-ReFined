@@ -19,15 +19,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleRF-ShortcutForms", "R
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projects", "Projects", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReFined.KH1", "ReFined.KH1\ReFined.KH1.vcxproj", "{437B1C71-BFE4-44EA-B8BB-BC5983D7AF4C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleRF-ShortcutSetsKH3", "ReFined.KH2\modules\ModuleRF-ShortcutSetsKH3\ModuleRF-ShortcutSetsKH3.vcxproj", "{24566EF9-5F5F-4A42-AF75-2BB2F89BBBB2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleRF-ShortcutSetsRF", "ReFined.KH2\modules\ModuleRF-ShortcutSetsRF\ModuleRF-ShortcutSetsRF.vcxproj", "{E56E0D07-3F8E-4CF9-93F6-04509089BF98}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kingdom Hearts", "Kingdom Hearts", "{74A29D63-DEC5-414D-A0DB-F0FF55FCE1CB}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleRF-ClassicCommands", "ModuleRF-ClassicCommands\ModuleRF-ClassicCommands.vcxproj", "{0532BA06-C100-47CE-AC8A-04C914EE10FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
