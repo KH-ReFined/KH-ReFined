@@ -50,6 +50,4 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
-    - run: dir "src" /S
-    
-    - run: dir "dest" /S
+    - run: copy ${{env.WORKING_DIR}}/x64/Release/ReFined.KH2.dll "dest/engine/ReFined.KH2.dll"
