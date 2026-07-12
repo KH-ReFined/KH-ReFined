@@ -54,6 +54,12 @@ jobs:
         Copy-Item -Path "src/x64/Release/ReFined.KH2.dll" -Destination "dest/engine/"
         Copy-Item -Path "src/x64/Release/ModuleRF-*.dll" -Destination "dest/engine/modules"
 
+    - name: Edit Build Number within KH2-MAIN/mod.yml
+      run: |
+        $fetchyaml = Get-Content "dest/mod.yml"
+        $fetchyaml[2] = "Kingdom Hearts - Re:Fined for Kingdom Hearts II | r$(Get-Date -Format 'ddMMyy')-FC"
+        $fetchyaml | Set-Content "dest/mod.yml"
+
     - name: Push to KH2-MAIN
       run: |
         cd dest
@@ -63,5 +69,5 @@ jobs:
         git remote set-url origin https://KH-ReFined:${{secrets.KH2_PUSHKEY}}@github.com/KH-ReFined/KH2-MAIN.git
 
         git add .
-        git commit -m "Synchronize from KH-ReFined [BOT]"
+        git commit -m "Synchronize from KH-ReFined [BOT] - $(Get-Date -Format 'ddMMyy')"
         git push origin main
