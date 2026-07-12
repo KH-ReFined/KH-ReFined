@@ -19,7 +19,7 @@ env:
   PLATFORM_BUILD: x64
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-kh2:
