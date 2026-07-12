@@ -10,7 +10,7 @@ on:
     branches: [ "mother" ]
   pull_request:
     branches: [ "mother" ]
-
+ 
 env:
   # Path to the solution file relative to the root of the project.
   WORKING_DIR: ./ReFined.KH2/
