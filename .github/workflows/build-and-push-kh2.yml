@@ -14,7 +14,7 @@ on:
 env:
   # Path to the solution file relative to the root of the project.
   WORKING_DIR: src/ReFined.KH2/
-  SOLUTION_FILE_PATH: src/ReFined.KH2/ReFined.KH2.vcxproj
+  SOLUTION_FILE_PATH: ReFined.KH2.vcxproj
   CONFIG_BUILD: Release
   PLATFORM_BUILD: x64
 
