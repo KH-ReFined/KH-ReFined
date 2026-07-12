@@ -41,6 +41,7 @@ jobs:
           with:
             path: 'src'
             ref: 'mother'
+            repository: 'KH-ReFined/KH-ReFined'
             persist-credentials: false
   
         - name: Fetch Repo - KH2-MAIN
