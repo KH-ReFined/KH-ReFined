@@ -13,8 +13,8 @@ on:
  
 env:
   # Path to the solution file relative to the root of the project.
-  WORKING_DIR: $(GITHUB_WORKSPACE)/ReFined.KH2/
-  SOLUTION_FILE_PATH: $(GITHUB_WORKSPACE)/ReFined.KH2/ReFined.KH2.vcxproj
+  WORKING_DIR: src/ReFined.KH2/
+  SOLUTION_FILE_PATH: src/ReFined.KH2/ReFined.KH2.vcxproj
   CONFIG_BUILD: Release
   PLATFORM_BUILD: x64
 
@@ -27,6 +27,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        path: 'src'
+        ref: 'mother'
+        repository: 'KH-ReFined/KH-ReFined'
+        persist-credentials: false
+        
     - uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Build
