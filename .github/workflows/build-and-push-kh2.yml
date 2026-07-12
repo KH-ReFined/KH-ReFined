@@ -50,6 +50,6 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
-    - run: dir src /s
+    - run: dir "src" /s /b
     
-    - run: dir dest /s
+    - run: dir "dest" /s /b
