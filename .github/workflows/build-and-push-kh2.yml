@@ -60,7 +60,7 @@ jobs:
         
         git config user.name "TopazTK [BOT]"
         git config user.email "topaztk-bot@users.noreply.github.com"
-
+        
+        git commit -a "Synchronize from KH-ReFined [BOT]"
         git remote add origin-kh2 https://github.com/KH-ReFined/KH2-MAIN.git
-        git commit -m "Synchronize from KH-ReFined [BOT]"
         git push origin-kh2 main
