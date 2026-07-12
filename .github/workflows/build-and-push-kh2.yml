@@ -13,8 +13,7 @@ on:
  
 env:
   # Path to the solution file relative to the root of the project.
-  WORKING_DIR: src/ReFined.KH2/
-  SOLUTION_FILE_PATH: ReFined.KH2.vcxproj
+  SOLUTION_FILE_PATH: ReFined.sln
   CONFIG_BUILD: Release
   PLATFORM_BUILD: x64
 
@@ -37,7 +36,7 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.0.2
     
     - name: Build - ReFined.KH2.dll
-      working-directory: ${{env.WORKING_DIR}}
+      working-directory: "src/"
       run: msbuild /m /p:Configuration=${{env.CONFIG_BUILD}} /p:Platform=${{env.PLATFORM_BUILD}} ${{env.SOLUTION_FILE_PATH}}
 
     - name: Fetch Repo - KH2-MAIN
@@ -49,5 +48,19 @@ jobs:
         token: ${{ secrets.KH2_PUSHKEY }}
         fetch-depth: 0
         persist-credentials: false
+        
+    - name: Synchronize Output to KH2-MAIN
+      run: | 
+        Copy-Item -Path "src/x64/Release/ReFined.KH2.dll" -Destination "dest/engine/"
+        Copy-Item -Path "src/x64/Release/ModuleRF-*.dll" -Destination "dest/engine/modules"
 
-    - run: copy ${{env.WORKING_DIR}}/x64/Release/ReFined.KH2.dll "dest/engine/ReFined.KH2.dll"
+    - name: Push Changes to KH2-MAIN
+      uses: cpina/github-action-push-to-another-repository@main
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.KH2_PUSHKEY }}
+      with:
+        source-directory: 'dest'
+        destination-github-username: 'KH-ReFined'
+        destination-repository-name: 'KH2-MAIN'
+        user-email: topaz.whitelock@proton.me
+        target-branch: main
