@@ -35,6 +35,8 @@ jobs:
         
     - uses: microsoft/setup-msbuild@v1.0.2
 
+    - run: dir src/
+
     - name: Build
       working-directory: ${{env.WORKING_DIR}}
       run: msbuild /m /p:Configuration=${{env.CONFIG_BUILD}} /p:Platform=${{env.PLATFORM_BUILD}} ${{env.SOLUTION_FILE_PATH}}
