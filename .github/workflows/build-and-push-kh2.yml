@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: MSBuild
+name: Kingdom Hearts II - Build and Sync
 
 on:
   push:
