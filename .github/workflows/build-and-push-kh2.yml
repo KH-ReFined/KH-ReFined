@@ -26,7 +26,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Fetch Repo - KH-ReFined
+      uses: actions/checkout@v4
       with:
         path: 'src'
         ref: 'mother'
@@ -34,30 +35,21 @@ jobs:
         persist-credentials: false
         
     - uses: microsoft/setup-msbuild@v1.0.2
-
-    - run: dir src/
-
-    - name: Build
+    
+    - name: Build - ReFined.KH2.dll
       working-directory: ${{env.WORKING_DIR}}
       run: msbuild /m /p:Configuration=${{env.CONFIG_BUILD}} /p:Platform=${{env.PLATFORM_BUILD}} ${{env.SOLUTION_FILE_PATH}}
-      
-  push-to-main:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Fetch Repo - KH-ReFined
-          uses: actions/checkout@v4
-          with:
-            path: 'src'
-            ref: 'mother'
-            repository: 'KH-ReFined/KH-ReFined'
-            persist-credentials: false
-  
-        - name: Fetch Repo - KH2-MAIN
-          uses: actions/checkout@v4
-          with:
-            path: 'dest'
-            ref: 'main'
-            repository: 'KH-ReFined/KH2-MAIN'
-            token: ${{ secrets.KH2_PUSHKEY }}
-            fetch-depth: 0
-            persist-credentials: false
+
+    - name: Fetch Repo - KH2-MAIN
+      uses: actions/checkout@v4
+      with:
+        path: 'dest'
+        ref: 'main'
+        repository: 'KH-ReFined/KH2-MAIN'
+        token: ${{ secrets.KH2_PUSHKEY }}
+        fetch-depth: 0
+        persist-credentials: false
+
+    - run: dir src /s /b 
+    
+    - run: dir dest /s /b
