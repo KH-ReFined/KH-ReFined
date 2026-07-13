@@ -26,21 +26,21 @@ jobs:
 
     steps:
     - name: Fetch Repo - KH-ReFined
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         path: 'src'
         ref: 'mother'
         repository: 'KH-ReFined/KH-ReFined'
         persist-credentials: false
         
-    - uses: microsoft/setup-msbuild@v1.0.2
+    - uses: microsoft/setup-msbuild@v3
     
     - name: Build - ReFined.KH2.dll
       working-directory: "src/"
       run: msbuild /m /p:Configuration=${{env.CONFIG_BUILD}} /p:Platform=${{env.PLATFORM_BUILD}} ${{env.SOLUTION_FILE_PATH}}
 
     - name: Fetch Repo - KH2-MAIN
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         path: 'dest'
         ref: 'main'
@@ -64,8 +64,8 @@ jobs:
       run: |
         cd dest
         
-        git config user.name "TopazTK [BOT]"
-        git config user.email "topaztk-bot@users.noreply.github.com"
+        git config user.name "Kingdom Hearts - Re:Fined"
+        git config user.email "github@kh-refined.dev"
         git remote set-url origin https://KH-ReFined:${{secrets.KH2_PUSHKEY}}@github.com/KH-ReFined/KH2-MAIN.git
 
         git add .
