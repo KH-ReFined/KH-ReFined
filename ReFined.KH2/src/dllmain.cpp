@@ -118,8 +118,6 @@
 #include "weapon_mset.h"
 #include "world.h"
 
-#include "somemenu.h"
-
 #include "continue_menu.h"
 #include "ini.h"
 
@@ -2265,8 +2263,6 @@ bool INIT_GAUGE = false;
 bool GAUGE_READY = false;
 
 char COMMAND_MASK[];
-
-dk::EXAMPLE_HUD _commandGauge;
 
 extern "C"
 {

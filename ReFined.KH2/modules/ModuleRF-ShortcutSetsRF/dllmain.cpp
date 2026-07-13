@@ -401,7 +401,7 @@ extern "C"
 
 			// ====================================================================================================================== //
 
-			Tz::Select::SetItem = reinterpret_cast<void(*)(char*, int, uint32_t, uint32_t, char*, int, uint16_t*, char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetItem@Select@Tz@@2P6AXPEADHII0HPEAG0@ZEA"));
+			Tz::Select::SetItem = reinterpret_cast<void(*)(char*, int, uint32_t, uint32_t, char*, int, uint16_t*, char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetItem@Select@Tz@@2P6AXPEADHII0HPEAG1@ZEA"));
 			Tz::Select::GetItemPtr = reinterpret_cast<char* (*)(char*, uint64_t)>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetItemPtr@Select@Tz@@2P6APEADPEAD_K@ZEA"));
 			Tz::Select::SetCurrent = reinterpret_cast<void(*)(char*, int, bool, int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetCurrent@Select@Tz@@2P6AXPEADH_NHH@ZEA"));
 			Tz::Select::SetExOffset = reinterpret_cast<void(*)(char*, int, int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetExOffset@Select@Tz@@2P6AXPEADHHH@ZEA"));

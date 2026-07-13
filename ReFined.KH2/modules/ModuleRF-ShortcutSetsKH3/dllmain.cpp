@@ -112,6 +112,12 @@ class AREA
     static inline bool* IsInMap;
 };
 
+class MENU
+{
+public:
+    static inline bool* IsMenu;
+};
+
 class SOUND
 {
     public:
@@ -302,12 +308,6 @@ namespace YS
     {
         public:
         static inline bool (*GetMpDriveStatus)(int index);
-    };
-
-    class MENU
-    {
-        public:
-        static inline bool* IsMenu;
     };
 
     class MESSAGE
@@ -1697,7 +1697,7 @@ extern "C"
 
             // ====================================================================================================================== //
 
-            Tz::Select::SetItem = reinterpret_cast<void(*)(char*, int, uint32_t, uint32_t, char*, int, uint16_t*, char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetItem@Select@Tz@@2P6AXPEADHII0HPEAG0@ZEA"));
+            Tz::Select::SetItem = reinterpret_cast<void(*)(char*, int, uint32_t, uint32_t, char*, int, uint16_t*, char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetItem@Select@Tz@@2P6AXPEADHII0HPEAG1@ZEA"));
             Tz::Select::GetItemPtr = reinterpret_cast<char* (*)(char*, uint64_t)>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetItemPtr@Select@Tz@@2P6APEADPEAD_K@ZEA"));
             Tz::Select::SetCurrent = reinterpret_cast<void(*)(char*, int, bool, int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetCurrent@Select@Tz@@2P6AXPEADH_NHH@ZEA"));
             Tz::Select::SetExOffset = reinterpret_cast<void(*)(char*, int, int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetExOffset@Select@Tz@@2P6AXPEADHHH@ZEA"));
@@ -1746,7 +1746,7 @@ extern "C"
 
             // ====================================================================================================================== //
 
-            YS::MENU::IsMenu = reinterpret_cast<bool*>(*(void**)GetProcAddress(MAIN_HANDLE, "?IsMenu@MENU@YS@@2PEA_NEA"));
+            MENU::IsMenu = reinterpret_cast<bool*>(*(void**)GetProcAddress(MAIN_HANDLE, "?IsMenu@MENU@@2PEA_NEA"));
 
             // ====================================================================================================================== //
 
@@ -1824,7 +1824,7 @@ extern "C"
             auto _commandTypePtr = *dk::COMMAND_DRAW::CommandMenu ? reinterpret_cast<uint8_t*>(*dk::COMMAND_DRAW::CommandMenu) : nullptr;
 
             // If the command type pointer is not null;
-            if (_commandTypePtr != nullptr && !*YS::MENU::IsMenu)
+            if (_commandTypePtr != nullptr && !*MENU::IsMenu)
             {
                 if ((*_commandTypePtr == 0x05 && !_fetchInput) || *_commandTypePtr != 0x05)
                     DEBOUNCE_SHORTCUT = false;
