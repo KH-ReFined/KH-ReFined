@@ -453,19 +453,19 @@ extern "C"
 	{
 		// === IMPORT FROM THE MAIN MODULE === //
 
-		bool* _isMenu = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsMenu@MENU@YS@@2PEA_NEA");
+		bool* _isMenu = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsMenu@MENU@@2PEA_NEA");
 		bool* _isTitle = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsTitle@TITLE@YS@@2PEA_NEA");
 		bool* _isInMap = *(bool**)GetProcAddress(MAIN_HANDLE, "?IsInMap@AREA@@2PEA_NEA");
-		char* _menuType = *(char**)GetProcAddress(MAIN_HANDLE, "?MenuType@MENU@YS@@2PEADEA");
-		char* _subMenuType = *(char**)GetProcAddress(MAIN_HANDLE, "?SubMenuType@MENU@YS@@2PEADEA");
+		char* _menuType = *(char**)GetProcAddress(MAIN_HANDLE, "?MenuType@MENU@@2PEADEA");
+		char* _subMenuType = *(char**)GetProcAddress(MAIN_HANDLE, "?SubMenuType@MENU@@2PEADEA");
 		char* _memberTable = *(char**)GetProcAddress(MAIN_HANDLE, "?MemberTable@MEMBER_TABLE@YS@@2PEADEA");
 		char* _saveData = *(char**)GetProcAddress(MAIN_HANDLE, "?SaveData@AREA@@2PEADEA");
 
 		uint16_t* _hardpadInput = *(uint16_t**)GetProcAddress(MAIN_HANDLE, "?Input@HARDPAD@YS@@2PEAGEA");
 
-		char** _jiminyMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?Jiminy@MENU@YS@@2PEAPEADEA");
+		char** _jiminyMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?Jiminy@MENU@@2PEAPEADEA");
 		char** _commandMenuPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?CommandMenu@COMMAND_DRAW@dk@@2PEAPEADEA");
-		char** _subOptionSelectPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?SubOptionSel@MENU@YS@@2PEAPEADEA");
+		char** _subOptionSelectPtr = *(char***)GetProcAddress(MAIN_HANDLE, "?SubOptionSel@MENU@@2PEAPEADEA");
 
 		using PlaySFX_t = void(*)(uint32_t);
 		using GetData_t = const char* (*)(int);
@@ -477,7 +477,7 @@ extern "C"
 		PlaySFX_t _playSFX = *(PlaySFX_t*)GetProcAddress(MAIN_HANDLE, "?PlaySFX@SOUND@@2P6AXI@ZEA");
 		GetData_t _getData = *(GetData_t*)GetProcAddress(MAIN_HANDLE, "?GetData@MESSAGE@YS@@2P6APEADH@ZEA");
 		GetSize_t _getSize = *(GetSize_t*)GetProcAddress(MAIN_HANDLE, "?GetSize@MESSAGE@YS@@2P6A?B_KPEBD@ZEA");
-		UpdateListShortcut_t _updateListShortcut = *(UpdateListShortcut_t*)GetProcAddress(MAIN_HANDLE, "?UpdateListShortcut@MENU@YS@@2P6AXI@ZEA");
+		UpdateListShortcut_t _updateListShortcut = *(UpdateListShortcut_t*)GetProcAddress(MAIN_HANDLE, "?UpdateListShortcut@MENU@@2P6AXI@ZEA");
 
 		DecodeKHSCII_t _decodeKHSCII = (DecodeKHSCII_t)GetProcAddress(MAIN_HANDLE, "?DecodeKHSCII@MESSAGE@YS@@SA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEBD@Z");
 		EncodeKHSCII_t _encodeKHSCII = (EncodeKHSCII_t)GetProcAddress(MAIN_HANDLE, "?EncodeKHSCII@MESSAGE@YS@@SA?AV?$vector@DV?$allocator@D@std@@@std@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@4@@Z");
