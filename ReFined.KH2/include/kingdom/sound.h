@@ -33,18 +33,7 @@ extern "C"
 				if (BGM_WRITE_BUFFER == nullptr)
 					BGM_WRITE_BUFFER = (char*)malloc(0x28);
 
-				if (AREA::Current->World == 0x0B)
-				{
-					_calcNumber = 517;
-
-					if (number != 117)
-						_calcNumber = number;
-
-					if (number == 121)
-						_calcNumber = 521;
-				}
-
-				if (YS::REGION::Get() && YS::REGION::Get() != 0x07 && (_calcNumber <= 3 || _calcNumber == 113))
+				if (YS::REGION::Get() && YS::REGION::Get() != 0x07 && AREA::Current->World == 0x0B && number != 129)
 					_calcNumber += 400;
 
 				auto _fetchConfig = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);

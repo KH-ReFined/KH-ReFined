@@ -527,7 +527,7 @@ void HANDLE_MUSIC()
     {
         if (CURRENT_MUSIC == 0xFFFF)
             CURRENT_MUSIC = _fetchMusic;
-
+         
         else if (CURRENT_MUSIC != _fetchMusic)
         {
             if (_fetchMusic == 0x0080 && !YS::MESSAGE::GetData(0x571B))
