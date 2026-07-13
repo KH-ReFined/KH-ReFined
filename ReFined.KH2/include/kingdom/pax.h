@@ -12,6 +12,7 @@ extern "C"
 		class DLL_EXPORT PAX
 		{
 		public:
+			static inline void (*Begin)(char* PAX, int EffectID, int Flags, int Type, int Priority) = FindSignature<void(*)(char*, int, int, int, int)>("\x48\x83\xEC\x38\x4C\x8D\x91\x80\x00\x00\x00\x49\x83\x3A\x00\x75\x07\x33\xC0\x48\x83\xC4\x38\xC3\x48\x8B\x44\x24\x60", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 			static inline char* (*Start)(char* PAX, int EffectID, int Flags, int Type, int Priority, char* Object) = FindSignature<char*(*)(char*, int, int, int, int, char*)>("\x40\x56\x41\x57\x48\x83\xEC\x58\x48\x8B\x01\x48\x8B\xF1\x45\x33\xFF\x48\x63\x48\x08\x85\xC9\x0F\x8E", "xxxxxxxxxxxxxxxxxxxxxxxxx");
 
 			static void Init(char* PAX, char* Data)

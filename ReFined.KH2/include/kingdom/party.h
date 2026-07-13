@@ -281,7 +281,7 @@ extern "C"
 						if (_currentStack[3])
 						{
 							auto _parsePaxPtr = *reinterpret_cast<char**>(ryj::PAX::PaxList) - 0x80;
-							ryj::PAX::Start(_parsePaxPtr, 0x00, 0x01, 0x00, 0x00, nullptr);
+							ryj::PAX::Begin(_parsePaxPtr, 0x00, 0x01, 0x00, 0x00);
 						}
 
 						// I do not know how to execute this for others, so it is for Sora only at this moment.
