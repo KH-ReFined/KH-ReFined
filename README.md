@@ -50,7 +50,6 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | An RPC Engine is now present for use with Discord. |
 | - | :heavy_check_mark: | Soft Reset implementation [L1 + L2 + R1 + R2 + SELECT; Customizable]. |
 | - | :heavy_check_mark: | Advanced Ratio Support, aiming to improve the experience on 32:9, 21:9, 16:10, and 4:3 aspect ratios. |
-| - | :heavy_check_mark: | Mod Supporters Are Shown On Startup |
 
 ### Kingdom Hearts II
 
@@ -61,34 +60,33 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | :heavy_check_mark: | - | Corrected Limit Form Names [[4]](#reference) |
 | :heavy_check_mark: | - | Restored Right Stick Command Menu Control |
 | :heavy_check_mark: | - | Restored Screen Shake |
-| - | :heavy_check_mark: | 60 FPS Cutscenes |
-| - | :heavy_check_mark: | Restored Roxas' Voicelines and Quotes |
+| - | :heavy_check_mark: | Restored Roxas' Original Voicelines and Quotes |
 | - | :heavy_check_mark: | The player can now retry all forced encounters. [[5]](#reference) |
 | - | :heavy_check_mark: | Prepare & Retry [[6]](#reference) |
 | - | :heavy_check_mark: | Can Now Skip Ending FMV |
-| - | :heavy_check_mark: | HUD Now Displays Next Summon/Form EXP |
-| - | :heavy_check_mark: | Quadratum Command Menu |
+| - | :heavy_check_mark: | Custom Shibuya Command Menu |
 | - | :heavy_check_mark: | New GoA Gummi Ship Landing Spot |
 | - | :heavy_check_mark: | Unpause Atlantica Mini-Games |
 | - | :heavy_check_mark: | English Translation of Sora's Album Notes |
 | - | :heavy_check_mark: | The ability to challenge Sephiroth again has been added [[10]](#reference) |
 | - | :heavy_check_mark: | Pirate & Disney Outfits |
-| - | :heavy_check_mark: | Free-Cam Mode [[11]](#reference) |
-| - | :heavy_check_mark: | HUD Disable [[12]](#reference) |
+| - | :heavy_check_mark: | HUD Disable [[11]](#reference) |
+| - | :heavy_check_mark: | Time Stop [[12]](#reference) |
 | - | :heavy_check_mark: | Crown Engine (Sora's HUD Icon will now display a crown when a proof is obtained) |
 
 | Extra | Module/Pack | Description |
 |---------|-------------|-------------|
-| Encounter Plus | Module | [New Abillity unlocked via Moogle Level 5] Mobs will respawn one (1) room away, instead of two (2) [[7]](#reference) |
+| Encounter Plus | Module | Mobs will respawn one (1) room away, instead of two (2). (***New Abillity unlocked via Moogle Level 5***) [[7]](#reference) |
 | Prolouge Skip | Module | Skip Roxas' Story and go straight into playing as Sora |
 | Shortcut Forms | Module | Can set Drive Forms in the Shortcut Menu |
-| Shortcut Sets | Module | Can utilize three different Shortcut Sets [[8]](#reference)|
+| Shortcut Sets | Module | Can utilize three different Shortcut Sets [[8]](#reference) |
+| Auto-Attack | Module | Hold down the attack button to immediately start the next attack string [[15]](#reference) |
 | Vanilla Heartless | Pack | Enable non-Final Mix Heartless Colors |
 | Vanilla OST | Pack | Enable Original PlayStation 2 Soundtrack |
 | Japanese VO | Pack | Enable Japanese Voice Overs [[9]](#reference) |
-| German VO | Pack | Enable German Voice Overs |
-| French VO | Pack | Enable French Voice Overs |
-| Spanish VO | Pack | Enable Spanish Voice Overs |
+| German VO | Pack | Enable German Voice Overs [[9]](#reference) |
+| French VO | Pack | Enable French Voice Overs [[9]](#reference) |
+| Spanish VO | Pack | Enable Spanish Voice Overs [[9]](#reference) |
 | Revert Outfits | Pack | Disables the custom Pirate/Disney World Outfits |
 
 ### Additional Content
@@ -118,12 +116,15 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 12. You can now halt the game to take pictures and cool action shots by pressing L3. You have to set "allowTimeStop" in reFined.cfg to true for this to work.
 13. If you are ***not*** using another music pack for Re:Fined, you only have to install one pack.
 14. If you are ***not*** using another resource pack for Re:Fined, you only have to install one pack.
+15. To enable this module, please go into `openkh/mods/kh2/KH-ReFined/KH2-MAIN/mod.yml`, and delete the `#` in lines 22-25, and then rebuild.
 
 ## Support
 
 All of Topaz' Kingdom Hearts projects are now his full time gig, and thus a Patreon exists to support him and any of his projects you may like.  
 You can use the badge that is present at the start of this ReadME to check the Patreon out. There are benefits like private conversation, early BETA testing, and mentions in releases!  
 Thank you for your consideration, all support is appreciated!
+
+### Patreon supporters are also shown during the opening copyright screens!
 
 ## Credits
 
@@ -135,11 +136,14 @@ Thank you for your consideration, all support is appreciated!
 - **Alison** for her work on Enemy Journal Entries.
 - **UtenaSW**, **dedede123**, and **Ruby-Chan** for the German translation.
 - **Svenchu**, **Mikote11**, and **Abelatox** for the Spanish translation.
-- **blobdash** for the French translation.
+- **blobdash** and **toreizfotia** for the French translation.
 - **iTeoh**, **kuxir**, and **atlas_0x** for the Italian translation.
 - **SapphireSaphic** and **ALOE** for the upcoming Japanese translation.
 
-### Re:Chain of Memories
+### Kingdom Hearts
+- **Some1fromthedark** for his contributions to the new Configuration System.
+
+### Re: Chain of Memories
 - **TheLegendOfLame** and **GICU** for their input on making the No Experience toggle.
 
 ### Kingdom Hearts 2
@@ -147,10 +151,8 @@ Thank you for your consideration, all support is appreciated!
 - **TieuLink** for providing the Japanese voices for the Multi Audio Add-on.
 - **DA** and **AntonioDePau** for their help with injecting ".a.jp" files for the Multi Audio Add-on.
 - **Y2K** for his past work on the Prologue Skip.
-- **VladABDF** for his work on the Crown Engine as well as the Quadratum Menu.
-- **Some1fromthedark** for his contributions to the new Configuration System.
 - **gg3502** for his help in the SharpHook Engine.
-- **MainMemory** for her help in fixing Panacea related issues.
+- **Claire the Rabbit** for her help in fixing Panacea related issues.
 - **TieuLink** for the origins of all Voice Packs.
 - **Napstio** for implementing FrenchVO and GermanVO.
 - **Jaster** for adding in Sora's Scribbles back.
@@ -161,5 +163,6 @@ Thank you for your consideration, all support is appreciated!
 
 Re:Fined makes use of the following third-party libraries for it's functionality:
 
-[mINI by metayeti](https://github.com/metayeti/mINI)
+[mINI](https://github.com/metayeti/mINI) - metayeti
+  
 [Discord Game SDK](https://docs.discord.com/developers/developer-tools/game-sdk)
