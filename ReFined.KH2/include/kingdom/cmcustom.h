@@ -392,7 +392,7 @@ extern "C"
                 {
                     auto _sideObject = _fetchBuffer + 0x7880 + 0x220 * i;
 
-                    Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, i, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(Tz::CmCustom::s_SelSeq), Tz::CmCustom::s_SelSeq + 0x08);
+                    Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, i, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(Tz::CmCustom::s_SelSeq), reinterpret_cast<uint16_t*>(Tz::CmCustom::s_SelSeq + 0x08));
 
                     auto _fetchItemPtr = Tz::Select::GetItemPtr(*Tz::CmTop::m_MenuPtr, i);
                     auto _paramCr = YI::SEQUENCE::GetParamCr(_fetchItemPtr + 0x20);
@@ -977,7 +977,7 @@ extern "C"
                         auto _fetchPlateZero = Tz::CmTop::GetTopPlateSeqTbl(0);
                         auto _fetchPlateFirst = Tz::CmTop::GetTopPlateSeqTbl(1);
 
-                        Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, _processIdx, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(_fetchPlateZero), _fetchPlateFirst);
+                        Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, _processIdx, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(_fetchPlateZero), reinterpret_cast<uint16_t*>(_fetchPlateFirst));
                         Tz::Select::SetExOffset(*Tz::CmTop::m_MenuPtr, _processIdx, 0, -1);
 
                         auto _fetchItemPtr = Tz::Select::GetItemPtr(*Tz::CmTop::m_MenuPtr, _processIdx);
@@ -993,7 +993,7 @@ extern "C"
                                 auto _fetchPlate2Zero = Tz::CmTop::GetTopPlateSeqTbl(0) + 0x10;
                                 auto _fetchPlate2First = Tz::CmTop::GetTopPlateSeqTbl(1) + 0x10;
 
-                                Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, _processIdx + 1, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(_fetchPlate2Zero), _fetchPlate2First);
+                                Tz::Select::SetItem(*Tz::CmTop::m_MenuPtr, _processIdx + 1, *Tz::CmTop::m_SeqUnit, *Tz::CmTop::m_ImgUnit, *Tz::CmTop::m_Lay, -1, reinterpret_cast<uint16_t*>(_fetchPlate2Zero), reinterpret_cast<uint16_t*>(_fetchPlate2First));
                                 Tz::Select::SetExOffset(*Tz::CmTop::m_MenuPtr, _processIdx + 1, 0, -1);
 
                                 auto _fetchItemPtr = Tz::Select::GetItemPtr(*Tz::CmTop::m_MenuPtr, _processIdx + 1);

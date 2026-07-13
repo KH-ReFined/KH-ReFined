@@ -25,7 +25,7 @@ extern "C"
 					if (_fetchHudDraw)
 						memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
 
-					if (!_isHudDraw && !*YS::MENU::IsMenu)
+					if (!_isHudDraw && !MENU::IsMenu)
 						return NULL;
 
 					char _messageDrawInst[0x100];

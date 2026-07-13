@@ -23,7 +23,7 @@ extern "C"
                 if (_fetchHudDraw)
                     memcpy(&_isHudDraw, _fetchHudDraw, 0x01);
 
-                if (!_isHudDraw && !*YS::MENU::IsMenu)
+                if (!_isHudDraw && !*MENU::IsMenu)
                     return;
 
                 auto _fetchSprite = *reinterpret_cast<char**>(MASK + 0x0240);

@@ -21,6 +21,7 @@ extern "C"
             static inline void (*modelCreateVB)(char* readAddr, int kind, char* param) = FindSignature<void(*)(char*, int, char*)>("\x83\xFA\xFF\x0F\x84\xA5\x00\x00\x00\x48\x89\x6C\x24\x18", "xxxxxxxxxxxxxx");
 
 			static inline char* (*get_info_by_tag)(char* binarc, uint32_t type, uint32_t tag, int n) = FindSignature<char* (*)(char*, uint32_t, uint32_t, int)>("\x48\x89\x5C\x24\x08\x48\x89\x7C\x24\x10\x48\x63\x79\x04\x33\xDB\x48\x85\xFF\x7E\x36", "xxxxxxxxxxxxxxxxxxxxx");
+			static inline uint32_t (*get_file_num)(char* binarc, uint32_t type) = FindSignature<uint32_t(*)(char*, uint32_t)>("\x4C\x63\x49\x04\x33\xC0\x44\x8B\xD2\x4D\x85\xC9\x7E\x1D\x4C\x8D", "xxxxxxxxxxxxxxxx");
 
             static void preSetup(char* binarc)
 			{

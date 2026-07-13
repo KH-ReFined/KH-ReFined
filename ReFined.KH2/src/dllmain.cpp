@@ -118,6 +118,8 @@
 #include "weapon_mset.h"
 #include "world.h"
 
+#include "somemenu.h"
+
 #include "continue_menu.h"
 #include "ini.h"
 
@@ -143,6 +145,8 @@ multimap<uint8_t, void(*)(const wchar_t*), std::greater<uint8_t>> _initModule;
 map<string, void(*)()> FUNCTION_ARRAY;
 
 wchar_t* MOD_PATH;
+
+bool SHOW_MENU = false;
 
 bool IS_STEAM = false;
 bool INITIALIZED = false;
@@ -215,6 +219,7 @@ bool SAVE_INITIATE = false;
 bool SAVE_ROUNDBACK = false;
 
 int SAVE_ITERATOR = 0;
+int SAVE_SLOT = 0x00;
 
 AREA::INFO SAVE_AREA;
 
@@ -485,11 +490,9 @@ const wchar_t* CONFIG_NAME = L"\\dll\\reFined.cfg";
     }
 #endif
 
-// Function Block. Everything is here now :D
-
 void SOFT_RESET()
 {
-    bool _canReset = *dk::COMMAND_DRAW::CommandDraw != 0x00 && *AREA::IsInMap && !*YS::TITLE::IsTitle && !*YS::MENU::IsMenu && RESET_COMBO != 0x00;
+    bool _canReset = *dk::COMMAND_DRAW::CommandDraw != 0x00 && *AREA::IsInMap && !*YS::TITLE::IsTitle && !*MENU::IsMenu && RESET_COMBO != 0x00;
 
     // If the buttons are pushed, a reset can happen and it isn't happening:
     if (RESET_COMBO != YS::HARDPAD::BUTTONS::NONE && *YS::HARDPAD::Input == RESET_COMBO && _canReset && !IS_RESETING)
@@ -678,7 +681,7 @@ void HANDLE_RESOURCE()
         else if (_fetchObject == 0x0400 && !YS::MESSAGE::GetData(0x573E))
             *reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A6) -= 0x0100;
 
-        else if (CURRENT_RESOURCE != _fetchObject && !*YS::MENU::IsMenu)
+        else if (CURRENT_RESOURCE != _fetchObject && !*MENU::IsMenu)
         {
             AREA::MapJump(AREA::Current, 0x01, 0x00, false);
             CURRENT_RESOURCE = _fetchObject;
@@ -699,7 +702,7 @@ void HANDLE_AUDIO()
     {
         if (_constructPath != CURRENT_AUDIO)
         {
-            if (*YS::MENU::IsMenu)
+            if (*MENU::IsMenu)
             {
                 SOUND::StreamAllStop(true);
 
@@ -725,7 +728,7 @@ void HANDLE_AUDIO()
             CURRENT_AUDIO = _constructPath;
         }
 
-        else if (QUEUE_VSB && !*YS::MENU::IsMenu)
+        else if (QUEUE_VSB && !*MENU::IsMenu)
         {
             if (CURRENT_VSB == 0x0000)
                 CURRENT_VSB = 0x0236;
@@ -1014,7 +1017,7 @@ void AUTOSAVE()
                 SAVE_AREA = *AREA::Current;
 
             bool _isAutosave = (*reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4) & 0x0002) || (*reinterpret_cast<uint16_t*>(AREA::SaveData + 0x41A4) & 0x0004);
-            bool _checkStatus = !*YS::MENU::IsMenu && _commandPointer != 0x00 && *AREA::IsInMap && _mainPointer == 0x00 && *AREA::BattleStatus == 0x00 && SAVE_AREA.World >= 0x02 && SYSTEM_LOADED && _isAutosave && *(dk::JUMPEFFECT::FadeStatus + 0x108) == 0x00;
+            bool _checkStatus = !*MENU::IsMenu && _commandPointer != 0x00 && *AREA::IsInMap && _mainPointer == 0x00 && *AREA::BattleStatus == 0x00 && SAVE_AREA.World >= 0x02 && SYSTEM_LOADED && _isAutosave && *(dk::JUMPEFFECT::FadeStatus + 0x108) == 0x00;
 
             if (!_checkStatus)
             {
@@ -1428,7 +1431,7 @@ void SHOW_INFORMATION()
                                          && *reinterpret_cast<int*>(*YS::EVENT::Event + 0x04) != 0xEFACCAFE;
 
     // If the game is loaded, and there isn't a menu present, and it's not a cutscene:
-    if (*AREA::IsInMap && _commandPointer != 0x00 && !*YS::MENU::IsMenu && !_isCutscene && _soraGauge != 0x00)
+    if (*AREA::IsInMap && _commandPointer != 0x00 && !*MENU::IsMenu && !_isCutscene && _soraGauge != 0x00)
     {
         // Fetch the fade status and the enable line.
         auto _fetchFade = *(dk::JUMPEFFECT::FadeStatus + 0x108);
@@ -1486,7 +1489,7 @@ void PROCESS_DEATH()
     auto _fetchSora = *reinterpret_cast<const uint16_t*>(YS::MEMBER_TABLE::MemberTable);
 
     // If Sora's HP is 0, and he isn't Mermaid Sora, and his gauge is present, and he isn't dead:
-    if (*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308) == 0x00 && *AREA::IsInMap && !*YS::MENU::IsMenu && (_fetchSora != 0x03BE && _fetchSora != 0x0656) && _soraGauge != 0x00 && !IS_DEAD)
+    if (*(YS::MEMBER_TABLE::MemberStatsAnchor + 0xC308) == 0x00 && *AREA::IsInMap && !*MENU::IsMenu && (_fetchSora != 0x03BE && _fetchSora != 0x0656) && _soraGauge != 0x00 && !IS_DEAD)
     {
         // Process his death and mark it.
         YS::SORA::AddHP(reinterpret_cast<char*>(_soraSelf), 0x00, 0x00, false);
@@ -1705,14 +1708,14 @@ void RETRY_BATTLES()
 
                     // Write the camp menu options bitwise (Items, Abilities, Customize, Party)
                     uint8_t _campBitwise = 0x0F;
-                    memcpy(YS::MENU::CampOptions, &_campBitwise, 0x01);
+                    memcpy(MENU::CampOptions, &_campBitwise, 0x01);
 
                     // NOP the instructions that set and refresh the camp menu options bitwise.
                     memcpy(CMENUINIT_OFFSET, _nopArrayCamp.data(), 0x08);
                     memcpy(CMENU_OFFSET + 0x1A7, _nopArrayCamp.data(), 0x07);
 
                     // Summon the camp menu.
-                    YS::MENU::CampStart(0x00, 0x00);
+                    MENU::CampStart(0x00, 0x00);
                 }
 
                 // Denote we are no longer retrying.
@@ -1720,7 +1723,7 @@ void RETRY_BATTLES()
             }
 
             // If we are NOT retrying and not in a menu, but the Retry State has been denoted:
-            if (RETRY_MODE == 0x00 && RETRY_STATE.size() != 0x00 && !*YS::MENU::IsMenu)
+            if (RETRY_MODE == 0x00 && RETRY_STATE.size() != 0x00 && !*MENU::IsMenu)
             {
                 // Restore the Area Init functions so we can progress.
                 memcpy(reinterpret_cast<char*>(AREA::MapJump) + 0x1F2, INST_MAPJUMPTASK.data(), 0x05);
@@ -1744,10 +1747,10 @@ void RETRY_BATTLES()
 
 
         // Fetch Menu selection and the pointer to the Game Over screen.
-        uint8_t _fetchSelectMenu = *YS::MENU::DialogBase ? ((*YS::MENU::DialogBase + 0xD48) ? *(*YS::MENU::DialogBase + 0xD48) : 0x80) : 0x80;
+        uint8_t _fetchSelectMenu = *MENU::DialogBase ? ((*MENU::DialogBase + 0xD48) ? *(*MENU::DialogBase + 0xD48) : 0x80) : 0x80;
 
         // If the Game Over menu exists and the Retry State has been noted:
-        if (*YS::MENU::GameOver && RETRY_STATE.size() != 0x00)
+        if (*MENU::GameOver && RETRY_STATE.size() != 0x00)
         {
             // If on Hades Escape, reset all Hades Escape variables.
             if (HADES_ESCAPE && HADES_ITERATOR != 0x00)
@@ -1761,7 +1764,7 @@ void RETRY_BATTLES()
             {
                 // Determine the Retry Mode based on selection.
                 RETRY_MODE = _fetchSelectMenu == 0x00 ? 0x01 : (_fetchSelectMenu == 0x01 ? 0x02 : 0x00);
-                RETRY_MODE = *reinterpret_cast<const uint8_t*>(YS::MENU::SubMenuType) == 0xFF ? RETRY_MODE : 0x00;
+                RETRY_MODE = *reinterpret_cast<const uint8_t*>(MENU::SubMenuType) == 0xFF ? RETRY_MODE : 0x00;
 
                 // If we are retrying, NOP all Area Init instructions to not change the room state.
                 if (RETRY_MODE != 0x00)
@@ -1804,9 +1807,9 @@ void RETRY_BATTLES()
 
 void PROCESS_FORM_KEYBLADES()
 {
-    if (*YS::MENU::IsMenu && *YS::MENU::SubMenuType == 0x02 && *CURRENT_SUBMENU == 0x00 && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::TRIANGLE && !KEYBLADE_DEBOUNCE)
+    if (*MENU::IsMenu && *MENU::SubMenuType == 0x02 && *CURRENT_SUBMENU == 0x00 && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::TRIANGLE && !KEYBLADE_DEBOUNCE)
     {
-        auto _fetchSelect = *YS::MENU::SubOptionSel;
+        auto _fetchSelect = *MENU::SubOptionSel;
 
         // Calculate the maximum selection we can make.
         auto _calculateForms = YS::ITEM::GetNumBackyard(0x001A) + YS::ITEM::GetNumBackyard(0x001D) + YS::ITEM::GetNumBackyard(0x001F);
@@ -1873,7 +1876,7 @@ void PROCESS_FORM_KEYBLADES()
     else if (KEYBLADE_DEBOUNCE && (*YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::TRIANGLE) == 0x0000)
         KEYBLADE_DEBOUNCE = false;
 
-    if (!*YS::MENU::IsMenu && PENDING_KEYBLADE_UPDATE)
+    if (!*MENU::IsMenu && PENDING_KEYBLADE_UPDATE)
     {
         YS::PARTY::ChangeWeapon(nullptr, 0x01, false, TARGET_KEYBLADE);
 
@@ -2044,7 +2047,7 @@ void RETRIBUTION_LOGIC()
                 }
             }
 
-            if (*YS::MENU::IsMenu && (*YS::MENU::SubMenuType == 0x02 || *YS::MENU::SubMenuType == 0x05))
+            if (*MENU::IsMenu && (*MENU::SubMenuType == 0x02 || *MENU::SubMenuType == 0x05))
             {
                 if ((*YS::ITEMPIC::LoadedId == 420 || *YS::ITEMPIC::LoadedId == 421) && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_RETRIBUTION)
                 {
@@ -2192,7 +2195,7 @@ void HANDLE_NOHUD_TIMESTOP()
 {
     if (ALLOW_NOHUD || ALLOW_TIMESTOP)
     {
-        if (!*YS::MENU::IsMenu && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
+        if (!*MENU::IsMenu && *YS::HARDPAD::Input & YS::HARDPAD::BUTTONS::L3 && !DEBOUNCE_HUDSTOP)
         {
             auto _fetchHudDraw = YS::PANACEA_ALLOC::Get("IS_HUDDRAW");
             auto _fetchTimeStop = YS::PANACEA_ALLOC::Get("IS_TIMESTOP");
@@ -2255,7 +2258,16 @@ void ENSURE_MOOGLE_SHOP()
         }
     }
 }
+
+void nullsub_one() {};
  
+bool INIT_GAUGE = false;
+bool GAUGE_READY = false;
+
+char COMMAND_MASK[];
+
+dk::EXAMPLE_HUD _commandGauge;
+
 extern "C"
 {
     __declspec(dllexport) void OnInit(wchar_t* mod_path)
@@ -2316,7 +2328,7 @@ extern "C"
         // Nullify all SaveID checks according to the platform in use.
 
         auto _saveCheckFunction = IS_STEAM ? FindSignature<char*>("\x40\x55\x56\x57\x48\x81\xEC\xA0\x00\x00\x00\x48\xC7\x44\x24\x38\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\xD0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x90\x00\x00\x00\x8B\xF1\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xED\x8D\x5D\x01\x48\x39\x2D\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x85\xC0\x74\x1D", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxx????xx????xxxxxxxx????xx????xxxxxx????xxxxxxxxxx")
-                                           : FindSignature<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
+            : FindSignature<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
 
         memset(_saveCheckFunction + (IS_STEAM ? 0x189 : 0x138), 0x90, 0x05);
         memset(_saveCheckFunction + (IS_STEAM ? 0x196 : 0x145), 0x90, 0x02);
@@ -2330,12 +2342,12 @@ extern "C"
         // Fetch the prompt mode byte according to the game version.
         PROMPT_MODE = FetchRelativePointer<bool*>("\x40\x57\x48\x83\xEC\x20\x4C\x8B\x0D\x00\x00\x00\x00\x33\xD2\x4D\x85\xC9\x49\x8D\x81\xA0\x12\x00\x00\x48\x0F\x45\xD0\x4D\x8D\x81\x3C\x02\x00\x00\x48\x85\xD2\x0F\x84\x2B\x01\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16\x48\x63\x82\x00\x02\x00\x00\x48\xC1\xE0\x08\x80\x7C\x10\x3B\x00\x0F\x85\x00\x00\x00\x00\x48\x85\xD2\x0F\x84\xFE\x00\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16", "xxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxx", IS_STEAM ? 0x969 : 0x959);
 
-        #ifndef BUILD_ARCHIPELAGO_LITE
+#ifndef BUILD_ARCHIPELAGO_LITE
         Tz::HookIntro::Submit();
         Tz::HookConfig::Submit();
-        #endif
+#endif
 
-        #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
         MOD_PATH = mod_path;
 
         // Fetch the launch parameters and parse them.
@@ -2404,7 +2416,7 @@ extern "C"
         // If NO_ASPECT is not called, handle all aspect modifications.
 
         if (!IS_NOASPECT)
-        { 
+        {
             // Prevent the game from adjusting the aspect automatically.
 
             auto _fetchAdjustment = FindSignature<char*>("\x48\x83\xEC\x28\x0F\x10\x41\x48\x4C\x8B\xC9\x4C\x8B\xD2\xF3\x0F\x10\x25\x00\x00\x00\x00\x0F\x57\xED\x0F\x11\x02\x41\x0F\x10\x00\x49\x8B\x41\x40", "xxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxx");
@@ -2413,14 +2425,14 @@ extern "C"
             memset(_fetchAdjustment + 0x101, 0x90, 0x06);
 
             // Kill the enforcer in dk::MISSION_GAUGE::update so I don't want to kill myself.
-            
+
             auto _fetchMissionUpdate = FindSignature<char*>("\x48\x89\x5C\x24\x18\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8", "xxxxxxxxxxxxxx");
             memset(_fetchMissionUpdate + 0x119, 0xEB, 0x01);
 
             // Fetch all functions that handle fade-in and fade-outs in any way within the 2dFade rectangle.
 
             auto _fetchAllFade = FindAllSignature<char*>("\x41\xB8\xFF\xFF\xFF\xFF\x48\x8D\x0D\x00\x00\x00\x00\x0F\xB7\xD3\x66\xF7\xD2\xE8\x00\x00\x00\x00\xB8\x01\x01\x00\x00", "xxxxxxxxx????xxxxxxx????xxxxx");
-             
+
             for (auto _function : _fetchAllFade)
             {
                 uint32_t _fadeValue = 0x800;
@@ -2438,7 +2450,7 @@ extern "C"
             CULLING_POINTER_3D = FindSignature<char*>("\x48\x8B\xC4\x48\x89\x58\x18\x48\x89\x70\x20\x55\x57\x41\x54\x41", "xxxxxxxxxxxxxxxx");
             CULLING_POINTER_2D = FindSignature<char*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\xE8", "xxxxxxxxxxxxxxxxxxx");
         }
-        
+
         else
         {
             auto _fetchMemory = YS::PANACEA_ALLOC::Get("ASPECT_INFORMATION");
@@ -2464,7 +2476,7 @@ extern "C"
                 *reinterpret_cast<float*>(*RADAR_STRUCT + 0xBC0) = _isHudDraw ? 1.0 : 0.0;
             }
         }
-        #endif
+#endif
 
         // Prevent MAGIC clearing since we handle that now, and because it causes a crash.
 
@@ -2475,7 +2487,7 @@ extern "C"
         auto _fetchVolumeFloats = FindSignature<float*>("\xCD\xCC\xCC\x3D\xCD\xCC\x4C\x3E", "xxxxxxxx");
         *_fetchVolumeFloats = 0.00F;
 
-        #ifndef BUILD_ARCHIPELAGO_LITE
+#ifndef BUILD_ARCHIPELAGO_LITE
         wchar_t _configPath[MAX_PATH];
 
         wcscpy(_configPath, mod_path);
@@ -2516,26 +2528,26 @@ extern "C"
         if (ROOM_AMOUNT == 0x00)
             ROOM_AMOUNT = 1;
 
-            #ifndef BUILD_ARCHIPELAGO
-            DISCORD_ENABLED = _configStruct["General"]["discordRPC"] == "true" ? true : false;
+#ifndef BUILD_ARCHIPELAGO
+        DISCORD_ENABLED = _configStruct["General"]["discordRPC"] == "true" ? true : false;
 
-            ALLOW_NOHUD = _configStruct["General"]["allowNoHud"] == "true" ? true : false;
-            ALLOW_TIMESTOP = _configStruct["General"]["allowTimeStop"] == "true" ? true : false;
+        ALLOW_NOHUD = _configStruct["General"]["allowNoHud"] == "true" ? true : false;
+        ALLOW_TIMESTOP = _configStruct["General"]["allowTimeStop"] == "true" ? true : false;
 
-            Tz::CmCustom::CAN_ALTER_KH1F = _configStruct["General"]["canModifyLimitShortcuts"] == "true" ? true : false;
+        Tz::CmCustom::CAN_ALTER_KH1F = _configStruct["General"]["canModifyLimitShortcuts"] == "true" ? true : false;
 
-            auto ALLOW_REVERB = _configStruct["General"]["enableReverb"] == "true" ? true : false;
+        auto ALLOW_REVERB = _configStruct["General"]["enableReverb"] == "true" ? true : false;
 
-            if (ALLOW_REVERB)
-            {
-                auto _fetchBusContainerInit = FindSignature<char*>("\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x48\xC7\x45\xC7\xFE\xFF\xFF\xFF\x48\x89", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-                memset(_fetchBusContainerInit + 0x23D, 0x90, 0x0E);
-            }
+        if (ALLOW_REVERB)
+        {
+            auto _fetchBusContainerInit = FindSignature<char*>("\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x48\xC7\x45\xC7\xFE\xFF\xFF\xFF\x48\x89", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+            memset(_fetchBusContainerInit + 0x23D, 0x90, 0x0E);
+        }
 
-            if (!DISCORD_ENABLED)
-                FUNCTION_ARRAY.erase("DISCORD_RPC");
-            #endif
-        #endif
+        if (!DISCORD_ENABLED)
+            FUNCTION_ARRAY.erase("DISCORD_RPC");
+#endif
+#endif
     }
 
     __declspec(dllexport) void OnFrame()
@@ -2550,9 +2562,9 @@ extern "C"
                 return;
 
             //if (!YS::FILE::GetSize("scripts/F266B00B GoA ROM.lua"))
-                FUNCTION_ARRAY.erase("SYNC_FLAG_PROGRESS"); // Temporarily disabled as it breaks stuff.
+            FUNCTION_ARRAY.erase("SYNC_FLAG_PROGRESS"); // Temporarily disabled as it breaks stuff.
 
-            #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             // Trying to initialize this in OnInit causes moduleInfo to get corrupt. I have no fucking idea why.
             if (!ITEM_COMMIT)
                 ITEM_COMMIT = FindSignature<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x40\x45\x32", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
@@ -2583,7 +2595,7 @@ extern "C"
 
             vector<size_t> _loadedLangs
             {
-                YS::FILE::GetSize("voice/jp/battle/tt0_sora.win32.scd"), 
+                YS::FILE::GetSize("voice/jp/battle/tt0_sora.win32.scd"),
                 YS::FILE::GetSize("voice/es/battle/tt0_sora.win32.scd"),
                 YS::FILE::GetSize("voice/de/battle/tt0_sora.win32.scd"),
                 YS::FILE::GetSize("voice/bg/battle/tt0_sora.win32.scd"),
@@ -2701,7 +2713,7 @@ extern "C"
                 _resourceConfig.Toggles.push_back(0x0400);
             }
 
-           
+
             if (_resourceConfig.Count > 1)
             {
                 _resourceIntro.Count = _resourceConfig.Count;
@@ -2718,7 +2730,7 @@ extern "C"
             }
 
             // This code block handles MUSIC packs.
-            
+
             if (YS::MESSAGE::GetData(0x571B) != _fetchFake)
             {
                 _musicConfig.Count += 1;
@@ -2834,7 +2846,7 @@ extern "C"
                         if (_moduleImportance)
                             _importance = *_moduleImportance;
 
-                        char* (*_excludeFunctions)() = (char*(*)())GetProcAddress(_moduleHandle, "RF_ExcludeFunctions");
+                        char* (*_excludeFunctions)() = (char* (*)())GetProcAddress(_moduleHandle, "RF_ExcludeFunctions");
 
                         if (_excludeFunctions)
                         {
@@ -2855,8 +2867,8 @@ extern "C"
                                 FUNCTION_ARRAY.erase(_fetchName);
                         }
 
-                        uint32_t* (*_fetchIntro)() = reinterpret_cast<uint32_t*(*)()>(GetProcAddress(_moduleHandle, "RF_CheckIntro"));
-                        uint16_t* (*_fetchConfig)() = reinterpret_cast<uint16_t*(*)()>(GetProcAddress(_moduleHandle, "RF_CheckConfig"));
+                        uint32_t* (*_fetchIntro)() = reinterpret_cast<uint32_t * (*)()>(GetProcAddress(_moduleHandle, "RF_CheckIntro"));
+                        uint16_t* (*_fetchConfig)() = reinterpret_cast<uint16_t * (*)()>(GetProcAddress(_moduleHandle, "RF_CheckConfig"));
 
                         if (_fetchIntro)
                         {
@@ -2988,11 +3000,11 @@ extern "C"
             if (_foundFileHandle != INVALID_HANDLE_VALUE)
                 CAN_PROCESS_FORM_KEYBLADES = true;
 
-            #endif
+#endif
 
             INITIALIZED = true;
         }
-    
+
         else
         {
             #ifndef BUILD_ARCHIPELAGO_LITE

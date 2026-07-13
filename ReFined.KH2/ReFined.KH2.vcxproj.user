@@ -24,8 +24,8 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>"C:\Program Files (x86)\Steam\steamapps\common\KINGDOM HEARTS -HD 1.5+2.5 ReMIX-\KINGDOM HEARTS II FINAL MIX.exe"</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>C:\Program Files (x86)\Steam\steamapps\common\KINGDOM HEARTS -HD 1.5+2.5 ReMIX-</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommandArguments>-fastboot -noaspect</LocalDebuggerCommandArguments>
-    <LocalDebuggerCommandArgumentsHistory>-fastboot|-fastboot -noaspect|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArguments>-fastboot</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArgumentsHistory>-fastboot -noaspect|-fastboot|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>

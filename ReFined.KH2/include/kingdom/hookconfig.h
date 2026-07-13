@@ -172,7 +172,7 @@ namespace Tz
 
 			memcpy(CONFIG_OFFSETS[4] + 0x33, _preventUpdateInst.data(), _preventUpdateInst.size());
 
-			if (*reinterpret_cast<const int*>(YS::MENU::MenuType + 0x5C) == 0xAF20)
+			if (*reinterpret_cast<const int*>(MENU::MenuType + 0x5C) == 0xAF20)
 			{
 				char _nopArray[0x04];
 				char _menuSelectInst[0x04];
@@ -182,9 +182,9 @@ namespace Tz
 				memcpy(_menuSelectInst, MENUSELECT_OFFSET + 0x46, 0x04);
 				memcpy(MENUSELECT_OFFSET + 0x46, _nopArray, 0x04);
 
-				auto _pointPage = *YS::MENU::SubOptionSel + 0x12;
-				auto _pointCurrent = *YS::MENU::SubOptionSel;
-				auto _pointMaximum = *YS::MENU::SubOptionSel + 0x16;
+				auto _pointPage = *MENU::SubOptionSel + 0x12;
+				auto _pointCurrent = *MENU::SubOptionSel;
+				auto _pointMaximum = *MENU::SubOptionSel + 0x16;
 
 				uint8_t _configSize = Entries.size();
 				memcpy(const_cast<char*>(_pointMaximum), &_configSize, 0x01);
@@ -211,12 +211,12 @@ namespace Tz
 
 		static void Handle()
 		{
-			auto _configMemory = *YS::MENU::Config;
+			auto _configMemory = *MENU::Config;
 
 			auto _primaryBitwise = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A4);
 			auto _secondaryBitwise = *reinterpret_cast<const uint16_t*>(AREA::SaveData + 0x41A6);
 
-			auto _menuOK = *YS::MENU::MenuType == 0x08 && (*YS::MENU::SubMenuType == 0x24 || *(YS::MENU::SubMenuType + 0x04) == 0x24);
+			auto _menuOK = *MENU::MenuType == 0x08 && (*MENU::SubMenuType == 0x24 || *(MENU::SubMenuType + 0x04) == 0x24);
 
 			if (!*YS::TITLE::IsTitle)
 			{
@@ -295,7 +295,7 @@ namespace Tz
 
 						memcpy(reinterpret_cast<char*>(_configMemory), _configArray.data(), _configArray.size());
 
-						if (*reinterpret_cast<const int*>(YS::MENU::MenuType + 0x5C) == 0xAF20)
+						if (*reinterpret_cast<const int*>(MENU::MenuType + 0x5C) == 0xAF20)
 						{
 							char _nopArray[0x04];
 							char _menuSelectInst[0x04];
@@ -305,9 +305,9 @@ namespace Tz
 							memcpy(_menuSelectInst, MENUSELECT_OFFSET + 0x46, 0x04);
 							memcpy(MENUSELECT_OFFSET + 0x46, _nopArray, 0x04);
 
-							auto _pointPage = *YS::MENU::SubOptionSel + 0x12;
-							auto _pointCurrent = *YS::MENU::SubOptionSel;
-							auto _pointMaximum = *YS::MENU::SubOptionSel + 0x16;
+							auto _pointPage = *MENU::SubOptionSel + 0x12;
+							auto _pointCurrent = *MENU::SubOptionSel;
+							auto _pointMaximum = *MENU::SubOptionSel + 0x16;
 
 							memcpy(const_cast<char*>(_pointMaximum), &_configSize, 0x01);
 
@@ -337,7 +337,7 @@ namespace Tz
 						CONFIG_INIT = true;
 					}
 
-					if (*reinterpret_cast<const int*>(YS::MENU::MenuType + 0x5C) == 0xAF20)
+					if (*reinterpret_cast<const int*>(MENU::MenuType + 0x5C) == 0xAF20)
 					{
 						vector<uint8_t> _fetchConfig(Entries.size());
 						memcpy(_fetchConfig.data(), reinterpret_cast<char*>(_configMemory), Entries.size());
@@ -426,10 +426,10 @@ namespace Tz
 						}
 					}
 
-					auto _pointCurrent = *YS::MENU::SubOptionSel + 0x12;
+					auto _pointCurrent = *MENU::SubOptionSel + 0x12;
 					auto _fetchCampBinarc = *reinterpret_cast<char**>(Tz::CmData::FileInfo + 0x40);
 
-					if (*YS::MENU::SubOptionSel && _fetchCampBinarc)
+					if (*MENU::SubOptionSel && _fetchCampBinarc)
 					{
 						auto _intptrSQD = *reinterpret_cast<uint32_t*>(YS::BINARC::get_info_by_tag(_fetchCampBinarc, 0x1C, 0x706D6163, 0) + 0x08);
 						auto _addressSQD = PC::CONVERTER::INTPTR_TO_POINTER(_intptrSQD);

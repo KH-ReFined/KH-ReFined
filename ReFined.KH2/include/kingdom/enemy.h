@@ -30,6 +30,19 @@ extern "C"
         public:
             static inline char* LastAttacker = FetchRelativePointer<char*>("\x40\x57\x48\x83\xEC\x20\x48\x8B\xF9\x8B\x89\x38\x0D\x00\x00\xE8", "xxxxxxxxxxxxxxxx", 0x34);
 
+            static void _OVR_exec_damage(char* enemy, char* damage)
+            {
+                auto _fetchStyleMem = YS::PANACEA_ALLOC::Get("COMMAND_STYLE");
+
+                auto _fetchParameters = PC::CONVERTER::INTPTR_TO_POINTER(*reinterpret_cast<uint32_t*>(damage + 0x20));
+                auto _fetchKarma = *reinterpret_cast<uint8_t*>(_fetchParameters + 0x2A);
+                
+                *reinterpret_cast<float*>(enemy + 0xD48) += static_cast<float>(_fetchKarma);
+
+                reinterpret_cast<void(*)(char*, char*)>(moduleInfo.moduleStart + 0x3E86B0)(enemy, damage); // YS::FORM_LEVEL::CheckBrave
+                reinterpret_cast<void(*)(uint32_t*, char*)>(moduleInfo.moduleStart + 0x410D60)(reinterpret_cast<uint32_t*>(enemy), damage); // YS::PIERROT::_OVR_exec_damage
+            }
+
 
             static char* _OVR__dead(char* enemy)
             {
@@ -55,6 +68,7 @@ extern "C"
                 static bool _init()
                 {
                     RedirectFunction("\x40\x57\x48\x83\xEC\x20\x48\x8B\xF9\x8B\x89\x38\x0D\x00\x00\xE8", "xxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(_OVR__dead), 0x98);
+                    RedirectFunction("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xF9\x48\x8B\xDA\x8B\x4A\x20\xE8", "xxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(_OVR_exec_damage), 0x50);
 
                     return true;
                 }

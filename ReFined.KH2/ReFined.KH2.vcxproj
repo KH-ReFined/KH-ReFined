@@ -73,6 +73,7 @@
     <ClInclude Include="include\kingdom\command_menu.h" />
     <ClInclude Include="include\kingdom\command_one.h" />
     <ClInclude Include="include\kingdom\counter.h" />
+    <ClInclude Include="include\kingdom\menucursor.h" />
     <ClInclude Include="include\kingdom\enemy.h" />
     <ClInclude Include="include\kingdom\enemybase.h" />
     <ClInclude Include="include\kingdom\face.h" />
@@ -103,6 +104,7 @@
     <ClInclude Include="include\kingdom\itemshop.h" />
     <ClInclude Include="include\kingdom\item_param.h" />
     <ClInclude Include="include\kingdom\jumpeffect.h" />
+    <ClInclude Include="include\kingdom\layfile.h" />
     <ClInclude Include="include\kingdom\layout.h" />
     <ClInclude Include="include\kingdom\level_up.h" />
     <ClInclude Include="include\kingdom\libretto.h" />
@@ -114,6 +116,7 @@
     <ClInclude Include="include\kingdom\member_table.h" />
     <ClInclude Include="include\kingdom\menu.h" />
     <ClInclude Include="include\kingdom\menubase.h" />
+    <ClInclude Include="include\kingdom\menusound.h" />
     <ClInclude Include="include\kingdom\menuutil.h" />
     <ClInclude Include="include\kingdom\message.h" />
     <ClInclude Include="include\kingdom\messagedraw.h" />
@@ -148,7 +151,9 @@
     <ClInclude Include="include\kingdom\sprite.h" />
     <ClInclude Include="include\kingdom\spritemessage.h" />
     <ClInclude Include="include\kingdom\steam.h" />
+    <ClInclude Include="include\kingdom\submenu.h" />
     <ClInclude Include="include\kingdom\task.h" />
+    <ClInclude Include="include\kingdom\task_manager.h" />
     <ClInclude Include="include\kingdom\timer.h" />
     <ClInclude Include="include\kingdom\title.h" />
     <ClInclude Include="include\kingdom\treasure_info.h" />

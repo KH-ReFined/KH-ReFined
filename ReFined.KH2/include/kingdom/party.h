@@ -47,7 +47,7 @@ extern "C"
 				// If the function was NOT called by the task manager. This is to ensure that it executes the queue system.
 				if (task == nullptr)
 				{
-					auto _taskPtr = reinterpret_cast<uint64_t>(&YS::PARTY::ChangeWeapon);
+					auto _taskPtr = reinterpret_cast<void(*)(char*)>(&YS::PARTY::ChangeWeapon);
 
 					// Loop through the queue system. 
 					// Basically, within CHANGE_WEAPON_QUEUE we can have 0x14 commands that the task will iterate through.
@@ -77,7 +77,7 @@ extern "C"
 
 					// If the ChangeWeapon task does not exist within FIELD::TaskManager, make it exist.
 					if (!YS::FIELD::TaskExists(_taskPtr))
-						YS::FIELD::CreateThread(0, 140000, reinterpret_cast<void(*)(char*)>(&YS::PARTY::ChangeWeapon), 4096);
+						YS::FIELD::CreateThread(0, 140000, _taskPtr, 8096);
 				}
 
 				// If the function WAS called by a task manager, we get into the fun stuff: 

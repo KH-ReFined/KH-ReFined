@@ -99,7 +99,7 @@ extern "C"
                 // Create and render the buttons.
                 for (int i = 0x00; i < 0x02; i++)
                 {
-                    Tz::Select::SetItem(*m_SelPtr, i, 0, 0, *m_Lay, UINT32_MAX, reinterpret_cast<uint16_t*>(s_Plate2Seq), s_Plate2Seq + 0x08);
+                    Tz::Select::SetItem(*m_SelPtr, i, 0, 0, *m_Lay, UINT32_MAX, reinterpret_cast<uint16_t*>(s_Plate2Seq), reinterpret_cast<uint16_t*>(s_Plate2Seq + 0x08));
 
                     auto _fetchItemPtr = *reinterpret_cast<char**>(*reinterpret_cast<char**>(*m_SelPtr + 0x28) + i * 0x08);
 
