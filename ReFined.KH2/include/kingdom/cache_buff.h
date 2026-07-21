@@ -40,7 +40,7 @@ extern "C"
 		private:
 			static bool _init()
 			{
-				RedirectFunction("\x40\x53\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\xD8\x48\x85\xC0\x74\x09\x81\x78\x48\x10\x27", "xxxxxxx????xxxxxxxxxxxxx", reinterpret_cast<uint64_t>(Alloc), 0x5A);
+				// RedirectFunction("\x40\x53\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x48\x8B\xD8\x48\x85\xC0\x74\x09\x81\x78\x48\x10\x27", "xxxxxxx????xxxxxxxxxxxxx", reinterpret_cast<uint64_t>(Alloc), 0x5A);
 				return true;
 			}
 
