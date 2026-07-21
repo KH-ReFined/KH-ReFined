@@ -73,6 +73,9 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | HUD Disable [[11]](#reference) |
 | - | :heavy_check_mark: | Time Stop [[12]](#reference) |
 | - | :heavy_check_mark: | Crown Engine (Sora's HUD Icon will now display a crown when a proof is obtained) |
+| - | :heavy_check_mark: | Magic that is obtained outside of room transitions are registered immediately. [Useful for Rando/AP] |
+| - | :heavy_check_mark: | Movement Upgrades obtained outside of level-ups are registered immediately. [Useful for Rando/AP] |
+| - | :heavy_check_mark: | Sora/Roxas can now die when their HP is set to 0 by an outside factor.  [Needed for AP Deathlink] |
 
 | Extra | Module/Pack | Description |
 |---------|-------------|-------------|
