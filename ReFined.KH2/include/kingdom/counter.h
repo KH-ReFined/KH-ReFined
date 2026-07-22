@@ -77,8 +77,6 @@ extern "C"
 					if (_comboDisplay != _comboCurrent)
 					{
 						auto _articleCount = *reinterpret_cast<int*>(counter + 0x1CB8);
-
-						bool _canDisplayZero = false;
 						
 						char _arrayStringNum[0x06];
 						char _arraySequenceNum[0x06];
