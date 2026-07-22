@@ -79,28 +79,28 @@ extern "C"
 						auto _articleCount = *reinterpret_cast<int*>(counter + 0x1CB8) - 1;
 
 						char _numSeqDictionary[0x0A] = { 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15 };
-						char _arraySequenceNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+						
+						char _arrayStringNum[0x06];
+						char _arraySequenceNum[0x06];
 
-						sprintf_s(_arraySequenceNum, 0x06, "%d", _comboCurrent);
+						memset(_arrayStringNum, 0x00, 0x06);
+						memset(_arraySequenceNum, 0x0C, 0x06);
 
-						vector<char> _arrayFinalSequence;
+						sprintf_s(_arrayStringNum, 0x06, "%d", _comboCurrent);
 
 						for (int i = 0; i < 6; i++)
 						{
-							if (!_arraySequenceNum[i])
-								_arrayFinalSequence.push_back(0x0C);
+							if (!_arrayStringNum[i])
+								break;
 
 							else
-							{
-								auto _fetchArr = _numSeqDictionary[_arraySequenceNum[i] - 0x30];
-								_arrayFinalSequence.insert(_arrayFinalSequence.begin(), _fetchArr);
-							}
+								_arraySequenceNum[i] = _numSeqDictionary[_arrayStringNum[i] - 0x30];
 						}
 
 						for (int i = _articleCount; i >= 0; i--)
 						{
-							*reinterpret_cast<uint32_t*>(counter + 0x04D4 + 0x01F8 * (i + 2)) = _arrayFinalSequence[i];
-							YI::SEQUENCE::SetNumberForce(counter + 0x0320 + 0x01F8 * (i + 2), _arrayFinalSequence[i]);
+							*reinterpret_cast<uint32_t*>(counter + 0x04D4 + 0x01F8 * (i + 2)) = _arraySequenceNum[i];
+							YI::SEQUENCE::SetNumberForce(counter + 0x0320 + 0x01F8 * (i + 2), _arraySequenceNum[i]);
 
 							*(counter + 0x04F0 + 0x01F8 * (i + 2)) = 0x00;
 
@@ -111,7 +111,7 @@ extern "C"
 						{
 							for (int i = _articleCount; i >= 1; i--)
 							{
-								if (_arrayFinalSequence[i] != 0x0C)
+								if (_arraySequenceNum[i] != 0x0C)
 									break;
 
 								if (*reinterpret_cast<int*>(counter + 0x1CBC) == 0x02)
@@ -133,29 +133,28 @@ extern "C"
 						auto _articleCount = *reinterpret_cast<int*>(counter + 0x1CB8) - 1;
 
 						char _subNumSeqDictionary[0x0A] = { 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21 };
-						char _arraySequenceSubNum[0x06] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-						sprintf_s(_arraySequenceSubNum, 0x06, "%d", _maxComboCurrent);
+						char _arrayStringSubNum[0x06];
+						char _arraySequenceSubNum[0x06];
 
-						vector<char> _arrayFinalSequence;
+						memset(_arrayStringSubNum, 0x00, 0x06);
+						memset(_arraySequenceSubNum, 0x18, 0x06);
+
+						sprintf_s(_arrayStringSubNum, 0x06, "%d", _maxComboCurrent);
 
 						for (int i = 0; i < 6; i++)
 						{
-
-							if (!_arraySequenceSubNum[i])
-								_arrayFinalSequence.push_back(0x18);
+							if (!_arrayStringSubNum[i])
+								break;
 
 							else
-							{
-								auto _fetchArr = _subNumSeqDictionary[_arraySequenceSubNum[i] - 0x30];
-								_arrayFinalSequence.insert(_arrayFinalSequence.begin(), _fetchArr);
-							}
+								_arraySequenceSubNum[i] = _subNumSeqDictionary[_arrayStringSubNum[i] - 0x30];
 						}
 
 						for (int i = _articleCount; i >= 0; i--)
 						{
-							*reinterpret_cast<uint32_t*>(counter + 0x04D4 + 0x01F8 * (i + 7)) = _arrayFinalSequence[i];
-							YI::SEQUENCE::SetNumberForce(counter + 0x0320 + 0x01F8 * (i + 7), _arrayFinalSequence[i]);
+							*reinterpret_cast<uint32_t*>(counter + 0x04D4 + 0x01F8 * (i + 7)) = _arraySequenceSubNum[i];
+							YI::SEQUENCE::SetNumberForce(counter + 0x0320 + 0x01F8 * (i + 7), _arraySequenceSubNum[i]);
 
 							*(counter + 0x04F0 + 0x01F8 * (i + 2)) = 0x00;
 						}
@@ -164,7 +163,7 @@ extern "C"
 						{
 							for (int i = _articleCount; i >= 1; i--)
 							{
-								if (_arrayFinalSequence[i] != 0x18)
+								if (_arraySequenceSubNum[i] != 0x18)
 									break;
 
 								*reinterpret_cast<uint32_t*>(counter + 0x04D4 + 0x01F8 * (i + 7)) = 0x22;
