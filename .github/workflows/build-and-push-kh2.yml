@@ -57,7 +57,7 @@ jobs:
     - name: Edit Build Number within KH2-MAIN/mod.yml
       run: |
         $fetchyaml = Get-Content "dest/mod.yml"
-        $fetchyaml[2] = "description: Kingdom Hearts - Re:Fined for Kingdom Hearts II | r$(Get-Date -Format 'ddMMyy')-FC"
+        $fetchyaml[2] = "description: Kingdom Hearts - Re:Fined for Kingdom Hearts II | r$(Get-Date -Format 'ddMMyy-HHmm')-FC"
         $fetchyaml | Set-Content "dest/mod.yml"
 
     - name: Push to KH2-MAIN

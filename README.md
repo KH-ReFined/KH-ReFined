@@ -70,6 +70,7 @@ The project also supports the Steam Deck and most all Linux distros. But setting
 | - | :heavy_check_mark: | English Translation of Sora's Album Notes |
 | - | :heavy_check_mark: | The ability to challenge Sephiroth again has been added [[10]](#reference) |
 | - | :heavy_check_mark: | Pirate & Disney Outfits |
+| - | :heavy_check_mark: | Next Form Level Indicator |
 | - | :heavy_check_mark: | HUD Disable [[11]](#reference) |
 | - | :heavy_check_mark: | Time Stop [[12]](#reference) |
 | - | :heavy_check_mark: | Crown Engine (Sora's HUD Icon will now display a crown when a proof is obtained) |
