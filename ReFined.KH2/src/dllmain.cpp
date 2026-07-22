@@ -118,6 +118,8 @@
 #include "weapon_mset.h"
 #include "world.h"
 
+#include "next_form.h"
+
 #include "continue_menu.h"
 #include "ini.h"
 
@@ -302,6 +304,9 @@ vector<uint16_t*> WEAPON_MEMORY;
 
 bool SYNC_SHORTCUTS;
 bool DEBOUNCE_SHORTCUT;
+
+dk::NEXT_FORM* NEXT_FORM;
+int PAST_FORM_EXP = UINT32_MAX;
 
 // Configuration Values.
 
@@ -2257,12 +2262,44 @@ void ENSURE_MOOGLE_SHOP()
     }
 }
 
-void nullsub_one() {};
- 
-bool INIT_GAUGE = false;
-bool GAUGE_READY = false;
+void HANDLE_FORM_EXP()
+{
+    auto _currentForm = *(AREA::SaveData + 0x3524);
+    auto _currentFormInfo = AREA::SaveData + 0x32F4 + (0x38 * (_currentForm - 1));
 
-char COMMAND_MASK[];
+    auto _maxLevelForm = 0x02 + YS::ITEM::GetNumBackyard(0x001A) + YS::ITEM::GetNumBackyard(0x001B) + YS::ITEM::GetNumBackyard(0x001D) + YS::ITEM::GetNumBackyard(0x001F) + YS::ITEM::GetNumBackyard(0x0233);
+
+    if (!NEXT_FORM)
+        NEXT_FORM = new dk::NEXT_FORM();
+
+    if (_currentForm && *AREA::IsInMap)
+    {
+        uint8_t _currLevel = *(_currentFormInfo + 0x02);
+
+        auto _currExp = *reinterpret_cast<uint32_t*>(_currentFormInfo + 0x04);
+        auto _targetExp = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::Search(_currentForm, _currLevel) + 0x04);
+
+        if (_maxLevelForm == _currLevel && PAST_FORM_EXP != 0x00 && PAST_FORM_EXP != UINT32_MAX)
+        {
+            NEXT_FORM->create(_currentForm, 0x00, NEGATIVE_ASPECT_OFFSET);
+            PAST_FORM_EXP = 0x00;
+
+            return;
+        }
+
+        if (PAST_FORM_EXP == UINT32_MAX)
+            PAST_FORM_EXP = _currExp;
+
+        else if (PAST_FORM_EXP != _currExp)
+        {
+            NEXT_FORM->create(_currentForm, _targetExp - _currExp, NEGATIVE_ASPECT_OFFSET);
+            PAST_FORM_EXP = _currExp;
+        }
+    }
+
+    else
+        PAST_FORM_EXP = UINT32_MAX;
+}
 
 extern "C"
 {
@@ -2288,6 +2325,7 @@ extern "C"
             {"FIX_SAVE_POINT", FIX_SAVE_POINT},
             {"HANDLE_NOHUD_TIMESTOP", HANDLE_NOHUD_TIMESTOP},
             {"ENSURE_MOOGLE_SHOP", ENSURE_MOOGLE_SHOP},
+            {"HANDLE_FORM_EXP", HANDLE_FORM_EXP},
             #endif
 
             #ifndef BUILD_ARCHIPELAGO_LITE

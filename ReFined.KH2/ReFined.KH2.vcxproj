@@ -124,6 +124,7 @@
     <ClInclude Include="include\kingdom\mission_count.h" />
     <ClInclude Include="include\kingdom\mission_gauge.h" />
     <ClInclude Include="include\kingdom\next_exp.h" />
+    <ClInclude Include="include\kingdom\next_form.h" />
     <ClInclude Include="include\kingdom\partyinfo.h" />
     <ClInclude Include="include\kingdom\pref.h" />
     <ClInclude Include="include\kingdom\progress.h" />

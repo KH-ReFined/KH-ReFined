@@ -357,17 +357,14 @@
     <ClInclude Include="include\kingdom\menusound.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
-    <ClInclude Include="include\kingdom\somemenu.h">
-      <Filter>Header Files\kingdom_internal</Filter>
-    </ClInclude>
     <ClInclude Include="include\kingdom\task_manager.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
     <ClInclude Include="include\kingdom\menucursor.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
-    <ClInclude Include="include\exmaple_hud.h">
-      <Filter>Header Files\refined_classes</Filter>
+    <ClInclude Include="include\kingdom\next_form.h">
+      <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
