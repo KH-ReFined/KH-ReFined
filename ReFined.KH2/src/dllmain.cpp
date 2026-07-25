@@ -2276,34 +2276,70 @@ void HANDLE_FORM_EXP()
     auto _currentForm = *(AREA::SaveData + 0x3524);
     auto _currentFormInfo = AREA::SaveData + 0x32F4 + (0x38 * (_currentForm - 1));
 
+    auto _currentSumm = *(AREA::SaveData + 0x3525);
+    auto _currentSummLevel = *(AREA::SaveData + 0x32F6);
+
     auto _maxLevelForm = 0x02 + YS::ITEM::GetNumBackyard(0x001A) + YS::ITEM::GetNumBackyard(0x001B) + YS::ITEM::GetNumBackyard(0x001D) + YS::ITEM::GetNumBackyard(0x001F) + YS::ITEM::GetNumBackyard(0x0233);
+    auto _maxLevelSumm = 0x02 + YS::ITEM::GetNumBackyard(0x0019) + YS::ITEM::GetNumBackyard(0x017F) + YS::ITEM::GetNumBackyard(0x009F) + YS::ITEM::GetNumBackyard(0x00A0);
+
+    if (_maxLevelSumm == 0x06)
+        _maxLevelSumm = 0x07;
 
     if (!NEXT_FORM)
         NEXT_FORM = new dk::NEXT_FORM();
 
-    if (_currentForm && *AREA::IsInMap)
+    if (*AREA::IsInMap)
     {
-        uint8_t _currLevel = *(_currentFormInfo + 0x02);
-
-        auto _currExp = *reinterpret_cast<uint32_t*>(_currentFormInfo + 0x04);
-        auto _targetExp = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::Search(_currentForm, _currLevel) + 0x04);
-
-        if (_maxLevelForm == _currLevel && PAST_FORM_EXP != 0x00 && PAST_FORM_EXP != UINT32_MAX)
+        if (_currentForm)
         {
-            NEXT_FORM->create(_currentForm, 0x00, NEGATIVE_ASPECT_OFFSET);
-            PAST_FORM_EXP = 0x00;
+            uint8_t _currLevel = *(_currentFormInfo + 0x02);
 
-            return;
+            auto _currExp = *reinterpret_cast<uint32_t*>(_currentFormInfo + 0x04);
+            auto _targetExp = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::Search(_currentForm, _currLevel) + 0x04);
+
+            if (PAST_FORM_EXP == UINT32_MAX)
+                PAST_FORM_EXP = _currExp;
+
+            else if (_maxLevelForm == _currLevel && PAST_FORM_EXP != 0x00)
+            {
+                NEXT_FORM->create(_currentForm, 0x00, NEGATIVE_ASPECT_OFFSET);
+                PAST_FORM_EXP = 0x00;
+
+                return;
+            }
+
+            else if (PAST_FORM_EXP != _currExp)
+            {
+                NEXT_FORM->create(_currentForm, _targetExp - _currExp, NEGATIVE_ASPECT_OFFSET);
+                PAST_FORM_EXP = _currExp;
+            }
         }
 
-        if (PAST_FORM_EXP == UINT32_MAX)
-            PAST_FORM_EXP = _currExp;
-
-        else if (PAST_FORM_EXP != _currExp)
+        else if (_currentSumm)
         {
-            NEXT_FORM->create(_currentForm, _targetExp - _currExp, NEGATIVE_ASPECT_OFFSET);
-            PAST_FORM_EXP = _currExp;
+            auto _currExp = *reinterpret_cast<uint32_t*>(AREA::SaveData + 0x36E4);
+            auto _targetExp = *reinterpret_cast<uint32_t*>(YS::FORM_LEVEL::GetSummonTable() + 0x04);
+
+            if (PAST_FORM_EXP == UINT32_MAX)
+                PAST_FORM_EXP = _currExp; 
+
+            else if (_maxLevelSumm == _currentSummLevel && PAST_FORM_EXP != 0x00)
+            {
+                NEXT_FORM->create(0x00, 0x00, NEGATIVE_ASPECT_OFFSET);
+                PAST_FORM_EXP = 0x00;
+
+                return;
+            }
+
+            else if (PAST_FORM_EXP != _currExp)
+            {
+                NEXT_FORM->create(0x00, _targetExp - _currExp, NEGATIVE_ASPECT_OFFSET);
+                PAST_FORM_EXP = _currExp;
+            }
         }
+
+        else
+            PAST_FORM_EXP = UINT32_MAX;
     }
 
     else

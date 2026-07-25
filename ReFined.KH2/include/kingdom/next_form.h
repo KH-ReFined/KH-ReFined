@@ -132,7 +132,7 @@ extern "C"
                         break;
                     }
 
-                    _numberSequence[i] = (_numberSequence[i] - 0x30) + (0x0B * m_formCurrent);
+                    _numberSequence[i] = (_numberSequence[i] - 0x30) + (m_formCurrent == -1 ? 0x21 : (0x0B * m_formCurrent));
                     YI::SEQUENCE::SetNumberForce(m_numberSeq + 0x1A0 * i, _numberSequence[i]);
 
                     *(m_numberOffset + i) = _numberOffsetX;
@@ -160,7 +160,7 @@ extern "C"
                     YI::IMAGE::InitLoadImage(m_image);
 
                     YI::SEQUENCE::Init(m_labelSeq, m_sqd, m_image);
-                    YI::SEQUENCE::SetNumberForce(m_labelSeq, 0x0A + 0x0B * m_formCurrent);
+                    YI::SEQUENCE::SetNumberForce(m_labelSeq, m_formCurrent == -1 ? 0x37 : 0x0A + 0x0B * m_formCurrent);
 
                     for (int i = 0x00; i < 0x08; i++)
                         YI::SEQUENCE::Init(m_numberSeq + 0x1A0 * i, m_sqd, m_image);
@@ -169,7 +169,7 @@ extern "C"
                 }
 
                 else
-                    YI::SEQUENCE::SetNumberForce(m_labelSeq, 0x0A + 0x0B * m_formCurrent);
+                    YI::SEQUENCE::SetNumberForce(m_labelSeq, m_formCurrent == -1 ? 0x37 : 0x0A + 0x0B * m_formCurrent);
             }
 
             void release()
