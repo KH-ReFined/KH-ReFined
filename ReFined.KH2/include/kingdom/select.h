@@ -27,6 +27,7 @@ extern "C"
 			static inline void (*SetSelectMax)(char* select, int max) = FindSignature<void(*)(char*, int)>("\x85\xD2\x79\x09\x0F\xB7\x41\x04\x66\x89\x41\x16\xC3\x66\x89\x51", "xxxxxxxxxxxxxxxx");
 			static inline void (*Loop)(char* select) = FindSignature<void(*)(char*)>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x57\x48\x83\xEC\x20\x48\x8B\xD9", "xxxxxxxxxxxxxxxxxx");
 			static inline bool (*isExist)(char* select) = FetchFunctionFromCall<bool (*)(char*)>("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xF9\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xBA\x01\x00\x00\x00\x48\x8B\xCF\xE8\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xB9\xF6\x2E\x00\x00", "xxxxxxxxxxxxxxxx????x????xxxxxxxxx????x????xxxxx", 0x56);
+			static inline void (*Leave)(char* select) = FindSignature<void (*)(char*)>("\x40\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8\x00\x00\x00\x00\x84\xC0\x74\x65\x48\x89\x6C\x24\x38", "xxxxxxxxxx????xxxxxxxxx");
 		
 			static void SetMoveKey(char* select, uint16_t up, uint16_t down, uint16_t left, uint16_t right)
 			{

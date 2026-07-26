@@ -67,6 +67,7 @@
     <ClInclude Include="include\kingdom\cmdata.h" />
     <ClInclude Include="include\kingdom\cmenuhelp.h" />
     <ClInclude Include="include\kingdom\cmtop.h" />
+    <ClInclude Include="include\kingdom\cmtutorial.h" />
     <ClInclude Include="include\kingdom\collision_data.h" />
     <ClInclude Include="include\kingdom\command_draw.h" />
     <ClInclude Include="include\kingdom\command_elem.h" />

@@ -26,6 +26,8 @@
 #include "magic.h"
 #include "item_table.h"
 #include "select.h"
+#include "menusound.h"
+#include "cmtutorial.h"
 
 extern "C"
 {
@@ -36,6 +38,10 @@ extern "C"
         public:
             static inline bool CAN_ALTER_KH1F = false;
 
+            static inline void(*SetupCustomList)() = FindSignature<void(*)()>("\x48\x89\x5C\x24\x20\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8\x00\x00\x00\x00\x33\xD2", "xxxxxxxxxxxxxxxxxxxxx????xx");
+            static inline bool(*SelCheck)(int) = FindSignature<bool(*)(int)>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x8B\xF9\xE8\x00\x00\x00\x00\x83\xF8\x19", "xxxxxxxxxxxxxxxxxx????xxx");
+            static inline void(*ShowErrorTakeOff)() = FindSignature<void(*)()>("\x48\x83\xEC\x28\xE8\x00\x00\x00\x00\x33\xD2\x88\x05\x00\x00\x00\x00\xB9\x6A\x84\x00\x00\xC6\x05", "xxxxx????xxxx????xxxxxxx");
+            
             static inline void(*CreateTopList)() = FetchFunctionFromCall<void(*)()>("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", 0x0204);
             static inline void(*ChageMpDrive)() = FindSignature<void(*)()>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\xE8\x00\x00\x00\x00\x83\xF8\x1A\x75\x0E\x48\x8B\x0D", "xxxxxxxxxxxxxxxxxxxxx????xxxxxxxx");
 
@@ -55,6 +61,7 @@ extern "C"
 
             static inline char* s_PlayerType = FetchRelativePointer<char*>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x48\x89\x74\x24\x20\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x90\x01\x00\x00\x48", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x0046);
             static inline char* s_FriendType = FetchRelativePointer<char*>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x48\x89\x74\x24\x20\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x90\x01\x00\x00\x48", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0x003C);
+            static inline char* s_ChgSelCharaNext = FetchRelativePointer<char*>("\x48\x83\xEC\x28\x48\x8B\x0D\x00\x00\x00\x00\x48\x85\xC9\x74\x15\xBA\x98\x00\x00\x00\xE8\x00\x00\x00\x00\x48\xC7\x05\x00\x00\x00\x00\x00\x00\x00\x00\xC6\x05", "xxxxxxx????xxxxxxxxxxx????xxx????xxxxxx", 0x27) + 0x01;
 
             static inline char* s_SelSeq = FetchRelativePointer<char*>("\x40\x53\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x68\xE8\x00\x00\x00\x00\x4C\x8B\xF8", "xxxxxxxxxxxxxxxxxx????xxx", 0x02FD);
 
@@ -1182,7 +1189,8 @@ extern "C"
                         auto _fetchItemId = *reinterpret_cast<uint16_t*>(_itemInfo + 0x06 * (_fetchSelectPos - 0x01));
                         auto _fetchItemEntry = YS::ITEM_TABLE::Get(_fetchItemId);
 
-                        _messageId = *reinterpret_cast<uint16_t*>(_fetchItemEntry + 0x0A);
+                        if (_fetchItemEntry)
+                            _messageId = *reinterpret_cast<uint16_t*>(_fetchItemEntry + 0x0A);
                     }
 
                     else
@@ -1275,6 +1283,320 @@ extern "C"
                 return YS::ITEM::GetNumBackyard(0x0233) && AREA::Current->World != 0x0A && AREA::Current->World != 0x0B && CAN_ALTER_KH1F;
             }
 
+            static void CtrlCustomList()
+            {
+                uint16_t IndiCustomSelSeq[] = { 0x00CA, 0x00C1, 0x00B8, 0x00A6, 0x009D };
+                uint16_t IndiCustomTitleSeq[] = { 0x00CE, 0x00C5, 0x00BC, 0x00AA, 0x00A1, 0x0000 };
+                uint16_t IndiCustomBaseSeq[] = { 0x00C6, 0x00C8, 0x00C7, 0x00BD, 0x00BF, 0x00BE, 0x00B4, 0x00B6, 0x00B5, 0x00A2, 0x00A4, 0x00A3, 0x0099, 0x009B, 0x009A, 0x0000 };
+
+                auto _fetchSelect = Tz::Select::select(*Tz::CmTop::m_MenuPtr);
+                auto _fetchSMode = Tz::MenuBase::GetSMode();
+
+                if (_fetchSMode == 0x02)
+                {
+                    auto _fetchNextMode = Tz::MenuBase::GetNextMode();
+                    auto _fetchIsExist = false;
+
+                    if (_fetchNextMode >= 25 && _fetchNextMode <= 27)
+                        _fetchIsExist = Tz::SelHist::isExist(1);
+
+                    if (_fetchNextMode != 26 && _fetchNextMode != 27)
+                        _fetchIsExist = (_fetchIsExist || Tz::CmTop::isExistPadHelp()) ? true : false;
+
+                    if (Tz::CmTop::isExistListAll()
+                        || *Tz::CmTop::m_SclBar && dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar))
+                        || _fetchIsExist
+                        || Tz::CmTop::isExistNew())
+                    {
+                        if (_fetchSelect != UINT32_MAX || Tz::Select::isCursorMove(*Tz::CmTop::m_MenuPtr))
+                        {
+                            Tz::MenuBase::SavePad(nullptr);
+                            Tz::CmTop::LeaveListAll();
+
+                            if (Tz::Select::isExist(*Tz::CmTop::m_MenuPtr))
+                                Tz::Select::Leave(*Tz::CmTop::m_MenuPtr);
+
+                            if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                                Tz::ScrollBar::Leave(*Tz::CmTop::m_SclBar);
+
+                            if (_fetchNextMode != 26 && _fetchNextMode != 27)
+                                Tz::CmTop::LeavePadHelp();
+                        }
+                    }
+
+                    else
+                    {
+                        Tz::MenuBase::NextMode2Mode();
+                        *reinterpret_cast<uint32_t*>(Tz::CmTop::m_MenuPtr + 0x40) = 115;
+
+                        if (_fetchNextMode == 25)
+                        {
+                            Tz::SelHist::Leave(1);
+                            SetupTop();
+                        }
+
+                        else if (_fetchNextMode == 26 || _fetchNextMode == 27)
+                        {
+                            Tz::CmTop::SaveCurPos(25, *s_ChgSelCharaNext, 0);
+
+                            if (*s_ChgSelCharaNext == 1 && CheckKH1Form())
+                                Tz::SelHist::SetMsg(1, YS::MESSAGE::GetData(0x4E80));
+
+                            else
+                                Tz::SelHist::SetMsg(1, Tz::PartyInfo::GetName(*m_PartyInfo, (*s_ChgSelCharaNext > 0x01 && CheckKH1Form()) ? *s_ChgSelCharaNext - 1 : *s_ChgSelCharaNext));
+
+                            *s_ChgSelCharaNext = UINT32_MAX;
+
+                            auto _fetchCurrPos = Tz::CmTop::GetCurPos(25);
+                            GetListInfo(_fetchCurrPos);
+                            MakeListInfo2ItemMess();
+                            SetupCustomList();
+                        }
+
+                        else
+                            SetupCustom();
+                    }
+
+                    return;
+                }
+            
+                if (_fetchSelect != UINT32_MAX || Tz::Select::isCursorMove(*Tz::CmTop::m_MenuPtr))
+                {
+                    auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                    auto _fetchMode = Tz::MenuBase::GetMode();
+
+                    auto _fetchListEquity = 228;
+
+                    if (_fetchMode != 26 && _fetchMode != 27)
+                    {
+                        auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                        _fetchListEquity = IndiCustomBaseSeq[0x03 * Tz::CmCustom::CurPos2CustomType(_fetchSelectPos)];
+                    }
+
+                    if (!_fetchListBuffer || !dk::Obj2D::isExist(_fetchListBuffer) || *reinterpret_cast<uint32_t*>(_fetchListBuffer + 0x1D4) != _fetchListEquity)
+                    {
+                        if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                            Tz::ScrollBar::Loop(*Tz::CmTop::m_SclBar);
+
+                        Tz::SelHist::Loop(UINT32_MAX);
+                        Tz::CmTop::LoopPadHelp();
+                    }
+                }
+
+                if (!_fetchSMode)
+                {
+                    auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                    auto _fetchMode = Tz::MenuBase::GetMode();
+
+                    auto _fetchListEquity = 228;
+
+                    if (_fetchMode != 26 && _fetchMode != 27)
+                    {
+                        auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                        _fetchListEquity = IndiCustomBaseSeq[0x03 * Tz::CmCustom::CurPos2CustomType(_fetchSelectPos)];
+                    }
+
+                    if (*reinterpret_cast<uint32_t*>(_fetchListBuffer + 0x1D4) != _fetchListEquity)
+                    {
+                        UpdateHelpMess();
+                        Tz::MenuBase::IncSMode(1);
+                    }
+                }
+
+                auto _fetchSelectMax = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16);
+                auto _fetchCursorMove = Tz::Select::isCursorMove(*Tz::CmTop::m_MenuPtr);
+                auto _fetchPadSE = Tz::MenuBase::PadSE(_fetchSelect, _fetchCursorMove, true, SelCheck, true);
+
+                if (!Tz::MenuSound::isBeep(_fetchPadSE) && _fetchSelect != UINT32_MAX)
+                {
+                    uint16_t _listSubMsg[] = { 0x847D, 0x8481, 0x8482, 0x8483, 0x8484, 0x0000 };
+                    uint16_t _listShortcutSubMsg[] = { 0x847D, 0x847E, 0x847F, 0x8480 };
+
+                    switch (_fetchSelect)
+                    {
+                        case -6:
+                        {
+                            auto _fetchSelectPos = Tz::Select::GetSelectPos(*Tz::CmTop::m_MenuPtr);
+                            auto _fetchCustomType = Tz::CmCustom::CurPos2CustomType(_fetchSelectPos);
+
+                            switch (_fetchCustomType)
+                            {
+                            case 1:
+                                ChageMpDrive();
+                                break;
+                            case 2:
+                                ChangeAutoReplenishment();
+                                break;
+                            case 3:
+                                ChangePartyBehavior(UINT32_MAX);
+                                break;
+                            case 4:
+                                ChageAbility(UINT32_MAX);
+                                break;
+                            }
+
+                            if (isTakeOff())
+                            {
+                                ShowErrorTakeOff();
+                                Tz::MenuBase::SetSMode(0);
+                                Tz::MenuBase::SetMode(28, 0);
+                            }
+
+                            MakeListInfo2ItemMess();
+                            UpdateHelpMess();
+                        } break;
+                        case -2:
+                        {
+                            Tz::CMenuHelp::FadeOut();
+                            Tz::CmTop::FadeOutPadHelp();
+                            Tz::SelHist::FadeOut(1);
+
+                            auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                            auto _fetchMode = Tz::MenuBase::GetMode();
+
+                            auto _fetchFadeSeq = 229;
+
+                            if (_fetchMode >= 26 && _fetchMode <= 33)
+                            {
+                                if (_fetchMode != 26 && _fetchMode != 27)
+                                {
+                                    auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                                    _fetchFadeSeq = IndiCustomBaseSeq[0x03 * Tz::CmCustom::CurPos2CustomType(_fetchSelectPos)];
+                                }
+
+                                Tz::MenuUtil::SprtFadeOut(_fetchListBuffer, _fetchFadeSeq);
+
+                                if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                                    Tz::ScrollBar::FadeOut(*Tz::CmTop::m_SclBar);
+                            }
+
+                            Tz::MenuBase::IncSMode(1);
+                            Tz::MenuBase::SetNextMode(25);
+
+                            auto _fetchCurrent = *reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr);
+                            auto _fetchSelectTop = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x12);
+
+                            Tz::CmTop::SaveCurPos(26, _fetchCurrent, _fetchSelectTop);
+                        } break;
+                        case -4:
+                        {
+                            Tz::MenuBase::SetExit();
+
+                            auto _fetchCurrent = *reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr);
+                            auto _fetchSelectTop = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x12);
+
+                            Tz::CmTop::SaveCurPos(26, _fetchCurrent, _fetchSelectTop);
+                        } break;
+                        case -7:
+                        {
+                            auto _fetchSelectPos = Tz::Select::GetSelectPos(*Tz::CmTop::m_MenuPtr);
+                            auto _fetchCustomType = Tz::CmCustom::CurPos2CustomType(_fetchSelectPos);
+                            auto _fetchMode = Tz::MenuBase::GetMode();
+
+                            Tz::MenuBase::SetMode(37, 0);
+
+                            if (_fetchCustomType == 2)
+                                Tz::CmTutorial::Setup(0, _fetchMode);
+
+                            else if (_fetchCustomType == 1)
+                                Tz::CmTutorial::Setup(1, _fetchMode);
+                        } break;
+                        case -10:
+                        case -11:
+                        {
+                            auto _fetchCurPos = Tz::CmTop::GetCurPos(25);
+                            auto _fetchPartyMax = *reinterpret_cast<uint8_t*>(*m_PartyInfo) + CheckKH1Form();
+
+                            if (_fetchSelect + 10)
+                            {
+                                auto _calculateParty = _fetchCurPos - 1;
+                                *s_ChgSelCharaNext = _calculateParty < 0 ? _fetchPartyMax - 1 : _calculateParty;
+                            }
+
+                            else
+                            {
+                                auto _calculateParty = _fetchCurPos + 1;
+                                *s_ChgSelCharaNext = _calculateParty >= _fetchPartyMax ? 0 : _calculateParty;
+                            }
+
+                            Tz::CMenuHelp::FadeOut();
+                            Tz::CmTop::FadeOutPadHelp();
+                            Tz::SelHist::FadeOut(1);
+
+                            auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                            auto _fetchMode = Tz::MenuBase::GetMode();
+
+                            auto _fetchFadeSeq = 229;
+
+                            if (_fetchMode >= 26 && _fetchMode <= 33)
+                            {
+                                if (_fetchMode != 26 && _fetchMode != 27)
+                                {
+                                    auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                                    _fetchFadeSeq = IndiCustomBaseSeq[0x03 * Tz::CmCustom::CurPos2CustomType(_fetchSelectPos)];
+                                }
+
+                                Tz::MenuUtil::SprtFadeOut(_fetchListBuffer, _fetchFadeSeq);
+
+                                if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                                    Tz::ScrollBar::FadeOut(*Tz::CmTop::m_SclBar);
+                            }
+
+                            Tz::MenuBase::IncSMode(1);
+                            Tz::MenuBase::SetNextMode(*s_ChgSelCharaNext ? 27 : 26);
+
+                            Tz::CmTop::SaveCurPos(26, 0, 0);
+                        }break;
+                        default:
+                        {
+                            auto _fetchCustomType = Tz::CmCustom::CurPos2CustomType(_fetchSelect);
+
+                            if (_fetchCustomType)
+                                Tz::SelHist::SetMsgId(2, _listSubMsg[_fetchCustomType]);
+                            else
+                                Tz::SelHist::SetMsgId(2, _listShortcutSubMsg[_fetchSelect]);
+
+                            Tz::CmTop::FadeOutPadHelp();
+                            Tz::CMenuHelp::FadeOut();
+
+                            auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                            auto _fetchMode = Tz::MenuBase::GetMode();
+
+                            auto _fetchFadeSeq = 229;
+
+                            if (_fetchMode >= 26 && _fetchMode <= 33)
+                            {
+                                if (_fetchMode != 26 && _fetchMode != 27)
+                                {
+                                    auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                                    _fetchFadeSeq = IndiCustomBaseSeq[0x03 * Tz::CmCustom::CurPos2CustomType(_fetchSelectPos)];
+                                }
+
+                                Tz::MenuUtil::SprtFadeOut(_fetchListBuffer, _fetchFadeSeq);
+
+                                if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                                    Tz::ScrollBar::FadeOut(*Tz::CmTop::m_SclBar);
+                            }
+
+                            Tz::MenuBase::IncSMode(1);
+                            Tz::MenuBase::SetNextMode(29 + _fetchCustomType);
+
+                            auto _fetchCurPos = Tz::CmTop::GetCurPos(25);
+
+                            if (*reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr) != _fetchCurPos)
+                                Tz::CmTop::SaveCurPos(26, 0, 0);
+
+                            auto _fetchCurrent = *reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr);
+                            auto _fetchSelectTop = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x12);
+
+                            Tz::CmTop::SaveCurPos(26, _fetchCurrent, _fetchSelectTop);
+                        } break;
+                    }
+                }
+
+                    Tz::MenuBase::ResetPad();
+            }
+
         private:
             static bool _init()
             {
@@ -1292,6 +1614,7 @@ extern "C"
                 RedirectFunction("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x80\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x70\xE8\x00\x00\x00\x00\x48\x63\xD8\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x8B\xF0\x83\xFB\x19\x75\x0E", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxx????xxxx????xxxxxxxxxxxxx", reinterpret_cast<uint64_t>(MakeListInfo2ItemMess), 0x3EA);
                 RedirectFunction("\x40\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xEC\x50\xE8", "xxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(SetupTop), 0x235);
                 RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x48\x89\x74\x24\x20\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x90\x01\x00\x00\x48", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", reinterpret_cast<uint64_t>(GetListInfo), 0x65C);
+                RedirectFunction("\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x30\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x48\x63\xF8", "xxxxxxxxxxxxxxxxxx????x????xxx", reinterpret_cast<uint64_t>(CtrlCustomList), 0x595);
 
                 return true;
             }
