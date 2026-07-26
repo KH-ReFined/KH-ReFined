@@ -162,6 +162,7 @@ Thank you for your consideration, all support is appreciated!
 - **Napstio** for implementing FrenchVO and GermanVO.
 - **Jaster** for adding in Sora's Scribbles back.
 - **cam ✰ your local ram!** for Autosave Sound
+- **Zack (The Puppy) Fair** and **Mr. Puzzles** for the Shibuya Command Menu.
 - **ATKOtter** for Morgan the Moogle (Autosave Asset)
 
 ## Third Party Libraries
