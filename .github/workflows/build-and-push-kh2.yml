@@ -66,6 +66,18 @@ jobs:
         $fetchreadme[10] = "![KHII](https://img.shields.io/badge/Kingdom_Hearts_II-r$(Get-Date -Format 'ddMMyy--HHmm')--FC-dark_lime)"
         $fetchreadme | Set-Content "src/ReadME.md"
 
+    - name: Push ReadME to KH-ReFined
+      run: |
+        cd src
+                
+        git config user.name "Kingdom Hearts - Re:Fined"
+        git config user.email "github@kh-refined.dev"
+        git remote set-url origin https://KH-ReFined:${{secrets.KH2_PUSHKEY}}@github.com/KH-ReFined/KH-ReFined.git
+
+        git add .
+        git commit -m "Synchronize from KH-ReFined [BOT] - Push Date: $(Get-Date -Format 'dd/MM/yy')"
+        git push origin mother
+
     - name: Push to KH2-MAIN
       run: |
         cd dest
