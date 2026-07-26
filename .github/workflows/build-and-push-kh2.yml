@@ -60,6 +60,12 @@ jobs:
         $fetchyaml[2] = "description: Kingdom Hearts - Re:Fined for Kingdom Hearts II | r$(Get-Date -Format 'ddMMyy-HHmm')-FC"
         $fetchyaml | Set-Content "dest/mod.yml"
 
+    - name: Edit Build Number within KH-ReFined/ReadME.md
+      run: |
+        $fetchreadme = Get-Content "src/ReadME.md"
+        $fetchreadme[10] = "![KHII](https://img.shields.io/badge/Kingdom_Hearts_II-r$(Get-Date -Format 'ddMMyy--HHmm')--FC-dark_lime)"
+        $fetchreadme | Set-Content "src/ReadME.md"
+
     - name: Push to KH2-MAIN
       run: |
         cd dest
