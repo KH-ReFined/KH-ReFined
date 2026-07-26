@@ -63,6 +63,7 @@ int* m_pri;
 char* s_SelSeq;
 char* s_PlayerType;
 char* s_FriendType;
+char* s_ChgSelCharaNext;
 short* s_ButtonIcon;
 
 char** m_ListInfo;
@@ -79,11 +80,14 @@ int* LS_57_s_MessTbl;
 char* LS_KH1F_Shortcuts;
 
 char* DrawItemAILv;
+bool(*SelCheck)(int);
 
 void(*ChageMpDrive)();
 void(*CreateTopList)();
 void(*UpdateIndiCustomList)();
 void(*SetIndiCustomDefaultPos)();
+void(*SetupCustomList)();
+void(*ShowErrorTakeOff)();
 
 char* (*GetFriendInfo)(int type, int num);
 
@@ -137,6 +141,12 @@ namespace dk
         public:
         static inline void (*setNum)(char* Sprite, int num);
     };
+
+    class Obj2D
+    {
+        public:
+        static inline bool (*isExist)(char* obj);
+    };
 }
 
 namespace kn
@@ -162,15 +172,22 @@ namespace Tz
     class CmTop
     {
         public:
+        static inline void   (*FadeOutPadHelp)();
         static inline char** (*GetListBuffer)();
-        
+        static inline void   (*LoopPadHelp)();
         static inline int    (*GetCurPos)(int num);
         static inline char*  (*GetScrBarSeqTbl)();
         static inline int    (*GetSelectPos)(int num);
         static inline int    (*GetFontColorSeqNum)(int num);
         static inline char*  (*GetTopPlateSeqTbl)(int num);
+        static inline bool   (*isExistPadHelp)();
+        static inline bool   (*isExistListAll)();
+        static inline bool   (*isExistNew)();
+        static inline void   (*LeaveListAll)();
         static inline int    (*GetItemFontColor)(int id, int cnt, bool special);
-        
+        static inline void   (*LeavePadHelp)();
+        static inline void   (*SaveCurPos)(int mode, short pos, short top);
+
         static inline int*   m_SeqUnit;
         static inline int*   m_ImgUnit;
         static inline int*   m_DummySeq;
@@ -179,6 +196,12 @@ namespace Tz
         static inline char** m_SclBar;
         static inline char** m_MenuPtr;
         static inline char** m_ItemInfo;
+    };
+
+    class CmTutorial
+    {
+        public:
+        static inline void (*Setup)(int type, int mode);
     };
 
     class CmComm
@@ -191,6 +214,7 @@ namespace Tz
     class CMenuHelp
     {
         public:
+        static inline void (*FadeOut)();
         static inline void (*Create)(char* message, bool param_xy);
     };
 
@@ -208,7 +232,20 @@ namespace Tz
     {
         public:
         static inline int  (*GetMode)();
+        static inline int  (*GetSMode)();
+        static inline int  (*GetNextMode)();
+        static inline void (*SetMode)(int mode, int smode);
+        static inline void (*SaveMode)();
+        static inline void (*ResetPad)();
+        static inline bool (*IsExit)();
+        static inline bool (*isSavePad)();
+        static inline void (*SetExit)();
+        static inline void (*SavePad)(char* ptr);
         static inline void (*SetSMode)(int mode);
+        static inline void (*NextMode2Mode)();
+        static inline void (*SetNextMode)(int mode);
+        static inline void (*IncSMode)(int amount);
+        static inline int  (*PadSE)(int pad, bool move, bool camp, bool(*callback)(int), bool play);
     };
 
     class MenuUtil
@@ -217,6 +254,13 @@ namespace Tz
         static inline void  (*SetSprtParent)(char* target, char* parent);
         static inline char* (*CreateSprt)(char* spriteMessage, int priority, uint32_t s_unit, uint32_t i_unit, char* layout, int fin, uint32_t loop, int group, int offset16x9);
         static inline char* (*CreateMess)(char* spriteMessage, int priority, uint32_t s_unit, uint32_t i_unit, char* layout, int fin, uint32_t loop, int messageNo, int group, int offset16x9);
+        static inline void  (*SprtFadeOut)(char* target, int fout);
+    };
+
+    class MenuSound
+    {
+        public:
+        static inline bool (*isBeep)(int soundId);
     };
 
     class PartyInfo
@@ -232,11 +276,15 @@ namespace Tz
         static inline void (*Create)(char* scrollBar, int pri, char* sqd, char* img, char* seq, int max, int dips, char* parent);
         static inline void (*SetPos)(char* scrollBar, int pos);
         static inline void (*SetMax)(char* scrollBar, int max);
+        static inline void (*Loop)(char* scrollBar);
+        static inline void (*FadeOut)(char* scrollBar);
+        static inline void (*Leave)(char* scrollBar);
     };
 
     class Select
     {
         public:
+        static inline int   (*select)(char* select);
         static inline int   (*GetSelectPos)(char* select);
         static inline void  (*SetPageMode)(char* select, int mode);
         static inline void  (*SetSelectMax)(char* select, int max);
@@ -245,12 +293,37 @@ namespace Tz
         static inline void  (*SetExOffset)(char* select, int pos, int x, int y);
         static inline void  (*SetCurrent)(char* select, int pos, bool isSet, int num, int next);
         static inline void  (*SetItem)(char* select, int pos, uint32_t s_unit, uint32_t i_unit, char* layout, int message, uint16_t* seq_n, char* seq_a);
+        static inline bool  (*isExist)(char* select);
+        static inline void  (*Leave)(char* select);
+
+        static bool isCursorMove(char* select)
+        {
+            short _fetchPrevious = -1;
+            auto _fetchCurrent = *reinterpret_cast<short*>(select + 0x02);
+
+            if (_fetchCurrent < 0x00)
+                return false;
+
+            if (*reinterpret_cast<short*>(select + 0x16) < 0x00)
+                _fetchPrevious = (*reinterpret_cast<short*>(select) + *reinterpret_cast<short*>(select + 0x12)) % *reinterpret_cast<short*>(select + 0x16);
+
+            else
+                _fetchPrevious = *reinterpret_cast<short*>(select) + *reinterpret_cast<short*>(select + 0x12);
+
+            return _fetchPrevious != _fetchCurrent;
+        }
     };
 
     class SelHist
     {
         public:
         static inline void (*Create)(int num, int msg);
+        static inline bool (*isExist)(int num);
+        static inline void (*Leave)(int num);
+        static inline void (*SetMsg)(int num, char* msg);
+        static inline void (*SetMsgId)(int num, int id);
+        static inline void (*Loop)(int num);
+        static inline void (*FadeOut)(int num);
     };
 }
 
@@ -1089,9 +1162,17 @@ extern "C"
 
         *LS_45_type = CurPos2CurrType(_fetchCurPos);
 
-        if ((_isKH1Form || _isShortcutSet) && *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16) != 0x04)
+        if (((_isKH1Form || _isShortcutSet) && *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16) != 0x04))
         {
             Tz::Select::SetSelectMax(*Tz::CmTop::m_MenuPtr, 0x04);
+
+            Tz::ScrollBar::SetMax(*Tz::CmTop::m_SclBar, 0x01);
+            Tz::ScrollBar::SetPos(*Tz::CmTop::m_SclBar, 0x01);
+        }
+
+        else if (*reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16) == 0x00)
+        {
+            Tz::Select::SetSelectMax(*Tz::CmTop::m_MenuPtr, 0x00);
 
             Tz::ScrollBar::SetMax(*Tz::CmTop::m_SclBar, 0x01);
             Tz::ScrollBar::SetPos(*Tz::CmTop::m_SclBar, 0x01);
@@ -1595,6 +1676,335 @@ extern "C"
         return false;
     }
 
+    static void CtrlCustomList()
+    {
+        uint16_t IndiCustomSelSeq[] = { 0x00CA, 0x00C1, 0x00B8, 0x00A6, 0x009D };
+        uint16_t IndiCustomTitleSeq[] = { 0x00CE, 0x00C5, 0x00BC, 0x00AA, 0x00A1, 0x0000 };
+        uint16_t IndiCustomBaseSeq[] = { 0x00C6, 0x00C8, 0x00C7, 0x00BD, 0x00BF, 0x00BE, 0x00B4, 0x00B6, 0x00B5, 0x00A2, 0x00A4, 0x00A3, 0x0099, 0x009B, 0x009A, 0x0000 };
+
+        auto _fetchSelect = Tz::Select::select(*Tz::CmTop::m_MenuPtr);
+        auto _fetchSMode = Tz::MenuBase::GetSMode();
+
+        if (_fetchSMode == 0x02)
+        {
+            auto _fetchNextMode = Tz::MenuBase::GetNextMode();
+            auto _fetchIsExist = false;
+
+            if (_fetchNextMode >= 25 && _fetchNextMode <= 27)
+                _fetchIsExist = Tz::SelHist::isExist(1);
+
+            if (_fetchNextMode != 26 && _fetchNextMode != 27)
+                _fetchIsExist = (_fetchIsExist || Tz::CmTop::isExistPadHelp()) ? true : false;
+
+            if (Tz::CmTop::isExistListAll()
+                || *Tz::CmTop::m_SclBar && dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar))
+                || _fetchIsExist
+                || Tz::CmTop::isExistNew())
+            {
+                if (_fetchSelect != UINT32_MAX || Tz::Select::isCursorMove(*Tz::CmTop::m_MenuPtr))
+                {
+                    Tz::MenuBase::SavePad(nullptr);
+                    Tz::CmTop::LeaveListAll();
+
+                    if (Tz::Select::isExist(*Tz::CmTop::m_MenuPtr))
+                        Tz::Select::Leave(*Tz::CmTop::m_MenuPtr);
+
+                    if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                        Tz::ScrollBar::Leave(*Tz::CmTop::m_SclBar);
+
+                    if (_fetchNextMode != 26 && _fetchNextMode != 27)
+                        Tz::CmTop::LeavePadHelp();
+                }
+            }
+
+            else
+            {
+                Tz::MenuBase::NextMode2Mode();
+                *reinterpret_cast<uint32_t*>(Tz::CmTop::m_MenuPtr + 0x40) = 115;
+
+                if (_fetchNextMode == 25)
+                {
+                    Tz::SelHist::Leave(1);
+                    SetupTop();
+                }
+
+                else if (_fetchNextMode == 26 || _fetchNextMode == 27)
+                {
+                    Tz::CmTop::SaveCurPos(25, *s_ChgSelCharaNext, 0);
+
+                    if (*s_ChgSelCharaNext == 4 && CheckKH1Form())
+                        Tz::SelHist::SetMsg(1, YS::MESSAGE::GetData(0x4E80));
+
+                    else
+                    {
+                        if (*s_ChgSelCharaNext == 0)
+                            Tz::SelHist::SetMsg(1, Tz::PartyInfo::GetName(*m_PartyInfo, 0x00));
+
+                        else
+                        {
+                            auto _fetchPartyCalc = *s_ChgSelCharaNext - 0x03 - CheckKH1Form();
+
+                            if (_fetchPartyCalc > 0x00)
+                                Tz::SelHist::SetMsg(1, Tz::PartyInfo::GetName(*m_PartyInfo, _fetchPartyCalc));
+
+                            else
+                                Tz::SelHist::SetMsg(1, YS::MESSAGE::GetData(0x575D + (*s_ChgSelCharaNext - 1)));
+                        }
+                    }
+
+                    *s_ChgSelCharaNext = UINT32_MAX;
+
+                    auto _fetchCurrPos = Tz::CmTop::GetCurPos(25);
+                    GetListInfo(_fetchCurrPos);
+                    MakeListInfo2ItemMess();
+                    SetupCustomList();
+                }
+
+                else
+                    SetupCustom();
+            }
+
+            return;
+        }
+
+        if (_fetchSelect != UINT32_MAX || Tz::Select::isCursorMove(*Tz::CmTop::m_MenuPtr))
+        {
+            auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+            auto _fetchMode = Tz::MenuBase::GetMode();
+
+            auto _fetchListEquity = 228;
+
+            if (_fetchMode != 26 && _fetchMode != 27)
+            {
+                auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                _fetchListEquity = IndiCustomBaseSeq[0x03 * CurPos2CustomType(_fetchSelectPos)];
+            }
+
+            if (!_fetchListBuffer || !dk::Obj2D::isExist(_fetchListBuffer) || *reinterpret_cast<uint32_t*>(_fetchListBuffer + 0x1D4) != _fetchListEquity)
+            {
+                if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                    Tz::ScrollBar::Loop(*Tz::CmTop::m_SclBar);
+
+                Tz::SelHist::Loop(UINT32_MAX);
+                Tz::CmTop::LoopPadHelp();
+            }
+        }
+
+        if (!_fetchSMode)
+        {
+            auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+            auto _fetchMode = Tz::MenuBase::GetMode();
+
+            auto _fetchListEquity = 228;
+
+            if (_fetchMode != 26 && _fetchMode != 27)
+            {
+                auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                _fetchListEquity = IndiCustomBaseSeq[0x03 * CurPos2CustomType(_fetchSelectPos)];
+            }
+
+            if (*reinterpret_cast<uint32_t*>(_fetchListBuffer + 0x1D4) != _fetchListEquity)
+            {
+                UpdateHelpMess();
+                Tz::MenuBase::IncSMode(1);
+            }
+        }
+
+        auto _fetchSelectMax = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x16);
+        auto _fetchCursorMove = Tz::Select::isCursorMove(*Tz::CmTop::m_MenuPtr);
+        auto _fetchPadSE = Tz::MenuBase::PadSE(_fetchSelect, _fetchCursorMove, true, SelCheck, true);
+
+        if (!Tz::MenuSound::isBeep(_fetchPadSE) && _fetchSelect != UINT32_MAX)
+        {
+            uint16_t _listSubMsg[] = { 0x847D, 0x8481, 0x8482, 0x8483, 0x8484, 0x0000 };
+            uint16_t _listShortcutSubMsg[] = { 0x847D, 0x847E, 0x847F, 0x8480 };
+
+            switch (_fetchSelect)
+            {
+            case -6:
+            {
+                auto _fetchSelectPos = Tz::Select::GetSelectPos(*Tz::CmTop::m_MenuPtr);
+                auto _fetchCustomType = CurPos2CustomType(_fetchSelectPos);
+
+                switch (_fetchCustomType)
+                {
+                case 1:
+                    ChageMpDrive();
+                    break;
+                case 2:
+                    ChangeAutoReplenishment();
+                    break;
+                case 3:
+                    ChangePartyBehavior(UINT32_MAX);
+                    break;
+                case 4:
+                    ChageAbility(UINT32_MAX);
+                    break;
+                }
+
+                if (isTakeOff())
+                {
+                    ShowErrorTakeOff();
+                    Tz::MenuBase::SetSMode(0);
+                    Tz::MenuBase::SetMode(28, 0);
+                }
+
+                MakeListInfo2ItemMess();
+                UpdateHelpMess();
+            } break;
+            case -2:
+            {
+                Tz::CMenuHelp::FadeOut();
+                Tz::CmTop::FadeOutPadHelp();
+                Tz::SelHist::FadeOut(1);
+
+                auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                auto _fetchMode = Tz::MenuBase::GetMode();
+
+                auto _fetchFadeSeq = 229;
+
+                if (_fetchMode >= 26 && _fetchMode <= 33)
+                {
+                    if (_fetchMode != 26 && _fetchMode != 27)
+                    {
+                        auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                        _fetchFadeSeq = IndiCustomBaseSeq[0x03 * CurPos2CustomType(_fetchSelectPos)];
+                    }
+
+                    Tz::MenuUtil::SprtFadeOut(_fetchListBuffer, _fetchFadeSeq);
+
+                    if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                        Tz::ScrollBar::FadeOut(*Tz::CmTop::m_SclBar);
+                }
+
+                Tz::MenuBase::IncSMode(1);
+                Tz::MenuBase::SetNextMode(25);
+
+                auto _fetchCurrent = *reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr);
+                auto _fetchSelectTop = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x12);
+
+                Tz::CmTop::SaveCurPos(26, _fetchCurrent, _fetchSelectTop);
+            } break;
+            case -4:
+            {
+                Tz::MenuBase::SetExit();
+
+                auto _fetchCurrent = *reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr);
+                auto _fetchSelectTop = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x12);
+
+                Tz::CmTop::SaveCurPos(26, _fetchCurrent, _fetchSelectTop);
+            } break;
+            case -7:
+            {
+                auto _fetchSelectPos = Tz::Select::GetSelectPos(*Tz::CmTop::m_MenuPtr);
+                auto _fetchCustomType = CurPos2CustomType(_fetchSelectPos);
+                auto _fetchMode = Tz::MenuBase::GetMode();
+
+                Tz::MenuBase::SetMode(37, 0);
+
+                if (_fetchCustomType == 2)
+                    Tz::CmTutorial::Setup(0, _fetchMode);
+
+                else if (_fetchCustomType == 1)
+                    Tz::CmTutorial::Setup(1, _fetchMode);
+            } break;
+            case -10:
+            case -11:
+            {
+                auto _fetchCurPos = Tz::CmTop::GetCurPos(25);
+                auto _fetchPartyMax = *reinterpret_cast<uint8_t*>(*m_PartyInfo) + 0x03 + CheckKH1Form();
+
+                if (_fetchSelect + 10)
+                {
+                    auto _calculateParty = _fetchCurPos - 1;
+                    *s_ChgSelCharaNext = _calculateParty < 0 ? _fetchPartyMax - 1 : _calculateParty;
+                }
+
+                else
+                {
+                    auto _calculateParty = _fetchCurPos + 1;
+                    *s_ChgSelCharaNext = _calculateParty >= _fetchPartyMax ? 0 : _calculateParty;
+                }
+
+                Tz::CMenuHelp::FadeOut();
+                Tz::CmTop::FadeOutPadHelp();
+                Tz::SelHist::FadeOut(1);
+
+                auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                auto _fetchMode = Tz::MenuBase::GetMode();
+
+                auto _fetchFadeSeq = 229;
+
+                if (_fetchMode >= 26 && _fetchMode <= 33)
+                {
+                    if (_fetchMode != 26 && _fetchMode != 27)
+                    {
+                        auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                        _fetchFadeSeq = IndiCustomBaseSeq[0x03 * CurPos2CustomType(_fetchSelectPos)];
+                    }
+
+                    Tz::MenuUtil::SprtFadeOut(_fetchListBuffer, _fetchFadeSeq);
+
+                    if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                        Tz::ScrollBar::FadeOut(*Tz::CmTop::m_SclBar);
+                }
+
+                Tz::MenuBase::IncSMode(1);
+                Tz::MenuBase::SetNextMode(*s_ChgSelCharaNext ? 27 : 26);
+
+                Tz::CmTop::SaveCurPos(26, 0, 0);
+            }break;
+            default:
+            {
+                auto _fetchCustomType = CurPos2CustomType(_fetchSelect);
+
+                if (_fetchCustomType)
+                    Tz::SelHist::SetMsgId(2, _listSubMsg[_fetchCustomType]);
+                else
+                    Tz::SelHist::SetMsgId(2, _listShortcutSubMsg[_fetchSelect]);
+
+                Tz::CmTop::FadeOutPadHelp();
+                Tz::CMenuHelp::FadeOut();
+
+                auto _fetchListBuffer = reinterpret_cast<char*>(Tz::CmTop::GetListBuffer());
+                auto _fetchMode = Tz::MenuBase::GetMode();
+
+                auto _fetchFadeSeq = 229;
+
+                if (_fetchMode >= 26 && _fetchMode <= 33)
+                {
+                    if (_fetchMode != 26 && _fetchMode != 27)
+                    {
+                        auto _fetchSelectPos = Tz::CmTop::GetSelectPos(26);
+                        _fetchFadeSeq = IndiCustomBaseSeq[0x03 * CurPos2CustomType(_fetchSelectPos)];
+                    }
+
+                    Tz::MenuUtil::SprtFadeOut(_fetchListBuffer, _fetchFadeSeq);
+
+                    if (dk::Obj2D::isExist(*reinterpret_cast<char**>(*Tz::CmTop::m_SclBar)))
+                        Tz::ScrollBar::FadeOut(*Tz::CmTop::m_SclBar);
+                }
+
+                Tz::MenuBase::IncSMode(1);
+                Tz::MenuBase::SetNextMode(29 + _fetchCustomType);
+
+                auto _fetchCurPos = Tz::CmTop::GetCurPos(25);
+
+                if (*reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr) != _fetchCurPos)
+                    Tz::CmTop::SaveCurPos(26, 0, 0);
+
+                auto _fetchCurrent = *reinterpret_cast<uint32_t*>(*Tz::CmTop::m_MenuPtr);
+                auto _fetchSelectTop = *reinterpret_cast<uint16_t*>(*Tz::CmTop::m_MenuPtr + 0x12);
+
+                Tz::CmTop::SaveCurPos(26, _fetchCurrent, _fetchSelectTop);
+            } break;
+            }
+        }
+
+        Tz::MenuBase::ResetPad();
+    }
+
+
     __declspec(dllexport) const char* RF_ExclusivityTags()
     {
         return "_kh2ShortcutSets";
@@ -1631,6 +2041,10 @@ extern "C"
 
             // ====================================================================================================================== //
 
+            dk::Obj2D::isExist = reinterpret_cast<bool(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?isExist@Obj2D@dk@@2P6A_NPEAD@ZEA"));
+
+            // ====================================================================================================================== //
+
             kn::FriendSaveRam::item2index = reinterpret_cast<int(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?item2index@FriendSaveRam@kn@@2P6AHH@ZEA"));
 
             // ====================================================================================================================== //
@@ -1644,7 +2058,12 @@ extern "C"
 
             // ====================================================================================================================== //
 
+            Tz::CmTutorial::Setup = reinterpret_cast<void(*)(int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Setup@CmTutorial@Tz@@2P6AXHH@ZEA"));
+
+            // ====================================================================================================================== //
+
             Tz::CMenuHelp::Create = reinterpret_cast<void(*)(char*, bool)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Create@CMenuHelp@Tz@@2P6AXPEAD_N@ZEA"));
+            Tz::CMenuHelp::FadeOut = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?FadeOut@CMenuHelp@Tz@@2P6AXXZEA"));
 
             // ====================================================================================================================== //
 
@@ -1655,6 +2074,14 @@ extern "C"
             Tz::CmTop::GetFontColorSeqNum = reinterpret_cast<int(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetFontColorSeqNum@CmTop@Tz@@2P6AHH@ZEA"));
             Tz::CmTop::GetTopPlateSeqTbl = reinterpret_cast<char* (*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetTopPlateSeqTbl@CmTop@Tz@@2P6APEADH@ZEA"));
             Tz::CmTop::GetItemFontColor = reinterpret_cast<int(*)(int, int, bool)>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetItemFontColor@CmTop@Tz@@2P6AHHH_N@ZEA"));
+            Tz::CmTop::FadeOutPadHelp = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?FadeOutPadHelp@CmTop@Tz@@2P6AXXZEA"));
+            Tz::CmTop::LoopPadHelp = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?LoopPadHelp@CmTop@Tz@@2P6AXXZEA"));
+            Tz::CmTop::isExistPadHelp = reinterpret_cast<bool(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?isExistPadHelp@CmTop@Tz@@2P6A_NXZEA"));
+            Tz::CmTop::isExistListAll = reinterpret_cast<bool(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?isExistListAll@CmTop@Tz@@2P6A_NXZEA"));
+            Tz::CmTop::isExistNew = reinterpret_cast<bool(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?isExistNew@CmTop@Tz@@2P6A_NXZEA"));
+            Tz::CmTop::LeaveListAll = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?LeaveListAll@CmTop@Tz@@2P6AXXZEA"));
+            Tz::CmTop::LeavePadHelp = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?LeavePadHelp@CmTop@Tz@@2P6AXXZEA"));
+            Tz::CmTop::SaveCurPos = reinterpret_cast<void(*)(int, short, short)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SaveCurPos@CmTop@Tz@@2P6AXHFF@ZEA"));
 
             Tz::CmTop::m_SeqUnit = reinterpret_cast<int*>(*(void**)GetProcAddress(MAIN_HANDLE, "?m_SeqUnit@CmTop@Tz@@2PEAHEA"));
             Tz::CmTop::m_ImgUnit = reinterpret_cast<int*>(*(void**)GetProcAddress(MAIN_HANDLE, "?m_ImgUnit@CmTop@Tz@@2PEAHEA"));
@@ -1676,13 +2103,31 @@ extern "C"
             // ====================================================================================================================== //
 
             Tz::MenuBase::GetMode = reinterpret_cast<int(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetMode@MenuBase@Tz@@2P6AHXZEA"));
+            Tz::MenuBase::GetSMode = reinterpret_cast<int(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetSMode@MenuBase@Tz@@2P6AHXZEA"));
             Tz::MenuBase::SetSMode = reinterpret_cast<void(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetSMode@MenuBase@Tz@@2P6AXH@ZEA"));
+            Tz::MenuBase::GetNextMode = reinterpret_cast<int(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetNextMode@MenuBase@Tz@@2P6AHXZEA"));
+            Tz::MenuBase::SetMode = reinterpret_cast<void(*)(int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetMode@MenuBase@Tz@@2P6AXHH@ZEA"));
+            Tz::MenuBase::SaveMode = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?SaveMode@MenuBase@Tz@@2P6AXXZEA"));
+            Tz::MenuBase::ResetPad = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?ResetPad@MenuBase@Tz@@2P6AXXZEA"));
+            Tz::MenuBase::IsExit = reinterpret_cast<bool(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?IsExit@MenuBase@Tz@@2P6A_NXZEA"));
+            Tz::MenuBase::isSavePad = reinterpret_cast<bool(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?isSavePad@MenuBase@Tz@@2P6A_NXZEA"));
+            Tz::MenuBase::SetExit = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetExit@MenuBase@Tz@@2P6AXXZEA"));
+            Tz::MenuBase::SavePad = reinterpret_cast<void(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SavePad@MenuBase@Tz@@2P6AXPEAD@ZEA"));
+            Tz::MenuBase::NextMode2Mode = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?NextMode2Mode@MenuBase@Tz@@2P6AXXZEA"));
+            Tz::MenuBase::SetNextMode = reinterpret_cast<void(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetNextMode@MenuBase@Tz@@2P6AXH@ZEA"));
+            Tz::MenuBase::IncSMode = reinterpret_cast<void(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?IncSMode@MenuBase@Tz@@2P6AXH@ZEA"));
+            Tz::MenuBase::PadSE = reinterpret_cast<int(*)(int, bool, bool, bool(*)(int), bool)>(*(void**)GetProcAddress(MAIN_HANDLE, "?PadSE@MenuBase@Tz@@2P6AHH_N0P6A_NH@Z0@ZEA"));
 
             // ====================================================================================================================== //
 
             Tz::MenuUtil::CreateMess = reinterpret_cast<char* (*)(char*, int, uint32_t, uint32_t, char*, int, uint32_t, int, int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?CreateMess@MenuUtil@Tz@@2P6APEADPEADHII0HIHHH@ZEA"));
             Tz::MenuUtil::CreateSprt = reinterpret_cast<char* (*)(char*, int, uint32_t, uint32_t, char*, int, uint32_t, int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?CreateSprt@MenuUtil@Tz@@2P6APEADPEADHII0HIHH@ZEA"));
             Tz::MenuUtil::SetSprtParent = reinterpret_cast<void(*)(char*, char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetSprtParent@MenuUtil@Tz@@2P6AXPEAD0@ZEA"));
+            Tz::MenuUtil::SprtFadeOut = reinterpret_cast<void(*)(char*, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SprtFadeOut@MenuUtil@Tz@@2P6AXPEADH@ZEA"));
+
+            // ====================================================================================================================== //
+
+            Tz::MenuSound::isBeep = reinterpret_cast<bool(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?isBeep@MenuSound@Tz@@2P6A_NH@ZEA"));
 
             // ====================================================================================================================== //
 
@@ -1694,6 +2139,9 @@ extern "C"
             Tz::ScrollBar::Create = reinterpret_cast<void(*)(char*, int, char*, char*, char*, int, int, char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Create@ScrollBar@Tz@@2P6AXPEADH000HH0@ZEA"));
             Tz::ScrollBar::SetMax = reinterpret_cast<void(*)(char*, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetMax@ScrollBar@Tz@@2P6AXPEADH@ZEA"));
             Tz::ScrollBar::SetPos = reinterpret_cast<void(*)(char*, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetPos@ScrollBar@Tz@@2P6AXPEADH@ZEA"));
+            Tz::ScrollBar::Loop = reinterpret_cast<void(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Loop@ScrollBar@Tz@@2P6AXPEAD@ZEA"));
+            Tz::ScrollBar::FadeOut = reinterpret_cast<void(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?FadeOut@ScrollBar@Tz@@2P6AXPEAD@ZEA"));
+            Tz::ScrollBar::Leave = reinterpret_cast<void(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Leave@ScrollBar@Tz@@2P6AXPEAD@ZEA"));
 
             // ====================================================================================================================== //
 
@@ -1706,9 +2154,19 @@ extern "C"
             Tz::Select::SetSelectMax = reinterpret_cast<void(*)(char*, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetSelectMax@Select@Tz@@2P6AXPEADH@ZEA"));
             Tz::Select::SetSelectTop = reinterpret_cast<int(*)(char*, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetSelectTop@Select@Tz@@2P6AHPEADH@ZEA"));
 
+            Tz::Select::select = reinterpret_cast<int(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?select@Select@Tz@@2P6AHPEAD@ZEA"));
+            Tz::Select::isExist = reinterpret_cast<bool(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?isExist@Select@Tz@@2P6A_NPEAD@ZEA"));
+            Tz::Select::Leave = reinterpret_cast<void(*)(char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Leave@Select@Tz@@2P6AXPEAD@ZEA"));
+
             // ====================================================================================================================== //
 
             Tz::SelHist::Create = reinterpret_cast<void(*)(int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Create@SelHist@Tz@@2P6AXHH@ZEA"));
+            Tz::SelHist::isExist = reinterpret_cast<bool(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?isExist@SelHist@Tz@@2P6A_NH@ZEA"));
+            Tz::SelHist::Leave = reinterpret_cast<void(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Leave@SelHist@Tz@@2P6AXH@ZEA"));
+            Tz::SelHist::SetMsg = reinterpret_cast<void(*)(int, char*)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetMsg@SelHist@Tz@@2P6AXHPEAD@ZEA"));
+            Tz::SelHist::SetMsgId = reinterpret_cast<void(*)(int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetMsgId@SelHist@Tz@@2P6AXHH@ZEA"));
+            Tz::SelHist::Loop = reinterpret_cast<void(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?Loop@SelHist@Tz@@2P6AXH@ZEA"));
+            Tz::SelHist::FadeOut = reinterpret_cast<void(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?FadeOut@SelHist@Tz@@2P6AXH@ZEA"));
 
             // ====================================================================================================================== //
 
@@ -1767,6 +2225,7 @@ extern "C"
             s_PlayerType = reinterpret_cast<char*>(*(void**)GetProcAddress(MAIN_HANDLE, "?s_PlayerType@CmCustom@Tz@@2PEADEA"));
             s_FriendType = reinterpret_cast<char*>(*(void**)GetProcAddress(MAIN_HANDLE, "?s_FriendType@CmCustom@Tz@@2PEADEA"));
             s_ButtonIcon = reinterpret_cast<short*>(*(void**)GetProcAddress(MAIN_HANDLE, "?s_ButtonIcon@CmCustom@Tz@@2PEAFEA"));
+            s_ChgSelCharaNext = reinterpret_cast<char*>(*(void**)GetProcAddress(MAIN_HANDLE, "?s_ChgSelCharaNext@CmCustom@Tz@@2PEADEA"));
 
             m_ListInfo = reinterpret_cast<char**>(*(void**)GetProcAddress(MAIN_HANDLE, "?m_ListInfo@CmCustom@Tz@@2PEAPEADEA"));
             m_PartyInfo = reinterpret_cast<char**>(*(void**)GetProcAddress(MAIN_HANDLE, "?m_PartyInfo@CmCustom@Tz@@2PEAPEADEA"));
@@ -1782,11 +2241,14 @@ extern "C"
             LS_KH1F_Shortcuts = reinterpret_cast<char*>(*(void**)GetProcAddress(MAIN_HANDLE, "?LS_KH1F_Shortcuts@CmCustom@Tz@@2PEADEA"));
 
             DrawItemAILv = reinterpret_cast<char*>(*(void**)GetProcAddress(MAIN_HANDLE, "?DrawItemAILv@CmCustom@Tz@@2PEADEA"));
+            SelCheck = reinterpret_cast<bool(*)(int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?SelCheck@CmCustom@Tz@@2P6A_NH@ZEA"));
 
             ChageMpDrive = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?ChageMpDrive@CmCustom@Tz@@2P6AXXZEA"));
             CreateTopList = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?CreateTopList@CmCustom@Tz@@2P6AXXZEA"));
             UpdateIndiCustomList = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?UpdateIndiCustomList@CmCustom@Tz@@2P6AXXZEA"));
             SetIndiCustomDefaultPos = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetIndiCustomDefaultPos@CmCustom@Tz@@2P6AXXZEA"));
+            SetupCustomList = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?SetupCustomList@CmCustom@Tz@@2P6AXXZEA"));
+            ShowErrorTakeOff = reinterpret_cast<void(*)()>(*(void**)GetProcAddress(MAIN_HANDLE, "?ShowErrorTakeOff@CmCustom@Tz@@2P6AXXZEA"));
 
             GetFriendInfo = reinterpret_cast<char* (*)(int, int)>(*(void**)GetProcAddress(MAIN_HANDLE, "?GetFriendInfo@CmCustom@Tz@@2P6APEADHH@ZEA"));
 
@@ -1805,6 +2267,7 @@ extern "C"
             RedirectFunctionSLIM("?UpdateHelpMess@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(UpdateHelpMess));
             RedirectFunctionSLIM("?isTakeOff@CmCustom@Tz@@SA_NXZ", reinterpret_cast<uint64_t>(isTakeOff));
             RedirectFunctionSLIM("?CheckKH1Form@CmCustom@Tz@@SA_NXZ", reinterpret_cast<uint64_t>(CheckKH1Form));
+            RedirectFunctionSLIM("?CtrlCustomList@CmCustom@Tz@@SAXXZ", reinterpret_cast<uint64_t>(CtrlCustomList));
 
             // ====================================================================================================================== //
         }
