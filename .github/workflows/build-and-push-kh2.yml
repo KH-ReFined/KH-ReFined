@@ -7,10 +7,13 @@ name: Kingdom Hearts II - Build and Sync
 
 on:
   push:
-    branches: [ "mother" ]
+    paths:
+      - "ReFined.KH2/**"
+      - ".github/workflows/**"
   pull_request:
-    branches: [ "mother" ]
- 
+    paths:
+      - "ReFined.KH2/**"
+      - ".github/workflows/**" 
 env:
   # Path to the solution file relative to the root of the project.
   SOLUTION_FILE_PATH: ReFined.sln
