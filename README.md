@@ -8,7 +8,7 @@
 
 ![KHI](https://img.shields.io/badge/Kingdom_Hearts_I-Not_Live!-red)
 ![KHCOM](https://img.shields.io/badge/Re:_Chain_of_Memories-Not_Live!-red)
-![KHII](https://img.shields.io/badge/Kingdom_Hearts_II-r290726--0156--FC-dark_lime)
+![KHII](https://img.shields.io/badge/Kingdom_Hearts_II-r290726--2235--FC-dark_lime)
 ![KHBBS](https://img.shields.io/badge/Birth_by_Sleep-Not_Live!-red)
 ![KHDDD](https://img.shields.io/badge/Dream_Drop_Distance-Not_Live!-red)
 
