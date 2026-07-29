@@ -2276,14 +2276,9 @@ void HANDLE_FORM_EXP()
     auto _currentForm = *(AREA::SaveData + 0x3524);
     auto _currentFormInfo = AREA::SaveData + 0x32F4 + (0x38 * (_currentForm - 1));
 
-    auto _currentSumm = *(AREA::SaveData + 0x3525);
-    auto _currentSummLevel = *(AREA::SaveData + 0x32F6);
-
     auto _maxLevelForm = 0x02 + YS::ITEM::GetNumBackyard(0x001A) + YS::ITEM::GetNumBackyard(0x001B) + YS::ITEM::GetNumBackyard(0x001D) + YS::ITEM::GetNumBackyard(0x001F) + YS::ITEM::GetNumBackyard(0x0233);
-    auto _maxLevelSumm = 0x02 + YS::ITEM::GetNumBackyard(0x0019) + YS::ITEM::GetNumBackyard(0x017F) + YS::ITEM::GetNumBackyard(0x009F) + YS::ITEM::GetNumBackyard(0x00A0);
 
-    if (_maxLevelSumm == 0x06)
-        _maxLevelSumm = 0x07;
+    auto _currentSumm = *(AREA::SaveData + 0x3525);
 
     if (!NEXT_FORM)
         NEXT_FORM = new dk::NEXT_FORM();
@@ -2323,7 +2318,7 @@ void HANDLE_FORM_EXP()
             if (PAST_FORM_EXP == UINT32_MAX)
                 PAST_FORM_EXP = _currExp; 
 
-            else if ((_maxLevelSumm == _currentSummLevel || !_fetchSummonTable) && PAST_FORM_EXP != 0x00)
+            else if (!_fetchSummonTable && PAST_FORM_EXP != 0x00)
             {
                 NEXT_FORM->create(0x00, 0x00, NEGATIVE_ASPECT_OFFSET);
                 PAST_FORM_EXP = 0x00;
@@ -2331,7 +2326,7 @@ void HANDLE_FORM_EXP()
                 return;
             }
 
-            else if (PAST_FORM_EXP != _currExp)
+            else if (_fetchSummonTable && PAST_FORM_EXP != _currExp)
             {
                 auto _targetExp = *reinterpret_cast<uint32_t*>(_fetchSummonTable + 0x04);
 
