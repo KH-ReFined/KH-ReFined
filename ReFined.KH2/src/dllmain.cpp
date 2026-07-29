@@ -2287,7 +2287,7 @@ void HANDLE_FORM_EXP()
 
     if (!NEXT_FORM)
         NEXT_FORM = new dk::NEXT_FORM();
-
+     
     if (*AREA::IsInMap)
     {
         if (_currentForm)
@@ -2627,20 +2627,20 @@ extern "C"
 
 
         // Switch the Prompt Three icons.
-        
+         
         auto _fetchTypeStr = _configStruct["General"]["promptThreeType"];
         PROMPT_THREE_TYPE = _fetchTypeStr == "steam" ? 0x01 : (_fetchTypeStr == "switch" ? 0x02 : 0x00);
 
-        auto _fetchDictionaryAddr = FetchRelativePointer<int*>("\x40\x53\x48\x83\xEC\x20\x48\x63\xDA\xE8\x00\x00\x00\x00\x48\x8B\xC8", "xxxxxxxxxx????xxx", 0x26) + 0x05;
+        auto _fetchDictionaryAddr = IS_STEAM ? FetchRelativePointer<int*>("\x40\x53\x48\x83\xEC\x20\x48\x63\xDA\xE8\x00\x00\x00\x00\x48\x8B\xC8", "xxxxxxxxxx????xxx", 0x26) + 0x05 : FetchRelativePointer<int*>("\x40\x53\x48\x83\xEC\x20\x48\x63\xDA\xE8\x00\x00\x00\x00\x0F\xB7\x48\x18", "xxxxxxxxxx????xxxx", 0x1F) + 0x05;
         auto _determineConfirmFunc = FindSignature<char*>("\x40\x53\x55\x56\x57\x41\x57\x48\x81\xEC\xA0\x00\x00\x00", "xxxxxxxxxxxxxx");
         
         for (int i = 0x00; i < 0x17; i++)
             *(_fetchDictionaryAddr + 0x03 * i) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][i];
 
-        *reinterpret_cast<int*>(_determineConfirmFunc + 0x1D3) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x01];
-        *reinterpret_cast<int*>(_determineConfirmFunc + 0x1D8) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
+        *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x1D3 : 0x1D7)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x01];
+        *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x1D8 : 0x1DC)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
 
-        *reinterpret_cast<int*>(_determineConfirmFunc + 0x22B) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
+        *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x22B : 0x216)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
 
         if (!DISCORD_ENABLED)
             FUNCTION_ARRAY.erase("DISCORD_RPC");
