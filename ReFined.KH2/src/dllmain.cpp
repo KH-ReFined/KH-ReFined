@@ -900,47 +900,52 @@ void ENFORCE_FRAMERATE()
 
 void HANDLE_SHAKE()
 {
-    if (ADJUST_GLOW_ARRAY.size() == 0x00)
+    if (!*YS::TITLE::IsTitle && *AREA::IsInMap)
     {
-        ADJUST_GLOW_ARRAY.resize(0x10);
-        INIT_VIEWPORT_ARRAY.resize(0x07);
-        ADJUST_VIEWPORT_ARRAY.resize(0x08);
+        auto _fetchAreaFlag = *reinterpret_cast<uint8_t*>(YS::AREAINFO::Get(-1, -1)) & 0x10;
 
-        memcpy(ADJUST_GLOW_ARRAY.data(), ADJUST_GLOW_FUNCTION + 0xE6E, 0x10);
-        memcpy(INIT_VIEWPORT_ARRAY.data(), INIT_VIEWPORT_FUNCTION + 0x35, 0x07);
-        memcpy(ADJUST_VIEWPORT_ARRAY.data(), ADJUST_VIEWPORT_FUNCTION + 0x60, 0x08);
-    }
-
-    if (*ryj::SHAKE::ShakeTimer > 0 || *ryj::SHAKE::ShakeCoords > 0x00 || *(ryj::SHAKE::ShakeCoords + 0x02) > 0x00)
-    {
-        if (!SHAKE_WRITTEN)
+        if (!_fetchAreaFlag || (AREA::Current->Room == 0x0A && AREA::Current->World == 0x12))
         {
-            char _nopArray[0x08];
-            fill(_nopArray, _nopArray + 0x08, 0x90);
+            if (INIT_VIEWPORT_ARRAY.size() == 0x00)
+            {
+                INIT_VIEWPORT_ARRAY.resize(0x07);
+                ADJUST_VIEWPORT_ARRAY.resize(0x08);
 
-            memcpy(INIT_VIEWPORT_FUNCTION + 0x35, _nopArray, 0x07);
-            memcpy(ADJUST_VIEWPORT_FUNCTION + 0x60, _nopArray, 0x08);
+                memcpy(INIT_VIEWPORT_ARRAY.data(), INIT_VIEWPORT_FUNCTION + 0x35, 0x07);
+                memcpy(ADJUST_VIEWPORT_ARRAY.data(), ADJUST_VIEWPORT_FUNCTION + 0x60, 0x08);
+            }
 
-            SHAKE_WRITTEN = true;
+            if (*ryj::SHAKE::ShakeTimer > 0 || *ryj::SHAKE::ShakeCoords > 0x00 || *(ryj::SHAKE::ShakeCoords + 0x02) > 0x00)
+            {
+                if (!SHAKE_WRITTEN)
+                {
+                    char _nopArray[0x08];
+                    fill(_nopArray, _nopArray + 0x08, 0x90);
+
+                    memcpy(INIT_VIEWPORT_FUNCTION + 0x35, _nopArray, 0x07);
+                    memcpy(ADJUST_VIEWPORT_FUNCTION + 0x60, _nopArray, 0x08);
+
+                    SHAKE_WRITTEN = true;
+                }
+
+                float _writeFloat[0x04];
+
+                _writeFloat[0x00] = *ryj::SHAKE::ShakeCoords;
+                _writeFloat[0x01] = *(ryj::SHAKE::ShakeCoords + 0x02);
+                _writeFloat[0x02] = *(reinterpret_cast<int*>(VIEWPORT3D_ADDR + 0x08)) + *ryj::SHAKE::ShakeCoords;
+                _writeFloat[0x03] = *(reinterpret_cast<int*>(VIEWPORT3D_ADDR + 0x0C)) + *(ryj::SHAKE::ShakeCoords + 0x02);
+
+                memcpy(VIEWPORT3D_ADDR + 0x15C, _writeFloat, 0x10);
+            }
+
+            else if (SHAKE_WRITTEN)
+            {
+                memcpy(INIT_VIEWPORT_FUNCTION + 0x35, INIT_VIEWPORT_ARRAY.data(), 0x07);
+                memcpy(ADJUST_VIEWPORT_FUNCTION + 0x60, ADJUST_VIEWPORT_ARRAY.data(), 0x08);
+
+                SHAKE_WRITTEN = false;
+            }
         }
-
-        float _writeFloat[0x04];
-
-        _writeFloat[0x00] = *ryj::SHAKE::ShakeCoords;
-        _writeFloat[0x01] = *(ryj::SHAKE::ShakeCoords + 0x02);
-        _writeFloat[0x02] = *(reinterpret_cast<int*>(VIEWPORT3D_ADDR + 0x08)) + *ryj::SHAKE::ShakeCoords;
-        _writeFloat[0x03] = *(reinterpret_cast<int*>(VIEWPORT3D_ADDR + 0x0C)) + *(ryj::SHAKE::ShakeCoords + 0x02);
-
-        memcpy(VIEWPORT3D_ADDR + 0x15C, _writeFloat, 0x10);
-    }
-
-    else if (SHAKE_WRITTEN)
-    {
-        memcpy(ADJUST_GLOW_FUNCTION + 0xE6E, ADJUST_GLOW_ARRAY.data(), 0x10);
-        memcpy(INIT_VIEWPORT_FUNCTION + 0x35, INIT_VIEWPORT_ARRAY.data(), 0x07);
-        memcpy(ADJUST_VIEWPORT_FUNCTION + 0x60, ADJUST_VIEWPORT_ARRAY.data(), 0x08);
-
-        SHAKE_WRITTEN = false;
     }
 }
 
@@ -1304,7 +1309,7 @@ void REGISTER_MAGIC()
                 auto _currentPointer = *reinterpret_cast<const uint64_t*>(YS::MAGIC::MagicInfo + 0x48 + 0x50 * i);
 
                 // If the current Magic table is the one we fetched and the current Magic level is not zero (Meaning we have the Magic and it was processed), or the denoted level equals to the current level:
-                if ((_currentPointer == _currentTablePtr && _fetchMagicLevel != 0x00) || _fetchMagicLevel == _currentTable->Level)
+                if (_currentPointer == _currentTablePtr && _fetchMagicLevel != 0x00)
                 {
                     // Denote the command of the current Magic to the array, and skip to the next entry.
                     _commandArray.push_back(_currentTable->Command);
@@ -2182,15 +2187,17 @@ void SYNC_FLAG_PROGRESS()
 
         auto _fetchItemCount = YS::ITEM::GetNumBackyard(_firstPair.first);
 
-        if (_fetchItemCount >= 0x02 && _flagFirstClear != 0xFFFF)
+        if (_flagFirstUnlock != 0xFFFF)
         {
-            if (YS::PROGRESS::CheckFlag(_flagFirstClear) && !YS::PROGRESS::CheckFlag(_flagSecondUnlock))
-               YS::PROGRESS::SetFlag(_flagSecondUnlock);
+            if (_fetchItemCount >= 0x02 && _flagFirstClear != 0xFFFF && YS::PROGRESS::CheckFlag(_flagFirstClear) && !YS::PROGRESS::CheckFlag(_flagSecondUnlock))
+                YS::PROGRESS::SetFlag(_flagSecondUnlock);
+
+            else if (_fetchItemCount == 0x01 && !YS::PROGRESS::CheckFlag(_flagFirstUnlock))
+                YS::PROGRESS::SetFlag(_flagFirstUnlock);
         }
 
-        else if (_fetchItemCount == 0x01 && _flagFirstUnlock != 0xFFFF)
-            if (!YS::PROGRESS::CheckFlag(_flagFirstUnlock))
-                YS::PROGRESS::SetFlag(_flagFirstUnlock);
+        else if (_fetchItemCount == 0x03 && YS::PROGRESS::CheckFlag(_flagFirstClear) && !YS::PROGRESS::CheckFlag(_flagSecondUnlock))
+            YS::PROGRESS::SetFlag(_flagSecondUnlock);
     }
 
     auto _fetchPageCount = YS::ITEM::GetNumBackyard(0x0020);
@@ -2380,6 +2387,7 @@ extern "C"
             {"REGISTER_ABILITY", REGISTER_ABILITY},
             {"SHOW_INFORMATION", SHOW_INFORMATION},
             {"PROCESS_DEATH", PROCESS_DEATH},
+            {"SYNC_FLAG_PROGRESS", SYNC_FLAG_PROGRESS},
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
@@ -2654,8 +2662,8 @@ extern "C"
             if (!_fetchFake)
                 return;
 
-            //if (!YS::FILE::GetSize("scripts/F266B00B GoA ROM.lua"))
-            FUNCTION_ARRAY.erase("SYNC_FLAG_PROGRESS"); // Temporarily disabled as it breaks stuff.
+            if (!YS::FILE::GetSize("scripts/F266B00B GoA ROM.lua"))
+                FUNCTION_ARRAY.erase("SYNC_FLAG_PROGRESS"); // Temporarily disabled as it breaks stuff.
 
 #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             // Trying to initialize this in OnInit causes moduleInfo to get corrupt. I have no fucking idea why.
@@ -3106,7 +3114,7 @@ extern "C"
             #endif
 
             for (auto _funcRefined : FUNCTION_ARRAY)
-                _funcRefined.second();
+               _funcRefined.second();
 
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
             for (auto _execPair : _execModule)
