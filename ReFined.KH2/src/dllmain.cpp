@@ -2387,7 +2387,6 @@ extern "C"
             {"REGISTER_ABILITY", REGISTER_ABILITY},
             {"SHOW_INFORMATION", SHOW_INFORMATION},
             {"PROCESS_DEATH", PROCESS_DEATH},
-            {"SYNC_FLAG_PROGRESS", SYNC_FLAG_PROGRESS},
         };
 
         // Determine if the MOD is running on STEAM or EPIC.

@@ -369,6 +369,9 @@
     <ClInclude Include="include\kingdom\cmtutorial.h">
       <Filter>Header Files\kingdom_internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\kingdom\fade.h">
+      <Filter>Header Files\kingdom_internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\kingdom\weapon_mset.h">

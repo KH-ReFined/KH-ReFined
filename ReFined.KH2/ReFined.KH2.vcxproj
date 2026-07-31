@@ -74,6 +74,7 @@
     <ClInclude Include="include\kingdom\command_menu.h" />
     <ClInclude Include="include\kingdom\command_one.h" />
     <ClInclude Include="include\kingdom\counter.h" />
+    <ClInclude Include="include\kingdom\fade.h" />
     <ClInclude Include="include\kingdom\menucursor.h" />
     <ClInclude Include="include\kingdom\enemy.h" />
     <ClInclude Include="include\kingdom\enemybase.h" />

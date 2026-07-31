@@ -15,6 +15,8 @@ extern "C"
             public:
                 static inline char* LIMIT_FNBUFFER;
 
+                static inline char* (*Get)(int command) = FindSignature<char*(*)(int)>("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x41\x56\x41\x57\x48\x83\xEC\x20\x48\x8B\x05\x00\x00\x00\x00\x33\xED", "xxxxxxxxxxxxxxxxxxxxxxxxxxx????xx");
+
                 static char* get_filename(char* limitTable)
                 {
                     const char* _regionStr = (!YS::REGION::Get() || YS::REGION::Get() == 0x07) ? "fm" : reinterpret_cast<char*>(*YS::REGION::Region);
