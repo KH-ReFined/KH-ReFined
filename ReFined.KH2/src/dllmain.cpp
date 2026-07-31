@@ -327,22 +327,20 @@ uint8_t SAVE_SLOT_OFFSET = 99;
 
 uint16_t RESET_COMBO = YS::HARDPAD::BUTTONS::NONE;
 
-map<pair<uint16_t, int>, pair<int, int>> WORLD_PROGRESS =
+map<int, pair<pair<short, short>, pair<short, short>>> WORLD_PROGRESS =
 {
-   { { 0x0048, 0x1C1C }, { 0x1C1A, 0x1C1D } }, // Scimitar
-   { { 0x0037, 0x200B }, { 0x200A, 0x200D } }, // Sword of the Ancestor
-   { { 0x003B, 0x140F }, { 0x140C, 0x1410 } }, // Beast's Claw
-   { { 0x003C, 0x3834 }, { 0x3838, 0x3835 } }, // Bone Fist
-   { { 0x003E, 0x404D }, { 0x404B, 0x404E } }, // Skill and Crossbones
-   { { 0x0171, 0x105E }, { 0x105C, 0x105F } }, // Membership Card
-   { { 0x0049, 0x481B }, { 0x4801, 0x4802 } }, // Way to the Dawn
-   { { 0x01CC, 0x300A }, { 0x300B, 0x3014 } }, // Royal Summons
-   { { 0x0036, 0x1829 }, { 0x1800, 0x1809 } }, // Battlefields of War
-   { { 0x004A, 0x4430 }, { 0x4400, 0x4414 } }, // Identity Disk
-   { { 0x003D, 0x282D }, { 0x2800, 0x2818 } }, // Proud Fang
-   { { 0x0170, 0xFFFF }, { 0x0815, 0xFFFF } }, // Namine's Sketches
-   { { 0x0177, 0x08AD }, { 0x0894, 0x08AF } }, // Ice Cream
-   { { 0x0177, 0x08B9 }, { 0xFFFF, 0x08BB } }, // Ice Cream
+    { 0x0048, { { 0x1C1C, 0xFFFF }, { 0x1C1D, 0xFFFF } } },  // Scimitar
+    { 0x0037, { { 0x200B, 0xFFFF }, { 0x200D, 0xFFFF } } },  // Sword of the Ancestor
+    { 0x003B, { { 0x140F, 0xFFFF }, { 0x1410, 0xFFFF } } },  // Beast's Claw
+    { 0x003C, { { 0x3834, 0xFFFF }, { 0x3835, 0xFFFF } } },  // Bone Fist
+    { 0x003E, { { 0x404D, 0xFFFF }, { 0x404E, 0xFFFF } } },  // Skill and Crossbones
+    { 0x0171, { { 0x105E, 0xFFFF }, { 0x105F, 0xFFFF } } },  // Membership Card
+    { 0x0049, { { 0x481B, 0xFFFF }, { 0x4802, 0xFFFF } } },  // Way to the Dawn
+    { 0x01CC, { { 0x300A, 0xFFFF }, { 0x3014, 0xFFFF } } },  // Royal Summons
+    { 0x0036, { { 0x1829, 0xFFFF }, { 0x1809, 0xFFFF } } },  // Battlefields of War
+    { 0x004A, { { 0x4430, 0xFFFF }, { 0x4414, 0xFFFF } } },  // Identity Disk
+    { 0x003D, { { 0x282D, 0xFFFF }, { 0x2818, 0xFFFF } } },  // Proud Fang
+    { 0x0177, { { 0x08AD, 0x08B9 }, { 0x08AF, 0x08BB } } },  // Ice Cream
 };
 
 vector<pair<int, int>> POOH_PROGRESS =
@@ -2178,26 +2176,23 @@ void SYNC_FLAG_PROGRESS()
 {
     for (auto _fetchElement : WORLD_PROGRESS)
     {
-        auto _firstPair = _fetchElement.first;
-        auto _secondPair = _fetchElement.second;
+        auto _fetchItemCount = YS::ITEM::GetNumBackyard(_fetchElement.first);
+        auto _fetchWorldPair = _fetchElement.second;
 
-        auto _flagFirstClear = _firstPair.second;
-        auto _flagSecondUnlock = _secondPair.second;
-        auto _flagFirstUnlock = _secondPair.first;
+        auto _fetchCheckPair = _fetchWorldPair.first;
+        auto _fetchUnlockPair = _fetchWorldPair.second;
 
-        auto _fetchItemCount = YS::ITEM::GetNumBackyard(_firstPair.first);
+        auto _hasClearedFirst = YS::PROGRESS::CheckFlag(_fetchCheckPair.first);
+        auto _hasClearedSecond = _fetchCheckPair.second != UINT16_MAX ? YS::PROGRESS::CheckFlag(_fetchCheckPair.second) : false;
 
-        if (_flagFirstUnlock != 0xFFFF)
-        {
-            if (_fetchItemCount >= 0x02 && _flagFirstClear != 0xFFFF && YS::PROGRESS::CheckFlag(_flagFirstClear) && !YS::PROGRESS::CheckFlag(_flagSecondUnlock))
-                YS::PROGRESS::SetFlag(_flagSecondUnlock);
+        auto _flagUnlockSecond = _fetchUnlockPair.first;
+        auto _flagUnlockThird = _fetchUnlockPair.second;
 
-            else if (_fetchItemCount == 0x01 && !YS::PROGRESS::CheckFlag(_flagFirstUnlock))
-                YS::PROGRESS::SetFlag(_flagFirstUnlock);
-        }
+        if (_fetchItemCount == 0x03 && _hasClearedSecond && !YS::PROGRESS::CheckFlag(_flagUnlockThird))
+            YS::PROGRESS::SetFlag(_flagUnlockThird);
 
-        else if (_fetchItemCount == 0x03 && YS::PROGRESS::CheckFlag(_flagFirstClear) && !YS::PROGRESS::CheckFlag(_flagSecondUnlock))
-            YS::PROGRESS::SetFlag(_flagSecondUnlock);
+        else if (_fetchItemCount >= 0x02 && _hasClearedFirst && !YS::PROGRESS::CheckFlag(_flagUnlockSecond))
+            YS::PROGRESS::SetFlag(_flagUnlockSecond);
     }
 
     auto _fetchPageCount = YS::ITEM::GetNumBackyard(0x0020);
@@ -2357,36 +2352,37 @@ extern "C"
         FUNCTION_ARRAY =
         {
             #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
-            {"HANDLE_MUSIC", HANDLE_MUSIC},
-            {"HANDLE_RESOURCE", HANDLE_RESOURCE},
-            {"HANDLE_AUDIO", HANDLE_AUDIO},
-            {"RETRY_BATTLES", RETRY_BATTLES},
-            {"HANDLE_SHAKE", HANDLE_SHAKE},
-            {"ENFORCE_PROMPTS", ENFORCE_PROMPTS},
-            {"DISCORD_RPC", DISCORD_RPC},
-            {"HANDLE_ASPECT", HANDLE_ASPECT},
-            {"ENFORCE_LOCKON", ENFORCE_LOCKON},
-            {"HANDLE_GOA_LAND", HANDLE_GOA_LAND},
-            {"PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES},
-            {"RETRIBUTION_LOGIC", RETRIBUTION_LOGIC},
-            {"HANDLE_SYNC_SHORTCUTS", HANDLE_SYNC_SHORTCUTS},
-            {"ENFORCE_FRAMERATE", ENFORCE_FRAMERATE},
-            {"FIX_SAVE_POINT", FIX_SAVE_POINT},
-            {"HANDLE_NOHUD_TIMESTOP", HANDLE_NOHUD_TIMESTOP},
-            {"ENSURE_MOOGLE_SHOP", ENSURE_MOOGLE_SHOP},
-            {"HANDLE_FORM_EXP", HANDLE_FORM_EXP},
+            { "HANDLE_MUSIC", HANDLE_MUSIC },
+            { "HANDLE_RESOURCE", HANDLE_RESOURCE },
+            { "HANDLE_AUDIO", HANDLE_AUDIO },
+            { "RETRY_BATTLES", RETRY_BATTLES },
+            { "HANDLE_SHAKE", HANDLE_SHAKE },
+            { "ENFORCE_PROMPTS", ENFORCE_PROMPTS },
+            { "DISCORD_RPC", DISCORD_RPC },
+            { "HANDLE_ASPECT", HANDLE_ASPECT },
+            { "ENFORCE_LOCKON", ENFORCE_LOCKON },
+            { "HANDLE_GOA_LAND", HANDLE_GOA_LAND },
+            { "PROCESS_FORM_KEYBLADES", PROCESS_FORM_KEYBLADES },
+            { "RETRIBUTION_LOGIC", RETRIBUTION_LOGIC },
+            { "HANDLE_SYNC_SHORTCUTS", HANDLE_SYNC_SHORTCUTS },
+            { "ENFORCE_FRAMERATE", ENFORCE_FRAMERATE },
+            { "FIX_SAVE_POINT", FIX_SAVE_POINT },
+            { "HANDLE_NOHUD_TIMESTOP", HANDLE_NOHUD_TIMESTOP },
+            { "ENSURE_MOOGLE_SHOP", ENSURE_MOOGLE_SHOP },
+            { "HANDLE_FORM_EXP", HANDLE_FORM_EXP },
             #endif
 
             #ifndef BUILD_ARCHIPELAGO_LITE
-            {"SOFT_RESET", SOFT_RESET},
-            {"AUTOSAVE", AUTOSAVE},
+            { "SOFT_RESET", SOFT_RESET },
+            { "AUTOSAVE", AUTOSAVE },
             #endif
 
-            {"FIX_UP_CONFIG", FIX_UP_CONFIG},
-            {"REGISTER_MAGIC", REGISTER_MAGIC},
-            {"REGISTER_ABILITY", REGISTER_ABILITY},
-            {"SHOW_INFORMATION", SHOW_INFORMATION},
-            {"PROCESS_DEATH", PROCESS_DEATH},
+            { "FIX_UP_CONFIG", FIX_UP_CONFIG },
+            { "REGISTER_MAGIC", REGISTER_MAGIC },
+            { "REGISTER_ABILITY", REGISTER_ABILITY },
+            { "SHOW_INFORMATION", SHOW_INFORMATION },
+            { "PROCESS_DEATH", PROCESS_DEATH },
+            { "SYNC_FLAG_PROGRESS", SYNC_FLAG_PROGRESS },
         };
 
         // Determine if the MOD is running on STEAM or EPIC.
@@ -2411,7 +2407,7 @@ extern "C"
         // Nullify all SaveID checks according to the platform in use.
 
         auto _saveCheckFunction = IS_STEAM ? FindSignature<char*>("\x40\x55\x56\x57\x48\x81\xEC\xA0\x00\x00\x00\x48\xC7\x44\x24\x38\xFE\xFF\xFF\xFF\x48\x89\x9C\x24\xD0\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x90\x00\x00\x00\x8B\xF1\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xED\x8D\x5D\x01\x48\x39\x2D\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x30\x48\x85\xC0\x74\x1D", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxx????xx????xxxxxxxx????xx????xxxxxx????xxxxxxxxxx")
-            : FindSignature<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
+                                           : FindSignature<char*>("\x40\x57\x48\x83\xEC\x50\x48\xC7\x44\x24\x30\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x70\x48\x89\x74\x24\x78\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x48\x8B\xF9\x89\x0D\x00\x00\x00\x00\x89\x15\x00\x00\x00\x00\x33\xF6\x48\x39\x35\x00\x00\x00\x00\x0F\x85\x3D\x01\x00\x00\xB9\x78\x01\x00\x00\xE8\x00\x00\x00\x00\x48\x89\x44\x24\x38\x48\x85\xC0\x74\x1D\x45\x33\xC9\x44\x8B\x05", "xxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxx????xx????xxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxx");
 
         memset(_saveCheckFunction + (IS_STEAM ? 0x189 : 0x138), 0x90, 0x05);
         memset(_saveCheckFunction + (IS_STEAM ? 0x196 : 0x145), 0x90, 0x02);
@@ -2425,12 +2421,12 @@ extern "C"
         // Fetch the prompt mode byte according to the game version.
         PROMPT_MODE = FetchRelativePointer<bool*>("\x40\x57\x48\x83\xEC\x20\x4C\x8B\x0D\x00\x00\x00\x00\x33\xD2\x4D\x85\xC9\x49\x8D\x81\xA0\x12\x00\x00\x48\x0F\x45\xD0\x4D\x8D\x81\x3C\x02\x00\x00\x48\x85\xD2\x0F\x84\x2B\x01\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16\x48\x63\x82\x00\x02\x00\x00\x48\xC1\xE0\x08\x80\x7C\x10\x3B\x00\x0F\x85\x00\x00\x00\x00\x48\x85\xD2\x0F\x84\xFE\x00\x00\x00\x33\xC0\x4D\x85\xC9\x49\x0F\x45\xC0\x48\x85\xC0\x74\x16", "xxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxx", IS_STEAM ? 0x969 : 0x959);
 
-#ifndef BUILD_ARCHIPELAGO_LITE
+        #ifndef BUILD_ARCHIPELAGO_LITE
         Tz::HookIntro::Submit();
         Tz::HookConfig::Submit();
-#endif
+        #endif
 
-#if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+        #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
         MOD_PATH = mod_path;
 
         // Fetch the launch parameters and parse them.
@@ -2559,7 +2555,7 @@ extern "C"
                 *reinterpret_cast<float*>(*RADAR_STRUCT + 0xBC0) = _isHudDraw ? 1.0 : 0.0;
             }
         }
-#endif
+        #endif
 
         // Prevent MAGIC clearing since we handle that now, and because it causes a crash.
 
@@ -2570,7 +2566,7 @@ extern "C"
         auto _fetchVolumeFloats = FindSignature<float*>("\xCD\xCC\xCC\x3D\xCD\xCC\x4C\x3E", "xxxxxxxx");
         *_fetchVolumeFloats = 0.00F;
 
-#ifndef BUILD_ARCHIPELAGO_LITE
+        #ifndef BUILD_ARCHIPELAGO_LITE
         wchar_t _configPath[MAX_PATH];
 
         wcscpy(_configPath, mod_path);
@@ -2611,43 +2607,43 @@ extern "C"
         if (ROOM_AMOUNT == 0x00)
             ROOM_AMOUNT = 1;
 
-#ifndef BUILD_ARCHIPELAGO
-        DISCORD_ENABLED = _configStruct["General"]["discordRPC"] == "true" ? true : false;
+            #ifndef BUILD_ARCHIPELAGO
+            DISCORD_ENABLED = _configStruct["General"]["discordRPC"] == "true" ? true : false;
 
-        ALLOW_NOHUD = _configStruct["General"]["allowNoHud"] == "true" ? true : false;
-        ALLOW_TIMESTOP = _configStruct["General"]["allowTimeStop"] == "true" ? true : false;
+            ALLOW_NOHUD = _configStruct["General"]["allowNoHud"] == "true" ? true : false;
+            ALLOW_TIMESTOP = _configStruct["General"]["allowTimeStop"] == "true" ? true : false;
 
-        Tz::CmCustom::CAN_ALTER_KH1F = _configStruct["General"]["canModifyLimitShortcuts"] == "true" ? true : false;
+            Tz::CmCustom::CAN_ALTER_KH1F = _configStruct["General"]["canModifyLimitShortcuts"] == "true" ? true : false;
 
-        auto ALLOW_REVERB = _configStruct["General"]["enableReverb"] == "true" ? true : false;
+            auto ALLOW_REVERB = _configStruct["General"]["enableReverb"] == "true" ? true : false;
 
-        if (ALLOW_REVERB)
-        {
-            auto _fetchBusContainerInit = FindSignature<char*>("\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x48\xC7\x45\xC7\xFE\xFF\xFF\xFF\x48\x89", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-            memset(_fetchBusContainerInit + 0x23D, 0x90, 0x0E);
-        }
+            if (ALLOW_REVERB)
+            {
+                auto _fetchBusContainerInit = FindSignature<char*>("\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x48\xC7\x45\xC7\xFE\xFF\xFF\xFF\x48\x89", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                memset(_fetchBusContainerInit + 0x23D, 0x90, 0x0E);
+            }
 
 
-        // Switch the Prompt Three icons.
+            // Switch the Prompt Three icons.
          
-        auto _fetchTypeStr = _configStruct["General"]["promptThreeType"];
-        PROMPT_THREE_TYPE = _fetchTypeStr == "steam" ? 0x01 : (_fetchTypeStr == "switch" ? 0x02 : 0x00);
+            auto _fetchTypeStr = _configStruct["General"]["promptThreeType"];
+            PROMPT_THREE_TYPE = _fetchTypeStr == "steam" ? 0x01 : (_fetchTypeStr == "switch" ? 0x02 : 0x00);
 
-        auto _fetchDictionaryAddr = IS_STEAM ? FetchRelativePointer<int*>("\x40\x53\x48\x83\xEC\x20\x48\x63\xDA\xE8\x00\x00\x00\x00\x48\x8B\xC8", "xxxxxxxxxx????xxx", 0x26) + 0x05 : FetchRelativePointer<int*>("\x40\x53\x48\x83\xEC\x20\x48\x63\xDA\xE8\x00\x00\x00\x00\x0F\xB7\x48\x18", "xxxxxxxxxx????xxxx", 0x1F) + 0x05;
-        auto _determineConfirmFunc = FindSignature<char*>("\x40\x53\x55\x56\x57\x41\x57\x48\x81\xEC\xA0\x00\x00\x00", "xxxxxxxxxxxxxx");
+            auto _fetchDictionaryAddr = IS_STEAM ? FetchRelativePointer<int*>("\x40\x53\x48\x83\xEC\x20\x48\x63\xDA\xE8\x00\x00\x00\x00\x48\x8B\xC8", "xxxxxxxxxx????xxx", 0x26) + 0x05 : FetchRelativePointer<int*>("\x40\x53\x48\x83\xEC\x20\x48\x63\xDA\xE8\x00\x00\x00\x00\x0F\xB7\x48\x18", "xxxxxxxxxx????xxxx", 0x1F) + 0x05;
+            auto _determineConfirmFunc = FindSignature<char*>("\x40\x53\x55\x56\x57\x41\x57\x48\x81\xEC\xA0\x00\x00\x00", "xxxxxxxxxxxxxx");
         
-        for (int i = 0x00; i < 0x17; i++)
-            *(_fetchDictionaryAddr + 0x03 * i) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][i];
+            for (int i = 0x00; i < 0x17; i++)
+                *(_fetchDictionaryAddr + 0x03 * i) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][i];
 
-        *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x1D3 : 0x1D7)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x01];
-        *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x1D8 : 0x1DC)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
+            *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x1D3 : 0x1D7)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x01];
+            *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x1D8 : 0x1DC)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
 
-        *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x22B : 0x216)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
+            *reinterpret_cast<int*>(_determineConfirmFunc + (IS_STEAM ? 0x22B : 0x216)) = PROMPT_THREE_ICONS[PROMPT_THREE_TYPE][0x02];
 
-        if (!DISCORD_ENABLED)
-            FUNCTION_ARRAY.erase("DISCORD_RPC");
-#endif
-#endif
+            if (!DISCORD_ENABLED)
+                FUNCTION_ARRAY.erase("DISCORD_RPC");
+            #endif
+        #endif
     }
 
     __declspec(dllexport) void OnFrame()
@@ -3107,7 +3103,7 @@ extern "C"
 
         else
         {
-            #ifndef BUILD_ARCHIPELAGO_LITE
+            #ifndef BUILD_ARCHIPELAGO_LITE 
             Tz::HookIntro::Handle();
             Tz::HookConfig::Handle();
             #endif
