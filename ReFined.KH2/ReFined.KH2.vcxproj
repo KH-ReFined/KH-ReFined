@@ -391,17 +391,17 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug [AP_LITE]|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <TargetName>EnablersAP-LITE</TargetName>
+    <TargetName>zEnablersAP-LITE</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <TargetName>EnablersAP-FULL</TargetName>
+    <TargetName>zEnablersAP-FULL</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release [AP_LITE]|x64'">
-    <TargetName>EnablersAP-LITE</TargetName>
+    <TargetName>zEnablersAP-LITE</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">
-    <TargetName>EnablersAP-FULL</TargetName>
+    <TargetName>zEnablersAP-FULL</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -540,7 +540,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-LITE.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)zEnablersAP-LITE.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug [ARCHIPELAGO]|x64'">
@@ -562,7 +562,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-FULL.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)zEnablersAP-FULL.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -612,7 +612,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-LITE.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)zEnablersAP-LITE.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release [ARCHIPELAGO]|x64'">
@@ -637,7 +637,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "$(OutDir)EnablersAP-FULL.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
+      <Command>xcopy /y "$(OutDir)zEnablersAP-FULL.dll" "$(USERPROFILE)\Desktop\OpenKH\mod\kh2\dll\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

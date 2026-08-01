@@ -169,7 +169,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
             _wremove(_fetchEnablerLite);
     #endif
 
-
     return TRUE;
 }
 
@@ -2656,7 +2655,6 @@ extern "C"
                 auto _fetchBusContainerInit = FindSignature<char*>("\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x48\xC7\x45\xC7\xFE\xFF\xFF\xFF\x48\x89", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 memset(_fetchBusContainerInit + 0x23D, 0x90, 0x0E);
             }
-
 
             // Switch the Prompt Three icons.
          
