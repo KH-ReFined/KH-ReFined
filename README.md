@@ -15,6 +15,9 @@
 **Kingdom Hearts - Re:Fined** is a mod that aims to improve upon the Kingdom Hearts experience by introducing Quality of Life improvements, as well as fixing many of the glaring problems of this port.</div>
 </div>
 
+> [!IMPORTANT]  
+> Re:Fined has moved to Codeberg permanently. Please go to https://codeberg.org/KH-ReFined/ to follow the project along!
+
 > [!WARNING]  
 > Every game within the mod library is currently being rewritten. Releases may take time as a result. Thank you for understanding!
 
