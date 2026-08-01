@@ -136,6 +136,40 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
             break;
     }
 
+    // Prevent EnablersAP from loading if detected.
+
+    #if !defined(BUILD_ARCHIPELAGO) && !defined(BUILD_ARCHIPELAGO_LITE)
+        wchar_t _currPathBuffer[MAX_PATH];
+        GetModuleFileNameW(hModule, _currPathBuffer, MAX_PATH);
+
+        auto _fetchSlash = wcsrchr(_currPathBuffer, L'\\');
+
+        if (_fetchSlash != NULL)
+            *_fetchSlash = L'\0';
+
+        WIN32_FIND_DATAW _foundEnablerFull;
+        WIN32_FIND_DATAW _foundEnablerLite;
+
+        wchar_t _fetchEnablerFull[MAX_PATH];
+        wchar_t _fetchEnablerLite[MAX_PATH];
+
+        wcscpy(_fetchEnablerFull, _currPathBuffer);
+        wcscpy(_fetchEnablerLite, _currPathBuffer);
+
+        wcscat(_fetchEnablerFull, L"\\zEnablersAP-FULL.dll");
+        wcscat(_fetchEnablerLite, L"\\zEnablersAP-LITE.dll");
+
+        auto _isFoundFull = FindFirstFileW(_fetchEnablerFull, &_foundEnablerFull) != INVALID_HANDLE_VALUE;
+        auto _isFoundLite = FindFirstFileW(_fetchEnablerLite, &_foundEnablerLite) != INVALID_HANDLE_VALUE;
+
+        if (_isFoundFull)
+            _wremove(_fetchEnablerFull);
+
+        if (_isFoundLite)
+            _wremove(_fetchEnablerLite);
+    #endif
+
+
     return TRUE;
 }
 
